@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Turris
@@ -21,10 +20,8 @@ namespace Turris
         bool hasLastPos;
 
         // Tryb FBX
-        readonly List<Renderer> modelRenderers = new List<Renderer>();
-        readonly List<Color> modelColors = new List<Color>();
-        readonly List<Renderer> gearRenderers = new List<Renderer>();
-        readonly List<Color> gearColors = new List<Color>();
+        readonly TintSet modelTint = new TintSet();
+        readonly TintSet gearTint = new TintSet();
         Transform weaponSocket, shieldSocket;
         GameObject weaponObj, shieldObj;
         WeaponModel modelWeapon;
@@ -47,11 +44,7 @@ namespace Turris
             Model.transform.localRotation = Quaternion.Euler(def.rotationOffset);
             Model.transform.localScale = Vector3.one * def.scale * scale;
             foreach (var c in Model.GetComponentsInChildren<Collider>()) Util.DestroySafe(c);
-            foreach (var r in Model.GetComponentsInChildren<Renderer>())
-            {
-                modelRenderers.Add(r);
-                modelColors.Add(r.sharedMaterial != null && r.sharedMaterial.HasProperty("_Color") ? r.sharedMaterial.color : Color.white);
-            }
+            modelTint.Collect(Model.GetComponentsInChildren<Renderer>());
 
             var animator = Model.GetComponentInChildren<Animator>();
             if (animator == null) animator = Model.AddComponent<Animator>();
@@ -89,22 +82,23 @@ namespace Turris
                 return;
             }
             if (weaponSocket == null) return;
-            if (weaponObj != null) Util.DestroySafe(weaponObj);
-            if (shieldObj != null) Util.DestroySafe(shieldObj);
-            gearRenderers.Clear(); gearColors.Clear();
+            if (weaponObj != null) Util.DestroyNow(weaponObj);
+            if (shieldObj != null) Util.DestroyNow(shieldObj);
             modelWeapon = weapon;
-            weaponObj = GearBuilder.Weapon(weaponSocket, weapon == WeaponModel.Claws ? WeaponModel.None : weapon, weaponColor, (r, c, g) => { gearRenderers.Add(r); gearColors.Add(c); });
-            shieldObj = GearBuilder.Shield(shieldSocket, shield, shieldColor, null);
+            weaponObj = GearBuilder.Weapon(weaponSocket, weapon == WeaponModel.Claws ? WeaponModel.None : weapon, weaponColor);
+            shieldObj = GearBuilder.Shield(shieldSocket, shield, shieldColor);
+            gearTint.Clear();
+            gearTint.Collect(weaponObj.GetComponentsInChildren<Renderer>());
         }
 
         void Clear()
         {
             Driver?.Dispose();
             Driver = null;
-            if (Rig != null) Util.DestroySafe(Rig.gameObject);
-            if (Model != null) Util.DestroySafe(Model);
+            if (Rig != null) Util.DestroyNow(Rig.gameObject);
+            if (Model != null) Util.DestroyNow(Model);
             Rig = null; Model = null;
-            modelRenderers.Clear(); modelColors.Clear(); gearRenderers.Clear(); gearColors.Clear();
+            modelTint.Clear(); gearTint.Clear();
             weaponSocket = shieldSocket = null;
         }
 
@@ -133,25 +127,15 @@ namespace Turris
         public void SetTint(Color c, float amount)
         {
             if (Rig != null) { Rig.SetTint(c, amount); return; }
-            if (!Application.isPlaying) return;
-            for (int i = 0; i < modelRenderers.Count; i++)
-                if (modelRenderers[i] != null)
-                    modelRenderers[i].material.color = amount <= 0 ? modelColors[i] : Color.Lerp(modelColors[i], c, amount);
+            modelTint.SetTint(c, amount);
         }
 
         public void SetWeaponGlow(Color c, float intensity)
         {
             if (Rig != null) { Rig.SetWeaponGlow(c, intensity); return; }
-            if (!Application.isPlaying) return;
-            for (int i = 0; i < gearRenderers.Count; i++)
-            {
-                var r = gearRenderers[i];
-                if (r == null) continue;
-                r.material.color = intensity <= 0 ? gearColors[i] : Color.Lerp(gearColors[i], c, Mathf.Clamp01(intensity));
-                VisualFx.SetEmission(r, intensity <= 0 ? Color.black : c * intensity * 2f);
-            }
             // Model bez broni (np. pazury w animacji) – delikatna poświata całej postaci.
-            if (gearRenderers.Count == 0) SetTint(c, intensity * 0.35f);
+            if (gearTint.Count == 0) { if (intensity > 0) SetTint(c, intensity * 0.35f); return; }
+            gearTint.SetGlow(c, intensity);
         }
 
         public Vector3 WeaponTip => Rig != null ? Rig.WeaponTip : (weaponSocket != null ? weaponSocket.position + weaponSocket.forward * 0.9f : transform.position + Vector3.up);

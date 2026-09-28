@@ -74,7 +74,18 @@ Postacie są humanoidami z pełną animacją ciała, dostępnymi w dwóch warian
 
 ### Wariant A: proceduralny humanoid (domyślny, działa bez żadnych plików)
 
-- **Budowa:** szkielet z 17 kości (biodra, kręgosłup, klatka, szyja, głowa, ramiona z łokciami, dłonie, nogi z kolanami, stopy) obłożony bryłami.
+- **Budowa:** szkielet z 17 kości obłożony 100–160 częściami ciała na postać, do tego 20–50 elementów broni i tarczy.
+  - Kształty: zwężające się kończyny, szaty w kształcie dzwonu, kopuły hełmów, ostrza z przekrojem rombowym i zbroczem, tarcze wycinane z obrysu, pierścienie, stożki (`ProcMesh`).
+  - Materiały PBR: metal i złoto odbijają światło, a kolczuga, tkanina, skóra, drewno i kość są matowe.
+  - Części każdej kości są scalane w jedną siatkę (`PartBuilder`), więc postać to ok. 15–22 renderery. Podświetlenia idą przez MaterialPropertyBlock, bez kopiowania materiałów.
+  - Detale:
+    - twarz: nos, brwi, szczęka, uszy;
+    - hełm garnczkowy: szczeliny wizjera, otwory oddechowe, nity, grzebień, czepiec kolczy;
+    - zbroja płytowa: napierśnik z grzbietem, obojczyk, fartuch płytowy, taszki, naramienniki z lamami, nałokietniki, nagolenniki, trzewiki;
+    - kolczuga: tabard z lamówką i herbem, pendent, pas z klamrą i sakwami, pochwa i sztylet;
+    - buty z cholewą, podeszwą i obcasem, dłonie z palcami i kciukiem;
+    - szata maga: fałdy, haft, stuła, frędzle, koraliki, fiolki, tuba na zwoje, broda w kapturze;
+    - ghul: żebra, kręgi, zęby, pazury.
 - **Wygląd gracza** wynika z założonego sprzętu:
   - kolczuga lub zbroja płytowa daje tabard i pelerynę, która kołysze się w ruchu;
   - hełm, kaptur albo kaptur kolczy zależnie od głowy;
@@ -232,7 +243,7 @@ Poza tym testy sprawdzają:
 - wybór stylu animacji z danych ataku (cięcia na zmianę w serii, ciężki = z góry, pocisk = czar, szarża = pchnięcie, pazury ghula);
 - dopasowanie nazw klipów Mixamo do akcji gry (15 przypadków, w tym pułapka „stable” ≠ „stab”).
 
-**PlayMode: 17/17 zaliczonych w edytorze z oknem**, plus dwa testy zrzutów ekranu celowo pominięte (uruchamiają się tylko ze zmienną `TURRIS_SHOT_DIR`). W trybie wsadowym zalicza się 15 testów, a oba testy pada są pomijane, bo Unity nie wywołuje wtedy `OnGUI`. Testy działają w silniku, z prawdziwą fizyką i AI:
+**PlayMode: 18/18 zaliczonych w edytorze z oknem**, plus dwa testy zrzutów ekranu celowo pominięte (uruchamiają się tylko ze zmienną `TURRIS_SHOT_DIR`). W trybie wsadowym zalicza się 16 testów, a oba testy pada są pomijane, bo Unity nie wywołuje wtedy `OnGUI`. Testy działają w silniku, z prawdziwą fizyką i AI:
 
 - pełne podejście przez 5 pięter kończy się zwycięstwem, a popiół zostaje odczytany z pliku przez nowy serwis, co symuluje ponowne uruchomienie gry;
 - śmierć kończy się ekranem śmierci; szybki restart zaczyna od piętra I z zerową liczbą dusz i bez tymczasowych nagród, a popiół zostaje zachowany;

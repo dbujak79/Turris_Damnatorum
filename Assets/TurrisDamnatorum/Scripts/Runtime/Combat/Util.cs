@@ -10,5 +10,11 @@ namespace Turris
             if (o == null) return;
             if (Application.isPlaying) Object.Destroy(o); else Object.DestroyImmediate(o);
         }
+
+        /// <summary>Natychmiastowe zniszczenie (np. części scalonych w jedną siatkę, żeby nie renderowały się ani klatki).</summary>
+        public static void DestroyNow(Object o)
+        {
+            if (o != null) Object.DestroyImmediate(o);
+        }
     }
 }

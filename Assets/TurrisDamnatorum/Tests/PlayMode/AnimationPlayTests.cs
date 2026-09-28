@@ -167,6 +167,40 @@ namespace Turris.Tests
         }
 
         [UnityTest]
+        public IEnumerator DetailLevel_ManyParts_FewRenderers()
+        {
+            var bundle = DefaultContent.Create();
+            var looks = new (string name, RigLook look, float scale)[]
+            {
+                ("rycerz", new RigLook { body = BodyGear.Chain, head = HeadGear.Coif, cape = true, weapon = WeaponModel.Sword, shield = ShieldModel.Heater, cloth = new Color(0.45f, 0.08f, 0.08f) }, 1f),
+                ("mag", new RigLook { body = BodyGear.Robe, head = HeadGear.Hood, style = RigStyle.Mage, weapon = WeaponModel.Staff, cloth = new Color(0.2f, 0.25f, 0.6f) }, 1f),
+                ("ghul", RigLook.ForEnemy(bundle.Get<EnemyDefinition>("enemy_ghoul")), 0.95f),
+                ("heretyk", RigLook.ForEnemy(bundle.Get<EnemyDefinition>("enemy_heretic")), 1f),
+                ("straznik", RigLook.ForEnemy(bundle.Get<EnemyDefinition>("enemy_warden")), 1.25f),
+                ("kasztelan", RigLook.ForEnemy(bundle.Get<EnemyDefinition>("enemy_castellan")), 1.6f),
+            };
+            foreach (var (name, look, scale) in looks)
+            {
+                var (v, _) = Dummy(look, Vector3.zero);
+                int gearParts = 0;
+                var renderers = v.GetComponentsInChildren<Renderer>(true);
+                int submeshes = 0, verts = 0;
+                foreach (var r in renderers)
+                {
+                    submeshes += r.sharedMaterials.Length;
+                    var mf = r.GetComponent<MeshFilter>();
+                    if (mf != null && mf.sharedMesh != null) verts += mf.sharedMesh.vertexCount;
+                }
+                Debug.Log($"DETAIL {name}: części ciała {v.Rig.PartCount}, renderery {renderers.Length}, podsiatki {submeshes}, wierzchołki {verts}");
+                Assert.GreaterOrEqual(v.Rig.PartCount, 60, name);
+                Assert.LessOrEqual(renderers.Length, 30, $"{name}: scalanie części ogranicza liczbę rendererów");
+                Object.Destroy(v.gameObject);
+                gearParts++;
+            }
+            yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator ClipDriver_ScrubsActionClipByCombatPhase()
         {
             // Model „Generic” z jedną kością i klipami wygenerowanymi w kodzie – sprawdza mapowanie faz na czas klipu.
@@ -282,6 +316,10 @@ namespace Turris.Tests
             Shot("pose_close_block.png", new Vector3(5.5f, 1.8f, -3.6f), new Vector3(6.6f, 1.1f, 0));
             for (int i = 0; i < states.Count; i++) all[i].Item1.gameObject.SetActive(false);
             Shot("pose_row2_front.png", new Vector3(0, 2.2f, -7f), new Vector3(0, 1.2f, 5f));
+            Shot("pose_close_mage.png", new Vector3(-8.2f, 1.7f, 2.6f), new Vector3(-9.2f, 1.25f, 5f));
+            Shot("pose_close_ghoul.png", new Vector3(-4.2f, 1.5f, 3.2f), new Vector3(-4.84f, 1.0f, 5f));
+            Shot("pose_close_boss.png", new Vector3(5.2f, 2.3f, 0.8f), new Vector3(7.26f, 1.7f, 5f));
+            Shot("pose_close_warden.png", new Vector3(3.2f, 1.9f, 1.6f), new Vector3(2.42f, 1.3f, 5f));
         }
     }
 }

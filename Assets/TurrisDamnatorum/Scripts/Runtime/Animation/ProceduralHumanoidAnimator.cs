@@ -224,6 +224,8 @@ namespace Turris
                 float lean = hunch + p.chestPitch + p.spinePitch;
                 float flow = 6f + moveBlend * 22f + Mathf.Sin(gaitPhase * 2f) * 3f * moveBlend;
                 rig.CapePivot.localRotation = Quaternion.Euler(flow - lean, 0, 0);
+                if (rig.CapeLower != null)
+                    rig.CapeLower.localRotation = Quaternion.Euler(moveBlend * 12f + Mathf.Sin(gaitPhase * 2f + 0.8f) * 4f * moveBlend + 2f, 0, 0);
             }
 
             // Ręce: IK do celów w przestrzeni postaci.
