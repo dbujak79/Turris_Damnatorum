@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9713eabedc811e74eb31146a53f52ecf, type: 3}
+  m_Name: talent_bloodriposte
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.BoonDefinition
+  id: talent_bloodriposte
+  displayName: Krwawa riposta
+  description: "Talent: riposty lecz\u0105."
+  tags: 8
+  maxStacks: 1
+  modifiers:
+  - stat: 17
+    mode: 1
+    value: 30
+  effects:
+  - type: 6
+    value: 60
+  extraHealthFlasks: 0
+  extraManaFlasks: 0

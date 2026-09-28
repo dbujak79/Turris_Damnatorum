@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 716db02fa773dfd4b857f1bf7382a402, type: 3}
+  m_Name: diff_cursed
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.DifficultyDefinition
+  id: diff_cursed
+  displayName: "Przekl\u0119ty"
+  description: "Mniej leczenia, gro\u017Aniejszy boss."
+  tags: 0
+  tier: 2
+  enemyHealthMultiplier: 1.35
+  enemyDamageMultiplier: 1.3
+  enemyAggressionMultiplier: 1.2
+  elites: 1
+  flaskChargeDelta: -1
+  restoreOnlyAtRest: 0
+  bossExtraBehavior: 1
+  ashMultiplier: 2.3
+  soulMultiplier: 1.4
+  itemQualityBonus: 1

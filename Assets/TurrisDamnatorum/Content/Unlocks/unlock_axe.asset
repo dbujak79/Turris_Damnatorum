@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04a8fe60f9299784cac74fcbd7b0d11b, type: 3}
+  m_Name: unlock_axe
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.UnlockDefinition
+  id: unlock_axe
+  displayName: "Top\xF3r bojowy"
+  description: "Ci\u0119\u017Ckie ciosy \u0142ami\u0105ce postaw\u0119. S\u0142abo blokuje, nie paruje."
+  tags: 0
+  kind: 0
+  target: {fileID: 11400000, guid: 62a157d6465b39348a0e453235f7c423, type: 2}
+  ashCost: 0
+  loadoutCost: 2
+  unlockedByDefault: 1
+  requiredBestFloor: 0
+  requiredVictoryTier: -1

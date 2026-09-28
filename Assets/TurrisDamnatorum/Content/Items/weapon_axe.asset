@@ -1,0 +1,109 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 636ee652052ecf443b59ebf79a72207a, type: 3}
+  m_Name: weapon_axe
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ItemDefinition
+  id: weapon_axe
+  displayName: "Top\xF3r bojowy"
+  description: "Ci\u0119\u017Ckie ciosy \u0142ami\u0105ce postaw\u0119. S\u0142abo blokuje, nie paruje."
+  tags: 17
+  kind: 0
+  twoHanded: 0
+  weight: 6
+  requirements:
+  - attribute: 3
+    value: 10
+  modifiers: []
+  effects: []
+  weapon:
+    light:
+      name: "R\u0105bni\u0119cie"
+      delivery: 0
+      damageType: 0
+      baseDamage: 48
+      windup: 0.4
+      active: 0.15
+      recovery: 0.5
+      cancelAfter: 0.22
+      reach: 2.1
+      radius: 0.85
+      lunge: 0.6
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 30
+      poiseDamage: 28
+      heavy: 0
+      staminaCost: 20
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+    heavy:
+      name: "Roz\u0142upanie"
+      delivery: 0
+      damageType: 0
+      baseDamage: 85
+      windup: 0.85
+      active: 0.18
+      recovery: 0.7
+      cancelAfter: 0.35
+      reach: 2.3
+      radius: 0.95
+      lunge: 0.9
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 60
+      poiseDamage: 55
+      heavy: 1
+      staminaCost: 32
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+    lightComboLength: 3
+    strengthScaling: 1.5
+    dexterityScaling: 0.5
+    intelligenceScaling: 0
+    riposteMultiplier: 3.2
+    canBlock: 1
+    guard:
+      physicalReduction: 0.5
+      magicReduction: 0.1
+      stabilityMultiplier: 1.4
+      blockAngle: 90
+      staminaRegenMultiplier: 0.25
+    canParry: 0
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  shield:
+    guard:
+      physicalReduction: 1
+      magicReduction: 0.4
+      stabilityMultiplier: 0.7
+      blockAngle: 140
+      staminaRegenMultiplier: 0.3
+    canParry: 1
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  color: {r: 0.6, g: 0.5, b: 0.4, a: 1}

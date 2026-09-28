@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ec0a10d04a1a664b9b1ddb98ebba4f4, type: 3}
+  m_Name: arena_crypt
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ArenaDefinition
+  id: arena_crypt
+  displayName: Krypta
+  description: 
+  tags: 0
+  circular: 0
+  size: 22
+  pillars:
+  - {x: 5, y: 0, z: 0}
+  - {x: -5, y: 0, z: 0}
+  - {x: 5, y: 0, z: 6}
+  - {x: -5, y: 0, z: 6}
+  - {x: 5, y: 0, z: -6}
+  - {x: -5, y: 0, z: -6}
+  floorColor: {r: 0.2, g: 0.2, b: 0.24, a: 1}
+  wallColor: {r: 0.28, g: 0.28, b: 0.33, a: 1}
+  lightColor: {r: 0.75, g: 0.8, b: 1, a: 1}
+  fogColor: {r: 0.08, g: 0.07, b: 0.09, a: 1}

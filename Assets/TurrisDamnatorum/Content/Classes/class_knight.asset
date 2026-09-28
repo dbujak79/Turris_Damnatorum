@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 364e1a8d61b62a543b912077a454451b, type: 3}
+  m_Name: class_knight
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ClassDefinition
+  id: class_knight
+  displayName: Rycerz
+  description: "Miecz, tarcza i solidny pancerz. Statystyki sprzyjaj\u0105 walce wr\u0119cz. Mo\u017Ce p\xF3\u017Aniej uczy\u0107 si\u0119 czar\xF3w."
+  tags: 0
+  vigor: 12
+  endurance: 12
+  mind: 6
+  strength: 14
+  dexterity: 12
+  intelligence: 8
+  startingItems:
+  - {fileID: 11400000, guid: 1e8d157ae3063cc47bddd2143e676dfe, type: 2}
+  - {fileID: 11400000, guid: 94dd009415e0d5b45ab55fb3280fbdb3, type: 2}
+  - {fileID: 11400000, guid: 8386e7fa5789f05439ca843032b39bf3, type: 2}
+  startingSpells: []
+  startingTalents: []
+  healthFlasks: 4
+  manaFlasks: 1
+  color: {r: 0.7, g: 0.72, b: 0.8, a: 1}

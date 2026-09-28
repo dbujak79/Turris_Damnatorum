@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 716db02fa773dfd4b857f1bf7382a402, type: 3}
+  m_Name: diff_lost
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.DifficultyDefinition
+  id: diff_lost
+  displayName: Zatracony
+  description: Leczenie tylko w kapliczkach.
+  tags: 0
+  tier: 3
+  enemyHealthMultiplier: 1.5
+  enemyDamageMultiplier: 1.45
+  enemyAggressionMultiplier: 1.3
+  elites: 1
+  flaskChargeDelta: -1
+  restoreOnlyAtRest: 1
+  bossExtraBehavior: 1
+  ashMultiplier: 3.2
+  soulMultiplier: 1.6
+  itemQualityBonus: 2

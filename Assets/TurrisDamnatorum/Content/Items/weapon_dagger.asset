@@ -1,0 +1,109 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 636ee652052ecf443b59ebf79a72207a, type: 3}
+  m_Name: weapon_dagger
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ItemDefinition
+  id: weapon_dagger
+  displayName: "Sztylet paruj\u0105cy"
+  description: "Szybkie pchni\u0119cia i najd\u0142u\u017Csze okno parowania. Nie blokuje."
+  tags: 41
+  kind: 0
+  twoHanded: 0
+  weight: 1.5
+  requirements:
+  - attribute: 4
+    value: 11
+  modifiers: []
+  effects: []
+  weapon:
+    light:
+      name: "Pchni\u0119cie"
+      delivery: 0
+      damageType: 0
+      baseDamage: 26
+      windup: 0.2
+      active: 0.1
+      recovery: 0.3
+      cancelAfter: 0.1
+      reach: 1.7
+      radius: 0.6
+      lunge: 0.5
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 14
+      poiseDamage: 10
+      heavy: 0
+      staminaCost: 10
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+    heavy:
+      name: "Podw\xF3jne pchni\u0119cie"
+      delivery: 0
+      damageType: 0
+      baseDamage: 44
+      windup: 0.45
+      active: 0.15
+      recovery: 0.45
+      cancelAfter: 0.22
+      reach: 1.9
+      radius: 0.6
+      lunge: 0.8
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 25
+      poiseDamage: 22
+      heavy: 1
+      staminaCost: 20
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+    lightComboLength: 4
+    strengthScaling: 0.4
+    dexterityScaling: 1.7
+    intelligenceScaling: 0
+    riposteMultiplier: 4
+    canBlock: 0
+    guard:
+      physicalReduction: 0.6
+      magicReduction: 0.2
+      stabilityMultiplier: 1.2
+      blockAngle: 100
+      staminaRegenMultiplier: 0.3
+    canParry: 1
+    parry:
+      startup: 0.06
+      activeWindow: 0.24
+      recovery: 0.45
+      staminaCost: 12
+      poiseDamage: 80
+      angle: 150
+  shield:
+    guard:
+      physicalReduction: 1
+      magicReduction: 0.4
+      stabilityMultiplier: 0.7
+      blockAngle: 140
+      staminaRegenMultiplier: 0.3
+    canParry: 1
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  color: {r: 0.9, g: 0.85, b: 0.6, a: 1}

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ec0a10d04a1a664b9b1ddb98ebba4f4, type: 3}
+  m_Name: arena_summit
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ArenaDefinition
+  id: arena_summit
+  displayName: Szczyt
+  description: 
+  tags: 0
+  circular: 1
+  size: 17
+  pillars: []
+  floorColor: {r: 0.28, g: 0.2, b: 0.2, a: 1}
+  wallColor: {r: 0.3, g: 0.18, b: 0.18, a: 1}
+  lightColor: {r: 1, g: 0.6, b: 0.5, a: 1}
+  fogColor: {r: 0.15, g: 0.05, b: 0.05, a: 1}

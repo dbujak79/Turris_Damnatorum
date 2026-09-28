@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9713eabedc811e74eb31146a53f52ecf, type: 3}
+  m_Name: talent_vigilance
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.BoonDefinition
+  id: talent_vigilance
+  displayName: "Czujno\u015B\u0107"
+  description: "Talent startowy dost\u0119pny dla ka\u017Cdego."
+  tags: 40
+  maxStacks: 1
+  modifiers:
+  - stat: 18
+    mode: 0
+    value: 0.03
+  - stat: 7
+    mode: 0
+    value: 10
+  effects: []
+  extraHealthFlasks: 0
+  extraManaFlasks: 0

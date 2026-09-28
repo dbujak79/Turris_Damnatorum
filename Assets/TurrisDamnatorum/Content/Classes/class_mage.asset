@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 364e1a8d61b62a543b912077a454451b, type: 3}
+  m_Name: class_mage
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ClassDefinition
+  id: class_mage
+  displayName: Mag
+  description: "Kostur, dwa czary i wysoka Inteligencja. Mo\u017Ce p\xF3\u017Aniej si\u0119gn\u0105\u0107 po top\xF3r i ci\u0119\u017Ck\u0105 zbroj\u0119."
+  tags: 0
+  vigor: 9
+  endurance: 9
+  mind: 14
+  strength: 10
+  dexterity: 10
+  intelligence: 16
+  startingItems:
+  - {fileID: 11400000, guid: 922b1ff3979b74f4385b10e6879d07db, type: 2}
+  - {fileID: 11400000, guid: 50ff6deab55afef4abd0dc05f945f2b1, type: 2}
+  startingSpells:
+  - {fileID: 11400000, guid: 84eb9921608a7a1469226073a465c43d, type: 2}
+  - {fileID: 11400000, guid: 6c10e3f4d91b51a47887af33082fb9e6, type: 2}
+  startingTalents: []
+  healthFlasks: 3
+  manaFlasks: 3
+  color: {r: 0.35, g: 0.35, b: 0.75, a: 1}

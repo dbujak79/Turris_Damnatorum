@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bfc9e3d0e146d4086347f0e38c03cf, type: 3}
+  m_Name: spell_bolt
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
+  id: spell_bolt
+  displayName: "Pocisk arkan\xF3w"
+  description: "Szybki pocisk namierzaj\u0105cy cel."
+  tags: 2
+  kind: 0
+  manaCost: 12
+  castTime: 0.4
+  recovery: 0.35
+  cancelAfter: 0.2
+  staminaCost: 5
+  requirements:
+  - attribute: 5
+    value: 8
+  intelligenceScaling: 2.5
+  attack:
+    name: "Pocisk arkan\xF3w"
+    delivery: 1
+    damageType: 1
+    baseDamage: 38
+    windup: 0.4
+    active: 0.1
+    recovery: 0.5
+    cancelAfter: 0.2
+    reach: 0
+    radius: 0.3
+    lunge: 0
+    tracking: 540
+    blockable: 1
+    parryable: 0
+    dodgeable: 1
+    guardLoad: 15
+    poiseDamage: 10
+    heavy: 0
+    staminaCost: 0
+    projectileSpeed: 22
+    projectileCount: 1
+    spreadAngle: 0
+  amount: 60
+  duration: 3
+  maxLevel: 4
+  powerPerLevel: 0.15
+  costReductionPerLevel: 0.06
+  color: {r: 0.45, g: 0.65, b: 1, a: 1}

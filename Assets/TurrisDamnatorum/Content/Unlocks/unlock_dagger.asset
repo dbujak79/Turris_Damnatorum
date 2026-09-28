@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04a8fe60f9299784cac74fcbd7b0d11b, type: 3}
+  m_Name: unlock_dagger
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.UnlockDefinition
+  id: unlock_dagger
+  displayName: "Sztylet paruj\u0105cy"
+  description: "Szybkie pchni\u0119cia i najd\u0142u\u017Csze okno parowania. Nie blokuje."
+  tags: 0
+  kind: 0
+  target: {fileID: 11400000, guid: 8e5c6289f47a1554b835301697da3c8a, type: 2}
+  ashCost: 15
+  loadoutCost: 2
+  unlockedByDefault: 0
+  requiredBestFloor: 0
+  requiredVictoryTier: -1

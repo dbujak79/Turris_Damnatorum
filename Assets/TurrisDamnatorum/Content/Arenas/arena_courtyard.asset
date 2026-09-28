@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ec0a10d04a1a664b9b1ddb98ebba4f4, type: 3}
+  m_Name: arena_courtyard
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ArenaDefinition
+  id: arena_courtyard
+  displayName: Dziedziniec
+  description: 
+  tags: 0
+  circular: 1
+  size: 13
+  pillars:
+  - {x: 6, y: 0, z: 6}
+  - {x: -6, y: 0, z: 6}
+  - {x: 6, y: 0, z: -6}
+  - {x: -6, y: 0, z: -6}
+  floorColor: {r: 0.25, g: 0.24, b: 0.22, a: 1}
+  wallColor: {r: 0.35, g: 0.33, b: 0.3, a: 1}
+  lightColor: {r: 1, g: 0.9, b: 0.8, a: 1}
+  fogColor: {r: 0.08, g: 0.07, b: 0.09, a: 1}

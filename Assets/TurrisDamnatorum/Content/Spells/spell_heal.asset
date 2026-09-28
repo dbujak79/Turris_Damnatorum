@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bfc9e3d0e146d4086347f0e38c03cf, type: 3}
+  m_Name: spell_heal
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
+  id: spell_heal
+  displayName: "Koj\u0105ce \u015Bwiat\u0142o"
+  description: "Leczenie roz\u0142o\u017Cone w czasie \u2013 ryzykowne w walce."
+  tags: 66
+  kind: 2
+  manaCost: 30
+  castTime: 0.9
+  recovery: 0.4
+  cancelAfter: 0.2
+  staminaCost: 5
+  requirements:
+  - attribute: 5
+    value: 8
+  intelligenceScaling: 2
+  attack:
+    name: Atak
+    delivery: 0
+    damageType: 1
+    baseDamage: 30
+    windup: 0.35
+    active: 0.15
+    recovery: 0.45
+    cancelAfter: 0.2
+    reach: 2
+    radius: 0.9
+    lunge: 0.5
+    tracking: 360
+    blockable: 1
+    parryable: 1
+    dodgeable: 1
+    guardLoad: 20
+    poiseDamage: 15
+    heavy: 0
+    staminaCost: 15
+    projectileSpeed: 14
+    projectileCount: 1
+    spreadAngle: 0
+  amount: 90
+  duration: 3
+  maxLevel: 4
+  powerPerLevel: 0.15
+  costReductionPerLevel: 0.06
+  color: {r: 1, g: 0.9, b: 0.5, a: 1}

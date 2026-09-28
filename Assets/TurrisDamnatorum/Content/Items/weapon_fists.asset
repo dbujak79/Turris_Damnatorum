@@ -1,0 +1,107 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 636ee652052ecf443b59ebf79a72207a, type: 3}
+  m_Name: weapon_fists
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ItemDefinition
+  id: weapon_fists
+  displayName: "Pi\u0119\u015Bci"
+  description: "Zawsze dost\u0119pny, s\u0142aby atak bez many."
+  tags: 1
+  kind: 0
+  twoHanded: 0
+  weight: 0
+  requirements: []
+  modifiers: []
+  effects: []
+  weapon:
+    light:
+      name: "Cios pi\u0119\u015Bci\u0105"
+      delivery: 0
+      damageType: 0
+      baseDamage: 16
+      windup: 0.25
+      active: 0.12
+      recovery: 0.3
+      cancelAfter: 0.12
+      reach: 1.4
+      radius: 0.7
+      lunge: 0.3
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 12
+      poiseDamage: 8
+      heavy: 0
+      staminaCost: 10
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+    heavy:
+      name: "Kopni\u0119cie"
+      delivery: 0
+      damageType: 0
+      baseDamage: 26
+      windup: 0.5
+      active: 0.15
+      recovery: 0.5
+      cancelAfter: 0.25
+      reach: 1.6
+      radius: 0.8
+      lunge: 0.5
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 30
+      poiseDamage: 25
+      heavy: 1
+      staminaCost: 18
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+    lightComboLength: 3
+    strengthScaling: 0.6
+    dexterityScaling: 0.6
+    intelligenceScaling: 0
+    riposteMultiplier: 2.5
+    canBlock: 0
+    guard:
+      physicalReduction: 0.6
+      magicReduction: 0.2
+      stabilityMultiplier: 1.2
+      blockAngle: 100
+      staminaRegenMultiplier: 0.3
+    canParry: 0
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  shield:
+    guard:
+      physicalReduction: 1
+      magicReduction: 0.4
+      stabilityMultiplier: 0.7
+      blockAngle: 140
+      staminaRegenMultiplier: 0.3
+    canParry: 1
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
