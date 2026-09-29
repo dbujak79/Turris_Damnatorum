@@ -31,6 +31,10 @@ namespace Turris
         public ShieldModel shield = ShieldModel.None;
         public Color shieldColor = new Color(0.55f, 0.35f, 0.2f);
 
+        /// <summary>Posąg: wszystkie części z kamienia (dekoracje aren).</summary>
+        public bool stone;
+        public Color stoneColor = new Color(0.55f, 0.53f, 0.5f);
+
         public bool TwoHanded => weapon == WeaponModel.GreatAxe || weapon == WeaponModel.GreatSword || weapon == WeaponModel.Halberd;
 
         /// <summary>Wygląd gracza wynika z założonego sprzętu (a nie z klasy) – kolor klasy tylko barwi tkaniny.</summary>

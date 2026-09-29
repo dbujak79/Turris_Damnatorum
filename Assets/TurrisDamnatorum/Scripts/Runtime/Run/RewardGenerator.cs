@@ -28,7 +28,7 @@ namespace Turris
                 {
                     case RewardKind.Item: return item.Name;
                     case RewardKind.Boon: return boon.displayName;
-                    case RewardKind.LearnSpell: return "Nowy czar: " + spell.displayName;
+                    case RewardKind.LearnSpell: return spell.displayName;
                     default: return $"Ulepszenie: {spellToUpgrade.definition.displayName} → +{spellToUpgrade.level + 1}";
                 }
             }
@@ -42,18 +42,19 @@ namespace Turris
                 {
                     case RewardKind.Item: return "PRZEDMIOT";
                     case RewardKind.Boon: return "WZMOCNIENIE";
-                    default: return "CZAR";
+                    case RewardKind.LearnSpell: return $"UMIEJĘTNOŚĆ ({Names.SkillCategory(spell.category).ToUpperInvariant()}) – NA TO PODEJŚCIE";
+                    default: return "ULEPSZENIE UMIEJĘTNOŚCI";
                 }
             }
         }
 
-        public void Apply(RunState run, int maxAttuned)
+        public void Apply(RunState run)
         {
             switch (kind)
             {
                 case RewardKind.Item: run.AddItem(item, true); break;
                 case RewardKind.Boon: run.AddBoon(boon); break;
-                case RewardKind.LearnSpell: run.LearnSpell(spell, maxAttuned); break;
+                case RewardKind.LearnSpell: run.LearnSpell(spell); break;
                 case RewardKind.UpgradeSpell:
                     if (!spellToUpgrade.IsMaxLevel) spellToUpgrade.level++;
                     break;
@@ -62,7 +63,8 @@ namespace Turris
     }
 
     /// <summary>
-    /// Losuje trzy nagrody: przedmiot, wzmocnienie i czar (nauka lub ulepszenie).
+    /// Losuje trzy nagrody: przedmiot, wzmocnienie i umiejętność (nowa na to podejście lub ulepszenie).
+    /// Umiejętności wymagające wyposażenia, którego postać nie ma (np. tarczy), nie są proponowane.
     /// Waga opcji rośnie, gdy pasują do tagów AKTUALNEGO buildu (wyposażenie, znane czary) i pustych slotów.
     /// Klasa startowa nie jest brana pod uwagę. Z prawdopodobieństwem rewardExplorationChance wybór jest
     /// całkowicie losowy – to zostawia szansę na zmianę kierunku rozwoju.
@@ -95,9 +97,9 @@ namespace Turris
             var boon = PickWeighted(boonCandidates, rng, b.rewardExplorationChance, x => 1f + 2f * Overlap(x.tags, tags));
             if (boon != null) result.Add(new RewardOption { kind = RewardKind.Boon, boon = boon });
 
-            // 3. Czar: ulepszenie znanego lub nauka nowego
+            // 3. Umiejętność: ulepszenie znanej lub nauka nowej
             var upgradable = run.knownSpells.Where(s => !s.IsMaxLevel).ToList();
-            var unknown = pools.spells.Where(s => run.FindSpell(s) == null).ToList();
+            var unknown = pools.spells.Where(s => run.FindSpell(s) == null && (s.requiredTags & tags) == s.requiredTags).ToList();
             bool learn = unknown.Count > 0 && (upgradable.Count == 0 || rng.NextDouble() < b.learnNewSpellChance);
             if (learn)
             {
@@ -106,8 +108,8 @@ namespace Turris
             }
             else if (upgradable.Count > 0)
             {
-                // Preferuj czary przygotowane (faktycznie używane).
-                var attuned = upgradable.Where(s => run.attunedSpells.Contains(s)).ToList();
+                // Preferuj umiejętności w slotach (faktycznie używane).
+                var attuned = upgradable.Where(s => run.SlotOf(s) >= 0).ToList();
                 var from = attuned.Count > 0 && rng.NextDouble() < 0.75 ? attuned : upgradable;
                 result.Add(new RewardOption { kind = RewardKind.UpgradeSpell, spellToUpgrade = from[rng.Next(from.Count)] });
             }
@@ -183,14 +185,25 @@ namespace Turris
         public static string Spell(SpellDefinition s, int level, StatSheet stats, BalanceConfig b)
         {
             var sb = new StringBuilder();
-            sb.Append($"Mana {s.manaCost * Math.Max(0.4f, 1f - s.costReductionPerLevel * level):0}, rzucanie {s.castTime:0.00}s\n");
+            float cost = s.CostFactor(level);
+            string charges = s.MaxCharges(level) > 1 ? $", ładunki {s.MaxCharges(level)}" : "";
+            if (s.IsSpell) sb.Append($"Czar · mana {s.manaCost * cost:0}, rzucanie {s.castTime:0.00}s, odnowienie {s.CooldownAt(level):0.#}s{charges}\n");
+            else sb.Append($"Technika · wytrzymałość {s.staminaCost * cost:0}, odnowienie {s.CooldownAt(level):0.#}s{charges}\n");
+            float mult = s.weaponMultiplier * (1f + s.powerPerLevel * level) * 100f;
             switch (s.kind)
             {
                 case SpellKind.Projectile: sb.Append($"Pocisk: {s.attack.baseDamage:0} obrażeń magicznych"); if (s.attack.projectileCount > 1) sb.Append($" ×{s.attack.projectileCount}"); sb.Append('\n'); break;
                 case SpellKind.Nova: sb.Append($"Fala wokół postaci (promień {s.attack.radius:0.#} m): {s.attack.baseDamage:0} obrażeń, postawa {s.attack.poiseDamage:0}\n"); break;
                 case SpellKind.Heal: sb.Append($"Leczy {s.amount:0} przez {s.duration:0.#}s (skaluje z Inteligencją)\n"); break;
                 case SpellKind.WeaponBuff: sb.Append($"Broń zadaje +{s.amount:0} obrażeń magicznych przez {s.duration:0}s\n"); break;
+                case SpellKind.Barrier: sb.Append($"Osłona pochłania {s.amount:0} obrażeń przez {s.duration:0}s (skaluje z Inteligencją)\n"); break;
+                case SpellKind.Cleave: sb.Append($"Łuk {s.arcAngle:0}° przed sobą, zasięg {s.attack.reach:0.#} m: {mult:0}% lekkiego ataku broni\n"); break;
+                case SpellKind.ShieldBash: sb.Append($"Uderzenie tarczą: {mult:0}% lekkiego ataku, postawa {s.attack.poiseDamage:0}\n"); break;
+                case SpellKind.Charge: sb.Append($"Szarża na {s.attack.reach:0.#} m: {mult:0}% lekkiego ataku każdemu na drodze\n"); break;
+                case SpellKind.Whirlwind: sb.Append($"Młynek przez {s.duration:0.#}s (promień {s.attack.radius:0.#} m): {mult:0}% lekkiego ataku co {s.tickInterval:0.##}s\n"); break;
+                case SpellKind.Quake: sb.Append($"Uderzenie w ziemię (promień {s.attack.radius:0.#} m): {mult:0}% lekkiego ataku, postawa {s.attack.poiseDamage:0}\n"); break;
             }
+            if (s.requiredTags != BuildTag.None) sb.Append(char.ToUpper(Names.Requirement(s.requiredTags)[0]) + Names.Requirement(s.requiredTags).Substring(1)).Append('\n');
             if (s.requirements.Count > 0)
             {
                 sb.Append("Wymaga: " + string.Join(", ", s.requirements.Select(r => $"{Names.Attribute(r.attribute)} {r.value}")));
@@ -220,11 +233,14 @@ namespace Turris
             {
                 case RewardKind.Item: return Item(o.item, stats, b);
                 case RewardKind.Boon: return Boon(o.boon, run.BoonStacks(o.boon));
-                case RewardKind.LearnSpell: return Spell(o.spell, 0, stats, b);
+                case RewardKind.LearnSpell:
+                    return Spell(o.spell, 0, stats, b) + "\n<color=#e8c070>Trafia do kolekcji na to podejście (pierwszy wolny slot). Na stałe – odblokowanie za popiół.</color>";
                 default:
                 {
                     var s = o.spellToUpgrade;
-                    return $"Moc +{s.definition.powerPerLevel * 100:0}%, koszt many −{s.definition.costReductionPerLevel * 100:0}%\n" + Spell(s.definition, s.level + 1, stats, b);
+                    var d = s.definition;
+                    string extra = d.extraChargeAtLevel > 0 && s.level + 1 == d.extraChargeAtLevel ? ", <b>+1 ładunek</b>" : "";
+                    return $"Moc +{d.powerPerLevel * 100:0}%, koszt −{d.costReductionPerLevel * 100:0}%, odnowienie −{d.cooldownReductionPerLevel * 100:0}%{extra}\n" + Spell(d, s.level + 1, stats, b);
                 }
             }
         }

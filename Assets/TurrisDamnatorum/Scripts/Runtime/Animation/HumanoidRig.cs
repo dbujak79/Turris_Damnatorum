@@ -71,6 +71,12 @@ namespace Turris
 
         void P(Transform t, Mesh m, Surface s, Color c, Vector3 pos, Vector3 scale, Vector3 euler = default)
         {
+            if (Look != null && Look.stone)
+            {
+                float lum = c.r * 0.3f + c.g * 0.59f + c.b * 0.11f;
+                c = Look.stoneColor * Mathf.Lerp(0.75f, 1.2f, Mathf.Clamp01(lum * 1.5f));
+                s = Surface.Stone;
+            }
             PartBuilder.Add(t, m, s, c, pos, scale, euler);
             PartCount++;
         }
@@ -122,6 +128,8 @@ namespace Turris
             BuildLeg(look, true);
             BuildLeg(look, false);
             if (look.cape) BuildCape(look);
+            DetailPass(look);
+            DetailPass2(look);
 
             var flaskNode = Node("Flask", this[Bone.HandL], new Vector3(0, -0.1f, 0.04f));
             P(flaskNode, Sph, Surface.Glow, new Color(0.95f, 0.5f, 0.12f), new Vector3(0, -0.02f, 0), new Vector3(0.065f, 0.08f, 0.065f));
@@ -374,6 +382,384 @@ namespace Turris
             }
         }
 
+        // ------------------------------------------------------------------ Druga warstwa detali
+
+        void DetailPass(RigLook look)
+        {
+            float w = look.bulk;
+            var hips = this[Bone.Hips];
+            var spine = this[Bone.Spine];
+            var chest = this[Bone.Chest];
+            Color A = look.armor, Ch = look.armor * 0.85f, Cl = look.cloth, Tr = look.trim, Le = look.leather, Sk = look.skin;
+
+            switch (look.body)
+            {
+                case BodyGear.Chain:
+                    // Rzędy kółek kolczugi
+                    for (int k = 0; k < 4; k++) P(chest, Tor(0.12f), Surface.Chain, Ch * 0.8f, new Vector3(0, 0.0f + k * 0.075f, 0), new Vector3(0.36f * w + k * 0.02f, 0.2f, 0.23f));
+                    for (int k = 0; k < 2; k++) P(spine, Tor(0.12f), Surface.Chain, Ch * 0.8f, new Vector3(0, 0.05f + k * 0.08f, 0), new Vector3(0.32f * w, 0.2f, 0.21f));
+                    for (int k = 0; k < 3; k++) P(hips, Tor(0.1f), Surface.Chain, Ch * 0.8f, new Vector3(0, -0.06f - k * 0.08f, 0), new Vector3(0.31f * w + k * 0.035f, 0.2f, 0.225f + k * 0.02f));
+                    // Frędzle tabardu
+                    for (int side = -1; side <= 1; side += 2)
+                        for (int i = 0; i < 8; i++)
+                            P(hips, Cone, Surface.Gold, Tr, new Vector3((-0.105f + i * 0.03f) * w, -0.49f, side * 0.166f), new Vector3(0.018f, 0.04f, 0.01f), new Vector3(side * -6f + 180f, 0, 0));
+                    // Klamry pendentu
+                    for (int i = 0; i < 2; i++) P(chest, Box, Surface.Gold, Tr, new Vector3(-0.07f + i * 0.14f, 0.02f + i * 0.17f, 0.141f), new Vector3(0.025f, 0.025f, 0.008f), new Vector3(0, 0, 38f));
+                    break;
+                case BodyGear.Plate:
+                {
+                    Surface ms = look.style == RigStyle.Castellan ? Surface.DarkMetal : Surface.Metal;
+                    // Grawerunki na napierśniku
+                    for (int s = -1; s <= 1; s += 2)
+                    {
+                        P(chest, Box, Surface.Gold, Tr, new Vector3(s * 0.08f, 0.14f, 0.152f), new Vector3(0.008f, 0.22f, 0.006f), new Vector3(0, s * 10f, s * -8f));
+                        P(chest, Box, Surface.Gold, Tr, new Vector3(s * 0.11f, 0.26f, 0.13f), new Vector3(0.08f, 0.008f, 0.006f), new Vector3(0, s * 20f, 0));
+                        P(chest, Box, Surface.Leather, Le, new Vector3(s * 0.2f * w, 0.1f, 0f), new Vector3(0.012f, 0.24f, 0.04f));
+                        for (int k = 0; k < 2; k++)
+                        {
+                            P(chest, Box, Surface.Leather, Le * 0.8f, new Vector3(s * 0.205f * w, 0.02f + k * 0.14f, 0f), new Vector3(0.02f, 0.025f, 0.12f));
+                            P(chest, Box, Surface.Gold, Tr, new Vector3(s * 0.212f * w, 0.02f + k * 0.14f, 0.05f), new Vector3(0.01f, 0.03f, 0.02f));
+                        }
+                    }
+                    for (int k = 0; k < 2; k++) P(chest, Tube(0.85f), ms, A * 0.95f, new Vector3(0, 0.32f - k * 0.035f, 0), new Vector3(0.25f + k * 0.03f, 0.03f, 0.22f + k * 0.02f));
+                    P(chest, Box, ms, A * 1.1f, new Vector3(0, 0.12f, -0.14f), new Vector3(0.02f, 0.3f, 0.02f));
+                    for (int k = 0; k < 2; k++) P(hips, Tube(1.08f), ms, A * 0.92f, new Vector3(0, -0.145f - k * 0.045f, 0), new Vector3(0.4f * w + k * 0.02f, 0.04f, 0.29f + k * 0.012f));
+                    if (look.style == RigStyle.Warden)
+                    {
+                        // Futrzany kołnierz i ciemny tabard
+                        Color fur = new Color(0.3f, 0.24f, 0.18f);
+                        P(chest, Bell(0.45f, 0.03f), Surface.Hair, fur, new Vector3(0, 0.3f, 0), new Vector3(0.56f * w, 0.14f, 0.4f));
+                        for (int i = 0; i < 18; i++)
+                        {
+                            float a = i / 18f * 360f;
+                            float rad = a * Mathf.Deg2Rad;
+                            P(chest, Cone, Surface.Hair, fur * (i % 2 == 0 ? 1f : 0.8f), new Vector3(Mathf.Sin(rad) * 0.27f * w, 0.24f, Mathf.Cos(rad) * 0.19f), new Vector3(0.06f, 0.09f, 0.04f), new Vector3(180f - 20f, a, 0));
+                        }
+                        P(chest, Fr(1.05f, 1f), Surface.Cloth, Cl, new Vector3(0, 0.02f, 0.17f), new Vector3(0.22f * w, 0.26f, 0.01f));
+                        P(hips, Fr(1.05f, 1f), Surface.Cloth, Cl, new Vector3(0, -0.3f, 0.16f), new Vector3(0.22f * w, 0.42f, 0.012f), new Vector3(-6f, 0, 0));
+                        P(chest, Box, Surface.Gold, Tr, new Vector3(0, 0.04f, 0.178f), new Vector3(0.1f, 0.1f, 0.006f), new Vector3(0, 0, 45f));
+                    }
+                    if (look.style == RigStyle.Castellan)
+                    {
+                        // Łańcuch z czaszkami przy pasie i pęknięcia żarzące się pod pancerzem
+                        Color iron = new Color(0.25f, 0.2f, 0.2f), bone = new Color(0.75f, 0.7f, 0.58f);
+                        for (int i = 0; i < 14; i++)
+                        {
+                            float a = (i / 13f - 0.5f) * 200f * Mathf.Deg2Rad;
+                            P(spine, Tor(0.25f), Surface.DarkMetal, iron, new Vector3(Mathf.Sin(a) * 0.2f * w, -0.07f - Mathf.Cos(a) * 0.03f, Mathf.Cos(a) * 0.14f), new Vector3(0.035f, 0.3f, 0.05f), new Vector3(90f, a * Mathf.Rad2Deg + (i % 2) * 90f, 0));
+                        }
+                        for (int k = 0; k < 3; k++)
+                        {
+                            Vector3 sp = new Vector3((-0.12f + k * 0.12f) * w, -0.14f, 0.15f);
+                            P(spine, Sph, Surface.Bone, bone, sp, new Vector3(0.07f, 0.065f, 0.075f));
+                            P(spine, Fr(0.8f, 0.8f), Surface.Bone, bone * 0.95f, sp + new Vector3(0, -0.03f, 0.012f), new Vector3(0.045f, 0.025f, 0.045f));
+                            for (int e = -1; e <= 1; e += 2) P(spine, Sph, Surface.Dark, new Color(0.05f, 0.03f, 0.02f), sp + new Vector3(e * 0.017f, 0.005f, 0.033f), Vector3.one * 0.018f);
+                        }
+                        for (int i = 0; i < 6; i++)
+                            P(chest, Box, Surface.Glow, new Color(1f, 0.35f, 0.1f), new Vector3((-0.12f + i * 0.05f) * w, 0.05f + (i % 3) * 0.07f, 0.16f), new Vector3(0.006f, 0.08f, 0.004f), new Vector3(0, 0, (i - 2.5f) * 20f));
+                        for (int s = -1; s <= 1; s += 2)
+                            P(chest, Cone, Surface.DarkMetal, A * 1.3f, new Vector3(s * 0.14f * w, 0.24f, -0.14f), new Vector3(0.04f, 0.12f, 0.04f), new Vector3(-60f, 0, s * -20f));
+                    }
+                    break;
+                }
+                case BodyGear.Robe:
+                {
+                    // Dodatkowe fałdy, haft na plecach, frędzle przy szarfie, futrzana obszywka kaptura
+                    for (int i = 0; i < 10; i++)
+                    {
+                        float a = i / 10f * 360f;
+                        float rad = a * Mathf.Deg2Rad;
+                        P(hips, Box, Surface.Cloth, Cl * 0.82f, new Vector3(Mathf.Sin(rad) * 0.21f * w, -0.62f, Mathf.Cos(rad) * 0.172f), new Vector3(0.014f, 0.46f, 0.014f), new Vector3(-7f, a, 0));
+                    }
+                    for (int i = 0; i < 6; i++)
+                    {
+                        float a = i / 6f * Mathf.PI * 2f;
+                        P(chest, Box, look.style == RigStyle.Heretic ? Surface.Glow : Surface.Gold, look.style == RigStyle.Heretic ? new Color(0.6f, 0.25f, 0.9f) : Tr, new Vector3(Mathf.Cos(a) * 0.06f, 0.14f + Mathf.Sin(a) * 0.06f, -0.12f), new Vector3(0.05f, 0.01f, 0.006f), new Vector3(0, 0, a * Mathf.Rad2Deg));
+                    }
+                    P(chest, Tor(0.08f), Surface.Gold, Tr, new Vector3(0, 0.14f, -0.118f), new Vector3(0.16f, 0.1f, 0.16f), new Vector3(90f, 0, 0));
+                    for (int i = 0; i < 4; i++)
+                        P(spine, Cone, Surface.Gold, Tr, new Vector3(0.06f + i * 0.02f, -0.29f + (i % 2) * 0.02f, 0.13f), new Vector3(0.018f, 0.05f, 0.018f), new Vector3(180f, 0, 0));
+                    P(spine, Box, Surface.Gold, Tr, new Vector3(0.19f * w, -0.03f, 0.03f), new Vector3(0.006f, 0.02f, 0.12f));
+                    P(spine, Box, Surface.Gold, Tr, new Vector3(0.19f * w, -0.11f, 0.03f), new Vector3(0.006f, 0.02f, 0.12f));
+                    for (int k = 0; k < 2; k++)
+                        P(hips, Tor(0.06f), Surface.Gold, Tr, new Vector3(0, -0.8f + k * 0.05f, 0), new Vector3((0.44f - k * 0.015f) * w, 0.3f, 0.365f - k * 0.012f));
+                    break;
+                }
+                case BodyGear.Rags:
+                {
+                    Color vein = new Color(0.2f, 0.25f, 0.18f);
+                    for (int s = -1; s <= 1; s += 2)
+                    {
+                        P(chest, Box, Surface.Bone, Sk * 1.1f, new Vector3(s * 0.07f * w, 0.29f, 0.093f), new Vector3(0.1f, 0.018f, 0.025f), new Vector3(0, s * 12f, s * 14f));
+                        P(chest, Box, Surface.Bone, Sk * 1.1f, new Vector3(s * 0.065f * w, -0.03f, 0.09f), new Vector3(0.09f, 0.018f, 0.025f), new Vector3(0, s * 12f, s * 20f));
+                        for (int k = 0; k < 3; k++)
+                            P(chest, Tube(0.6f), Surface.Skin, vein, new Vector3(s * (0.04f + k * 0.02f), 0.05f + k * 0.03f, 0.1f), new Vector3(0.006f, 0.12f, 0.006f), new Vector3(0, 0, s * (20f + k * 15f)));
+                    }
+                    for (int k = 0; k < 3; k++) P(spine, Sph, Surface.Bone, Sk * 1.1f, new Vector3(0, 0.0f + k * 0.07f, -0.08f), new Vector3(0.03f, 0.028f, 0.028f));
+                    for (int i = 0; i < 6; i++)
+                        P(hips, Box, Surface.Cloth, Cl * 0.7f, new Vector3(-0.09f + i * 0.036f, -0.32f - (i % 3) * 0.02f, -0.11f), new Vector3(0.022f, 0.09f, 0.008f), new Vector3(5f, 0, (i - 2.5f) * 7f));
+                    P(hips, Box, Surface.Skin, new Color(0.35f, 0.08f, 0.06f), new Vector3(-0.08f, 0.05f, 0.09f), new Vector3(0.04f, 0.02f, 0.01f), new Vector3(0, 0, -30f));
+                    break;
+                }
+            }
+
+            // Ręce i nogi – elementy wspólne
+            for (int side = 0; side < 2; side++)
+            {
+                bool left = side == 0;
+                float sg = left ? -1f : 1f;
+                var ua = this[left ? Bone.UpperArmL : Bone.UpperArmR];
+                var fa = this[left ? Bone.ForearmL : Bone.ForearmR];
+                var sh = this[left ? Bone.ShinL : Bone.ShinR];
+                var ft = this[left ? Bone.FootL : Bone.FootR];
+                switch (look.body)
+                {
+                    case BodyGear.Plate:
+                    {
+                        Surface ms = look.style == RigStyle.Castellan ? Surface.DarkMetal : Surface.Metal;
+                        for (int k = 0; k < 2; k++) P(ua, Tube(0.95f), ms, A * 0.9f, new Vector3(0, -0.2f - k * 0.04f, 0), new Vector3(0.135f, 0.03f, 0.135f));
+                        P(fa, Sph, Surface.Gold, Tr, new Vector3(sg * 0.055f, 0f, -0.02f), Vector3.one * 0.022f);
+                        for (int k = 0; k < 3; k++) P(sh, Sph, Surface.Gold, Tr, new Vector3(sg * 0.07f, -0.1f - k * 0.1f, 0f), Vector3.one * 0.014f);
+                        P(sh, Sph, Surface.Gold, Tr, new Vector3(0, 0.01f, 0.1f), Vector3.one * 0.022f);
+                        for (int k = 0; k < 2; k++) P(ft, Fr(0.9f, 0.9f), ms, A * 0.95f, new Vector3(0, -0.018f, 0.2f + k * 0.035f), new Vector3(0.1f - k * 0.01f, 0.05f, 0.04f));
+                        P(ft, Tor(0.2f), Surface.Gold, Tr, new Vector3(0, 0.0f, -0.08f), new Vector3(0.04f, 0.2f, 0.04f), new Vector3(90f, 0, 0));
+                        break;
+                    }
+                    case BodyGear.Chain:
+                    case BodyGear.Tunic:
+                        // Sznurowanie butów, sprzączka, ostroga
+                        for (int k = 0; k < 4; k++)
+                            for (int d = -1; d <= 1; d += 2)
+                                P(sh, Box, Surface.Leather, Le * 0.5f, new Vector3(0, -0.22f - k * 0.045f, 0.07f), new Vector3(0.045f, 0.006f, 0.006f), new Vector3(0, 0, d * 30f));
+                        P(ft, Box, Surface.Gold, Tr, new Vector3(sg * 0.056f, -0.02f, 0.02f), new Vector3(0.008f, 0.03f, 0.04f));
+                        if (look.body == BodyGear.Chain)
+                        {
+                            P(ft, Box, Surface.Metal, Tr, new Vector3(0, -0.02f, -0.1f), new Vector3(0.012f, 0.012f, 0.06f));
+                            P(ft, Tor(0.3f), Surface.Metal, Tr, new Vector3(0, -0.02f, -0.135f), new Vector3(0.035f, 0.3f, 0.035f), new Vector3(0, 0, 90f));
+                            P(ua, Tor(0.2f), Surface.Chain, Ch * 0.8f, new Vector3(0, -0.2f, 0), new Vector3(0.13f, 0.2f, 0.13f));
+                        }
+                        break;
+                    case BodyGear.Robe:
+                        for (int k = 0; k < 2; k++) P(fa, Tor(0.1f), Surface.Gold, Tr, new Vector3(0, -0.2f - k * 0.03f, 0), new Vector3(0.18f + k * 0.01f, 0.25f, 0.18f + k * 0.01f));
+                        P(ua, Box, Surface.Gold, Tr, new Vector3(sg * 0.07f, -0.13f, 0), new Vector3(0.005f, 0.2f, 0.02f));
+                        break;
+                    case BodyGear.Rags:
+                        for (int k = 0; k < 2; k++)
+                            P(fa, Tube(0.6f), Surface.Skin, new Color(0.2f, 0.25f, 0.18f), new Vector3(sg * 0.02f, -0.1f - k * 0.08f, 0.04f), new Vector3(0.006f, 0.1f, 0.006f), new Vector3(0, 0, sg * 12f));
+                        P(ua, Sph, Surface.Bone, Sk * 1.1f, new Vector3(sg * 0.05f, -0.02f, 0), Vector3.one * 0.045f);
+                        break;
+                }
+            }
+
+            // Peleryna: fałdy i frędzle
+            if (CapePivot != null)
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    P(CapePivot, Box, Surface.Cloth, Cl * 0.6f, new Vector3((-0.16f + i * 0.08f) * w, -0.22f, -0.014f), new Vector3(0.012f, 0.42f, 0.012f));
+                    P(CapeLower, Box, Surface.Cloth, Cl * 0.6f, new Vector3((-0.18f + i * 0.09f) * w, -0.2f, -0.014f), new Vector3(0.012f, 0.38f, 0.012f));
+                }
+                for (int i = 0; i < 9; i++)
+                    P(CapeLower, Cone, look.style == RigStyle.Castellan ? Surface.Cloth : Surface.Gold, look.style == RigStyle.Castellan ? Cl * 0.6f : Tr, new Vector3((-0.22f + i * 0.055f) * w, -0.425f, 0), new Vector3(0.02f, 0.045f, 0.012f), new Vector3(180f, 0, 0));
+            }
+
+            // Kaptur: futrzana obszywka (mag) / postrzępiony brzeg (heretyk)
+            if (look.head == HeadGear.Hood)
+            {
+                var head = this[Bone.Head];
+                for (int i = 0; i < 16; i++)
+                {
+                    float a = i / 16f * Mathf.PI * 2f;
+                    Vector3 pos = new Vector3(Mathf.Cos(a) * 0.138f, 0.115f + Mathf.Sin(a) * 0.152f, 0.078f);
+                    if (look.style == RigStyle.Mage) P(head, Sph, Surface.Hair, new Color(0.8f, 0.78f, 0.72f), pos, new Vector3(0.035f, 0.035f, 0.03f));
+                    else P(head, Cone, Surface.Cloth, Cl * 0.7f, pos, new Vector3(0.025f, 0.04f, 0.01f), new Vector3(0, 0, a * Mathf.Rad2Deg - 90f));
+                }
+            }
+        }
+
+        void DetailPass2(RigLook look)
+        {
+            float w = look.bulk;
+            var hips = this[Bone.Hips];
+            var spine = this[Bone.Spine];
+            var chest = this[Bone.Chest];
+            var head = this[Bone.Head];
+            Color A = look.armor, Ch = look.armor * 0.85f, Cl = look.cloth, Tr = look.trim, Le = look.leather, Sk = look.skin;
+            Color dark = new Color(0.05f, 0.045f, 0.05f);
+
+            for (int side = 0; side < 2; side++)
+            {
+                bool left = side == 0;
+                float sg = left ? -1f : 1f;
+                var ua = this[left ? Bone.UpperArmL : Bone.UpperArmR];
+                var fa = this[left ? Bone.ForearmL : Bone.ForearmR];
+                var th = this[left ? Bone.ThighL : Bone.ThighR];
+                var sh = this[left ? Bone.ShinL : Bone.ShinR];
+                var ft = this[left ? Bone.FootL : Bone.FootR];
+                switch (look.body)
+                {
+                    case BodyGear.Chain:
+                        // Pikowana przeszywanica pod kolczugą i rzędy kółek na rękawach
+                        for (int k = 0; k < 4; k++) P(ua, Tor(0.18f), Surface.Cloth, Cl * 0.5f, new Vector3(0, -0.03f - k * 0.06f, 0), new Vector3(0.128f, 0.2f, 0.128f));
+                        for (int k = 0; k < 3; k++) P(fa, Tor(0.12f), Surface.Chain, Ch * 0.8f, new Vector3(0, -0.02f - k * 0.04f, 0), new Vector3(0.112f, 0.2f, 0.112f));
+                        for (int k = 0; k < 3; k++) P(th, Tor(0.12f), Surface.Chain, Ch * 0.8f, new Vector3(0, -0.12f - k * 0.1f, 0), new Vector3(0.158f, 0.2f, 0.158f));
+                        for (int k = 0; k < 2; k++) P(ft, Box, Surface.Leather, Le * 0.55f, new Vector3(0, -0.005f, 0.09f + k * 0.04f), new Vector3(0.1f, 0.006f, 0.006f));
+                        break;
+                    case BodyGear.Tunic:
+                        for (int k = 0; k < 3; k++) P(ua, Tor(0.18f), Surface.Cloth, Cl * 0.6f, new Vector3(0, -0.04f - k * 0.06f, 0), new Vector3(0.14f, 0.2f, 0.14f));
+                        break;
+                    case BodyGear.Plate:
+                    {
+                        Surface ms = look.style == RigStyle.Castellan ? Surface.DarkMetal : Surface.Metal;
+                        for (int k = 0; k < 6; k++)
+                        {
+                            float a = k / 6f * Mathf.PI * 2f;
+                            P(ua, Sph, Surface.Gold, Tr, new Vector3(sg * 0.02f + Mathf.Cos(a) * 0.1f, 0.03f, Mathf.Sin(a) * 0.1f), Vector3.one * 0.014f);
+                        }
+                        for (int k = 0; k < 3; k++) P(th, Sph, Surface.Gold, Tr, new Vector3(sg * 0.08f, -0.1f - k * 0.09f, 0.02f), Vector3.one * 0.014f);
+                        P(sh, Tor(0.15f), Surface.Chain, Ch, new Vector3(0, 0.03f, 0), new Vector3(0.14f, 0.2f, 0.14f));
+                        if (look.style == RigStyle.Castellan)
+                        {
+                            for (int k = 0; k < 2; k++) P(fa, Cone, Surface.DarkMetal, A * 1.3f, new Vector3(sg * 0.06f, -0.1f - k * 0.08f, -0.02f), new Vector3(0.025f, 0.08f, 0.025f), new Vector3(0, 0, sg * -80f));
+                            P(sh, Cone, Surface.DarkMetal, A * 1.3f, new Vector3(0, 0.02f, 0.09f), new Vector3(0.035f, 0.1f, 0.035f), new Vector3(80f, 0, 0));
+                            for (int k = 0; k < 3; k++) P(sh, Box, Surface.Glow, new Color(1f, 0.35f, 0.1f), new Vector3(0, -0.12f - k * 0.07f, 0.075f), new Vector3(0.03f, 0.03f, 0.004f), new Vector3(0, 0, 45f));
+                            for (int k = 0; k < 2; k++) P(this[left ? Bone.HandL : Bone.HandR], Cone, Surface.DarkMetal, A * 1.3f, new Vector3(sg * 0.025f, -0.05f - k * 0.03f, 0.03f - k * 0.03f), new Vector3(0.015f, 0.04f, 0.015f), new Vector3(0, 0, sg * -90f));
+                        }
+                        break;
+                    }
+                    case BodyGear.Robe:
+                        for (int k = 0; k < 6; k++)
+                        {
+                            float a = k / 6f * 360f;
+                            float rad = a * Mathf.Deg2Rad;
+                            P(fa, Box, Surface.Cloth, Cl * 0.8f, new Vector3(Mathf.Sin(rad) * 0.075f, -0.15f, Mathf.Cos(rad) * 0.075f), new Vector3(0.01f, 0.2f, 0.01f), new Vector3(-8f, a, 0));
+                        }
+                        P(ua, Tor(0.1f), Surface.Gold, Tr, new Vector3(0, -0.2f, 0), new Vector3(0.145f, 0.25f, 0.145f));
+                        break;
+                    case BodyGear.Rags:
+                        for (int k = 0; k < 2; k++)
+                            P(th, Tube(0.6f), Surface.Skin, new Color(0.25f, 0.3f, 0.2f), new Vector3((k == 0 ? -1 : 1) * 0.04f, -0.2f, 0.05f), new Vector3(0.008f, 0.3f, 0.008f));
+                        for (int k = 0; k < 2; k++)
+                            P(sh, Tube(0.6f), Surface.Skin, new Color(0.25f, 0.3f, 0.2f), new Vector3((k == 0 ? -1 : 1) * 0.03f, -0.2f, -0.04f), new Vector3(0.008f, 0.3f, 0.008f));
+                        for (int k = 0; k < 2; k++)
+                            P(ft, Box, Surface.Skin, Sk * 0.95f, new Vector3((k == 0 ? -1 : 1) * 0.042f, -0.045f, 0.15f), new Vector3(0.018f, 0.022f, 0.04f));
+                        P(ua, Box, Surface.Skin, new Color(0.3f, 0.08f, 0.06f), new Vector3(sg * 0.055f, -0.12f, 0), new Vector3(0.01f, 0.08f, 0.02f), new Vector3(0, 0, sg * 10f));
+                        P(th, Box, Surface.Cloth, Cl * 0.7f, new Vector3(sg * 0.06f, -0.05f, 0), new Vector3(0.012f, 0.12f, 0.06f));
+                        break;
+                }
+            }
+
+            switch (look.body)
+            {
+                case BodyGear.Chain:
+                    // Szwy wzdłuż lamówki tabardu, kółka na czepcu, sprzączka pasa
+                    for (int i = 0; i < 12; i++)
+                        P(chest, Sph, Surface.Gold, Tr * 0.8f, new Vector3((i % 2 == 0 ? -1 : 1) * 0.125f * w, -0.08f + (i / 2) * 0.06f, 0.131f), Vector3.one * 0.01f);
+                    P(spine, Box, Surface.Leather, Le * 0.6f, new Vector3(0.05f, -0.035f, 0.125f), new Vector3(0.05f, 0.014f, 0.008f));
+                    for (int k = 0; k < 3; k++) P(head, Tor(0.12f), Surface.Chain, Ch * 0.8f, new Vector3(0, 0.02f + k * 0.07f, -0.035f), new Vector3(0.245f - Mathf.Abs(k - 1) * 0.02f, 0.2f, 0.255f), new Vector3(8f, 0, 0));
+                    break;
+                case BodyGear.Plate:
+                    if (look.style == RigStyle.Warden)
+                    {
+                        for (int k = 0; k < 12; k++)
+                        {
+                            float a = k / 12f * Mathf.PI * 2f;
+                            P(hips, Sph, Surface.Metal, A * 1.2f, new Vector3(Mathf.Sin(a) * 0.19f * w, 0.02f, Mathf.Cos(a) * 0.132f), Vector3.one * 0.016f);
+                        }
+                        for (int k = 0; k < 4; k++) P(head, Box, Surface.DarkMetal, A * 0.5f, new Vector3(-0.045f + k * 0.03f, 0.1f, 0.146f), new Vector3(0.008f, 0.08f, 0.008f));
+                        for (int s2 = -1; s2 <= 1; s2 += 2) P(chest, Box, Surface.Gold, Tr, new Vector3(s2 * 0.11f * w, 0.02f, 0.176f), new Vector3(0.008f, 0.26f, 0.006f));
+                        // Nity na naramiennikach i napierśniku, łańcuch na piersi, klamry pasów
+                        for (int k = 0; k < 8; k++)
+                            P(chest, Sph, Surface.Metal, A * 1.2f, new Vector3((-0.14f + k * 0.04f) * w, 0.27f, 0.12f), Vector3.one * 0.014f);
+                        for (int k = 0; k < 8; k++)
+                            P(chest, Tor(0.25f), Surface.DarkMetal, A * 0.5f, new Vector3((-0.14f + k * 0.04f) * w, 0.2f - Mathf.Sin(k / 7f * Mathf.PI) * 0.06f, 0.16f), new Vector3(0.03f, 0.3f, 0.045f), new Vector3(90f, k % 2 == 0 ? 0f : 90f, 0));
+                        for (int k = 0; k < 4; k++)
+                            P(spine, Box, Surface.Gold, Tr, new Vector3((-0.12f + k * 0.08f) * w, -0.01f, 0.126f), new Vector3(0.02f, 0.03f, 0.008f));
+                    }
+                    if (look.style == RigStyle.Castellan)
+                    {
+                        // Czaszka na napierśniku, tatry peleryny, obręcze na rogach
+                        P(chest, Sph, Surface.Bone, new Color(0.75f, 0.7f, 0.58f), new Vector3(0, 0.16f, 0.17f), new Vector3(0.08f, 0.08f, 0.04f));
+                        for (int e = -1; e <= 1; e += 2) P(chest, Sph, Surface.Glow, new Color(1f, 0.3f, 0.1f), new Vector3(e * 0.018f, 0.165f, 0.188f), Vector3.one * 0.016f);
+                        P(chest, Fr(0.8f, 0.8f), Surface.Bone, new Color(0.7f, 0.65f, 0.55f), new Vector3(0, 0.12f, 0.175f), new Vector3(0.05f, 0.03f, 0.02f));
+                        for (int e = -1; e <= 1; e += 2)
+                            for (int k = 0; k < 2; k++)
+                                P(head, Tor(0.25f), Surface.Gold, Tr, new Vector3(e * (0.16f + k * 0.045f), 0.24f + k * 0.07f, 0), new Vector3(0.065f, 0.3f, 0.065f), new Vector3(0, 0, e * -35f));
+                        if (CapeLower != null)
+                            for (int i = 0; i < 6; i++)
+                                P(CapeLower, Box, Surface.Cloth, Cl * 0.5f, new Vector3((-0.2f + i * 0.08f) * w, -0.3f + (i % 2) * 0.05f, -0.015f), new Vector3(0.03f, 0.05f, 0.01f), new Vector3(0, 0, 30f * (i % 2 == 0 ? 1 : -1)));
+                    }
+                    break;
+                case BodyGear.Robe:
+                {
+                    // Fałdy pelerynki, wzór na szarfie, dodatkowy haft na spódnicy, szwy kaptura, koraliki
+                    for (int i = 0; i < 12; i++)
+                    {
+                        float a = (i / 11f - 0.5f) * 300f;
+                        float rad = a * Mathf.Deg2Rad;
+                        P(chest, Box, Surface.Cloth, Cl * 0.55f, new Vector3(Mathf.Sin(rad) * 0.2f * w, 0.26f, Mathf.Cos(rad) * 0.13f), new Vector3(0.01f, 0.12f, 0.01f), new Vector3(-30f, a, 0));
+                    }
+                    for (int i = 0; i < 8; i++)
+                    {
+                        float a = i / 8f * Mathf.PI * 2f;
+                        P(spine, Box, Surface.Gold, Tr, new Vector3(Mathf.Sin(a) * 0.172f * w, 0f, Mathf.Cos(a) * 0.126f), new Vector3(0.02f, 0.02f, 0.005f), new Vector3(0, a * Mathf.Rad2Deg, 45f));
+                    }
+                    for (int i = 0; i < 20; i++)
+                    {
+                        float a = i / 20f * 360f + 9f;
+                        float rad = a * Mathf.Deg2Rad;
+                        P(hips, Box, look.style == RigStyle.Heretic ? Surface.Glow : Surface.Gold, look.style == RigStyle.Heretic ? new Color(0.5f, 0.2f, 0.7f) : Tr * 0.8f, new Vector3(Mathf.Sin(rad) * 0.2f * w, -0.62f, Mathf.Cos(rad) * 0.168f), new Vector3(0.018f, 0.018f, 0.004f), new Vector3(-7f, a, 45f));
+                    }
+                    for (int k = 0; k < 4; k++)
+                        P(head, Box, Surface.Cloth, Cl * 0.6f, new Vector3(0, 0.12f + k * 0.012f, -0.02f - k * 0.045f), new Vector3(0.008f, 0.01f, 0.05f), new Vector3(-20f - k * 15f, 0, 0));
+                    for (int i = 0; i < 8; i++)
+                    {
+                        float a = (i / 7f - 0.5f) * 120f * Mathf.Deg2Rad;
+                        P(chest, Sph, Surface.Bone, i % 2 == 0 ? new Color(0.2f, 0.4f, 0.3f) : new Color(0.55f, 0.45f, 0.3f), new Vector3(Mathf.Sin(a) * 0.075f, 0.2f - Mathf.Cos(a) * 0.035f, 0.115f), Vector3.one * 0.016f);
+                    }
+                    P(chest, Box, Surface.Leather, Le * 0.8f, new Vector3(-0.06f, 0.05f, 0.125f), new Vector3(0.022f, 0.35f, 0.008f), new Vector3(0, 0, -30f));
+                    if (look.style == RigStyle.Heretic)
+                    {
+                        Color bone = new Color(0.75f, 0.7f, 0.58f);
+                        for (int k = 0; k < 2; k++)
+                        {
+                            Vector3 sp = new Vector3(-0.13f + k * 0.26f, -0.08f, 0.13f);
+                            P(spine, Sph, Surface.Bone, bone, sp, new Vector3(0.055f, 0.05f, 0.06f));
+                            P(spine, Fr(0.8f, 0.8f), Surface.Bone, bone * 0.9f, sp + new Vector3(0, -0.025f, 0.01f), new Vector3(0.035f, 0.02f, 0.035f));
+                            for (int e = -1; e <= 1; e += 2) P(spine, Sph, Surface.Glow, new Color(0.7f, 0.3f, 1f), sp + new Vector3(e * 0.013f, 0.004f, 0.026f), Vector3.one * 0.012f);
+                            P(spine, Tube(1f), Surface.Leather, Le * 0.6f, sp + new Vector3(0, 0.05f, 0), new Vector3(0.006f, 0.06f, 0.006f));
+                        }
+                        for (int i = 0; i < 8; i++)
+                            P(chest, Box, Surface.Glow, new Color(0.65f, 0.25f, 0.95f), new Vector3(0.1f * Mathf.Cos(i * 0.8f), 0.05f + i * 0.025f, 0.118f), new Vector3(0.012f, 0.012f, 0.004f), new Vector3(0, 0, 45f));
+                    }
+                    break;
+                }
+                case BodyGear.Rags:
+                {
+                    Color bone = Sk * 1.12f;
+                    for (int s2 = -1; s2 <= 1; s2 += 2)
+                        for (int k = 0; k < 3; k++)
+                            P(chest, Box, Surface.Bone, bone * 0.9f, new Vector3(s2 * 0.035f, 0.03f + k * 0.065f, 0.1f), new Vector3(0.025f, 0.012f, 0.02f), new Vector3(0, 0, s2 * 30f));
+                    for (int s2 = -1; s2 <= 1; s2 += 2) P(chest, Sph, Surface.Bone, bone, new Vector3(s2 * 0.2f * w, 0.28f, 0f), new Vector3(0.05f, 0.04f, 0.05f));
+                    for (int k = 0; k < 4; k++) P(hips, Box, Surface.Leather, new Color(0.4f, 0.33f, 0.2f), new Vector3(-0.06f + k * 0.04f, -0.08f - (k % 2) * 0.03f, 0.105f), new Vector3(0.006f, 0.1f, 0.006f), new Vector3(0, 0, (k - 1.5f) * 10f));
+                    for (int i = 0; i < 6; i++) P(chest, Box, Surface.Dark, new Color(0.25f, 0.12f, 0.1f), new Vector3(-0.1f + i * 0.04f, -0.02f + (i % 3) * 0.1f, -0.098f), new Vector3(0.04f, 0.006f, 0.004f), new Vector3(0, 0, (i - 2.5f) * 25f));
+                    for (int i = 0; i < 8; i++) P(head, Box, Surface.Hair, new Color(0.22f, 0.22f, 0.2f), new Vector3(-0.08f + i * 0.023f, 0.17f - Mathf.Abs(i - 3.5f) * 0.01f, -0.05f - (i % 2) * 0.02f), new Vector3(0.006f, 0.11f, 0.006f), new Vector3(-50f + (i % 3) * 10f, 0, (i - 3.5f) * 9f));
+                    for (int k = 0; k < 4; k++) P(spine, Sph, Surface.Bone, bone, new Vector3(0, -0.03f + k * 0.055f, -0.085f), new Vector3(0.028f, 0.025f, 0.025f));
+                    for (int i = 0; i < 4; i++) P(hips, Box, Surface.Cloth, Cl * 0.6f, new Vector3(-0.08f + i * 0.05f, -0.34f, 0.1f), new Vector3(0.02f, 0.06f, 0.008f), new Vector3(-5f, 0, (i - 1.5f) * 15f));
+                    // Obojczyki, mostek, łopatki, kręgi szyi, strzępy skóry, kolce kręgosłupa
+                    for (int s2 = -1; s2 <= 1; s2 += 2)
+                    {
+                        for (int k = 0; k < 3; k++) P(chest, Box, Surface.Skin, Sk * 0.85f, new Vector3(s2 * (0.12f + k * 0.02f) * w, 0.05f + k * 0.08f, -0.095f), new Vector3(0.03f, 0.02f, 0.008f), new Vector3(0, 0, s2 * 25f));
+                        P(chest, Tube(0.6f), Surface.Skin, new Color(0.25f, 0.3f, 0.2f), new Vector3(s2 * 0.05f, 0.3f, 0.06f), new Vector3(0.01f, 0.12f, 0.01f), new Vector3(0, 0, s2 * 60f));
+                    }
+                    for (int k = 0; k < 3; k++) P(this[Bone.Neck], Sph, Surface.Bone, bone, new Vector3(0, -0.01f + k * 0.035f, -0.045f), new Vector3(0.028f, 0.022f, 0.022f));
+                    for (int k = 0; k < 5; k++) P(chest, Cone, Surface.Bone, bone, new Vector3(0, 0.0f + k * 0.07f, -0.12f), new Vector3(0.018f, 0.04f, 0.018f), new Vector3(-90f, 0, 0));
+                    for (int k = 0; k < 4; k++) P(hips, Box, Surface.Skin, Sk * 0.8f, new Vector3(-0.1f + k * 0.065f, -0.02f, -0.09f), new Vector3(0.03f, 0.04f, 0.006f), new Vector3(0, 0, (k - 1.5f) * 20f));
+                    break;
+                }
+            }
+        }
+
         // ------------------------------------------------------------------ Głowa
 
         void Face(Transform head, RigLook look, float forward, bool hair)
@@ -388,7 +774,14 @@ namespace Turris
             {
                 P(head, Sph, look.glowingEyes ? Surface.Glow : Surface.Dark, look.eyes, new Vector3(s * 0.035f, 0.105f, 0.097f + forward), new Vector3(0.028f, 0.018f, 0.012f));
                 P(head, Sph, Surface.Skin, Sk * 0.95f, new Vector3(s * 0.097f, 0.095f, forward), new Vector3(0.025f, 0.05f, 0.035f));
+                P(head, Box, Surface.Skin, Sk * 0.9f, new Vector3(s * 0.035f, 0.116f, 0.096f + forward), new Vector3(0.034f, 0.008f, 0.012f), new Vector3(0, 0, s * -6f));
+                P(head, Sph, Surface.Skin, Sk * 1.02f, new Vector3(s * 0.058f, 0.075f, 0.075f + forward), new Vector3(0.05f, 0.035f, 0.04f));
+                P(head, Sph, Surface.Dark, new Color(0.2f, 0.1f, 0.08f), new Vector3(s * 0.008f, 0.066f, 0.118f + forward), new Vector3(0.008f, 0.006f, 0.006f));
+                P(head, Sph, Surface.Skin, Sk * 0.93f, new Vector3(s * 0.098f, 0.1f, 0.012f + forward), new Vector3(0.012f, 0.028f, 0.018f));
             }
+            P(head, Box, Surface.Skin, Sk * 0.75f, new Vector3(0, 0.051f, 0.097f + forward), new Vector3(0.042f, 0.006f, 0.01f));
+            P(head, Box, Surface.Skin, Sk * 0.8f, new Vector3(0, 0.039f, 0.095f + forward), new Vector3(0.036f, 0.007f, 0.01f));
+            P(head, Sph, Surface.Skin, Sk, new Vector3(0, 0.012f, 0.085f + forward), new Vector3(0.045f, 0.035f, 0.035f));
             if (hair)
             {
                 Color h = new Color(0.22f, 0.14f, 0.09f);
@@ -431,6 +824,24 @@ namespace Turris
                     }
                     P(head, Box, Surface.Gold, Tr, new Vector3(0, 0.285f, 0.01f), new Vector3(0.02f, 0.035f, 0.23f));
                     P(head, Tube(1.15f), Surface.Chain, Ch, new Vector3(0, -0.055f, -0.02f), new Vector3(0.24f, 0.08f, 0.24f));
+                    for (int s = -1; s <= 1; s += 2)
+                    {
+                        P(head, Box, ms, A * 0.8f, new Vector3(s * 0.127f, 0.1f, 0.06f), new Vector3(0.012f, 0.05f, 0.03f));
+                        P(head, Sph, Surface.Gold, Tr, new Vector3(s * 0.13f, 0.1f, 0.06f), Vector3.one * 0.016f);
+                        P(head, Box, Surface.Gold, Tr, new Vector3(s * 0.06f, 0.16f, 0.141f), new Vector3(0.012f, 0.03f, 0.008f));
+                    }
+                    P(head, Box, Surface.Gold, Tr, new Vector3(0, 0.05f, 0.148f), new Vector3(0.05f, 0.012f, 0.008f));
+                    if (!horned && look.style != RigStyle.Warden)
+                    {
+                        // Pióropusz
+                        Color plume = look.cloth * 1.1f;
+                        P(head, Tube(0.8f), Surface.Gold, Tr, new Vector3(0, 0.3f, -0.03f), new Vector3(0.03f, 0.06f, 0.03f));
+                        for (int i = 0; i < 7; i++)
+                        {
+                            float t = i / 6f;
+                            P(head, Limb(0.5f), Surface.Cloth, i % 2 == 0 ? plume : plume * 0.8f, new Vector3(0, 0.34f + Mathf.Sin(t * 2.4f) * 0.08f, -0.03f - t * 0.2f), new Vector3(0.035f, 0.16f, 0.07f), new Vector3(-30f - t * 70f, 0, 0));
+                        }
+                    }
                     if (horned)
                     {
                         Color hc = new Color(0.8f, 0.72f, 0.55f);
@@ -531,9 +942,16 @@ namespace Turris
 
             // Dłoń: śródręcze, palce, kciuk, kostki
             P(hand, Fr(0.9f, 0.85f), handS, handC, new Vector3(0, -0.045f, 0), new Vector3(0.04f, 0.08f, 0.085f));
-            P(hand, Fr(0.9f, 0.8f), handS, handC, new Vector3(0, -0.113f, 0.004f), new Vector3(0.036f, 0.07f, 0.08f), new Vector3(12f, 0, 0));
-            P(hand, Limb(0.8f), handS, handC * 0.95f, new Vector3(-sg * 0.005f, -0.045f, 0.045f), new Vector3(0.024f, 0.055f, 0.024f), new Vector3(-35f, 0, sg * 15f));
-            P(hand, Box, handS, handC * 0.92f, new Vector3(0, -0.085f, 0), new Vector3(0.043f, 0.014f, 0.088f));
+            for (int f = 0; f < 4; f++)
+            {
+                float fz = -0.03f + f * 0.02f;
+                float len = f == 1 || f == 2 ? 1f : 0.85f;
+                P(hand, Sph, handS, handC * 0.92f, new Vector3(0, -0.086f, fz), new Vector3(0.024f, 0.02f, 0.02f));
+                P(hand, Limb(0.85f), handS, handC, new Vector3(0, -0.107f, fz + 0.002f), new Vector3(0.019f, 0.042f * len, 0.018f), new Vector3(12f, 0, 0));
+                P(hand, Limb(0.8f), handS, handC * 0.96f, new Vector3(0, -0.137f * len - 0.005f, fz + 0.012f), new Vector3(0.017f, 0.034f * len, 0.016f), new Vector3(38f, 0, 0));
+            }
+            P(hand, Limb(0.85f), handS, handC * 0.95f, new Vector3(-sg * 0.004f, -0.04f, 0.045f), new Vector3(0.022f, 0.04f, 0.022f), new Vector3(-40f, 0, sg * 15f));
+            P(hand, Limb(0.8f), handS, handC * 0.95f, new Vector3(-sg * 0.006f, -0.06f, 0.068f), new Vector3(0.019f, 0.032f, 0.019f), new Vector3(-10f, 0, sg * 10f));
 
             switch (look.body)
             {

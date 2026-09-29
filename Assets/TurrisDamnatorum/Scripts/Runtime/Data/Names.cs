@@ -34,6 +34,19 @@ namespace Turris
 
         public static string Attribute(AttributeType a) => Stat((StatType)(int)a);
 
+        /// <summary>Opis wymaganego wyposażenia umiejętności, np. "wymaga tarczy".</summary>
+        public static string Requirement(BuildTag tags)
+        {
+            var parts = new System.Collections.Generic.List<string>();
+            if ((tags & BuildTag.Shield) != 0) parts.Add("tarczy");
+            if ((tags & BuildTag.Guard) != 0) parts.Add("gardy (tarczy lub broni blokującej)");
+            if ((tags & BuildTag.Parry) != 0) parts.Add("możliwości parowania");
+            if ((tags & BuildTag.Magic) != 0) parts.Add("znajomości czarów");
+            return parts.Count == 0 ? "" : "wymaga " + string.Join(", ", parts);
+        }
+
+        public static string SkillCategory(SkillCategory c) => c == Turris.SkillCategory.Spell ? "czar" : "technika";
+
         public static string Slot(EquipSlot s)
         {
             switch (s)

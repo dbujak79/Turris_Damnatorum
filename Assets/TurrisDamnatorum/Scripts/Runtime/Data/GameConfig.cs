@@ -32,14 +32,33 @@ namespace Turris
 
         [Header("Reakcje")]
         public float flinchDuration = 0.35f;
-        public float inputBuffer = 0.25f;
+        public float inputBuffer = 0.3f;
+
+        [Header("Tempo")]
+        [Tooltip("Globalna szybkość rozgrywki (Time.timeScale w trakcie gry). 1 = czas rzeczywisty.")]
+        [Range(0.5f, 2f)] public float gameSpeed = 1.1f;
+        [Tooltip("Mnożnik szybkości akcji gracza (ataki, parowanie, czary, flaszki, riposta). >1 = szybciej. Okno parowania się nie skraca.")]
+        [Range(0.5f, 2f)] public float playerActionSpeed = 1.1f;
+        [Tooltip("Dodatkowe skrócenie fazy zakończenia akcji gracza (i punktu przerwania) – bohater szybciej odzyskuje kontrolę.")]
+        [Range(0.3f, 1f)] public float playerRecoveryScale = 0.8f;
+        [Tooltip("Przyspieszenie ruchu gracza (m/s²). Duże = responsywnie, małe = ślisko.")]
+        public float moveAcceleration = 45f;
+        [Tooltip("Hamowanie ruchu gracza (m/s²).")]
+        public float moveDeceleration = 60f;
+        [Tooltip("Szybkość obrotu bohatera przy swobodnym ruchu (stopnie/s).")]
+        public float playerTurnSpeed = 1080f;
 
         [Header("Unik")]
         public float dodgeStaminaCost = 18f;
         public float dodgeDistance = 4.2f;
         public float dodgeInvulnStart = 0.04f;
         public float dodgeInvulnDuration = 0.28f;
-        public float dodgeTotalDuration = 0.75f;
+        public float dodgeTotalDuration = 0.82f;
+        [Tooltip("Czas samego przewrotu (animacja i przemieszczenie). Dłuższy = wolniejszy, bardziej naturalny przewrót.")]
+        public float dodgeRollDuration = 0.6f;
+        [Tooltip("Po ilu sekundach fazy zakończenia uniku można wykonać kolejną akcję (atak, unik, blok, parowanie, czar). " +
+                 "Najlepiej tuż przed końcem przewrotu: dodgeInvulnStart + dodgeInvulnDuration + ta wartość ≈ dodgeRollDuration.")]
+        public float dodgeCancelAfter = 0.24f;
         [Tooltip("Obciążenie powyżej tego progu (0-1) pogarsza unik.")]
         [Range(0, 1)] public float heavyLoadThreshold = 0.7f;
         public float heavyDodgeDistanceMult = 0.8f;
@@ -62,13 +81,12 @@ namespace Turris
         public float riposteRecovery = 0.6f;
 
         [Header("Ruch")]
-        public float moveSpeed = 4.6f;
+        public float moveSpeed = 5.2f;
         public float sprintMultiplier = 1.55f;
         public float guardMoveMultiplier = 0.55f;
 
         [Header("Budżet przygotowania")]
         public int loadoutBudget = 4;
-        public int maxAttunedSpells = 3;
 
         [Header("Nagrody")]
         [Range(0, 1)] public float rewardExplorationChance = 0.3f;

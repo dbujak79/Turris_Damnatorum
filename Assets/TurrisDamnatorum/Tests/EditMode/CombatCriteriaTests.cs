@@ -34,7 +34,7 @@ namespace Turris.Tests
             pc.Request(ActionType.LightAttack);
             Assert.AreEqual(ActionType.LightAttack, pc.Actions.Current);
             Assert.AreEqual(stamina - axeDef.weapon.light.staminaCost, pc.Stamina.Current, 0.01f);
-            Fixture.Advance(pc, axeDef.weapon.light.windup + 0.02f);
+            Fixture.Advance(pc, pc.ScaleStartup(axeDef.weapon.light.windup) + 0.02f);
             Assert.AreEqual(ActionPhase.Active, pc.Actions.Phase);
             Assert.Greater(pc.Build.WeaponDamage(axeDef.weapon.light), 48f);
         }
@@ -44,24 +44,26 @@ namespace Turris.Tests
         {
             var run = fx.NewRun("class_knight");
             var pc = fx.NewCombatant(run);
-            Assert.IsNull(pc.CurrentSpell, "Rycerz startuje bez czarów");
+            Assert.IsFalse(run.knownSpells.Exists(s => s.definition.IsSpell), "Rycerz startuje bez czarów (ma tylko techniki klasy)");
+            Assert.IsNull(pc.Skill(2), "Trzeci slot rycerza jest wolny");
 
             var bolt = fx.Get<SpellDefinition>("spell_bolt");
-            run.LearnSpell(bolt, fx.Cfg.balance.maxAttunedSpells);
+            run.LearnSpell(bolt);
             pc.RefreshBuild();
-            Assert.IsNotNull(pc.CurrentSpell);
-            Assert.IsTrue(pc.CurrentSpell.requirementsMet);
+            Assert.AreEqual(2, run.SlotOf(run.FindSpell(bolt)), "Nowa umiejętność trafia do pierwszego wolnego slotu");
+            var skill = pc.Skill(2);
+            Assert.IsTrue(skill.requirementsMet);
 
             float mana = pc.Mana.Current;
-            pc.Request(ActionType.Cast);
+            pc.RequestSkill(2);
             Assert.AreEqual(ActionType.Cast, pc.Actions.Current);
-            Assert.AreEqual(mana - pc.CurrentSpell.manaCost, pc.Mana.Current, 0.01f, "Rzucenie zużywa manę");
+            Assert.AreEqual(mana - skill.manaCost, pc.Mana.Current, 0.01f, "Rzucenie zużywa manę");
 
-            Fixture.Advance(pc, bolt.castTime + bolt.recovery + 0.1f);
+            Fixture.Advance(pc, pc.ScaleStartup(bolt.castTime) + pc.ScaleRecovery(bolt.recovery) + 0.1f + bolt.cooldown);
             Assert.AreEqual(ActionType.None, pc.Actions.Current);
 
             pc.Mana.Drain(pc.Mana.Current);
-            pc.Request(ActionType.Cast);
+            pc.RequestSkill(2);
             Assert.AreNotEqual(ActionType.Cast, pc.Actions.Current, "Bez many czar nie zostaje rzucony");
         }
 
@@ -109,7 +111,7 @@ namespace Turris.Tests
         {
             var pc = fx.NewCombatant(fx.NewRun("class_knight"));
             pc.Request(ActionType.Parry);
-            Fixture.Advance(pc, pc.Build.parry.startup + 0.02f);
+            Fixture.Advance(pc, pc.ScaleStartup(pc.Build.parry.startup) + 0.02f);
             Assert.AreEqual(ActionPhase.Active, pc.Actions.Phase);
 
             float hp = pc.Health.Current;
@@ -121,7 +123,7 @@ namespace Turris.Tests
             // Atak oznaczony jako niemożliwy do sparowania trafia mimo aktywnego okna.
             var pc2 = fx.NewCombatant(fx.NewRun("class_knight"));
             pc2.Request(ActionType.Parry);
-            Fixture.Advance(pc2, pc2.Build.parry.startup + 0.02f);
+            Fixture.Advance(pc2, pc2.ScaleStartup(pc2.Build.parry.startup) + 0.02f);
             Assert.AreEqual(HitOutcome.Hit, pc2.ReceiveHit(Fixture.FrontHit(80, parryable: false)).outcome);
         }
 
@@ -131,7 +133,7 @@ namespace Turris.Tests
             var pc = fx.NewCombatant(fx.NewRun("class_knight"));
             pc.Request(ActionType.Parry);
             var p = pc.Build.parry;
-            Fixture.Advance(pc, p.startup + p.activeWindow + 0.05f);
+            Fixture.Advance(pc, pc.ScaleStartup(p.startup) + p.activeWindow + 0.05f);
             Assert.AreEqual(ActionPhase.Recovery, pc.Actions.Phase);
 
             pc.SetBlockHeld(true);
@@ -248,16 +250,64 @@ namespace Turris.Tests
             pc.Request(ActionType.LightAttack);
             pc.RequestFlask(false);
             pc.Request(ActionType.Parry);
-            pc.Request(ActionType.Dodge);
             pc.SetBlockHeld(true);
             Assert.AreEqual(ActionType.LightAttack, pc.Actions.Current);
             Assert.AreEqual(flasks, run.healthFlasks);
 
-            // Po punkcie przerwania w fazie regeneracji dozwolony jest unik.
+            // Po punkcie przerwania w fazie regeneracji dozwolone są kolejne akcje, ale nie flaszka.
             var atk = pc.Build.weapon.light;
-            Fixture.Advance(pc, atk.windup + atk.active + atk.cancelAfter + 0.02f);
-            Assert.IsTrue(pc.Actions.CanStart(ActionType.Dodge));
+            Fixture.Advance(pc, pc.ScaleStartup(atk.windup + atk.active) + pc.ScaleRecovery(atk.cancelAfter) + 0.01f);
+            Assert.AreEqual(ActionType.LightAttack, pc.Actions.Current);
+            Assert.IsTrue(pc.Actions.CanStart(ActionType.Parry));
             Assert.IsFalse(pc.Actions.CanStart(ActionType.Flask));
+        }
+
+        [Test]
+        public void Dodge_InterruptsAttackInAnyPhase()
+        {
+            foreach (var type in new[] { ActionType.LightAttack, ActionType.HeavyAttack })
+            {
+                var pc = fx.NewCombatant(fx.NewRun("class_knight"));
+                var atk = type == ActionType.LightAttack ? pc.Build.weapon.light : pc.Build.weapon.heavy;
+                pc.Request(type);
+                Fixture.Advance(pc, pc.ScaleStartup(atk.windup) * 0.5f);
+                Assert.AreEqual(ActionPhase.Startup, pc.Actions.Phase, $"{type}: w połowie zamachu");
+                float stamina = pc.Stamina.Current;
+                pc.MoveIntent = UnityEngine.Vector3.right;
+                pc.Request(ActionType.Dodge);
+                Assert.AreEqual(ActionType.Dodge, pc.Actions.Current, $"{type}: unik przerywa zamach");
+                Assert.Less(pc.Stamina.Current, stamina, "Unik kosztuje wytrzymałość");
+                Assert.AreEqual(UnityEngine.Vector3.right, pc.DodgeDirection);
+            }
+        }
+
+        [Test]
+        public void Dodge_InterruptsCast_RefundsManaBeforeRelease()
+        {
+            var run = fx.NewRun("class_knight");
+            var bolt = run.LearnSpell(fx.Get<SpellDefinition>("spell_bolt"));
+            var pc = fx.NewCombatant(run);
+            float mana = pc.Mana.Current;
+            pc.RequestSkill(run.SlotOf(bolt));
+            Assert.AreEqual(ActionType.Cast, pc.Actions.Current);
+            Assert.Less(pc.Mana.Current, mana);
+            Assert.IsFalse(bolt.Ready, "Użycie zabiera ładunek");
+            pc.Request(ActionType.Dodge);
+            Assert.AreEqual(ActionType.Dodge, pc.Actions.Current, "Unik przerywa inkantację");
+            Assert.AreEqual(mana, pc.Mana.Current, 0.01f, "Przerwany czar nie zużywa many");
+            Assert.IsTrue(bolt.Ready, "…ani ładunku"); 
+        }
+
+        [Test]
+        public void Dodge_CanChainIntoAttack_AfterCancelPoint()
+        {
+            var pc = fx.NewCombatant(fx.NewRun("class_knight"));
+            var d = pc.Build.dodge;
+            pc.Request(ActionType.Dodge);
+            Fixture.Advance(pc, d.invulnStart + d.invulnDuration + fx.Cfg.balance.dodgeCancelAfter + 0.02f);
+            Assert.AreEqual(ActionType.Dodge, pc.Actions.Current, "Unik jeszcze trwa");
+            pc.Request(ActionType.LightAttack);
+            Assert.AreEqual(ActionType.LightAttack, pc.Actions.Current, "Po punkcie przerwania uniku można od razu atakować");
         }
 
         [Test]
@@ -269,11 +319,11 @@ namespace Turris.Tests
             run.inventory.Add(staff);
             run.EquipFromInventory(staff, EquipSlot.MainHand);
             run.UnequipToInventory(EquipSlot.OffHand);
-            run.LearnSpell(fx.Get<SpellDefinition>("spell_nova"), 3);
+            var nova = run.LearnSpell(fx.Get<SpellDefinition>("spell_nova"));
             var pc = fx.NewCombatant(run);
             Assert.IsFalse(pc.Build.CanBlock, "Kostur nie blokuje – niezależnie od klasy");
             Assert.IsFalse(pc.Build.CanParry);
-            Assert.AreEqual(1, pc.Build.spells.Count);
+            Assert.IsNotNull(pc.Skill(run.SlotOf(nova)), "Czar maga działa u rycerza");
             Assert.Greater(pc.Build.stats[StatType.SpellPower], 0f, "Premia kostura działa u rycerza");
         }
     }

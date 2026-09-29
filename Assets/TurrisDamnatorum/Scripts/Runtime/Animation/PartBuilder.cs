@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 
 namespace Turris
 {
-    public enum Surface { Cloth, Leather, Metal, DarkMetal, Chain, Gold, Skin, Wood, Bone, Dark, Glow, Hair }
+    public enum Surface { Cloth, Leather, Metal, DarkMetal, Chain, Gold, Skin, Wood, Bone, Dark, Glow, Hair, Stone }
 
     /// <summary>Współdzielone materiały (po jednym na parę powierzchnia+kolor). Podświetlenia idą przez MaterialPropertyBlock.</summary>
     public static class MaterialLibrary
@@ -42,6 +42,7 @@ namespace Turris
                 case Surface.Hair: gloss = 0.25f; break;
                 case Surface.Dark: gloss = 0.05f; break;
                 case Surface.Cloth: gloss = 0.08f; break;
+                case Surface.Stone: gloss = 0.12f; break;
             }
             if (m.HasProperty("_Metallic")) m.SetFloat("_Metallic", metallic);
             if (m.HasProperty("_Glossiness")) m.SetFloat("_Glossiness", gloss);

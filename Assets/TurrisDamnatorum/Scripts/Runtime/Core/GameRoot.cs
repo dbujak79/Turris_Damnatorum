@@ -50,6 +50,7 @@ namespace Turris
                 config = DefaultContent.Create().config;
             }
             if (GetComponent<GameUI>() == null) gameObject.AddComponent<GameUI>();
+            if (GetComponent<CombatFxDirector>() == null) gameObject.AddComponent<CombatFxDirector>();
             ProfilePath = Path.Combine(Application.persistentDataPath, ProfileFileOverride ?? profileFileName);
             Meta = new MetaService(config, new FileProfileStorage(ProfilePath));
             if (Meta.Warning != null) Debug.LogWarning("[Turris] " + Meta.Warning);
@@ -68,7 +69,9 @@ namespace Turris
 
         void SetupSceneObjects()
         {
-            sun = FindAnyObjectByType<Light>();
+            sun = null;
+            foreach (var l in FindObjectsByType<Light>(FindObjectsInactive.Exclude))
+                if (l.type == LightType.Directional) { sun = l; break; }
             if (sun == null)
             {
                 var l = new GameObject("Sun");
@@ -101,6 +104,7 @@ namespace Turris
             Player.Died += OnPlayerDied;
             p.SetActive(false);
 
+            QualitySettings.pixelLightCount = Mathf.Max(QualitySettings.pixelLightCount, 8);
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogStartDistance = 18f;
@@ -144,7 +148,9 @@ namespace Turris
             Controller.InputEnabled = playing;
             Cursor.lockState = playing ? CursorLockMode.Locked : CursorLockMode.None;
             Cursor.visible = !playing;
-            Time.timeScale = s == GameScreen.Paused || s == GameScreen.Equipment ? 0f : 1f;
+            // W trakcie gry cały świat (gracz, wrogowie, pociski, efekty) biegnie w tempie balance.gameSpeed.
+            float gameSpeed = config != null && config.balance.gameSpeed > 0f ? config.balance.gameSpeed : 1f;
+            Time.timeScale = s == GameScreen.Paused || s == GameScreen.Equipment ? 0f : playing ? gameSpeed : 1f;
         }
 
         // ================================================================== Podejście
@@ -160,6 +166,7 @@ namespace Turris
         {
             Plan = plan;
             Meta.RecordRunStart(plan);
+            Meta.RememberSkillSlots(plan.skillSlots);
             int seed = System.Environment.TickCount;
             rng = new System.Random(seed);
             Run = RunFactory.Create(plan, config, seed);
@@ -192,6 +199,7 @@ namespace Turris
 
             Controller.Teleport(WorldBuilder.PlayerSpawn(floor.arena), Quaternion.identity);
             Player.Actions.Reset();
+            Player.OnFloorStart();
             CameraRig.SnapBehindTarget();
 
             var spawns = WorldBuilder.EnemySpawns(floor.arena, floor.enemies.Count);
@@ -284,7 +292,7 @@ namespace Turris
             if (Rewards.Count > 0)
             {
                 if (index < 0 || index >= Rewards.Count) return;
-                Rewards[index].Apply(Run, config.balance.maxAttunedSpells);
+                Rewards[index].Apply(Run);
             }
             Player.RefreshBuild();
             Rewards.Clear();
@@ -306,6 +314,7 @@ namespace Turris
 
         public void CloseEquipment()
         {
+            Meta.RememberSkillSlots(Run.skillSlots.Select(s => s?.definition).ToList());
             Player.RefreshBuild();
             SetScreen(ScreenBeforeEquipment);
         }

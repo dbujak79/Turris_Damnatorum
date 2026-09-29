@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bfc9e3d0e146d4086347f0e38c03cf, type: 3}
+  m_Name: skill_whirlwind
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
+  id: skill_whirlwind
+  displayName: "M\u0142ynek"
+  description: "Wiruj\u0105ce ci\u0119cia wok\xF3\u0142; mo\u017Cna powoli si\u0119 porusza\u0107. Unik lub trafienie przerywaj\u0105 m\u0142ynek."
+  tags: 1
+  kind: 7
+  category: 1
+  manaCost: 0
+  castTime: 0.25
+  recovery: 0.45
+  cancelAfter: 0.2
+  staminaCost: 30
+  requirements:
+  - attribute: 3
+    value: 12
+  requiredTags: 0
+  intelligenceScaling: 0
+  attack:
+    name: "M\u0142ynek"
+    delivery: 0
+    damageType: 0
+    baseDamage: 0
+    windup: 0.25
+    active: 1.5
+    recovery: 0.45
+    cancelAfter: 0.2
+    reach: 0
+    radius: 2.6
+    lunge: 0
+    tracking: 360
+    blockable: 1
+    parryable: 1
+    dodgeable: 1
+    guardLoad: 9.6
+    poiseDamage: 12
+    heavy: 0
+    staminaCost: 0
+    projectileSpeed: 14
+    projectileCount: 1
+    spreadAngle: 0
+    animation: 0
+  amount: 60
+  duration: 1.5
+  cooldown: 10
+  charges: 1
+  extraChargeAtLevel: 0
+  cooldownReductionPerLevel: 0.06
+  weaponMultiplier: 0.7
+  arcAngle: 150
+  tickInterval: 0.35
+  moveMultiplier: 0.5
+  maxLevel: 4
+  powerPerLevel: 0.15
+  costReductionPerLevel: 0.06
+  color: {r: 0.85, g: 0.88, b: 1, a: 1}

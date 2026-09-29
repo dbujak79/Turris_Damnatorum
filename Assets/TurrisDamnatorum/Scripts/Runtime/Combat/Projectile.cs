@@ -10,6 +10,9 @@ namespace Turris
         void OnDisable() => Active.Remove(this);
 
         HitData hit;
+        GameObject fx;
+        Color color;
+        float radiusVisual;
         Faction faction;
         IHitReceiver owner;
         Vector3 velocity;
@@ -23,23 +26,28 @@ namespace Turris
                                        Color color, float radius = 0.25f, float lifetime = 4f, IHitReceiver homingTarget = null, float homing = 0f)
         {
             if (!Application.isPlaying) return null;
-            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            go.name = "Projectile";
-            Util.DestroySafe(go.GetComponent<Collider>());
+            var go = new GameObject("Projectile");
             go.transform.position = pos;
-            go.transform.localScale = Vector3.one * radius * 2f;
-            var rend = go.GetComponent<Renderer>();
-            rend.material.color = color;
-            if (rend.material.HasProperty("_EmissionColor"))
-            {
-                rend.material.EnableKeyword("_EMISSION");
-                rend.material.SetColor("_EmissionColor", color * 2f);
-            }
+            // Jądro pocisku + oprawa (halo, smuga, krążące iskry, światło).
+            var core = PartBuilder.Add(go.transform, ProcMesh.Sphere(), Surface.Glow, Color.Lerp(color, Color.white, 0.5f), Vector3.zero, Vector3.one * radius * 1.1f);
+            core.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             var p = go.AddComponent<Projectile>();
+            p.fx = FxLibrary.ProjectileVisual(go.transform, color, radius);
+            p.color = color;
+            p.radiusVisual = radius;
+            FxLibrary.Flash(pos, color, 0.5f);
             p.hit = hit; p.faction = faction; p.owner = owner;
             p.velocity = dir.normalized * speed; p.radius = radius; p.life = lifetime;
             p.homingTarget = homingTarget; p.homing = homing;
             return p;
+        }
+
+        void Explode(bool impact)
+        {
+            FxLibrary.DetachProjectileVisual(fx);
+            fx = null;
+            if (impact) FxLibrary.Impact(transform.position, color, Mathf.Clamp(radiusVisual * 4f, 0.7f, 1.6f));
+            Destroy(gameObject);
         }
 
         static readonly RaycastHit[] Hits = new RaycastHit[16];
@@ -49,7 +57,7 @@ namespace Turris
         {
             float dt = Time.deltaTime;
             life -= dt;
-            if (life <= 0) { Destroy(gameObject); return; }
+            if (life <= 0) { Explode(false); return; }
 
             if (homingTarget != null && !homingTarget.IsDead && homing > 0)
             {
@@ -68,7 +76,7 @@ namespace Turris
                     hit.sourcePosition = transform.position - velocity.normalized * 0.5f;
                     HitQuery.Apply(owner, r, hit, false);
                 }
-                Destroy(gameObject);
+                Explode(true);
                 return;
             }
 
@@ -89,7 +97,8 @@ namespace Turris
                     hit.sourcePosition = transform.position - velocity.normalized * 0.5f;
                     HitQuery.Apply(owner, r, hit, false);
                 }
-                Destroy(gameObject);
+                transform.position += step.normalized * best;
+                Explode(true);
                 return;
             }
             transform.position += step;

@@ -5,15 +5,17 @@ namespace Turris
 {
     public struct DodgeParams
     {
-        public float staminaCost, distance, invulnStart, invulnDuration, totalDuration;
+        public float staminaCost, distance, invulnStart, invulnDuration, totalDuration, rollDuration;
     }
 
     public class SpellRuntime
     {
         public SpellInstance instance;
         public float manaCost;
-        public float power;            // obrażenia / leczenie / premia
-        public bool requirementsMet;
+        public float staminaCost;
+        public float power;            // czary: obrażenia / leczenie / premia; techniki: mnożnik obrażeń broni
+        public bool requirementsMet;   // atrybuty (miękkie – obniżona skuteczność)
+        public bool equipmentMet;      // wymagane wyposażenie (twarde – bez niego nie da się użyć)
         public SpellDefinition Def => instance.definition;
     }
 
@@ -38,7 +40,8 @@ namespace Turris
         public DodgeParams dodge;
         public float loadRatio;
 
-        public readonly List<SpellRuntime> spells = new List<SpellRuntime>();
+        /// <summary>Umiejętności w slotach 1–3 (null = pusty slot).</summary>
+        public readonly SpellRuntime[] skills = new SpellRuntime[RunState.SkillSlotCount];
 
         public bool CanBlock => guard != null;
         public bool CanParry => parry != null;
@@ -116,9 +119,18 @@ namespace Turris
                 invulnStart = b.dodgeInvulnStart,
                 invulnDuration = b.dodgeInvulnDuration * (heavy ? b.heavyDodgeInvulnMult : 1f),
                 totalDuration = b.dodgeTotalDuration,
+                rollDuration = Mathf.Clamp(b.dodgeRollDuration, 0.2f, b.dodgeTotalDuration),
             };
 
-            foreach (var s in run.attunedSpells) snap.spells.Add(ComputeSpell(s, snap.stats, b));
+            var tags = run.CurrentTags(snap);
+            for (int i = 0; i < run.skillSlots.Length; i++)
+            {
+                var s = run.skillSlots[i];
+                if (s == null) continue;
+                var rt = ComputeSpell(s, snap.stats, b);
+                rt.equipmentMet = (s.definition.requiredTags & tags) == s.definition.requiredTags;
+                snap.skills[i] = rt;
+            }
             return snap;
         }
 
@@ -137,10 +149,24 @@ namespace Turris
                         * (1f + stats[StatType.SpellPower] / 100f)
                         * (1f + def.powerPerLevel * s.level)
                         * (met ? 1f : b.unmetRequirementEffectiveness);
+            float unmet = met ? 1f : b.unmetRequirementEffectiveness;
+            if (!def.IsSpell)
+            {
+                // Technika: mnożnik obrażeń broni (same obrażenia broni liczy PlayerCombat w chwili trafienia).
+                return new SpellRuntime
+                {
+                    instance = s,
+                    manaCost = 0f,
+                    staminaCost = def.staminaCost * def.CostFactor(s.level),
+                    power = def.weaponMultiplier * (1f + def.powerPerLevel * s.level) * unmet,
+                    requirementsMet = met,
+                };
+            }
             return new SpellRuntime
             {
                 instance = s,
-                manaCost = def.manaCost * Mathf.Max(0.4f, 1f - def.costReductionPerLevel * s.level),
+                manaCost = def.manaCost * def.CostFactor(s.level),
+                staminaCost = def.staminaCost,
                 power = power,
                 requirementsMet = met,
             };

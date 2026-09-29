@@ -7,6 +7,8 @@ namespace Turris
     [CreateAssetMenu(menuName = "Turris/Arena", fileName = "Arena")]
     public class ArenaDefinition : ContentDefinition
     {
+        [Tooltip("Styl dekoracji areny. Auto = na podstawie id.")]
+        public ArenaStyle style = ArenaStyle.Auto;
         public bool circular = true;
         public float size = 14f;
         public List<Vector3> pillars = new List<Vector3>();

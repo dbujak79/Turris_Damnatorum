@@ -2,6 +2,8 @@ namespace Turris
 {
     public enum DamageType { Physical, Magic }
 
+    public enum ArenaStyle { Auto, Courtyard, Crypt, Summit }
+
     public enum Faction { Player, Enemy }
 
     /// <summary>
@@ -33,7 +35,14 @@ namespace Turris
 
     public enum AttackDelivery { Melee, Projectile, AreaAroundSelf }
 
-    public enum SpellKind { Projectile, Nova, Heal, WeaponBuff }
+    /// <summary>
+    /// Zachowanie umiejętności. Czary: Projectile, Nova, Heal, WeaponBuff, Barrier.
+    /// Techniki bronią: Cleave (łuk przed sobą), Charge (szarża), Whirlwind (młynek), Quake (uderzenie w ziemię), ShieldBash (uderzenie tarczą).
+    /// </summary>
+    public enum SpellKind { Projectile, Nova, Heal, WeaponBuff, Barrier, Cleave, Charge, Whirlwind, Quake, ShieldBash }
+
+    /// <summary>Czar kosztuje manę i skaluje z Inteligencją; technika kosztuje wytrzymałość i skaluje z obrażeniami broni.</summary>
+    public enum SkillCategory { Spell, Technique }
 
     /// <summary>Efekty pasywne wpływające na styl gry. Wartości tego samego typu sumują się.</summary>
     public enum PassiveEffectType

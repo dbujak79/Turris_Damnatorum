@@ -26,7 +26,30 @@ namespace Turris
         GameObject weaponObj, shieldObj;
         WeaponModel modelWeapon;
 
-        public void Init(ICharacterAnimSource src) => source = src;
+        public void Init(ICharacterAnimSource src)
+        {
+            source = src;
+            var trail = GetComponent<SwingTrail>();
+            if (trail == null) trail = gameObject.AddComponent<SwingTrail>();
+            trail.Init(this, src);
+        }
+
+        /// <summary>Prawa dłoń (dla efektów rzucania czarów).</summary>
+        public Transform RightHand
+        {
+            get
+            {
+                if (Rig != null) return Rig[Bone.HandR];
+                var anim = Model != null ? Model.GetComponentInChildren<Animator>() : null;
+                return anim != null && anim.isHuman ? anim.GetBoneTransform(HumanBodyBones.RightHand) : null;
+            }
+        }
+
+        public void SetTrailColor(Color c)
+        {
+            var trail = GetComponent<SwingTrail>();
+            if (trail != null) trail.color = c;
+        }
 
         public void BuildProcedural(RigLook look, float scale)
         {

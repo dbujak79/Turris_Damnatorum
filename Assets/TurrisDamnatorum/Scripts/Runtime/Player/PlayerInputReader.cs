@@ -11,16 +11,18 @@ namespace Turris
     public class PlayerInputReader : MonoBehaviour
     {
         InputActionMap map;
-        InputAction move, look, sprint, block, light, heavy, parry, dodge, cast, cycleSpell, flaskHp, flaskMp, lockOn, switchLeft, switchRight, pause;
+        InputAction move, look, sprint, block, light, heavy, parry, dodge, skill1, skill2, skill3, flaskHp, flaskMp, lockOn, switchLeft, switchRight, pause;
 
         public Vector2 Move => move.ReadValue<Vector2>();
         public Vector2 LookDelta { get; private set; }
         public bool SprintHeld => sprint.IsPressed();
         public bool BlockHeld => block.IsPressed();
 
-        public event Action LightPressed, HeavyPressed, ParryPressed, DodgePressed, CastPressed, CycleSpellPressed,
+        public event Action LightPressed, HeavyPressed, ParryPressed, DodgePressed,
             FlaskHealthPressed, FlaskManaPressed, LockOnPressed, PausePressed;
         public event Action<int> SwitchTargetPressed;
+        /// <summary>Przycisk umiejętności: 0, 1 lub 2.</summary>
+        public event Action<int> SkillPressed;
 
         public float mouseSensitivity = 0.12f;
         public float stickSensitivity = 160f;
@@ -46,24 +48,29 @@ namespace Turris
             block = Button("Block", "<Mouse>/rightButton", "<Gamepad>/leftShoulder");
             light = Button("Light", "<Mouse>/leftButton", "<Gamepad>/rightShoulder");
             heavy = Button("Heavy", "<Keyboard>/f", "<Gamepad>/rightTrigger");
-            parry = Button("Parry", "<Keyboard>/q", "<Gamepad>/leftTrigger");
+            // Parowanie pod małym palcem, żeby Q/E/R zostały dla umiejętności (plus boczny przycisk myszy).
+            parry = Button("Parry", "<Keyboard>/leftCtrl", "<Gamepad>/leftTrigger");
+            parry.AddBinding("<Mouse>/backButton");
             dodge = Button("Dodge", "<Keyboard>/space", "<Gamepad>/buttonEast");
-            cast = Button("Cast", "<Keyboard>/r", "<Gamepad>/buttonSouth");
-            cycleSpell = Button("CycleSpell", "<Keyboard>/x", "<Gamepad>/dpad/right");
-            flaskHp = Button("FlaskHealth", "<Keyboard>/1", "<Gamepad>/buttonWest");
-            flaskMp = Button("FlaskMana", "<Keyboard>/2", "<Gamepad>/buttonNorth");
+            // Trzy sloty umiejętności: Q / E / R oraz A / X / Y.
+            skill1 = Button("Skill1", "<Keyboard>/q", "<Gamepad>/buttonSouth");
+            skill2 = Button("Skill2", "<Keyboard>/e", "<Gamepad>/buttonWest");
+            skill3 = Button("Skill3", "<Keyboard>/r", "<Gamepad>/buttonNorth");
+            flaskHp = Button("FlaskHealth", "<Keyboard>/1", "<Gamepad>/dpad/up");
+            flaskMp = Button("FlaskMana", "<Keyboard>/2", "<Gamepad>/dpad/down");
             lockOn = Button("LockOn", "<Keyboard>/tab", "<Gamepad>/rightStickPress");
             lockOn.AddBinding("<Mouse>/middleButton");
             switchLeft = Button("SwitchLeft", "<Keyboard>/z", "<Gamepad>/dpad/left");
-            switchRight = Button("SwitchRight", "<Keyboard>/c", null);
+            switchRight = Button("SwitchRight", "<Keyboard>/c", "<Gamepad>/dpad/right");
             pause = Button("Pause", "<Keyboard>/escape", "<Gamepad>/start");
 
             light.performed += _ => LightPressed?.Invoke();
             heavy.performed += _ => HeavyPressed?.Invoke();
             parry.performed += _ => ParryPressed?.Invoke();
             dodge.performed += _ => DodgePressed?.Invoke();
-            cast.performed += _ => CastPressed?.Invoke();
-            cycleSpell.performed += _ => CycleSpellPressed?.Invoke();
+            skill1.performed += _ => SkillPressed?.Invoke(0);
+            skill2.performed += _ => SkillPressed?.Invoke(1);
+            skill3.performed += _ => SkillPressed?.Invoke(2);
             flaskHp.performed += _ => FlaskHealthPressed?.Invoke();
             flaskMp.performed += _ => FlaskManaPressed?.Invoke();
             lockOn.performed += _ => LockOnPressed?.Invoke();

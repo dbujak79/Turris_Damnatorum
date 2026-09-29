@@ -4,7 +4,13 @@ Gra 3D dla jednego gracza, w której walka w stylu souls-like łączy się ze st
 
 - **Silnik:** Unity **6000.6.3f1**, jedyna wersja zainstalowana na tej maszynie. Kod nie używa API specyficznego dla 6.6, więc powinien działać także na Unity 6 LTS (6000.3), ale tej wersji nie sprawdzałem.
 - **Pakiety:** `com.unity.inputsystem` 1.20.0 i `com.unity.test-framework` 1.8.0, do tego moduły wbudowane. Nie ma zależności płatnych ani zewnętrznych.
-- **Grafika:** wbudowany pipeline renderowania. Postacie i areny to prymitywy (placeholdery).
+- **Grafika:** wbudowany pipeline renderowania. Wszystko jest generowane w kodzie, bez zewnętrznych assetów:
+  - postacie to proceduralne humanoidy z animacją;
+  - areny są zbudowane z tysięcy części;
+  - efekty to systemy cząsteczek z teksturami tworzonymi w kodzie.
+
+  Opcjonalnie można podpiąć modele FBX (np. z Mixamo).
+- **Stan prac i plan na kolejną sesję:** [`docs/PROGRESS.md`](docs/PROGRESS.md).
 
 ## Uruchomienie
 
@@ -18,7 +24,20 @@ Budowanie pliku wykonywalnego: *File → Build Profiles*. Scena `Main` jest już
 
 ### Testy
 
-W edytorze: *Window → General → Test Runner*, zakładki EditMode i PlayMode. Z wiersza poleceń:
+W edytorze: *Window → General → Test Runner*, zakładki EditMode i PlayMode.
+
+Z wiersza poleceń najwygodniej uruchomić skrypt z repozytorium. Wymaga Pythona 3, a projekt **nie może być otwarty w edytorze**:
+
+```
+python tools/run_tests.py EditMode           # tryb wsadowy, bez grafiki
+python tools/run_tests.py PlayMode gfx       # tryb wsadowy z grafiką (zrzuty kamery działają, OnGUI nie)
+python tools/run_tests.py PlayMode window    # okno edytora – jedyny tryb, w którym przechodzą testy menu padem
+python tools/run_tests.py PlayMode window Turris.Tests.GamepadPlayTests   # filtr
+```
+
+Wyniki i log trafiają do `TestResults/`. Zmienna środowiskowa `TURRIS_SHOT_DIR=<katalog>` włącza galerie zrzutów (pozy postaci, areny, efekty, gra).
+
+Bezpośrednio przez Unity:
 
 ```
 Unity.exe -batchmode -projectPath <projekt> -runTests -testPlatform EditMode -testResults wyniki.xml
@@ -34,15 +53,15 @@ W trybie `-batchmode` Unity nie wywołuje `OnGUI`, więc testy obsługi menu pad
 | Ruch (względem kamery) | WASD | lewa gałka |
 | Kamera | mysz | prawa gałka |
 | Bieg (zużywa wytrzymałość) | Shift | L3 |
-| Lekki atak / riposta | LPM | RB |
-| Ciężki atak | F | RT |
+| Szybki atak / riposta | LPM | RB |
+| Mocny atak | F | RT |
 | Blok (trzymaj) | PPM | LB |
-| Parowanie | Q | LT |
-| Unik | Spacja | B |
-| Rzuć czar / zmień czar | R / X | A / D-pad → |
-| Flaszka życia / many | 1 / 2 | X / Y |
+| Parowanie | Lewy Ctrl lub boczny przycisk myszy („wstecz”) | LT |
+| Unik (przerywa atak i umiejętność) | Spacja | B |
+| Umiejętność 1 / 2 / 3 | Q / E / R | A / X / Y |
+| Flaszka życia / many | 1 / 2 | D-pad ↑ / D-pad ↓ |
 | Namierzanie | Tab lub środkowy przycisk myszy | R3 |
-| Zmiana celu | Z / C lub szybki ruch myszą | D-pad ← / ruch prawej gałki |
+| Zmiana celu | Z / C lub szybki ruch myszą | D-pad ← / → lub ruch prawej gałki |
 | Pauza | Esc | Start |
 | Pomoc w HUD | F1 | Select |
 | Wybór nagrody | 1 / 2 / 3 | D-pad / gałka + A |
@@ -68,13 +87,38 @@ Kolory sygnalizacji ataków przeciwników (przeciwnik świeci podczas zamachu, n
 - **czerwony** — atak nie do zablokowania. Trzeba zrobić unik; niektóre z tych ataków da się też sparować, np. pchnięcie bossa;
 - **różowy z kręgiem na ziemi** — atak obszarowy, przed którym nie chroni niewrażliwość uniku. Trzeba wyjść z kręgu albo zablokować.
 
+## Umiejętności
+
+Postać ma **szybki atak, mocny atak i trzy sloty umiejętności**, każdy pod własnym przyciskiem (Q/E/R, na padzie A/X/Y).
+
+- **Umiejętność** to czar albo technika bronią:
+  - **czar** kosztuje manę i skaluje z Inteligencją (pocisk, fala mocy, leczenie, zaklęte ostrze, kamienna osłona…);
+  - **technika** kosztuje wytrzymałość, a jej obrażenia to lekki atak aktualnej broni × mnożnik, więc rośnie razem z bronią (rozpłatanie, uderzenie tarczą, szarża, młynek, trzęsienie).
+- Każda umiejętność ma **odnowienie**, niektóre także **ładunki** (np. szarża od poziomu 3 ma dwa). Odnowienie należy do umiejętności, nie do slotu, liczy je zegar gry (pauza je zatrzymuje), a na nowym piętrze ładunki są pełne.
+- Część umiejętności wymaga wyposażenia – uderzenie tarczą działa tylko z tarczą. Wymagania atrybutów są miękkie (obniżona skuteczność), jak przy broni.
+- **Unik przerywa umiejętność** tak jak atak. Przerwana przed wyzwoleniem oddaje manę i ładunek (wytrzymałość przepada).
+
+Skąd się biorą umiejętności:
+
+| Źródło | Trwałość |
+|---|---|
+| Klasa (rycerz: Rozpłatanie, Uderzenie tarczą; mag: Pocisk arkanów, Fala mocy) | w każdym podejściu tą klasą |
+| Odblokowanie za popiół (menu „Odblokowania”) | **na stałe** – w kolekcji każdego podejścia, bez kosztu w budżecie przygotowania |
+| Nagroda między piętrami | **tymczasowo** – tylko w tym podejściu |
+
+Nagrody proponują też umiejętności jeszcze nieodblokowane (gdy gracz dotarł na piętro wymagane do ich odblokowania) – można je wypróbować przed zakupem. Nie są proponowane umiejętności, których obecne wyposażenie nie pozwala użyć.
+
+Sloty ustawia się na ekranie przygotowania (klasowe + odblokowane) i między piętrami w ekwipunku (cała kolekcja podejścia). Ponowne kliknięcie przypisanego przycisku zdejmuje umiejętność ze slotu. Ostatni układ zapisuje się w profilu i obowiązuje w kolejnych podejściach.
+
+Nowe umiejętności dodaje się w `DefaultContent` (sekcje „UMIEJĘTNOŚCI”), a do istniejących assetów trafiają przez **Turris → Dodaj nową treść (bez nadpisywania)** albo `-executeMethod Turris.EditorTools.TurrisSetup.SyncContentBatch`. Ta operacja tylko dodaje brakujące assety i referencje (pule nagród, odblokowania, umiejętności klas); niczego nie nadpisuje i nie rusza sceny.
+
 ## Postacie i animacja
 
 Postacie są humanoidami z pełną animacją ciała, dostępnymi w dwóch wariantach. Kod walki i AI nie wie, który z nich jest używany: udostępnia tylko stan (`CharacterAnimState`: akcja, faza walki, postęp fazy).
 
 ### Wariant A: proceduralny humanoid (domyślny, działa bez żadnych plików)
 
-- **Budowa:** szkielet z 17 kości obłożony 100–160 częściami ciała na postać, do tego 20–50 elementów broni i tarczy.
+- **Budowa:** szkielet z 17 kości obłożony 240–330 częściami ciała na postać, do tego 20–50 elementów broni i tarczy.
   - Kształty: zwężające się kończyny, szaty w kształcie dzwonu, kopuły hełmów, ostrza z przekrojem rombowym i zbroczem, tarcze wycinane z obrysu, pierścienie, stożki (`ProcMesh`).
   - Materiały PBR: metal i złoto odbijają światło, a kolczuga, tkanina, skóra, drewno i kość są matowe.
   - Części każdej kości są scalane w jedną siatkę (`PartBuilder`), więc postać to ok. 15–22 renderery. Podświetlenia idą przez MaterialPropertyBlock, bez kopiowania materiałów.
@@ -127,11 +171,49 @@ Sterownik klipów (`ClipAnimationDriver`) działa na Playables, bez Animator Con
 - akcje całego ciała odtwarza na osobnej warstwie;
 - blok, picie i czar nakłada tylko na górną połowę ciała (maska Humanoid), więc można się przy nich poruszać.
 
+### Efekty czarów i umiejętności
+
+Efekty są zbudowane z systemów cząsteczek Unity (ParticleSystem) z addytywnym świeceniem, kręgów runicznych na ziemi i dynamicznych świateł (`Fx/FxLibrary`). Tekstury (miękka poświata, dym, pierścień, krąg runiczny z heksagramem) są generowane w kodzie. Materiały leżą w `Resources`, więc trafiają do buildu (tworzy je **Turris → Setup**).
+
+- **Czary:**
+  - rzucanie: energia zbiera się w dłoni;
+  - pocisk: jądro, halo, smuga, krążące iskry i światło, a przy trafieniu wybuch;
+  - fala mocy: krąg runiczny, pierścień uderzeniowy, słup iskier i kurz;
+  - leczenie: krąg i spiralne drobinki;
+  - zaklęte ostrze: poświata broni i drobinki unoszące się z klingi.
+- **Walka:**
+  - smuga za ostrzem w fazie aktywnej ciosu (u wrogów w kolorze rodzaju ataku);
+  - trafienie: krew;
+  - blok: iskry;
+  - parowanie: złota gwiazda z falą;
+  - przełamanie gardy: odłamki;
+  - unik: kurz;
+  - picie flaszki: drobinki;
+  - riposta: rozbłysk;
+  - śmierć wroga: ciało rozsypuje się w popiół i żar;
+  - druga faza bossa: fala.
+- **Telegraf ataku obszarowego:** obracający się krąg runiczny, który pulsuje coraz szybciej, im bliżej ciosu.
+
+### Areny
+
+Areny buduje `ArenaBuilder`: 65–120 tys. wierzchołków scalonych w kilkadziesiąt rendererów. Kolizje zostają proste i niewidoczne (podłoga, pierścień murów, kolumny), więc dekoracje nie wpływają na rozgrywkę ani na kamerę.
+
+- **Dziedziniec:**
+  - posadzka z pojedynczych płyt z fugami, pęknięciami i brakującymi płytami;
+  - mozaika w centrum;
+  - mur z bloków w wiązaniu, z przyporami i blankami;
+  - pochodnie z ogniem i migoczącym światłem, sztandary z herbem;
+  - brama z łukiem i kratą;
+  - kolumny z bazą, żłobkowanym trzonem i głowicą (część złamana, z bębnami na ziemi);
+  - posągi klęczących rycerzy, gruz, czaszki i kości.
+- **Krypta:** płyty nagrobne, nisze z łukami, sarkofagi z wyrzeźbioną postacią i świecami, łańcuchy, kandelabry, pajęczyny.
+- **Szczyt:** niski parapet, koksowniki, obeliski z żarzącymi się runami, kamienni strażnicy, obracający się krąg rytualny, panorama iglic z oświetlonymi oknami i księżyc.
+
 ## Przyjęte założenia
 
 - **Kamera:** własny `CameraRig` zamiast Cinemachine. Namierzanie, zmiana celu i kolizje kamery wymagały niewielkiej ilości kodu, a unikamy dodatkowego pakietu i konfiguracji. To dopuszczalne, bo zadanie wymagało Cinemachine tylko „jeśli pasuje”.
 - **Interfejs:** IMGUI (`OnGUI`), bez prefabów i Canvasów. Prototyp działa od razu po otwarciu sceny. Nawigację padem zapewnia `UINavigator`: każda kontrolka rejestruje swój prostokąt, a akcje z kliknięć i przycisków pada są kolejkowane i wykonywane na końcu przebiegu `OnGUI`, żeby nie rozspójnić układu GUILayout.
-- **Areny:** trzy gotowe areny (Dziedziniec, Krypta, Szczyt) zapisane jako dane (`ArenaDefinition`) i budowane z prymitywów. Geometria nie jest generowana proceduralnie.
+- **Areny:** trzy gotowe areny (Dziedziniec, Krypta, Szczyt) zapisane jako dane (`ArenaDefinition`: rozmiar, kształt, kolumny, kolory, styl). `ArenaBuilder` składa je z części według stylu. Układ nie jest losowy: ziarno generatora wynika z id areny, więc arena zawsze wygląda tak samo.
 - **Wymagania atrybutów** nigdy nie blokują przedmiotu ani czaru. Jeśli nie są spełnione, skuteczność spada do 60% (parametr `unmetRequirementEffectiveness`). Dzięki temu możliwe są buildy hybrydowe.
 - **Czary nie wymagają katalizatora.** Kostur, kaptur i amulety tylko zwiększają moc czarów. Rycerz może rzucać czary z mieczem i tarczą w rękach.
 - **Pięści** są bronią zastępczą, gdy główna ręka jest pusta. Każda postać ma więc zawsze słaby atak, który nie zużywa many. Kostur maga również ma atak wręcz bez many.
@@ -180,13 +262,20 @@ Assets/TurrisDamnatorum/
     Enemies/  EnemyBrain – jedno AI sterowane danymi (bez podklas), fazy bossa, telegrafy, okno riposty
     Run/      RunState (stan podejścia), RewardGenerator (nagrody ważone buildem, nie klasą)
     Meta/     ProfileData + ProfileSerializer (JSON z wersją formatu i migracją), MetaService, RunFactory
-    Core/     GameRoot (przepływ gry), WorldBuilder (areny i postacie z prymitywów), DefaultContent
+    Core/     GameRoot (przepływ gry), WorldBuilder (postacie), ArenaBuilder (areny w 3 stylach), DefaultContent
     Animation/ CharacterVisual, HumanoidRig + RigLook (proceduralny humanoid), PoseLibrary + ProceduralHumanoidAnimator (pozy, IK, chód),
-              CharacterVisualDefinition + ClipAnimationDriver (modele FBX, Playables), GearBuilder (broń i tarcze)
+              CharacterVisualDefinition + ClipAnimationDriver (modele FBX, Playables), GearBuilder (broń i tarcze),
+              ProcMesh (siatki proceduralne), PartBuilder + MaterialLibrary + TintSet (scalanie części, materiały, podświetlenia)
+    Fx/       FxLibrary (efekty), FxMaterials (tekstury i materiały w kodzie), FxDecal/FxLight/FxFlicker,
+              SwingTrail (smuga ostrza), CombatFxDirector (efekty trafień z CombatEvents)
     UI/       GameUI (IMGUI), UINavigator (fokus i nawigacja padem/strzałkami)
-  Scripts/Editor/  TurrisSetup – generuje assety i scenę
+  Scripts/Editor/  TurrisSetup (assety, scena, materiały efektów), CharacterModelTools (import FBX, kreator definicji wyglądu)
   Content/         wygenerowane assety (balans edytowalny w inspektorze)
+  Resources/       materiały efektów (dla buildu)
+  Models/          miejsce na modele FBX (wariant B), obecnie puste
   Tests/EditMode, Tests/PlayMode
+tools/run_tests.py  uruchamianie testów z wiersza poleceń
+docs/PROGRESS.md    stan prac, historia, plan
 ```
 
 Kluczowe decyzje architektoniczne:
@@ -203,16 +292,25 @@ Kluczowe decyzje architektoniczne:
 - **Definicja przedmiotu jest oddzielona od egzemplarza.** `ItemDefinition` to niezmienny ScriptableObject, a `ItemInstance` przechowuje poziom jakości i id egzemplarza. Broń dwuręczna jest obsłużona: zajmuje obie ręce i wypiera tarczę, a założenie tarczy wypiera ją.
 - **Każdy atak ma niezależne parametry:** czy da się go zablokować, sparować, uniknąć niewrażliwością, typ i wartość obrażeń, obciążenie gardy i obrażenia postawy. Rodzaj sygnalizacji wynika bezpośrednio z tych parametrów, więc sygnał i zachowanie nie mogą się rozjechać.
 - **Tabela dozwolonych przejść między akcjami** jest opisana w `ActionController.cs`. Najważniejsze zasady:
-  - parowania, uniku, flaszki, riposty i reakcji na trafienie nie da się przerwać;
-  - atak i czar można przerwać dopiero po punkcie `cancelAfter` w fazie zakończenia;
+  - **unik przerywa atak i czar w każdej fazie**, także w trakcie zamachu; przerwana inkantacja (przed wypuszczeniem czaru) zwraca manę;
+  - pozostałe akcje mogą przerwać atak i czar dopiero po punkcie `cancelAfter` w fazie zakończenia;
+  - z końcówki uniku (po `dodgeCancelAfter` w fazie zakończenia) można od razu atakować, blokować, parować, rzucać czar lub zrobić kolejny unik;
+  - parowania, flaszki, riposty i reakcji na trafienie nie da się przerwać;
   - z bloku nie da się wypić flaszki;
-  - bufor wejścia wynosi 0,25 s.
+  - bufor wejścia wynosi 0,3 s.
+- **Tempo gry** ustawia się w `GameConfig → balance → Tempo`:
+  - `gameSpeed` (1,1) – `Time.timeScale` w trakcie rozgrywki, przyspiesza cały świat;
+  - `playerActionSpeed` (1,1) i `playerRecoveryScale` (0,8) – szybsze akcje bohatera i krótsze fazy zakończenia (okno parowania się nie skraca);
+  - `moveAcceleration`/`moveDeceleration` – płynne ruszanie i hamowanie; unik i wypad narzucają prędkość wprost, a po nich ruch przejmuje pęd;
+  - `playerTurnSpeed` (1080°/s).
+  - `dodgeRollDuration` (0,6 s) – czas przewrotu i przemieszczenia uniku; `dodgeCancelAfter` warto dobrać tak, by kolejna akcja była możliwa tuż przed końcem przewrotu.
+  Animacja proceduralna przenika pozy przez ~0,09 s przy zmianie akcji (np. unik przerywający zamach).
 
 ## Wykonane sprawdzenia
 
-Wszystkie testy uruchomiłem w Unity 6000.6.3f1 w trybie wsadowym.
+Testy uruchamiałem w Unity 6000.6.3f1: EditMode w trybie wsadowym, PlayMode w oknie edytora (`tools/run_tests.py PlayMode window`).
 
-**EditMode: 61/61 zaliczonych.** Testy sprawdzają kryteria ukończenia na prawdziwym komponencie `PlayerCombat`:
+**EditMode: 75/75 zaliczonych.** Testy sprawdzają kryteria ukończenia na prawdziwym komponencie `PlayerCombat`:
 
 - mag zakłada topór i nim atakuje: ataki pochodzą z topora, zużywają wytrzymałość i można blokować toporem;
 - rycerz uczy się czaru i rzuca go, zużywając manę; bez many czar nie zostaje rzucony;
@@ -221,6 +319,7 @@ Wszystkie testy uruchomiłem w Unity 6000.6.3f1 w trybie wsadowym.
 - parowanie w aktywnym oknie zatrzymuje atak, który da się sparować; atak oznaczony jako nie do sparowania trafia mimo aktywnego okna;
 - spóźnione parowanie odsłania gracza, nie zamienia się w blok i nie pozwala na unik w trakcie zakończenia;
 - unik chroni tylko w oknie niewrażliwości; ataki obszarowe bez możliwości uniku trafiają zawsze;
+- unik przerywa lekki i ciężki atak w połowie zamachu, przerywa czar i zwraca manę; z końcówki uniku można od razu zaatakować;
 - wyczerpanie wytrzymałości podczas bloku przełamuje gardę;
 - flaszki życia i many działają, a picie da się przerwać;
 - regeneracja pochodzi z wyposażenia;
@@ -243,7 +342,7 @@ Poza tym testy sprawdzają:
 - wybór stylu animacji z danych ataku (cięcia na zmianę w serii, ciężki = z góry, pocisk = czar, szarża = pchnięcie, pazury ghula);
 - dopasowanie nazw klipów Mixamo do akcji gry (15 przypadków, w tym pułapka „stable” ≠ „stab”).
 
-**PlayMode: 18/18 zaliczonych w edytorze z oknem**, plus dwa testy zrzutów ekranu celowo pominięte (uruchamiają się tylko ze zmienną `TURRIS_SHOT_DIR`). W trybie wsadowym zalicza się 16 testów, a oba testy pada są pomijane, bo Unity nie wywołuje wtedy `OnGUI`. Testy działają w silniku, z prawdziwą fizyką i AI:
+**PlayMode: 23/23 zaliczonych w edytorze z oknem**, łącznie z galeriami zrzutów (uruchamianymi ze zmienną `TURRIS_SHOT_DIR`; bez niej są pomijane). W trybie wsadowym oba testy pada są pomijane, bo Unity nie wywołuje wtedy `OnGUI`. Testy działają w silniku, z prawdziwą fizyką i AI:
 
 - pełne podejście przez 5 pięter kończy się zwycięstwem, a popiół zostaje odczytany z pliku przez nowy serwis, co symuluje ponowne uruchomienie gry;
 - śmierć kończy się ekranem śmierci; szybki restart zaczyna od piętra I z zerową liczbą dusz i bez tymczasowych nagród, a popiół zostaje zachowany;
@@ -263,12 +362,18 @@ Poza tym testy sprawdzają:
   - `PlayerCombat` steruje animacją zgodnie z fazami, a zmiana broni przebudowuje wygląd;
   - każdy wróg ma właściwą sylwetkę;
   - sterownik klipów FBX ustawia czas klipu dokładnie według faz walki (sprawdzone na klipach wygenerowanych w kodzie, bo w projekcie nie ma modelu Humanoid);
-- galeria póz i zrzuty z gry, które obejrzałem i na tej podstawie poprawiłem wygląd (tarcza, szata, peleryna, wypad).
+- galeria póz i zrzuty z gry, które obejrzałem i na tej podstawie poprawiłem wygląd (tarcza, szata, peleryna, wypad);
+- szczegółowość: liczba części na postać (240–330) przy 15–22 rendererach;
+- areny: każda z trzech buduje się bez błędów, ma ponad 50 tys. wierzchołków, poniżej 80 rendererów, a kolizje nie mają rendererów;
+- efekty: wszystkie powstają bez błędów i same się sprzątają;
+- galerie aren i efektów, obejrzane i poprawione (zaprawa murów, jasność i wielkość efektów, zbyt duże rozbłyski).
 
-Testy wykryły i pomogły usunąć dwa błędy:
+Testy i przegląd zrzutów wykryły i pomogły usunąć m.in.:
 
 - premie procentowe do statystyk o wartości bazowej 0, takich jak moc czarów, nie działały;
-- przy bardzo wysokim FPS postacie nie mogły się ruszać, bo `CharacterController.minMoveDistance` odrzucał za małe przesunięcia.
+- przy bardzo wysokim FPS postacie nie mogły się ruszać, bo `CharacterController.minMoveDistance` odrzucał za małe przesunięcia;
+- `GameRoot` mógł uznać światło pochodni za słońce i rzucić wyjątek po jego zniszczeniu (teraz wybiera tylko światło kierunkowe);
+- kaptur maga zasłaniał twarz, a otwarte części szat były niewidoczne od środka (teraz są dwustronne).
 
 **Czego nie sprawdziłem.** Nie grałem ręcznie ani z klawiatury i myszy, ani z fizycznego pada. Bindingi pada zweryfikowałem wirtualnym urządzeniem Input System, ale nie sprawdzałem: martwych stref i czułości prawej gałki na prawdziwym sprzęcie, zmiany celu ruchem gałki, odczucia sterowania i kamery, czytelności HUD ani balansu trudności. Wymaga to sesji testowej w edytorze.
 
@@ -281,5 +386,6 @@ Testy wykryły i pomogły usunąć dwa błędy:
 - **Przeciwnicy nie parują** (`PlayerCombat.OnAttackParried` jest przygotowane). Nie ma też nawigacji NavMesh: areny są płaskie, więc AI porusza się bezpośrednio w stronę gracza i może utknąć za filarem.
 - **IMGUI** jest wystarczające dla prototypu, ale nie nadaje się do wersji docelowej. Nie ma wibracji pada ani zmiany przypisań przycisków z poziomu gry; przypisania są w `PlayerInputReader.cs`.
 - **Poziom jakości przedmiotu** skaluje modyfikatory i obrażenia, ale nie parametry gardy.
+- **Wydajność nie była mierzona na słabszym sprzęcie.** Na scenie jest kilka–kilkanaście dynamicznych świateł (w krypcie 12), kilkadziesiąt systemów cząsteczek i 65–120 tys. wierzchołków areny. `GameRoot` podnosi `QualitySettings.pixelLightCount` do 8.
 - **Brak dźwięku.**
 - **F9 w menu** to narzędzie deweloperskie do testowania odblokowań. Przed wydaniem trzeba je usunąć.

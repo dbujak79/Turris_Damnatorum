@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bfc9e3d0e146d4086347f0e38c03cf, type: 3}
+  m_Name: skill_shieldbash
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
+  id: skill_shieldbash
+  displayName: "Uderzenie tarcz\u0105"
+  description: "Szybkie pchni\u0119cie tarcz\u0105 \u2013 ma\u0142o obra\u017Ce\u0144, ale mocno \u0142amie postaw\u0119 (otwiera ripost\u0119)."
+  tags: 5
+  kind: 9
+  category: 1
+  manaCost: 0
+  castTime: 0.18
+  recovery: 0.35
+  cancelAfter: 0.2
+  staminaCost: 16
+  requirements: []
+  requiredTags: 4
+  intelligenceScaling: 0
+  attack:
+    name: "Uderzenie tarcz\u0105"
+    delivery: 0
+    damageType: 0
+    baseDamage: 0
+    windup: 0.18
+    active: 0.1
+    recovery: 0.35
+    cancelAfter: 0.2
+    reach: 2.2
+    radius: 1
+    lunge: 0
+    tracking: 360
+    blockable: 1
+    parryable: 1
+    dodgeable: 1
+    guardLoad: 48
+    poiseDamage: 60
+    heavy: 1
+    staminaCost: 0
+    projectileSpeed: 14
+    projectileCount: 1
+    spreadAngle: 0
+    animation: 0
+  amount: 60
+  duration: 0.1
+  cooldown: 6
+  charges: 1
+  extraChargeAtLevel: 0
+  cooldownReductionPerLevel: 0.06
+  weaponMultiplier: 0.8
+  arcAngle: 100
+  tickInterval: 0.35
+  moveMultiplier: 0.5
+  maxLevel: 4
+  powerPerLevel: 0.15
+  costReductionPerLevel: 0.06
+  color: {r: 0.92, g: 0.9, b: 0.72, a: 1}

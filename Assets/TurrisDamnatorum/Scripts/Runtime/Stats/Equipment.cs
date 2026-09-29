@@ -127,13 +127,58 @@ namespace Turris
     }
 
     [Serializable]
+    /// <summary>
+    /// Umiejętność w kolekcji podejścia: poziom i stan odnowienia. Odnowienie należy do umiejętności,
+    /// nie do slotu – przełożenie jej w inny slot niczego nie zeruje.
+    /// </summary>
     public class SpellInstance
     {
         public SpellDefinition definition;
         public int level;
+        /// <summary>Odblokowana na stałe (wraca w każdym podejściu); w przeciwnym razie zdobyta tylko na to podejście.</summary>
+        public bool permanent;
+        int chargesSpent;
+        float rechargeTimer;
+
         public SpellInstance(SpellDefinition def, int level = 0) { definition = def; this.level = level; }
         public string Name => level > 0 ? $"{definition.displayName} +{level}" : definition.displayName;
         public bool IsMaxLevel => level >= definition.maxLevel;
+
+        public int MaxCharges => definition.MaxCharges(level);
+        public int Charges => Math.Max(0, MaxCharges - chargesSpent);
+        public bool Ready => Charges > 0;
+        public float Cooldown => definition.CooldownAt(level);
+        /// <summary>Sekundy do odnowienia najbliższego ładunku (0 = wszystkie gotowe).</summary>
+        public float RechargeRemaining => chargesSpent > 0 ? rechargeTimer : 0f;
+        /// <summary>0..1 postęp odnawiania najbliższego ładunku (1 = gotowe).</summary>
+        public float RechargeProgress => chargesSpent > 0 && Cooldown > 0 ? 1f - rechargeTimer / Cooldown : 1f;
+
+        public bool TryUse()
+        {
+            if (!Ready) return false;
+            if (chargesSpent == 0) rechargeTimer = Cooldown;
+            chargesSpent++;
+            return true;
+        }
+
+        /// <summary>Zwrot ładunku (użycie przerwane, zanim cokolwiek się stało).</summary>
+        public void Refund()
+        {
+            if (chargesSpent <= 0) return;
+            chargesSpent--;
+            if (chargesSpent == 0) rechargeTimer = 0;
+        }
+
+        public void Tick(float dt)
+        {
+            if (chargesSpent <= 0) return;
+            rechargeTimer -= dt;
+            if (rechargeTimer > 0) return;
+            chargesSpent--;
+            rechargeTimer = chargesSpent > 0 ? Cooldown : 0f;
+        }
+
+        public void ResetCooldown() { chargesSpent = 0; rechargeTimer = 0; }
     }
 
     public class BoonStack

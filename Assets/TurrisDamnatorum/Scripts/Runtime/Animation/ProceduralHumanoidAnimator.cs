@@ -23,6 +23,11 @@ namespace Turris
         float gaitPhase;
         float idleTime;
         float moveBlend;
+        // Krótkie przenikanie przy zmianie akcji (np. unik przerywający zamach), by poza nie przeskakiwała.
+        const float TransitionTime = 0.09f;
+        AnimAction lastAction;
+        AttackAnim lastAttack;
+        float sinceActionChange = TransitionTime;
         readonly Dictionary<AttackAnim, AttackKeys> attackCache = new Dictionary<AttackAnim, AttackKeys>();
         Pose ready, block, parryWind, parryActive, drink, tucked, dead;
         RigLook cachedLook;
@@ -64,6 +69,14 @@ namespace Turris
             if (rig == null) return;
             if (cachedLook != rig.Look) Refresh();
             idleTime += dt;
+            if (s.action != lastAction || (s.action == AnimAction.Attack && s.attack != lastAttack))
+            {
+                // Nowa akcja z bezczynności startuje z pozy gotowości – przenikanie potrzebne tylko przy przerwaniu innej akcji.
+                sinceActionChange = lastAction == AnimAction.None ? TransitionTime : 0f;
+                lastAction = s.action;
+                lastAttack = s.attack;
+            }
+            else sinceActionChange += dt;
 
             // --- Ruch
             Vector3 localVel = Quaternion.Inverse(character.rotation) * worldVelocity;
@@ -97,6 +110,7 @@ namespace Turris
                     exact = true;
                     if (s.attack == AttackAnim.Leap && s.phase == ActionPhase.Active)
                         pivotOffset.y = Mathf.Sin(Mathf.Clamp01(s.phaseProgress) * Mathf.PI) * 0.35f;
+                    if (s.spinAngle != 0f) pivotRot = Quaternion.AngleAxis(s.spinAngle, Vector3.up);
                     break;
                 case AnimAction.Block:
                     target = block;
@@ -110,7 +124,7 @@ namespace Turris
                 case AnimAction.Dodge:
                 {
                     exact = true;
-                    float rollDur = Mathf.Max(0.2f, s.actionDuration * 0.62f);
+                    float rollDur = Mathf.Max(0.2f, s.rollDuration > 0f ? s.rollDuration : s.actionDuration * 0.62f);
                     float t = Mathf.Clamp01(s.actionTime / rollDur);
                     float tuck = Mathf.Sin(t * Mathf.PI);
                     target = Pose.Lerp(ready, tucked, Mathf.Clamp01(tuck * 1.6f));
@@ -118,7 +132,9 @@ namespace Turris
                     localDir.y = 0;
                     if (localDir.sqrMagnitude < 0.01f) localDir = Vector3.back;
                     Vector3 axis = Vector3.Cross(Vector3.up, localDir.normalized);
-                    pivotRot = Quaternion.AngleAxis(360f * Mathf.SmoothStep(0, 1, t), axis);
+                    // Najpierw zgięcie, potem obrót, na końcu chwila na wstanie – obrót nie wypełnia całego czasu.
+                    float spin = Mathf.Clamp01((t - 0.08f) / 0.8f);
+                    pivotRot = Quaternion.AngleAxis(360f * Mathf.SmoothStep(0, 1, spin), axis);
                     break;
                 }
                 case AnimAction.Backstep:
@@ -163,7 +179,8 @@ namespace Turris
             }
 
             if (!hasCurrent) { current = target; hasCurrent = true; }
-            else if (exact) current = target;
+            else if (exact && sinceActionChange >= TransitionTime) current = target;
+            else if (exact) current = Pose.Lerp(current, target, 1f - Mathf.Exp(-45f * dt));
             else current = Pose.Lerp(current, target, 1f - Mathf.Exp(-18f * dt));
 
             // Kołysanie rąk przy chodzie (tylko tam, gdzie poza nie kontroluje rąk w pełni).

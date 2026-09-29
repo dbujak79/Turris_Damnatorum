@@ -211,32 +211,63 @@ namespace Turris
             var bastionAmulet = Armor("amulet_bastion", "Amulet bastionu", ItemKind.Amulet, 0, "Zablokowane ciosy zasilają manę.", BuildTag.Shield | BuildTag.Guard | BuildTag.Magic, Flat(StatType.MaxStamina, 10));
             bastionAmulet.effects.Add(Fx(PassiveEffectType.BlockManaGain, 4));
 
-            // ============================================================ CZARY
-            SpellDefinition Spell(string id, string name, SpellKind kind, float mana, float cast, float recovery, int reqInt, string desc, BuildTag tags)
+            // ============================================================ UMIEJĘTNOŚCI: CZARY
+            SpellDefinition Spell(string id, string name, SpellKind kind, float mana, float cast, float recovery, int reqInt, string desc, BuildTag tags, float cooldown = 1f)
             {
                 var s = Make<SpellDefinition>(id, name, desc, tags | BuildTag.Magic);
-                s.kind = kind; s.manaCost = mana; s.castTime = cast; s.recovery = recovery;
+                s.kind = kind; s.category = SkillCategory.Spell; s.manaCost = mana; s.castTime = cast; s.recovery = recovery; s.cooldown = cooldown;
                 if (reqInt > 0) s.requirements.Add(Req(AttributeType.Intelligence, reqInt));
                 return s;
             }
 
-            var bolt = Spell("spell_bolt", "Pocisk arkanów", SpellKind.Projectile, 12, 0.4f, 0.35f, 8, "Szybki pocisk namierzający cel.", BuildTag.None);
+            var bolt = Spell("spell_bolt", "Pocisk arkanów", SpellKind.Projectile, 12, 0.4f, 0.35f, 8, "Szybki pocisk namierzający cel.", BuildTag.None, 0.6f);
             bolt.attack = Proj("Pocisk arkanów", 38, 0.4f, 22f, poise: 10, guardLoad: 15);
             bolt.color = new Color(0.45f, 0.65f, 1f);
-            var nova = Spell("spell_nova", "Fala mocy", SpellKind.Nova, 22, 0.55f, 0.5f, 12, "Odpycha wrogów wokół. Silnie narusza postawę.", BuildTag.None);
+            var nova = Spell("spell_nova", "Fala mocy", SpellKind.Nova, 22, 0.55f, 0.5f, 12, "Odpycha wrogów wokół. Silnie narusza postawę.", BuildTag.None, 6f);
             nova.attack = Atk("Fala mocy", 45, 0.55f, 0.1f, 0.5f, 0, 3.5f, 0, 0, 45, 40, type: DamageType.Magic, delivery: AttackDelivery.AreaAroundSelf);
             nova.attack.parryable = false;
             nova.color = new Color(0.6f, 0.5f, 1f);
-            var spear = Spell("spell_spear", "Włócznia potępionych", SpellKind.Projectile, 30, 0.8f, 0.5f, 14, "Wolny, bardzo silny pocisk.", BuildTag.None);
+            var spear = Spell("spell_spear", "Włócznia potępionych", SpellKind.Projectile, 30, 0.8f, 0.5f, 14, "Wolny, bardzo silny pocisk.", BuildTag.None, 3f);
             spear.attack = Proj("Włócznia", 85, 0.8f, 13f, poise: 45, guardLoad: 45, heavy: true);
             spear.color = new Color(0.8f, 0.3f, 1f);
-            var scatter = Spell("spell_scatter", "Rozprysk arkanów", SpellKind.Projectile, 20, 0.5f, 0.45f, 10, "Trzy pociski w wachlarzu – dobre na grupy.", BuildTag.None);
+            var scatter = Spell("spell_scatter", "Rozprysk arkanów", SpellKind.Projectile, 20, 0.5f, 0.45f, 10, "Trzy pociski w wachlarzu – dobre na grupy.", BuildTag.None, 2f);
             scatter.attack = Proj("Rozprysk", 24, 0.5f, 18f, 3, 15f, poise: 8, guardLoad: 12);
             scatter.color = new Color(0.4f, 0.9f, 1f);
-            var heal = Spell("spell_heal", "Kojące światło", SpellKind.Heal, 30, 0.9f, 0.4f, 8, "Leczenie rozłożone w czasie – ryzykowne w walce.", BuildTag.Flask);
+            var heal = Spell("spell_heal", "Kojące światło", SpellKind.Heal, 30, 0.9f, 0.4f, 8, "Leczenie rozłożone w czasie – ryzykowne w walce.", BuildTag.Flask, 14f);
             heal.amount = 90; heal.duration = 3f; heal.intelligenceScaling = 2f; heal.color = new Color(1f, 0.9f, 0.5f);
-            var enchant = Spell("spell_enchant", "Zaklęte ostrze", SpellKind.WeaponBuff, 25, 0.6f, 0.35f, 8, "Hybryda: broń zadaje dodatkowe obrażenia magiczne.", BuildTag.Melee);
+            var enchant = Spell("spell_enchant", "Zaklęte ostrze", SpellKind.WeaponBuff, 25, 0.6f, 0.35f, 8, "Hybryda: broń zadaje dodatkowe obrażenia magiczne.", BuildTag.Melee, 20f);
             enchant.amount = 18; enchant.duration = 20f; enchant.intelligenceScaling = 2f; enchant.color = new Color(0.5f, 0.7f, 1f);
+            var barrier = Spell("spell_barrier", "Kamienna osłona", SpellKind.Barrier, 25, 0.5f, 0.35f, 10, "Osłona pochłania obrażenia; w pełni pochłonięty cios nie przerywa akcji.", BuildTag.Guard, 16f);
+            barrier.amount = 70; barrier.duration = 8f; barrier.intelligenceScaling = 2f; barrier.color = new Color(0.8f, 0.66f, 0.42f);
+
+            // ============================================================ UMIEJĘTNOŚCI: TECHNIKI BRONIĄ
+            // Obrażenia = lekki atak aktualnej broni × mnożnik, więc techniki rosną razem z bronią i jej ulepszeniami.
+            SpellDefinition Tech(string id, string name, SpellKind kind, float stamina, float cast, float active, float recovery, float cooldown,
+                float mult, float reach, float radius, float poise, string desc, BuildTag tags)
+            {
+                var s = Make<SpellDefinition>(id, name, desc, tags | BuildTag.Melee);
+                s.kind = kind; s.category = SkillCategory.Technique;
+                s.manaCost = 0; s.staminaCost = stamina; s.castTime = cast; s.recovery = recovery; s.cancelAfter = 0.2f;
+                s.cooldown = cooldown; s.weaponMultiplier = mult; s.intelligenceScaling = 0f; s.duration = active;
+                s.attack = Atk(name, 0, cast, active, recovery, reach, radius, 0, 0, poise, poise * 0.8f, poise >= 50);
+                return s;
+            }
+
+            var cleave = Tech("skill_cleave", "Rozpłatanie", SpellKind.Cleave, 22, 0.32f, 0.12f, 0.4f, 5f, 1.6f, 3.0f, 1f, 30,
+                "Szeroki cios w łuku przed sobą – odpowiedź na grupę.", BuildTag.None);
+            cleave.arcAngle = 160f; cleave.color = new Color(1f, 0.78f, 0.45f);
+            var bash = Tech("skill_shieldbash", "Uderzenie tarczą", SpellKind.ShieldBash, 16, 0.18f, 0.1f, 0.35f, 6f, 0.8f, 2.2f, 1f, 60,
+                "Szybkie pchnięcie tarczą – mało obrażeń, ale mocno łamie postawę (otwiera ripostę).", BuildTag.Shield);
+            bash.arcAngle = 100f; bash.requiredTags = BuildTag.Shield; bash.color = new Color(0.92f, 0.9f, 0.72f);
+            var charge = Tech("skill_charge", "Szarża", SpellKind.Charge, 20, 0.25f, 0.35f, 0.35f, 7f, 1.3f, 6f, 0.9f, 35,
+                "Zryw naprzód, trafia każdego na drodze. Bez niewrażliwości – to atak, nie unik.", BuildTag.Agile);
+            charge.extraChargeAtLevel = 3; charge.color = new Color(1f, 0.55f, 0.25f);
+            var whirl = Tech("skill_whirlwind", "Młynek", SpellKind.Whirlwind, 30, 0.25f, 1.5f, 0.45f, 10f, 0.7f, 0f, 2.6f, 12,
+                "Wirujące cięcia wokół; można powoli się poruszać. Unik lub trafienie przerywają młynek.", BuildTag.Melee);
+            whirl.tickInterval = 0.35f; whirl.moveMultiplier = 0.5f; whirl.requirements.Add(Req(AttributeType.Strength, 12)); whirl.color = new Color(0.85f, 0.88f, 1f);
+            var quakeSkill = Tech("skill_quake", "Trzęsienie", SpellKind.Quake, 32, 0.55f, 0.12f, 0.6f, 9f, 2.0f, 1.6f, 3.2f, 70,
+                "Uderzenie w ziemię przed sobą: duże obrażenia i łamanie postawy w kręgu.", BuildTag.Heavy);
+            quakeSkill.requirements.Add(Req(AttributeType.Strength, 14)); quakeSkill.color = new Color(0.82f, 0.6f, 0.35f);
 
             // ============================================================ WZMOCNIENIA / TALENTY
             BoonDefinition Boon(string id, string name, string desc, BuildTag tags, int maxStacks, params StatModifier[] mods)
@@ -279,9 +310,10 @@ namespace Turris
             var tVigilance = Boon("talent_vigilance", "Czujność", "Talent startowy dostępny dla każdego.", BuildTag.Parry | BuildTag.Agile, 1, Flat(StatType.ParryWindow, 0.03f), Flat(StatType.MaxStamina, 10));
 
             // ============================================================ KLASY
-            var knight = Make<ClassDefinition>("class_knight", "Rycerz", "Miecz, tarcza i solidny pancerz. Statystyki sprzyjają walce wręcz. Może później uczyć się czarów.");
+            var knight = Make<ClassDefinition>("class_knight", "Rycerz", "Miecz, tarcza i solidny pancerz. Techniki: Rozpłatanie i Uderzenie tarczą. Może później uczyć się czarów.");
             knight.vigor = 12; knight.endurance = 12; knight.mind = 6; knight.strength = 14; knight.dexterity = 12; knight.intelligence = 8;
             knight.startingItems.AddRange(new[] { sword, heater, chain });
+            knight.startingSpells.AddRange(new[] { cleave, bash });
             knight.healthFlasks = 4; knight.manaFlasks = 1; knight.color = new Color(0.7f, 0.72f, 0.8f);
 
             var mage = Make<ClassDefinition>("class_mage", "Mag", "Kostur, dwa czary i wysoka Inteligencja. Może później sięgnąć po topór i ciężką zbroję.");
@@ -386,7 +418,8 @@ namespace Turris
             cfg.baseItemPool.AddRange(new[] { sword, axe, staff, heater, buckler, chain, robe, plate, helm, hood, gauntlets, spellGloves,
                 pilgrimBelt, athleteBelt, scoutBoots, ironBoots, bloodRing, manaRing, strRing, intRing, parryAmulet, casterAmulet, bastionAmulet });
             cfg.baseBoonPool.AddRange(new[] { bIron, bVigor, bBreath, bWrath, bWell, bArcane, bBlood, bFlask, bManaFlask, bParry, bTitan, bMind, bAgile, bVamp, bAlch, bBulwark });
-            cfg.baseSpellPool.AddRange(new[] { bolt, nova, enchant });
+            // Umiejętności do zdobycia tymczasowo (na jedno podejście). Te z listy odblokowań dochodzą, gdy gracz dotrze na ich piętro.
+            cfg.baseSpellPool.AddRange(new[] { bolt, nova, enchant, cleave, bash, charge });
 
             // ============================================================ ODBLOKOWANIA
             UnlockDefinition Unlock(string id, UnlockKind kind, ContentDefinition target, int ash, int loadout, bool byDefault = false, int floor = 0, int victory = -1)
@@ -408,6 +441,13 @@ namespace Turris
             Unlock("unlock_heal", UnlockKind.Spell, heal, 20, 2);
             Unlock("unlock_scatter", UnlockKind.Spell, scatter, 25, 2, floor: 3);
             Unlock("unlock_spear", UnlockKind.Spell, spear, 35, 3, floor: 4);
+            // Umiejętności odblokowane na stałe są w kolekcji każdego podejścia (bez kosztu w budżecie).
+            Unlock("unlock_cleave", UnlockKind.Spell, cleave, 10, 0);
+            Unlock("unlock_charge", UnlockKind.Spell, charge, 15, 0);
+            Unlock("unlock_shieldbash", UnlockKind.Spell, bash, 15, 0);
+            Unlock("unlock_barrier", UnlockKind.Spell, barrier, 20, 0);
+            Unlock("unlock_whirlwind", UnlockKind.Spell, whirl, 25, 0, floor: 2);
+            Unlock("unlock_quake", UnlockKind.Spell, quakeSkill, 30, 0, floor: 3);
             Unlock("unlock_bloodriposte", UnlockKind.Boon, tBloodRiposte, 20, 2);
             Unlock("unlock_spellguard", UnlockKind.Boon, tSpellguard, 20, 2);
             Unlock("unlock_survivor", UnlockKind.Boon, tSurvivor, 15, 2);

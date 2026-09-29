@@ -240,6 +240,21 @@ namespace Turris
             });
         }
 
+        /// <summary>Płaski czworokąt 1×1 leżący na ziemi (normalna +Y), z UV – dla kręgów i fal.</summary>
+        public static Mesh GroundQuad()
+        {
+            return Cached("groundquad", () =>
+            {
+                var m = new Mesh();
+                m.SetVertices(new[] { new Vector3(-0.5f, 0, -0.5f), new Vector3(0.5f, 0, -0.5f), new Vector3(0.5f, 0, 0.5f), new Vector3(-0.5f, 0, 0.5f) });
+                m.SetUVs(0, new[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) });
+                m.SetTriangles(new[] { 0, 2, 1, 0, 3, 2 }, 0);
+                m.RecalculateNormals();
+                m.RecalculateBounds();
+                return m;
+            });
+        }
+
         // ------------------------------------------------------------------ Kształty specjalne
 
         /// <summary>

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04a8fe60f9299784cac74fcbd7b0d11b, type: 3}
+  m_Name: unlock_shieldbash
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.UnlockDefinition
+  id: unlock_shieldbash
+  displayName: "Uderzenie tarcz\u0105"
+  description: "Szybkie pchni\u0119cie tarcz\u0105 \u2013 ma\u0142o obra\u017Ce\u0144, ale mocno \u0142amie postaw\u0119 (otwiera ripost\u0119)."
+  tags: 0
+  kind: 1
+  target: {fileID: 11400000, guid: 00ed47512d8e79642a7fa495669f4fde, type: 2}
+  ashCost: 15
+  loadoutCost: 0
+  unlockedByDefault: 0
+  requiredBestFloor: 0
+  requiredVictoryTier: -1

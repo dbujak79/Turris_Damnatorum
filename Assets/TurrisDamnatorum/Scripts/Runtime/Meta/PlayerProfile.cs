@@ -21,6 +21,8 @@ namespace Turris
         public string lastClassId;
         public int lastDifficultyTier;
         public List<string> lastLoadout = new List<string>();
+        /// <summary>Ostatni układ slotów umiejętności (id umiejętności, "" = pusty slot) – odtwarzany na starcie podejścia.</summary>
+        public List<string> skillSlots = new List<string>();
 
         public bool IsUnlocked(string id) => unlocked.Contains(id);
     }

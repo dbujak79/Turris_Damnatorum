@@ -196,6 +196,36 @@ namespace Turris.Tests
         }
 
         [UnityTest]
+        public IEnumerator Techniques_ChargeMovesAndHits_CleaveScalesWithWeapon()
+        {
+            var bundle = DefaultContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "class_knight");
+            var dummy = ScriptableObject.CreateInstance<EnemyDefinition>();
+            dummy.displayName = "Manekin"; dummy.maxHealth = 1000; dummy.maxPoise = 10000; dummy.scale = 1f; dummy.moveSpeed = 0f; dummy.strafeChance = 0f;
+            var e = SpawnEnemy(dummy, new Vector3(0, 0.05f, 3.6f), pc, bundle.config.balance);
+            yield return new WaitForSeconds(0.1f);
+
+            // Szarża: zryw naprzód, trafia wroga na drodze.
+            var charge = pc.Run.LearnSpell(bundle.Get<SpellDefinition>("skill_charge"));
+            pc.Run.AssignSlot(charge, 2);
+            pc.RefreshBuild();
+            Vector3 start = pc.transform.position;
+            float chargeDmg = pc.Build.WeaponDamage(pc.Build.weapon.light) * pc.Skill(2).power;
+            pc.RequestSkill(2);
+            yield return new WaitForSeconds(1.0f);
+            Assert.Greater(Vector3.Distance(start, pc.transform.position), 1.5f, "Szarża przesuwa bohatera");
+            Assert.AreEqual(1000f - chargeDmg, e.Health.Current, 0.5f, "Szarża trafia wroga na drodze dokładnie raz");
+
+            // Rozpłatanie: jedno trafienie = lekki atak broni × mnożnik techniki.
+            float hp = e.Health.Current;
+            float cleaveDmg = pc.Build.WeaponDamage(pc.Build.weapon.light) * pc.Skill(0).power;
+            pc.RequestSkill(0);
+            Assert.AreEqual(ActionType.Cast, pc.Actions.Current);
+            yield return new WaitForSeconds(1.0f);
+            Assert.AreEqual(hp - cleaveDmg, e.Health.Current, 0.5f);
+        }
+
+        [UnityTest]
         public IEnumerator EnemyAI_AttacksBlockingKnight_ShieldAbsorbsPhysical()
         {
             var bundle = DefaultContent.Create();
@@ -244,7 +274,7 @@ namespace Turris.Tests
                 if (!e.IsTelegraphing) break;
                 float windup = e.CurrentAttack.attack.windup;
                 // Uruchom parowanie tak, by aktywne okno objęło koniec zamachu.
-                float delay = windup - parry.startup - parry.activeWindow * 0.5f;
+                float delay = windup - pc.ScaleStartup(parry.startup) - parry.activeWindow * 0.5f;
                 float waited = 0;
                 while (waited < delay) { waited += Time.deltaTime; yield return null; }
                 pc.Request(ActionType.Parry);

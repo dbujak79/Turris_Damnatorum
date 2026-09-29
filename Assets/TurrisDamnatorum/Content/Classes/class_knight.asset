@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ClassDefinition
   id: class_knight
   displayName: Rycerz
-  description: "Miecz, tarcza i solidny pancerz. Statystyki sprzyjaj\u0105 walce wr\u0119cz. Mo\u017Ce p\xF3\u017Aniej uczy\u0107 si\u0119 czar\xF3w."
+  description: "Miecz, tarcza i solidny pancerz. Techniki: Rozp\u0142atanie i Uderzenie tarcz\u0105. Mo\u017Ce p\xF3\u017Aniej uczy\u0107 si\u0119 czar\xF3w."
   tags: 0
   vigor: 12
   endurance: 12
@@ -26,8 +26,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 1e8d157ae3063cc47bddd2143e676dfe, type: 2}
   - {fileID: 11400000, guid: 94dd009415e0d5b45ab55fb3280fbdb3, type: 2}
   - {fileID: 11400000, guid: 8386e7fa5789f05439ca843032b39bf3, type: 2}
-  startingSpells: []
+  startingSpells:
+  - {fileID: 11400000, guid: d8b4d27e3d1552d49a554cf62f5d4772, type: 2}
+  - {fileID: 11400000, guid: 00ed47512d8e79642a7fa495669f4fde, type: 2}
   startingTalents: []
   healthFlasks: 4
   manaFlasks: 1
   color: {r: 0.7, g: 0.72, b: 0.8, a: 1}
+  visual: {fileID: 0}

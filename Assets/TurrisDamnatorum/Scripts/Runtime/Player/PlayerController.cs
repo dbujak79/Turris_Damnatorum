@@ -7,7 +7,8 @@ namespace Turris
     public class PlayerController : MonoBehaviour
     {
         public CameraRig cameraRig;
-        public float turnSpeed = 720f;
+        [Tooltip("Awaryjna szybkość obrotu, gdy brak konfiguracji (właściwa wartość: GameConfig → balance.playerTurnSpeed).")]
+        public float turnSpeed = 1080f;
         public float lockOnRange = 25f;
         public float flickThreshold = 6f;
 
@@ -15,6 +16,8 @@ namespace Turris
         PlayerCombat combat;
         CharacterController cc;
         float verticalVelocity;
+        /// <summary>Wygładzona prędkość pozioma swobodnego ruchu (przyspieszanie/hamowanie).</summary>
+        Vector3 planarVelocity;
         float switchCooldown;
 
         public EnemyBrain LockTarget { get; private set; }
@@ -31,8 +34,7 @@ namespace Turris
             input.HeavyPressed += () => { if (InputEnabled) combat.Request(ActionType.HeavyAttack); };
             input.ParryPressed += () => { if (InputEnabled) combat.Request(ActionType.Parry); };
             input.DodgePressed += () => { if (InputEnabled) combat.Request(ActionType.Dodge); };
-            input.CastPressed += () => { if (InputEnabled) combat.Request(ActionType.Cast); };
-            input.CycleSpellPressed += () => { if (InputEnabled) combat.CycleSpell(); };
+            input.SkillPressed += slot => { if (InputEnabled) combat.RequestSkill(slot); };
             input.FlaskHealthPressed += () => { if (InputEnabled) combat.RequestFlask(false); };
             input.FlaskManaPressed += () => { if (InputEnabled) combat.RequestFlask(true); };
             input.LockOnPressed += () => { if (InputEnabled) ToggleLock(); };
@@ -46,6 +48,7 @@ namespace Turris
             transform.SetPositionAndRotation(pos, rot);
             cc.enabled = true;
             verticalVelocity = 0;
+            planarVelocity = Vector3.zero;
             LockTarget = null;
             combat.LockTarget = null;
         }
@@ -82,7 +85,9 @@ namespace Turris
             float speed = b.moveSpeed * (1f + combat.Build.stats[StatType.MoveSpeed] / 100f);
             Vector3 horizontal = Vector3.zero;
             Vector3? face = null;
-            float faceSpeed = turnSpeed;
+            float faceSpeed = b.playerTurnSpeed > 0 ? b.playerTurnSpeed : turnSpeed;
+            // true: prędkość wynika z ruchu swobodnego i jest wygładzana; false: narzuca ją akcja (unik, wypad).
+            bool steered = true;
 
             bool sprint = false;
             switch (cur)
@@ -101,32 +106,54 @@ namespace Turris
                     break;
                 case ActionType.Dodge:
                 {
+                    // Przemieszczenie trwa tyle co przewrót: prawie stała prędkość w toczeniu i łagodne wyhamowanie
+                    // przy wstawaniu (profil 1 − u², współczynnik 1,5 zachowuje dystans).
                     var d = combat.Build.dodge;
-                    float moveTime = d.invulnStart + d.invulnDuration + 0.15f;
-                    if (actions.Elapsed < moveTime) horizontal = combat.DodgeDirection * (d.distance / moveTime);
+                    float moveTime = Mathf.Max(0.2f, d.rollDuration);
+                    float u = actions.Elapsed / moveTime;
+                    horizontal = u < 1f ? combat.DodgeDirection * (1.5f * d.distance / moveTime * (1f - u * u)) : Vector3.zero;
+                    steered = false;
                     break;
                 }
                 case ActionType.LightAttack:
                 case ActionType.HeavyAttack:
                 {
                     var atk = cur == ActionType.LightAttack ? combat.Build.weapon.light : combat.Build.weapon.heavy;
-                    float t = atk.windup + atk.active;
+                    float t = combat.AttackWindup + combat.AttackActive;
                     if (actions.Elapsed < t && t > 0) horizontal = transform.forward * (atk.lunge / t);
-                    if (actions.Elapsed < atk.windup * 0.6f)
+                    steered = false;
+                    if (actions.Elapsed < combat.AttackWindup * 0.6f)
                     {
                         face = LockTarget != null ? DirTo(LockTarget.transform.position) : (intent.sqrMagnitude > 0.01f ? intent : (Vector3?)null);
-                        faceSpeed = atk.tracking;
+                        faceSpeed = atk.tracking * Mathf.Max(0.1f, b.playerActionSpeed);
                     }
                     break;
                 }
                 case ActionType.Cast:
-                    if (actions.Phase == ActionPhase.Startup && LockTarget != null) face = DirTo(LockTarget.transform.position);
+                {
+                    var skill = combat.ActiveSkill?.Def;
+                    if (actions.Phase == ActionPhase.Startup)
+                        face = LockTarget != null ? DirTo(LockTarget.transform.position) : (skill != null && !skill.IsSpell && intent.sqrMagnitude > 0.01f ? intent : (Vector3?)null);
+                    if (combat.SkillMotion != Vector3.zero) { horizontal = combat.SkillMotion; steered = false; }
+                    else if (skill != null && skill.kind == SpellKind.Whirlwind && actions.Phase == ActionPhase.Active)
+                        horizontal = intent * speed * skill.moveMultiplier; // młynek: powolne sterowanie w trakcie wirowania
                     break;
+                }
                 case ActionType.Riposte:
                     if (LockTarget != null) face = DirTo(LockTarget.transform.position);
                     break;
             }
             combat.Sprinting = sprint;
+
+            // Swobodny ruch przyspiesza i hamuje płynnie; akcje (unik, wypad) narzucają prędkość wprost,
+            // a po nich ruch płynnie przejmuje pęd zamiast zatrzymywać się w miejscu.
+            if (steered)
+            {
+                bool braking = horizontal.sqrMagnitude < planarVelocity.sqrMagnitude || Vector3.Dot(horizontal, planarVelocity) < 0f;
+                float accel = braking ? b.moveDeceleration : b.moveAcceleration;
+                planarVelocity = accel > 0 ? Vector3.MoveTowards(planarVelocity, horizontal, accel * dt) : horizontal;
+            }
+            else planarVelocity = horizontal;
 
             if (face.HasValue && face.Value.sqrMagnitude > 0.001f)
             {
@@ -136,7 +163,7 @@ namespace Turris
 
             if (cc.isGrounded && verticalVelocity < 0) verticalVelocity = -2f;
             verticalVelocity += Physics.gravity.y * dt;
-            cc.Move((horizontal + Vector3.up * verticalVelocity) * dt);
+            cc.Move((planarVelocity + Vector3.up * verticalVelocity) * dt);
         }
 
         Vector3 DirTo(Vector3 p)

@@ -30,6 +30,8 @@ namespace Turris
         public bool hasShield;
         public bool weaponGuard;        // blok bronią (brak tarczy)
         public Vector3 dodgeDirection;  // świat
+        public float rollDuration;      // czas przewrotu uniku; 0 = wyliczany z actionDuration
+        public float spinAngle;         // obrót całego ciała wokół osi pionowej (młynek), stopnie
     }
 
     public interface ICharacterAnimSource

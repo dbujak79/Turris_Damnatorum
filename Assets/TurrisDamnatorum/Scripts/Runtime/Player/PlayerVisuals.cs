@@ -12,6 +12,7 @@ namespace Turris
         PlayerCombat combat;
         CharacterVisual visual;
         string lastLookKey;
+        ParticleSystem buffAura;
 
         void Awake()
         {
@@ -66,8 +67,17 @@ namespace Turris
             }
             visual.SetTint(tint, amount);
 
-            if (combat.WeaponBuffTime > 0) visual.SetWeaponGlow(new Color(0.45f, 0.65f, 1f), 0.6f + 0.2f * Mathf.Sin(Time.time * 6f));
-            else if (a.Current == ActionType.Cast && a.Phase != ActionPhase.Recovery) visual.SetWeaponGlow(new Color(0.5f, 0.6f, 1f), 0.4f + 0.6f * a.PhaseProgress);
+            // Zaklęte ostrze: poświata broni + drobinki unoszące się z klingi.
+            if (combat.WeaponBuffTime > 0 && buffAura == null && visual.Rig != null)
+                buffAura = FxLibrary.Aura(visual.Rig.WeaponSocket, new Vector3(0, 0, 0.55f), combat.WeaponBuffColor, 45f, 0.28f, 0.08f);
+            if (combat.WeaponBuffTime <= 0 && buffAura != null)
+            {
+                buffAura.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+                Destroy(buffAura.gameObject, 1f);
+                buffAura = null;
+            }
+            if (combat.WeaponBuffTime > 0) visual.SetWeaponGlow(combat.WeaponBuffColor, 0.6f + 0.2f * Mathf.Sin(Time.time * 6f));
+            else if (a.Current == ActionType.Cast && a.Phase != ActionPhase.Recovery) visual.SetWeaponGlow(combat.ActiveSkillColor, 0.4f + 0.6f * a.PhaseProgress);
             else visual.SetWeaponGlow(Color.black, 0f);
         }
     }

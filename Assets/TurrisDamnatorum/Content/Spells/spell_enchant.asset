@@ -51,6 +51,7 @@ MonoBehaviour:
     spreadAngle: 0
   amount: 18
   duration: 20
+  cooldown: 20
   maxLevel: 4
   powerPerLevel: 0.15
   costReductionPerLevel: 0.06

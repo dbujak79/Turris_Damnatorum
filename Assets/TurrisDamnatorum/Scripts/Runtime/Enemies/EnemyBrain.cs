@@ -204,7 +204,8 @@ namespace Turris
             {
                 PhaseIndex++;
                 CombatEvents.RaiseMessage(Def.phases[PhaseIndex - 1].announcement, new Color(1f, 0.3f, 0.3f));
-                VisualFx.Ring(transform.position, 4f, new Color(1f, 0.2f, 0.2f), 0.8f);
+                FxLibrary.Shockwave(transform.position, new Color(1f, 0.2f, 0.15f), 6f);
+                FxLibrary.Flash(AimPoint, new Color(1f, 0.3f, 0.15f), 2.5f);
                 Poise.SetCurrent(Poise.Max);
             }
         }
@@ -261,6 +262,7 @@ namespace Turris
             dir.y = 0;
             evadeDir = dir.sqrMagnitude > 0.001f ? dir.normalized : -transform.forward;
             evadeSpeed = distance / time;
+            FxLibrary.Dust(transform.position, Def.scale);
             stateTimer = time;
             MarkState(time);
             CurrentState = State.Evading;
@@ -308,8 +310,10 @@ namespace Turris
             if (a.delivery == AttackDelivery.AreaAroundSelf)
             {
                 var c = TelegraphColors.For(a.Telegraph); c.a = 1f;
-                marker = VisualFx.GroundMarker(transform.position, a.radius, c * 0.6f);
+                marker = VisualFx.GroundMarker(transform.position, a.radius, c);
             }
+            if (a.delivery == AttackDelivery.Projectile && visual != null)
+                FxLibrary.Gather(visual.RightHand != null ? visual.RightHand : transform, TelegraphColors.For(a.Telegraph), a.windup / Mathf.Max(0.1f, SpeedMult));
         }
 
         Vector3 TickAttack(float dt)
@@ -324,7 +328,12 @@ namespace Turris
                 case ActionPhase.Startup:
                     if (attackT < a.windup * 0.75f) FacePlayer(a.tracking, dt);
                     move = transform.forward * lungeSpeed * speed * LungeGate();
-                    if (marker != null) marker.transform.position = transform.position + Vector3.up * 0.03f;
+                    if (marker != null)
+                    {
+                        marker.transform.position = transform.position + Vector3.up * 0.03f;
+                        var decal = marker.GetComponent<FxDecal>();
+                        if (decal != null) decal.Progress = Mathf.Clamp01(attackT / Mathf.Max(0.01f, a.windup));
+                    }
                     if (attackT >= a.windup)
                     {
                         attackPhase = ActionPhase.Active;
@@ -493,7 +502,6 @@ namespace Turris
                     CombatEvents.RaiseMessage("Garda wroga przełamana!", new Color(1f, 0.8f, 0.3f));
                     break;
                 case HitOutcome.Blocked:
-                    VisualFx.Flash(transform.position + transform.forward * 0.6f + Vector3.up * 1.1f, new Color(1f, 0.7f, 0.3f), 0.2f);
                     break;
             }
             CombatEvents.RaiseHit(AimPoint, r, false);
@@ -546,6 +554,7 @@ namespace Turris
             current = null;
             cc.enabled = false;
             if (visual != null) { visual.SetWeaponGlow(Color.black, 0f); visual.SetTint(Color.black, 0.45f); }
+            FxLibrary.DeathAsh(transform.position, Def.scale);
             All.Remove(this);
             CombatEvents.RaiseDied(this);
             Died?.Invoke(this);
@@ -618,6 +627,7 @@ namespace Turris
                     if (a.Telegraph != TelegraphKind.Normal) { tint = tc; tintAmount = 0.12f + 0.2f * k * pulse; }
                 }
                 else if (attackPhase == ActionPhase.Active) { glow = tc; glowAmount = 1f; }
+                visual.SetTrailColor(Color.Lerp(tc, Color.white, 0.3f));
             }
             else if (CurrentState == State.PoiseBroken) { tint = Color.yellow; tintAmount = 0.25f + 0.2f * Mathf.Sin(Time.time * 12f); }
             else if (CurrentState == State.Staggered || CurrentState == State.Recoil) { tint = Color.white; tintAmount = 0.35f; }

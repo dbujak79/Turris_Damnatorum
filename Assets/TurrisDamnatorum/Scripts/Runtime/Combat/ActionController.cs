@@ -10,8 +10,10 @@ namespace Turris
     ///  ------------------+----------------------+------+------+-----------+------+--------
     ///  Brak (Idle)       |          tak         | tak  | tak  |    tak    | tak  |  tak
     ///  Blok (trzymany)   |          tak         | tak  |  —   |    tak    | tak  |  NIE (najpierw opuść gardę)
-    ///  Atak / Czar       | tylko po punkcie przerwania w fazie regeneracji (cancelAfter); flaszka – nigdy
-    ///  Riposta, Parowanie, Unik, Flaszka, Drgnięcie, Przełamanie gardy – NIE (akcja musi się zakończyć)
+    ///  Atak / Czar       | UNIK – zawsze, w każdej fazie (przerywa zamach/inkantację);
+    ///                    | pozostałe – tylko po punkcie przerwania w fazie regeneracji (cancelAfter); flaszka – nigdy
+    ///  Unik              | po punkcie przerwania w fazie zakończenia (dodgeCancelAfter); flaszka – nigdy
+    ///  Riposta, Parowanie, Flaszka, Drgnięcie, Przełamanie gardy – NIE (akcja musi się zakończyć)
     ///  Śmierć            | nic
     ///
     /// Drgnięcie, przełamanie gardy i śmierć są wymuszane (Force) przez system trafień i przerywają wszystko.
@@ -33,6 +35,9 @@ namespace Turris
                 case ActionType.LightAttack:
                 case ActionType.HeavyAttack:
                 case ActionType.Cast:
+                    if (to == ActionType.Dodge) return true; // unik zawsze przerywa atak i czar
+                    return pastCancelPoint && to != ActionType.Flask;
+                case ActionType.Dodge:
                     return pastCancelPoint && to != ActionType.Flask;
                 default:
                     return false;

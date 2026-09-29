@@ -29,12 +29,20 @@ MonoBehaviour:
     guardBreakDamageFactor: 0.5
     guardBreakStun: 1.1
     flinchDuration: 0.35
-    inputBuffer: 0.25
+    inputBuffer: 0.3
+    gameSpeed: 1.1
+    playerActionSpeed: 1.1
+    playerRecoveryScale: 0.8
+    moveAcceleration: 45
+    moveDeceleration: 60
+    playerTurnSpeed: 1080
     dodgeStaminaCost: 18
     dodgeDistance: 4.2
     dodgeInvulnStart: 0.04
     dodgeInvulnDuration: 0.28
-    dodgeTotalDuration: 0.75
+    dodgeTotalDuration: 0.82
+    dodgeRollDuration: 0.6
+    dodgeCancelAfter: 0.24
     heavyLoadThreshold: 0.7
     heavyDodgeDistanceMult: 0.8
     heavyDodgeInvulnMult: 0.75
@@ -49,11 +57,10 @@ MonoBehaviour:
     riposteAngle: 120
     riposteStartup: 0.3
     riposteRecovery: 0.6
-    moveSpeed: 4.6
+    moveSpeed: 5.2
     sprintMultiplier: 1.55
     guardMoveMultiplier: 0.55
     loadoutBudget: 4
-    maxAttunedSpells: 3
     rewardExplorationChance: 0.3
     learnNewSpellChance: 0.35
     weaponUpgradeSoulCost: 150
@@ -113,6 +120,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 84eb9921608a7a1469226073a465c43d, type: 2}
   - {fileID: 11400000, guid: 6c10e3f4d91b51a47887af33082fb9e6, type: 2}
   - {fileID: 11400000, guid: f502ce40d226c7947b885a533ee24fc1, type: 2}
+  - {fileID: 11400000, guid: d8b4d27e3d1552d49a554cf62f5d4772, type: 2}
+  - {fileID: 11400000, guid: 00ed47512d8e79642a7fa495669f4fde, type: 2}
+  - {fileID: 11400000, guid: 59efb178af614df47aeafbdf226ce09c, type: 2}
   unlocks:
   - {fileID: 11400000, guid: 3ba55fd0a97f74f44ba8fecda70c1dfc, type: 2}
   - {fileID: 11400000, guid: 49567dd930c4b5c43ae5b92b70433d12, type: 2}
@@ -131,4 +141,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 16bf75b1b7735514dbf7d9445f194554, type: 2}
   - {fileID: 11400000, guid: 13b8279449433dc47bfb3bc19862da04, type: 2}
   - {fileID: 11400000, guid: c8f56c8069cb02a4f85ab8ab4f271b21, type: 2}
+  - {fileID: 11400000, guid: 0361a33898391874eaf64e6453a628da, type: 2}
+  - {fileID: 11400000, guid: c3d93cc168f894f4fb6a1cda7933064e, type: 2}
+  - {fileID: 11400000, guid: c54e69021850dff4e95f65a40bf72c8e, type: 2}
+  - {fileID: 11400000, guid: 678f5bb26e9353d438a4605578978dfe, type: 2}
+  - {fileID: 11400000, guid: 5fe68d814eb77ff43bc6321457b33ec1, type: 2}
+  - {fileID: 11400000, guid: a94d1c24f74fc3f4f961e5d40fbb5672, type: 2}
   unarmed: {fileID: 11400000, guid: 63095368e2852db44a01bc274b98192e, type: 2}

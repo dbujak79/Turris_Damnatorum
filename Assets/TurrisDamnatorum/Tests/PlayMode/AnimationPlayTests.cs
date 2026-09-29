@@ -320,6 +320,19 @@ namespace Turris.Tests
             Shot("pose_close_ghoul.png", new Vector3(-4.2f, 1.5f, 3.2f), new Vector3(-4.84f, 1.0f, 5f));
             Shot("pose_close_boss.png", new Vector3(5.2f, 2.3f, 0.8f), new Vector3(7.26f, 1.7f, 5f));
             Shot("pose_close_warden.png", new Vector3(3.2f, 1.9f, 1.6f), new Vector3(2.42f, 1.3f, 5f));
+
+            // Sekwencja przewrotu w przód (klatki co 0,1 s), widok z boku.
+            foreach (var (v, _, _) in all) v.gameObject.SetActive(false);
+            float roll = DefaultContent.Create().config.balance.dodgeRollDuration;
+            const int frames = 7;
+            for (int i = 0; i < frames; i++)
+            {
+                var (v, s) = Dummy(knight, new Vector3(0, 0, 20f - i * 2.0f));
+                s.state = new CharacterAnimState { action = AnimAction.Dodge, actionTime = roll * i / (frames - 1), actionDuration = 0.82f, rollDuration = roll, dodgeDirection = Vector3.back };
+                for (int k = 0; k < 10; k++) v.Tick(1f / 60f);
+            }
+            yield return null;
+            Shot("pose_roll_side.png", new Vector3(-15f, 1.2f, 14f), new Vector3(0, 0.8f, 14f));
         }
     }
 }

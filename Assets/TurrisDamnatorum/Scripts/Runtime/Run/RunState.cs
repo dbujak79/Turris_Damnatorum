@@ -22,8 +22,11 @@ namespace Turris
 
         public readonly EquipmentSet equipment = new EquipmentSet();
         public readonly List<ItemInstance> inventory = new List<ItemInstance>();
+        public const int SkillSlotCount = 3;
+        /// <summary>Kolekcja umiejętności podejścia (odblokowane na stałe + zdobyte w tym podejściu).</summary>
         public readonly List<SpellInstance> knownSpells = new List<SpellInstance>();
-        public readonly List<SpellInstance> attunedSpells = new List<SpellInstance>();
+        /// <summary>Trzy sloty umiejętności – indeks = przycisk (1/2/3). null = pusty slot.</summary>
+        public readonly SpellInstance[] skillSlots = new SpellInstance[SkillSlotCount];
         public readonly List<BoonStack> boons = new List<BoonStack>();
 
         public int healthFlasks, manaFlasks;
@@ -46,20 +49,33 @@ namespace Turris
 
         public SpellInstance FindSpell(SpellDefinition def) => knownSpells.FirstOrDefault(s => s.definition == def);
 
-        public void LearnSpell(SpellDefinition def, int maxAttuned)
+        /// <summary>Dodaje umiejętność do kolekcji; trafia do pierwszego wolnego slotu, a przy zajętych czeka w kolekcji.</summary>
+        public SpellInstance LearnSpell(SpellDefinition def, bool permanent = false)
         {
-            if (FindSpell(def) != null) return;
-            var inst = new SpellInstance(def);
+            var known = FindSpell(def);
+            if (known != null) { known.permanent |= permanent; return known; }
+            var inst = new SpellInstance(def) { permanent = permanent };
             knownSpells.Add(inst);
-            if (attunedSpells.Count < maxAttuned) attunedSpells.Add(inst);
+            int free = System.Array.IndexOf(skillSlots, null);
+            if (free >= 0) skillSlots[free] = inst;
+            return inst;
         }
 
-        public bool ToggleAttune(SpellInstance spell, int maxAttuned)
+        public int SlotOf(SpellInstance spell) => spell == null ? -1 : System.Array.IndexOf(skillSlots, spell);
+
+        /// <summary>Wkłada umiejętność do slotu. Jeśli była w innym slocie – zamienia je miejscami.</summary>
+        public void AssignSlot(SpellInstance spell, int slot)
         {
-            if (attunedSpells.Contains(spell)) { attunedSpells.Remove(spell); return true; }
-            if (attunedSpells.Count >= maxAttuned) return false;
-            attunedSpells.Add(spell);
-            return true;
+            if (slot < 0 || slot >= SkillSlotCount || spell == null || !knownSpells.Contains(spell)) return;
+            int from = SlotOf(spell);
+            if (from == slot) return;
+            if (from >= 0) skillSlots[from] = skillSlots[slot];
+            skillSlots[slot] = spell;
+        }
+
+        public void ClearSlot(int slot)
+        {
+            if (slot >= 0 && slot < SkillSlotCount) skillSlots[slot] = null;
         }
 
         /// <summary>Zakłada przedmiot z plecaka. Wyparte przedmioty wracają do plecaka.</summary>
@@ -150,7 +166,7 @@ namespace Turris
         public BuildTag CurrentTags(BuildSnapshot snap)
         {
             BuildTag t = BuildTag.Melee;
-            if (knownSpells.Count > 0) t |= BuildTag.Magic;
+            if (knownSpells.Any(s => s.definition.IsSpell)) t |= BuildTag.Magic;
             if (snap.guardIsShield) t |= BuildTag.Shield;
             if (snap.guard != null) t |= BuildTag.Guard;
             if (snap.parry != null) t |= BuildTag.Parry;

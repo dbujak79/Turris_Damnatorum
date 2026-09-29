@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bfc9e3d0e146d4086347f0e38c03cf, type: 3}
+  m_Name: skill_cleave
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
+  id: skill_cleave
+  displayName: "Rozp\u0142atanie"
+  description: "Szeroki cios w \u0142uku przed sob\u0105 \u2013 odpowied\u017A na grup\u0119."
+  tags: 1
+  kind: 5
+  category: 1
+  manaCost: 0
+  castTime: 0.32
+  recovery: 0.4
+  cancelAfter: 0.2
+  staminaCost: 22
+  requirements: []
+  requiredTags: 0
+  intelligenceScaling: 0
+  attack:
+    name: "Rozp\u0142atanie"
+    delivery: 0
+    damageType: 0
+    baseDamage: 0
+    windup: 0.32
+    active: 0.12
+    recovery: 0.4
+    cancelAfter: 0.2
+    reach: 3
+    radius: 1
+    lunge: 0
+    tracking: 360
+    blockable: 1
+    parryable: 1
+    dodgeable: 1
+    guardLoad: 24
+    poiseDamage: 30
+    heavy: 0
+    staminaCost: 0
+    projectileSpeed: 14
+    projectileCount: 1
+    spreadAngle: 0
+    animation: 0
+  amount: 60
+  duration: 0.12
+  cooldown: 5
+  charges: 1
+  extraChargeAtLevel: 0
+  cooldownReductionPerLevel: 0.06
+  weaponMultiplier: 1.6
+  arcAngle: 160
+  tickInterval: 0.35
+  moveMultiplier: 0.5
+  maxLevel: 4
+  powerPerLevel: 0.15
+  costReductionPerLevel: 0.06
+  color: {r: 1, g: 0.78, b: 0.45, a: 1}

@@ -4,13 +4,39 @@ using UnityEngine;
 
 namespace Turris
 {
-    /// <summary>Plan przygotowania podejścia: klasa, trudność i dodatkowe odblokowania w ramach budżetu.</summary>
+    /// <summary>
+    /// Plan przygotowania podejścia: klasa, trudność, dodatki w ramach budżetu
+    /// oraz umiejętności odblokowane na stałe i ich układ w slotach.
+    /// </summary>
     public class LoadoutPlan
     {
         public ClassDefinition classDef;
         public DifficultyDefinition difficulty;
         public readonly List<UnlockDefinition> extras = new List<UnlockDefinition>();
+        /// <summary>Umiejętności odblokowane na stałe – trafiają do kolekcji każdego podejścia (poza budżetem).</summary>
+        public readonly List<SpellDefinition> permanentSkills = new List<SpellDefinition>();
+        /// <summary>Wybrany układ slotów (null = automatycznie: umiejętności klasy, potem odblokowane).</summary>
+        public readonly SpellDefinition[] skillSlots = new SpellDefinition[RunState.SkillSlotCount];
         public int Cost => extras.Sum(e => e.loadoutCost);
+
+        /// <summary>Umiejętności dostępne na starcie: klasowe i odblokowane na stałe (bez powtórzeń).</summary>
+        public IEnumerable<SpellDefinition> StartingSkills =>
+            (classDef != null ? classDef.startingSpells : new List<SpellDefinition>()).Concat(permanentSkills).Where(s => s != null).Distinct();
+
+        /// <summary>Wkłada umiejętność do slotu (jeśli była w innym – zamiana miejscami).</summary>
+        public void AssignSlot(SpellDefinition skill, int slot)
+        {
+            if (slot < 0 || slot >= skillSlots.Length) return;
+            int from = System.Array.IndexOf(skillSlots, skill);
+            if (from == slot) return;
+            if (from >= 0) skillSlots[from] = skillSlots[slot];
+            skillSlots[slot] = skill;
+        }
+
+        public void ClearSlot(int slot)
+        {
+            if (slot >= 0 && slot < skillSlots.Length) skillSlots[slot] = null;
+        }
     }
 
     /// <summary>Trwały postęp: odblokowania, waluta (popiół), nagrody za piętra, trudności.</summary>
@@ -67,8 +93,34 @@ namespace Turris
             return u == null || IsUnlocked(u);
         }
 
+        /// <summary>Dodatki wybierane w budżecie. Umiejętności się tu nie pojawiają – odblokowane są dostępne zawsze.</summary>
         public IEnumerable<UnlockDefinition> LoadoutOptions =>
-            cfg.unlocks.Where(u => u.kind != UnlockKind.Difficulty && IsUnlocked(u));
+            cfg.unlocks.Where(u => u.kind != UnlockKind.Difficulty && u.kind != UnlockKind.Spell && IsUnlocked(u));
+
+        /// <summary>Umiejętności odblokowane na stałe (za popiół lub domyślnie).</summary>
+        public IEnumerable<SpellDefinition> PermanentSkills =>
+            cfg.unlocks.Where(u => u.kind == UnlockKind.Spell && IsUnlocked(u)).Select(u => u.target as SpellDefinition).Where(s => s != null);
+
+        /// <summary>Uzupełnia plan o trwałe umiejętności i odtwarza zapamiętany układ slotów.</summary>
+        public void FillSkills(LoadoutPlan plan)
+        {
+            plan.permanentSkills.Clear();
+            plan.permanentSkills.AddRange(PermanentSkills);
+            var available = plan.StartingSkills.ToList();
+            for (int i = 0; i < plan.skillSlots.Length; i++)
+            {
+                string id = i < Profile.skillSlots.Count ? Profile.skillSlots[i] : null;
+                var s = string.IsNullOrEmpty(id) ? null : available.FirstOrDefault(x => x.id == id);
+                plan.skillSlots[i] = s != null && System.Array.IndexOf(plan.skillSlots, s) < 0 ? s : null;
+            }
+        }
+
+        /// <summary>Zapamiętuje układ slotów (ekran przygotowania i ekwipunek między piętrami).</summary>
+        public void RememberSkillSlots(IList<SpellDefinition> slots)
+        {
+            Profile.skillSlots = slots.Select(s => s != null ? s.id : "").ToList();
+            Save();
+        }
 
         public RewardPools BuildRewardPools()
         {
@@ -85,6 +137,11 @@ namespace Turris
                     case SpellDefinition s when !pools.spells.Contains(s): pools.spells.Add(s); break;
                 }
             }
+            // Umiejętności jeszcze nieodblokowane można zdobyć tymczasowo (na jedno podejście), gdy gracz dotarł
+            // wystarczająco wysoko – to okazja, by wypróbować je przed odblokowaniem za popiół.
+            foreach (var u in cfg.unlocks)
+                if (u.kind == UnlockKind.Spell && u.target is SpellDefinition s && !pools.spells.Contains(s) && Profile.bestFloor >= u.requiredBestFloor)
+                    pools.spells.Add(s);
             return pools;
         }
 
@@ -167,8 +224,9 @@ namespace Turris
             foreach (var id in Profile.lastLoadout)
             {
                 var u = cfg.unlocks.FirstOrDefault(x => x.id == id);
-                if (u != null && IsUnlocked(u) && plan.Cost + u.loadoutCost <= cfg.balance.loadoutBudget) plan.extras.Add(u);
+                if (u != null && u.kind != UnlockKind.Spell && IsUnlocked(u) && plan.Cost + u.loadoutCost <= cfg.balance.loadoutBudget) plan.extras.Add(u);
             }
+            FillSkills(plan);
             return plan;
         }
 
@@ -187,17 +245,35 @@ namespace Turris
                 attributes = AttributeBlock.From(plan.classDef),
                 seed = seed,
             };
-            int maxAttuned = cfg.balance.maxAttunedSpells;
             foreach (var i in plan.classDef.startingItems) if (i != null) run.AddItem(new ItemInstance(i), true);
-            foreach (var s in plan.classDef.startingSpells) if (s != null) run.LearnSpell(s, maxAttuned);
             foreach (var t in plan.classDef.startingTalents) if (t != null) run.AddBoon(t);
             foreach (var u in plan.extras)
             {
                 switch (u.target)
                 {
                     case ItemDefinition i: run.AddItem(new ItemInstance(i), true); break;
-                    case SpellDefinition s: run.LearnSpell(s, maxAttuned); break;
+                    case SpellDefinition s: run.LearnSpell(s); break;
                     case BoonDefinition b: run.AddBoon(b); break;
+                }
+            }
+
+            // Kolekcja umiejętności: klasowe i odblokowane na stałe. Sloty – według planu, a puste uzupełniane automatycznie.
+            // Umiejętności klasy i odblokowane wracają w każdym podejściu – obie są „stałe”.
+            foreach (var s in plan.StartingSkills) run.LearnSpell(s, true);
+            if (plan.skillSlots.Any(s => s != null))
+            {
+                for (int i = 0; i < RunState.SkillSlotCount; i++) run.ClearSlot(i);
+                for (int i = 0; i < RunState.SkillSlotCount; i++)
+                {
+                    var inst = plan.skillSlots[i] != null ? run.FindSpell(plan.skillSlots[i]) : null;
+                    if (inst != null) run.AssignSlot(inst, i);
+                }
+                // Sloty, których wybór nie pasuje do tej postaci (np. umiejętność innej klasy), dostają kolejne wolne umiejętności.
+                foreach (var inst in run.knownSpells)
+                {
+                    int free = System.Array.IndexOf(run.skillSlots, null);
+                    if (free < 0) break;
+                    if (run.SlotOf(inst) < 0) run.AssignSlot(inst, free);
                 }
             }
             run.RefillFlasks();

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -50,7 +51,7 @@ namespace Turris.Tests
             root.Controller.ToggleLock();
             while (t < 4f)
             {
-                if (root.Player.Actions.IsIdle) root.Player.Request(ActionType.Cast);
+                if (root.Player.Actions.IsIdle) root.Player.RequestSkill(0);
                 t += Time.deltaTime;
                 yield return null;
             }
@@ -68,6 +69,8 @@ namespace Turris.Tests
             yield return null;
             var root = Object.FindAnyObjectByType<GameRoot>();
             Shot(root, Path.Combine(dir, "0_menu.png"));
+            root.ShowLoadout();
+            yield return UiShot(Path.Combine(dir, "0b_loadout_ui.png"));
 
             var plan = new LoadoutPlan { classDef = root.config.classes[0], difficulty = root.config.difficulties[0] };
             root.StartRun(plan);
@@ -84,6 +87,21 @@ namespace Turris.Tests
             t = 0;
             while (t < 0.6f) { t += Time.deltaTime; yield return null; }
             Shot(root, Path.Combine(dir, "1c_player_heavy_wind.png"));
+
+            // Umiejętności: rozpłatanie (odnowienie w HUD), potem młynek w trzecim slocie.
+            var whirl = root.Run.LearnSpell(root.config.unlocks.Select(u => u.target).OfType<SpellDefinition>().First(x => x.id == "skill_whirlwind"));
+            root.Run.AssignSlot(whirl, 2);
+            root.Player.RefreshBuild();
+            t = 0;
+            while (t < 0.9f) { t += Time.deltaTime; yield return null; }
+            root.Player.RequestSkill(0);
+            t = 0;
+            while (t < 0.9f) { t += Time.deltaTime; yield return null; }
+            root.Player.RequestSkill(2);
+            t = 0;
+            while (t < 0.55f) { t += Time.deltaTime; yield return null; }
+            Shot(root, Path.Combine(dir, "1d_whirlwind.png"));
+            yield return UiShot(Path.Combine(dir, "1e_hud_skills_ui.png"));
             root.Controller.ToggleLock();
             bool shotTele = false;
             t = 0;
@@ -99,6 +117,9 @@ namespace Turris.Tests
 
             root.DebugCompleteFloorNow();
             root.ChooseReward(0);
+            root.OpenEquipment();
+            yield return UiShot(Path.Combine(dir, "2b_equipment_ui.png"));
+            root.CloseEquipment();
             root.NextFloor();
             root.DebugCompleteFloorNow();
             root.ChooseReward(0);
@@ -113,6 +134,16 @@ namespace Turris.Tests
             root.Controller.ToggleLock();
             while (t < 2.5f) { t += Time.deltaTime; yield return null; }
             Shot(root, Path.Combine(dir, "3_boss.png"));
+        }
+
+        /// <summary>Zrzut całego ekranu gry razem z interfejsem IMGUI (działa tylko w oknie edytora).</summary>
+        static IEnumerator UiShot(string path)
+        {
+            for (int i = 0; i < 3; i++) yield return null;
+            yield return new WaitForEndOfFrame();
+            var tex = ScreenCapture.CaptureScreenshotAsTexture();
+            if (tex != null && tex.width > 16) File.WriteAllBytes(path, tex.EncodeToPNG());
+            if (tex != null) Object.Destroy(tex);
         }
 
         static void Shot(GameRoot root, string path)

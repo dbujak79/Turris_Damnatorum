@@ -97,10 +97,20 @@ namespace Turris.Tests
             Assert.IsTrue(ActionRules.CanTransition(ActionType.None, ActionType.Flask, false));
             Assert.IsFalse(ActionRules.CanTransition(ActionType.Block, ActionType.Flask, true), "Z gardy nie pije się flaszki");
             Assert.IsTrue(ActionRules.CanTransition(ActionType.Block, ActionType.Parry, false));
-            Assert.IsFalse(ActionRules.CanTransition(ActionType.LightAttack, ActionType.Dodge, false), "Zamach bez przerwania");
-            Assert.IsTrue(ActionRules.CanTransition(ActionType.LightAttack, ActionType.Dodge, true));
+            Assert.IsTrue(ActionRules.CanTransition(ActionType.LightAttack, ActionType.Dodge, false), "Unik przerywa zamach w każdej fazie");
+            Assert.IsTrue(ActionRules.CanTransition(ActionType.HeavyAttack, ActionType.Dodge, false));
+            Assert.IsTrue(ActionRules.CanTransition(ActionType.Cast, ActionType.Dodge, false), "Unik przerywa inkantację");
+            foreach (var to in new[] { ActionType.LightAttack, ActionType.HeavyAttack, ActionType.Parry, ActionType.Block, ActionType.Cast, ActionType.Flask })
+                Assert.IsFalse(ActionRules.CanTransition(ActionType.LightAttack, to, false), $"Zamach bez przerwania: {to}");
+            Assert.IsTrue(ActionRules.CanTransition(ActionType.LightAttack, ActionType.Parry, true));
             Assert.IsFalse(ActionRules.CanTransition(ActionType.LightAttack, ActionType.Flask, true));
-            foreach (var locked in new[] { ActionType.Parry, ActionType.Dodge, ActionType.Flask, ActionType.Flinch, ActionType.GuardBroken, ActionType.Riposte, ActionType.Dead })
+            // Unik: w całości do punktu przerwania, potem dowolna akcja poza flaszką.
+            foreach (var to in new[] { ActionType.LightAttack, ActionType.Block, ActionType.Dodge, ActionType.Parry, ActionType.Flask, ActionType.Cast })
+                Assert.IsFalse(ActionRules.CanTransition(ActionType.Dodge, to, false), $"Dodge → {to}");
+            Assert.IsTrue(ActionRules.CanTransition(ActionType.Dodge, ActionType.LightAttack, true));
+            Assert.IsTrue(ActionRules.CanTransition(ActionType.Dodge, ActionType.Dodge, true));
+            Assert.IsFalse(ActionRules.CanTransition(ActionType.Dodge, ActionType.Flask, true));
+            foreach (var locked in new[] { ActionType.Parry, ActionType.Flask, ActionType.Flinch, ActionType.GuardBroken, ActionType.Riposte, ActionType.Dead })
                 foreach (var to in new[] { ActionType.LightAttack, ActionType.Block, ActionType.Dodge, ActionType.Parry, ActionType.Flask, ActionType.Cast })
                     Assert.IsFalse(ActionRules.CanTransition(locked, to, true), $"{locked} → {to}");
         }
@@ -240,7 +250,7 @@ namespace Turris.Tests
             Assert.AreEqual(3, opts.Count);
             Assert.AreEqual(RewardKind.Item, opts[0].kind);
             Assert.AreEqual(RewardKind.Boon, opts[1].kind);
-            Assert.AreEqual(RewardKind.LearnSpell, opts[2].kind, "Postać bez czarów dostaje propozycję nauki czaru");
+            Assert.IsTrue(opts[2].kind == RewardKind.LearnSpell || opts[2].kind == RewardKind.UpgradeSpell, "Trzecia nagroda to umiejętność (nowa lub ulepszenie)");
         }
 
         [Test]
@@ -264,7 +274,7 @@ namespace Turris.Tests
             var run = fx.NewRun("class_mage");
             var spell = run.knownSpells[0];
             float before = BuildCalculator.ComputeSpell(spell, BuildCalculator.Compute(run, fx.Cfg).stats, fx.Cfg.balance).power;
-            new RewardOption { kind = RewardKind.UpgradeSpell, spellToUpgrade = spell }.Apply(run, 3);
+            new RewardOption { kind = RewardKind.UpgradeSpell, spellToUpgrade = spell }.Apply(run);
             float after = BuildCalculator.ComputeSpell(spell, BuildCalculator.Compute(run, fx.Cfg).stats, fx.Cfg.balance).power;
             Assert.AreEqual(1, spell.level);
             Assert.Greater(after, before);
@@ -410,13 +420,20 @@ namespace Turris.Tests
         }
 
         [Test]
-        public void KnightCanStartWithSpell_ViaLoadout()
+        public void KnightStartsWithPermanentlyUnlockedSpell()
         {
-            var plan = fx.Plan("class_knight");
-            plan.extras.Add(fx.Get<UnlockDefinition>("unlock_bolt"));
+            // Pocisk arkanów jest odblokowany domyślnie – każda postać ma go w kolekcji bez kosztu w budżecie.
+            var meta = new MetaService(fx.Cfg, new MemoryProfileStorage());
+            var plan = meta.LastPlan();
+            plan.classDef = fx.Get<ClassDefinition>("class_knight");
+            Assert.AreEqual(0, plan.Cost);
+            Assert.IsFalse(meta.LoadoutOptions.Any(u => u.kind == UnlockKind.Spell), "Umiejętności nie zajmują budżetu");
             var run = RunFactory.Create(plan, fx.Cfg, 1);
-            Assert.AreEqual(1, run.knownSpells.Count);
-            Assert.AreEqual(1, run.attunedSpells.Count);
+            var bolt = run.FindSpell(fx.Get<SpellDefinition>("spell_bolt"));
+            Assert.IsNotNull(bolt);
+            Assert.IsTrue(bolt.permanent);
+            Assert.AreEqual(3, run.knownSpells.Count, "Rozpłatanie, Uderzenie tarczą i Pocisk arkanów");
+            Assert.IsTrue(run.skillSlots.All(s => s != null), "Trzy sloty wypełnione");
         }
 
         [Test]
