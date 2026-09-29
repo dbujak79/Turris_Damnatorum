@@ -23,6 +23,8 @@ namespace Turris
         public List<string> lastLoadout = new List<string>();
         /// <summary>Ostatni układ slotów umiejętności (id umiejętności, "" = pusty slot) – odtwarzany na starcie podejścia.</summary>
         public List<string> skillSlots = new List<string>();
+        /// <summary>Przypisania przycisków (nadpisania Input System w JSON; puste = domyślne).</summary>
+        public string bindingOverrides = "";
 
         public bool IsUnlocked(string id) => unlocked.Contains(id);
     }

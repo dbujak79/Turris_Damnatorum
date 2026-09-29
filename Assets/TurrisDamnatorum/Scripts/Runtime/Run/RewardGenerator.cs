@@ -180,7 +180,9 @@ namespace Turris
                 sb.Append("Wymaga: ");
                 sb.Append(string.Join(", ", d.requirements.Select(r => $"{Names.Attribute(r.attribute)} {r.value}")));
                 if (stats != null && !StatCalculator.RequirementsMet(d.requirements, stats))
-                    sb.Append($"  [niespełnione – skuteczność {b.unmetRequirementEffectiveness * 100:0}%]");
+                    sb.Append(d.IsWeapon
+                        ? $"  [niespełnione – skuteczność {b.unmetRequirementEffectiveness * 100:0}%, ataki wolniejsze]"
+                        : $"  [niespełnione – skuteczność {b.unmetRequirementEffectiveness * 100:0}%]");
                 sb.Append('\n');
             }
             if (!string.IsNullOrEmpty(d.description)) sb.Append(d.description);
@@ -218,6 +220,7 @@ namespace Turris
                 case SpellKind.FrostArmor: sb.Append($"Osłona {s.amount:0} na {s.duration:0}s (skaluje z Inteligencją); napastnik z bliska dostaje chłód\n"); break;
                 case SpellKind.Pull: sb.Append($"Przyciąga wrogów z {s.attack.radius:0} m przed ciebie (bossy słabiej): {s.attack.baseDamage:0} obrażeń\n"); break;
                 case SpellKind.Counter: sb.Append($"Postawa kontry {s.duration:0.#}s: zatrzymuje cios do sparowania, oddaje {mult:0}% lekkiego ataku, postawa {s.attack.poiseDamage:0}\n"); break;
+                case SpellKind.WeaponThrow: sb.Append($"Rzut bronią na {s.attack.reach:0} m i z powrotem: {mult:0}% lekkiego ataku w każdą stronę\n"); break;
                 case SpellKind.Rupture: sb.Append($"Cięcie ({mult:0}% lekkiego ataku) i całe pozostałe krwawienie celu od razu ×{s.amount:0.#}\n"); break;
             }
             if (!s.IsSpell && s.kind == SpellKind.Projectile)
@@ -235,7 +238,7 @@ namespace Turris
             {
                 sb.Append("Wymaga: " + string.Join(", ", s.requirements.Select(r => $"{Names.Attribute(r.attribute)} {r.value}")));
                 if (stats != null && !StatCalculator.RequirementsMet(s.requirements, stats))
-                    sb.Append($"  [niespełnione – moc {b.unmetRequirementEffectiveness * 100:0}%]");
+                    sb.Append(s.IsSpell && b.spellRequirementsAreHard ? "  [niespełnione – nie można rzucić]" : $"  [niespełnione – moc {b.unmetRequirementEffectiveness * 100:0}%]");
                 sb.Append('\n');
             }
             if (!string.IsNullOrEmpty(s.description)) sb.Append(s.description);

@@ -39,11 +39,16 @@ namespace Turris
             return true;
         }
 
-        /// <summary>Losowa umiejętność, której postać nie zna i której wyposażenie pozwala użyć.</summary>
-        public static SpellDefinition PickOffer(RunState run, BuildSnapshot snap, RewardPools pools, System.Random rng)
+        /// <summary>
+        /// Losowa umiejętność, której postać nie zna i której może od razu użyć: wyposażenie pasuje,
+        /// a czar nie ma niespełnionych twardych wymagań Inteligencji (za dusze nie sprzedajemy „martwej” umiejętności).
+        /// </summary>
+        public static SpellDefinition PickOffer(RunState run, BuildSnapshot snap, RewardPools pools, System.Random rng, BalanceConfig b = null)
         {
             var tags = run.CurrentTags(snap);
-            var candidates = pools.spells.Where(s => s != null && run.FindSpell(s) == null && (s.requiredTags & tags) == s.requiredTags).ToList();
+            bool hard = b == null || b.spellRequirementsAreHard;
+            var candidates = pools.spells.Where(s => s != null && run.FindSpell(s) == null && (s.requiredTags & tags) == s.requiredTags
+                && !(hard && s.IsSpell && !StatCalculator.RequirementsMet(s.requirements, snap.stats))).ToList();
             return candidates.Count == 0 ? null : candidates[rng.Next(candidates.Count)];
         }
 

@@ -69,6 +69,9 @@ namespace Turris.Tests
             yield return null;
             var root = Object.FindAnyObjectByType<GameRoot>();
             Shot(root, Path.Combine(dir, "0_menu.png"));
+            root.ShowControls();
+            yield return UiShot(Path.Combine(dir, "0c_controls_ui.png"));
+            root.CloseControls();
             root.ShowLoadout();
             yield return UiShot(Path.Combine(dir, "0b_loadout_ui.png"));
 
@@ -102,6 +105,17 @@ namespace Turris.Tests
             while (t < 0.55f) { t += Time.deltaTime; yield return null; }
             Shot(root, Path.Combine(dir, "1d_whirlwind.png"));
             yield return UiShot(Path.Combine(dir, "1e_hud_skills_ui.png"));
+
+            // Ciężki rzut: broń w locie, bohater z pustą dłonią.
+            var thr = root.Run.LearnSpell(root.config.baseSpellPool.First(x => x.id == "skill_throw"));
+            root.Run.AssignSlot(thr, 1);
+            root.Player.RefreshBuild();
+            t = 0;
+            while (t < 1.8f) { t += Time.deltaTime; yield return null; }
+            root.Player.RequestSkill(1);
+            t = 0;
+            while (t < 0.5f) { t += Time.deltaTime; yield return null; }
+            Shot(root, Path.Combine(dir, "1g_heavy_throw.png"));
             root.Controller.ToggleLock();
             bool shotTele = false;
             t = 0;

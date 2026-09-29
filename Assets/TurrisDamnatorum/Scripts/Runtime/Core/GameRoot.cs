@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Turris
 {
-    public enum GameScreen { MainMenu, Unlocks, Loadout, Playing, Reward, Intermission, Equipment, Paused, Death, Victory }
+    public enum GameScreen { MainMenu, Unlocks, Loadout, Playing, Reward, Intermission, Equipment, Paused, Death, Victory, Controls }
 
     /// <summary>
     /// Punkt wejścia i przepływ gry: menu → przygotowanie → piętra → nagrody/kapliczka → śmierć lub zwycięstwo.
@@ -105,6 +105,9 @@ namespace Turris
             CameraRig.target = p.transform;
             CameraRig.player = Controller;
             CameraRig.input = p.GetComponent<PlayerInputReader>();
+            Input = CameraRig.input;
+            Input.EnsureMap();
+            Input.LoadOverrides(Meta.Profile.bindingOverrides);
             Player.Died += OnPlayerDied;
             p.SetActive(false);
 
@@ -154,7 +157,7 @@ namespace Turris
             Cursor.visible = !playing;
             // W trakcie gry cały świat (gracz, wrogowie, pociski, efekty) biegnie w tempie balance.gameSpeed.
             float gameSpeed = config != null && config.balance.gameSpeed > 0f ? config.balance.gameSpeed : 1f;
-            Time.timeScale = s == GameScreen.Paused || s == GameScreen.Equipment ? 0f : playing ? gameSpeed : 1f;
+            Time.timeScale = s == GameScreen.Paused || s == GameScreen.Equipment || (s == GameScreen.Controls && Run != null) ? 0f : playing ? gameSpeed : 1f;
         }
 
         // ================================================================== Podejście
@@ -236,6 +239,7 @@ namespace Turris
             foreach (var z in DamageZone.Active.ToList()) Destroy(z.gameObject);
             foreach (var d in DelayedStrike.Active.ToList()) Destroy(d.gameObject);
             foreach (var st in StormEffect.Active.ToList()) Destroy(st.gameObject);
+            foreach (var tw in ThrownWeapon.Active.ToList()) Destroy(tw.gameObject);
             foreach (var f in FxFade.Active.ToList()) Destroy(f.gameObject);
             arena = null;
         }
@@ -271,6 +275,7 @@ namespace Turris
             clearTimer = -1f;
             var floor = CurrentFloor;
             Run.floorsCleared++;
+            Run.attributePoints += config.balance.attributePointsPerFloor;
             LastAsh = Meta.AwardFloorClear(Run, Run.floorIndex);
             Run.healthFraction = Player.Health.Fraction;
             Run.manaFraction = Player.Mana.Fraction;
@@ -295,7 +300,7 @@ namespace Turris
             LastFloorSummary = $"{floor.name} ukończone. Popiół +{LastAsh}.";
             Rewards = RewardGenerator.Generate(Run, Player.Build, Meta.BuildRewardPools(), config, rng);
             RerollUsed = false;
-            ShopOffer = SoulShop.PickOffer(Run, Player.Build, Meta.BuildRewardPools(), rng);
+            ShopOffer = SoulShop.PickOffer(Run, Player.Build, Meta.BuildRewardPools(), rng, config.balance);
             SetScreen(GameScreen.Reward);
         }
 
@@ -375,6 +380,11 @@ namespace Turris
             RerollUsed = true;
         }
 
+        public void SpendAttributePoint(AttributeType a)
+        {
+            if (Run.SpendAttributePoint(a)) Player.RefreshBuild();
+        }
+
         public void UpgradeSkill(SpellInstance s)
         {
             if (SoulShop.TryUpgrade(s, Run, config.balance)) Player.RefreshBuild();
@@ -396,6 +406,29 @@ namespace Turris
             Run.IsFinished = true;
             Meta.RecordDeath();
             deathTimer = 1.8f;
+        }
+
+        /// <summary>Czytnik wejścia gracza (przypisania przycisków, podpowiedzi w HUD).</summary>
+        public PlayerInputReader Input { get; private set; }
+        GameScreen screenBeforeControls;
+
+        public void ShowControls()
+        {
+            screenBeforeControls = Screen;
+            SetScreen(GameScreen.Controls);
+        }
+
+        public void CloseControls()
+        {
+            Input.CancelRebind();
+            SaveBindings();
+            SetScreen(screenBeforeControls == GameScreen.Controls ? GameScreen.MainMenu : screenBeforeControls);
+        }
+
+        public void SaveBindings()
+        {
+            Meta.Profile.bindingOverrides = Input.SaveOverrides();
+            Meta.Save();
         }
 
         public void TogglePause()

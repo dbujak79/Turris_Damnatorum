@@ -123,6 +123,76 @@ namespace Turris
                     break;
                 }
 
+                case WeaponModel.Mace:
+                {
+                    // Buława: krótkie drzewce, kulista głowica z sześcioma piórami i kolcem na szczycie.
+                    P(p, ProcMesh.Tube(0.85f), Surface.Wood, Wood, new Vector3(0, 0, 0.22f), new Vector3(0.04f, 0.72f, 0.04f), new Vector3(90f, 0, 0));
+                    Grip(p, -0.12f, 0.2f, 0.046f, GripLeather);
+                    P(p, ProcMesh.Sphere(), Surface.Metal, metal * 0.8f, new Vector3(0, 0, -0.16f), Vector3.one * 0.05f);
+                    P(p, ProcMesh.Torus(0.3f), Surface.Metal, metal * 0.8f, new Vector3(0, 0, 0.5f), new Vector3(0.055f, 0.3f, 0.055f), new Vector3(90f, 0, 0));
+                    P(p, ProcMesh.Sphere(), Surface.Metal, metal * 0.9f, new Vector3(0, 0, 0.62f), new Vector3(0.1f, 0.1f, 0.13f));
+                    for (int i = 0; i < 6; i++)
+                        P(p, ProcMesh.Box(), Surface.DarkMetal, metal * 0.7f, new Vector3(0, 0, 0.62f), new Vector3(0.15f, 0.018f, 0.13f), new Vector3(0, 0, i * 30f));
+                    P(p, ProcMesh.Cone(), Surface.Metal, metal, new Vector3(0, 0, 0.74f), new Vector3(0.035f, 0.09f, 0.035f), new Vector3(90f, 0, 0));
+                    break;
+                }
+
+                case WeaponModel.Hammer:
+                {
+                    // Młot dwuręczny: długie drzewce, masywny prostopadłościenny obuch z okuciami i kolcem z tyłu.
+                    P(p, ProcMesh.Tube(0.85f), Surface.Wood, Wood, new Vector3(0, 0, 0.45f), new Vector3(0.05f, 1.35f, 0.05f), new Vector3(90f, 0, 0));
+                    Grip(p, -0.14f, 0.42f, 0.056f, GripLeather);
+                    for (int i = 0; i < 3; i++)
+                        P(p, ProcMesh.Torus(0.3f), Surface.Metal, metal * 0.75f, new Vector3(0, 0, 0.55f + i * 0.14f), new Vector3(0.062f, 0.3f, 0.062f), new Vector3(90f, 0, 0));
+                    P(p, ProcMesh.Box(), Surface.Metal, metal * 0.85f, new Vector3(0, 0, 1.08f), new Vector3(0.36f, 0.17f, 0.17f));
+                    for (int s = -1; s <= 1; s += 2)
+                    {
+                        P(p, ProcMesh.Box(), Surface.DarkMetal, metal * 0.6f, new Vector3(s * 0.12f, 0, 1.08f), new Vector3(0.03f, 0.19f, 0.19f));
+                        P(p, ProcMesh.Box(), Surface.Metal, metal, new Vector3(s * 0.19f, 0, 1.08f), new Vector3(0.02f, 0.15f, 0.15f));
+                    }
+                    P(p, ProcMesh.Cone(), Surface.Metal, metal, new Vector3(0, 0, 1.23f), new Vector3(0.05f, 0.12f, 0.05f), new Vector3(90f, 0, 0));
+                    for (int i = 0; i < 3; i++) P(p, ProcMesh.Box(), Surface.Glow, Color.Lerp(metal, Color.white, 0.4f), new Vector3(0.09f * (i - 1), 0.087f, 1.08f), new Vector3(0.025f, 0.004f, 0.1f));
+                    break;
+                }
+
+                case WeaponModel.Spear:
+                {
+                    // Włócznia: długie drzewce, liściasty grot z zadziorami, owijki i frędzel.
+                    P(p, ProcMesh.Tube(0.9f), Surface.Wood, Wood, new Vector3(0, 0, 0.45f), new Vector3(0.042f, 2.0f, 0.042f), new Vector3(90f, 0, 0));
+                    Grip(p, -0.2f, 0.34f, 0.048f, GripLeather);
+                    for (int i = 0; i < 3; i++)
+                        P(p, ProcMesh.Torus(0.3f), Surface.Metal, metal * 0.75f, new Vector3(0, 0, 0.35f + i * 0.4f), new Vector3(0.05f, 0.3f, 0.05f), new Vector3(90f, 0, 0));
+                    P(p, ProcMesh.Cone(), Surface.Metal, metal * 0.85f, new Vector3(0, 0, 1.43f), new Vector3(0.05f, 0.1f, 0.05f), new Vector3(90f, 0, 0));
+                    P(p, ProcMesh.Blade(0.45f, 0.85f), Surface.Metal, metal, new Vector3(0, 0, 1.47f), new Vector3(0.09f, 0.02f, 0.34f));
+                    for (int s = -1; s <= 1; s += 2)
+                        P(p, ProcMesh.Cone(), Surface.Metal, metal * 0.9f, new Vector3(s * 0.05f, 0, 1.46f), new Vector3(0.018f, 0.06f, 0.018f), new Vector3(0, 0, s * -70f));
+                    P(p, ProcMesh.Cone(), Surface.Cloth, new Color(0.6f, 0.12f, 0.1f), new Vector3(0, -0.03f, 1.36f), new Vector3(0.05f, 0.16f, 0.05f), new Vector3(180f, 0, 0));
+                    P(p, ProcMesh.Cone(), Surface.Metal, metal * 0.8f, new Vector3(0, 0, -0.58f), new Vector3(0.04f, 0.09f, 0.04f), new Vector3(-90f, 0, 0));
+                    break;
+                }
+
+                case WeaponModel.Scythe:
+                {
+                    // Kosa: długie, lekko wygięte drzewce z uchwytem i zakrzywione ostrze prostopadle do drzewca.
+                    P(p, ProcMesh.Tube(0.85f), Surface.Wood, Wood * 0.8f, new Vector3(0, 0, 0.4f), new Vector3(0.045f, 1.7f, 0.045f), new Vector3(90f, 0, 0));
+                    Grip(p, -0.18f, 0.3f, 0.05f, GripLeather * 0.8f);
+                    P(p, ProcMesh.Limb(0.7f), Surface.Wood, Wood * 0.7f, new Vector3(0.06f, 0, 0.55f), new Vector3(0.03f, 0.14f, 0.03f), AlongY(Vector3.right));
+                    P(p, ProcMesh.Box(), Surface.DarkMetal, metal * 0.6f, new Vector3(0, 0, 1.22f), new Vector3(0.07f, 0.07f, 0.1f));
+                    // Ostrze z segmentów: łuk od drzewca na bok i lekko w dół.
+                    Vector3 prev = new Vector3(0, 0, 1.24f);
+                    for (int i = 0; i < 6; i++)
+                    {
+                        float t = (i + 1) / 6f;
+                        var pt = new Vector3(0, 0.62f * t, 1.24f + 0.12f * Mathf.Sin(t * Mathf.PI) - 0.1f * t * t);
+                        Vector3 mid = (prev + pt) * 0.5f, d = pt - prev;
+                        float w = Mathf.Lerp(0.09f, 0.02f, t);
+                        // Oś Y segmentu wzdłuż łuku (AlongY), szerokość ostrza w płaszczyźnie łuku.
+                        P(p, ProcMesh.Box(), Surface.Metal, metal, mid, new Vector3(0.012f, d.magnitude * 1.15f, w), AlongY(d));
+                        prev = pt;
+                    }
+                    break;
+                }
+
                 case WeaponModel.Halberd:
                 {
                     P(p, ProcMesh.Tube(0.9f), Surface.Wood, Wood, new Vector3(0, 0, 0.4f), new Vector3(0.05f, 2.0f, 0.05f), new Vector3(90f, 0, 0));

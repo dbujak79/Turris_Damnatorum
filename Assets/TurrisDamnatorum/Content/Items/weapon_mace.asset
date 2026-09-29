@@ -123,5 +123,5 @@ MonoBehaviour:
       poiseDamage: 70
       angle: 150
   color: {r: 0.55, g: 0.55, b: 0.6, a: 1}
-  weaponModel: 3
+  weaponModel: 10
   shieldModel: 0

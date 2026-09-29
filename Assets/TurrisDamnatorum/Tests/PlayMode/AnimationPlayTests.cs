@@ -237,6 +237,23 @@ namespace Turris.Tests
             yield return null;
         }
 
+        [UnityTest]
+        public IEnumerator AllWeaponModels_Build_WithTipAwayFromHand()
+        {
+            foreach (WeaponModel m in System.Enum.GetValues(typeof(WeaponModel)))
+            {
+                if (m == WeaponModel.Auto || m == WeaponModel.None || m == WeaponModel.Claws) continue;
+                var look = Knight(); look.weapon = m;
+                if (look.TwoHanded) look.shield = ShieldModel.None;
+                var (v, _) = Dummy(look, new Vector3(0, 0, 0));
+                v.Tick(1f / 60f);
+                Assert.IsNotNull(v.Rig.WeaponSocket.GetComponentInChildren<MeshRenderer>(), $"{m}: model broni");
+                Assert.Greater(Vector3.Distance(v.WeaponTip, v.Rig[Bone.HandR].position), 0.3f, $"{m}: czubek broni daleko od dłoni");
+                Object.Destroy(v.gameObject);
+                yield return null;
+            }
+        }
+
         // ------------------------------------------------------------------ Galeria (zrzuty do przeglądu)
 
         [UnityTest]
@@ -333,6 +350,19 @@ namespace Turris.Tests
             }
             yield return null;
             Shot("pose_roll_side.png", new Vector3(-15f, 1.2f, 14f), new Vector3(0, 0.8f, 14f));
+
+            // Wszystkie modele broni w dłoni (nowe: buława, młot, włócznia, kosa).
+            WeaponModel[] models = { WeaponModel.Sword, WeaponModel.Axe, WeaponModel.Mace, WeaponModel.Dagger, WeaponModel.GreatAxe, WeaponModel.Hammer, WeaponModel.Spear, WeaponModel.Scythe, WeaponModel.Staff };
+            for (int i = 0; i < models.Length; i++)
+            {
+                var look = Knight(); look.weapon = models[i];
+                if (look.TwoHanded) look.shield = ShieldModel.None;
+                var (v, s) = Dummy(look, new Vector3((i - 4) * 2.0f, 0, 40f));
+                s.state = new CharacterAnimState();
+                for (int k = 0; k < 10; k++) v.Tick(1f / 60f);
+            }
+            yield return null;
+            Shot("pose_weapons.png", new Vector3(0, 1.6f, 27f), new Vector3(0, 1.1f, 40f));
         }
     }
 }

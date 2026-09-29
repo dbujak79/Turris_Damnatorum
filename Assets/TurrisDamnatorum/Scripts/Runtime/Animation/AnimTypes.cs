@@ -8,7 +8,8 @@ namespace Turris
     /// <summary>Styl ruchu ataku. Auto = wyliczany z parametrów ataku i broni.</summary>
     public enum AttackAnim { Auto, SlashRight, SlashLeft, Overhead, Thrust, Slam, Burst, Cast, Claw, Leap }
 
-    public enum WeaponModel { Auto, None, Sword, Axe, GreatAxe, Dagger, Staff, Halberd, GreatSword, Claws }
+    /// <summary>Model broni. Wartości zapisane w assetach – nowe tylko na końcu.</summary>
+    public enum WeaponModel { Auto, None, Sword, Axe, GreatAxe, Dagger, Staff, Halberd, GreatSword, Claws, Mace, Hammer, Spear, Scythe }
 
     public enum ShieldModel { Auto, None, Heater, Buckler, Tower }
 
@@ -51,6 +52,7 @@ namespace Turris
             if (a.lunge >= 4f) return a.heavy ? AttackAnim.Leap : AttackAnim.Thrust;
             if (a.heavy) return AttackAnim.Overhead;
             if (weapon == WeaponModel.Dagger) return combo % 2 == 0 ? AttackAnim.Thrust : AttackAnim.SlashRight;
+            if (weapon == WeaponModel.Spear) return AttackAnim.Thrust; // włócznia zawsze pchnięciami
             switch (combo % 3)
             {
                 case 0: return AttackAnim.SlashRight;
@@ -65,6 +67,10 @@ namespace Turris
             if (item.weaponModel != WeaponModel.Auto) return item.weaponModel;
             string id = item.id ?? "";
             if (id.Contains("fists")) return WeaponModel.None;
+            if (id.Contains("mace")) return WeaponModel.Mace;
+            if (id.Contains("hammer")) return WeaponModel.Hammer;
+            if (id.Contains("spear")) return WeaponModel.Spear;
+            if (id.Contains("scythe")) return WeaponModel.Scythe;
             if (id.Contains("greataxe")) return WeaponModel.GreatAxe;
             if (id.Contains("axe")) return WeaponModel.Axe;
             if (id.Contains("dagger")) return WeaponModel.Dagger;

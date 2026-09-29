@@ -43,6 +43,8 @@ namespace Turris
         public int FreeCasts { get; private set; }
         /// <summary>Mroźna zbroja: czas odwetu chłodem na atakujących wręcz.</summary>
         public float FrostArmorTime { get; private set; }
+        /// <summary>Ciężki rzut: broń jest w locie – ataki pięściami, bez bloku bronią.</summary>
+        public bool WeaponThrown { get; private set; }
         public Color WeaponBuffColor { get; private set; } = new Color(0.45f, 0.65f, 1f);
         /// <summary>Dłoń do efektów (z humanoida, a gdy go brak – sama postać).</summary>
         Transform Hand
@@ -137,6 +139,8 @@ namespace Turris
             Status.Clear();
             statusFx.Clear();
             DamageBuffTime = 0; FreeCasts = 0; FrostArmorTime = 0; ShockCharged = false;
+            foreach (var tw in ThrownWeapon.Active.ToArray()) if (tw != null) Destroy(tw.gameObject);
+            CatchWeapon();
         }
 
         /// <summary>Przelicza build po zmianie wyposażenia/wzmocnień. Obecne wartości są przycinane do nowych maksimów.</summary>
@@ -209,10 +213,10 @@ namespace Turris
                         riposteTarget = target;
                         return Actions.TryStart(ActionType.Riposte, ScaleStartup(B.riposteStartup), 0.05f, ScaleRecovery(B.riposteRecovery));
                     }
-                    return StartAttack(ActionType.LightAttack, Build.weapon.light);
+                    return StartAttack(ActionType.LightAttack, CurrentWeapon.light);
                 }
                 case ActionType.HeavyAttack:
-                    return StartAttack(ActionType.HeavyAttack, Build.weapon.heavy);
+                    return StartAttack(ActionType.HeavyAttack, CurrentWeapon.heavy);
                 case ActionType.Parry:
                 {
                     var p = Build.parry;
@@ -245,6 +249,12 @@ namespace Turris
                     if (skill == null) { CombatEvents.RaiseMessage($"Slot {requestedSlot + 1} jest pusty", Color.gray); return true; }
                     var def = skill.Def;
                     if (!skill.equipmentMet) { CombatEvents.RaiseMessage($"{def.displayName}: {Names.Requirement(def.requiredTags)}", Color.gray); return true; }
+                    if (def.IsSpell && !skill.requirementsMet && B.spellRequirementsAreHard)
+                    {
+                        CombatEvents.RaiseMessage($"{def.displayName}: za mało Inteligencji", new Color(0.5f, 0.6f, 1f));
+                        return true;
+                    }
+                    if (!def.IsSpell && WeaponThrown) { CombatEvents.RaiseMessage("Broń jeszcze w locie", Color.gray); return true; }
                     if (!Actions.CanStart(ActionType.Cast)) return false;
                     if (!skill.instance.Ready) return false; // odnowienie – żądanie czeka w buforze
                     bool free = def.IsSpell && FreeCasts > 0 && def.kind != SpellKind.BloodPact;
@@ -272,15 +282,20 @@ namespace Turris
             return false;
         }
 
+        /// <summary>Dane broni do ataków: w czasie ciężkiego rzutu – pięści.</summary>
+        WeaponData CurrentWeapon => WeaponThrown && Config.unarmed != null ? Config.unarmed.weapon : Build.weapon;
+
         bool StartAttack(ActionType type, AttackDefinition atk)
         {
             if (Stamina.Current <= 0 || !Actions.CanStart(type)) return false;
-            if (type == ActionType.LightAttack && Actions.Current == ActionType.LightAttack && Actions.ComboIndex + 1 >= Build.weapon.lightComboLength)
+            if (type == ActionType.LightAttack && Actions.Current == ActionType.LightAttack && Actions.ComboIndex + 1 >= CurrentWeapon.lightComboLength)
                 return false; // koniec serii – trzeba poczekać
             currentAttack = atk;
-            AttackWindup = ScaleStartup(atk.windup);
-            AttackActive = ScaleStartup(atk.active);
-            Actions.TryStart(type, AttackWindup, AttackActive, ScaleRecovery(atk.recovery), ScaleRecovery(atk.cancelAfter));
+            // Zręczność przyspiesza ataki bronią; broń bez wymaganych cech – wolniejsza.
+            float aspd = Mathf.Max(0.3f, Build.attackSpeed);
+            AttackWindup = ScaleStartup(atk.windup) / aspd;
+            AttackActive = ScaleStartup(atk.active) / aspd;
+            Actions.TryStart(type, AttackWindup, AttackActive, ScaleRecovery(atk.recovery) / aspd, ScaleRecovery(atk.cancelAfter) / aspd);
             Stamina.Drain(atk.staminaCost, B.staminaRegenDelay);
             return true;
         }
@@ -531,6 +546,21 @@ namespace Turris
                 case SpellKind.Counter:
                     FxLibrary.Flash(transform.position + Vector3.up * 1.2f + transform.forward * 0.6f, def.color, 0.8f);
                     break;
+                case SpellKind.WeaponThrow:
+                {
+                    // Broń leci do przodu i wraca; w locie rani każdego na drodze (w obie strony).
+                    WeaponThrown = true;
+                    var vis = GetComponent<CharacterVisual>();
+                    if (vis != null) vis.SetWeaponVisible(false);
+                    var sk = spell;
+                    Vector3 origin = transform.position + Vector3.up * 1.2f + transform.forward * 0.6f;
+                    Vector3 dir = LockTarget != null ? (LockTarget.AimPoint - origin) : transform.forward;
+                    var model = AnimResolve.ForItem(Build.mainHand.definition);
+                    ThrownWeapon.Spawn(this, origin, dir, Radius(sk, def.attack.reach), 16f, def.attack.radius, model,
+                        Build.mainHand.definition.color, () => SkillHitData(sk, transform.position), CatchWeapon);
+                    FxLibrary.Dust(transform.position, 1f);
+                    break;
+                }
                 case SpellKind.Rupture:
                 {
                     Vector3 fwd = transform.forward;
@@ -682,6 +712,15 @@ namespace Turris
         static float F(SpellRuntime sk, LevelFeatureKind k) => sk == null ? 0f : sk.Def.Feature(k, sk.instance.level);
         static float Radius(SpellRuntime sk, float r) => r * (1f + F(sk, LevelFeatureKind.RadiusBonus));
         static float Duration(SpellRuntime sk, float d) => d + F(sk, LevelFeatureKind.DurationBonus);
+
+        /// <summary>Broń wraca do dłoni po ciężkim rzucie.</summary>
+        void CatchWeapon()
+        {
+            if (!WeaponThrown) return;
+            WeaponThrown = false;
+            var vis = GetComponent<CharacterVisual>();
+            if (vis != null) vis.SetWeaponVisible(true);
+        }
 
         /// <summary>Punkt celowania: namierzony wróg w zasięgu, inaczej przed postacią.</summary>
         Vector3 TargetPoint(float reach)
@@ -862,7 +901,8 @@ namespace Turris
         public void SetBlockHeld(bool held)
         {
             if (IsDead) return;
-            if (held && Build.CanBlock)
+            // W czasie rzutu blok bronią jest niemożliwy (tarcza – tak).
+            if (held && Build.CanBlock && !(WeaponThrown && !Build.guardIsShield))
             {
                 if (Actions.IsIdle) Actions.TryStartBlock();
             }
@@ -892,6 +932,12 @@ namespace Turris
             {
                 float m = Build.effects[PassiveEffectType.ManaOnMeleeHit];
                 if (m > 0) Mana.Restore(m);
+            }
+            // Kosa: trafienie bronią krwawiącego wroga leczy.
+            if (hit.fromMeleeWeapon && result.outcome == HitOutcome.Hit && target is EnemyBrain bleeding && bleeding.Status.BleedStacks > 0)
+            {
+                float heal = Build.effects[PassiveEffectType.BleedingHitHeal];
+                if (heal > 0) Health.Restore(heal);
             }
             if (target.IsDead)
             {
@@ -940,6 +986,16 @@ namespace Turris
                 var cr = new HitResult { outcome = HitOutcome.Parried, attackerPoiseDamage = counter.Def.attack.poiseDamage };
                 CombatEvents.RaiseHit(AimPoint, cr, true);
                 return cr;
+            }
+
+            // Zręczność: bezpośrednie trafienie może chybić (bez efektów, bez utraty postawy). Tyknięcia i reakcje – zawsze trafiają.
+            if (!hit.isStatusTick && !hit.isReaction && hit.dodgeable && hit.attacker != null && !IsDead
+                && Build.evasionChance > 0 && UnityEngine.Random.value < Build.evasionChance)
+            {
+                var miss = new HitResult { outcome = HitOutcome.Dodged };
+                CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.5f, "UCHYLENIE", new Color(0.7f, 0.95f, 1f));
+                CombatEvents.RaiseHit(AimPoint, miss, true);
+                return miss;
             }
 
             // Odporność na żywioł redukuje część z żywiołem (limit maxElementResist).
@@ -1092,6 +1148,7 @@ namespace Turris
                         case SpellKind.Counter: s.action = a.Phase == ActionPhase.Active ? AnimAction.Block : AnimAction.Parry; break;
                         case SpellKind.Warcry: s.attack = AttackAnim.Burst; break;
                         case SpellKind.Rupture: s.attack = AttackAnim.SlashLeft; break;
+                        case SpellKind.WeaponThrow: s.attack = AttackAnim.Overhead; break;
                         case SpellKind.Whirlwind:
                             s.attack = AttackAnim.SlashRight;
                             if (a.Phase == ActionPhase.Active)

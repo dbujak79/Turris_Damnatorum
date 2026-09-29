@@ -10,108 +10,104 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 636ee652052ecf443b59ebf79a72207a, type: 3}
-  m_Name: weapon_stormhammer
+  m_Name: weapon_spear
   m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ItemDefinition
-  id: weapon_stormhammer
-  displayName: "M\u0142ot burzy"
-  description: "Dwur\u0119czny m\u0142ot: po\u0142owa obra\u017Ce\u0144 to b\u0142yskawica, ci\u0119\u017Cki cios pora\u017Ca. W zamro\u017Conych \u2013 roztrzaskanie."
-  tags: 147
+  id: weapon_spear
+  displayName: "W\u0142\xF3cznia"
+  description: "Najd\u0142u\u017Cszy zasi\u0119g: pchni\u0119cia przebijaj\u0105 wrog\xF3w stoj\u0105cych w linii. Dwur\u0119czna, nie blokuje."
+  tags: 33
   kind: 0
   twoHanded: 1
-  weight: 10
+  weight: 5
   requirements:
+  - attribute: 4
+    value: 12
   - attribute: 3
-    value: 16
+    value: 10
   modifiers: []
   effects: []
   weapon:
     light:
-      name: Zamach
+      name: "Pchni\u0119cie w\u0142\xF3czni\u0105"
       delivery: 0
       damageType: 0
-      baseDamage: 72
-      windup: 0.58
-      active: 0.2
-      recovery: 0.65
-      cancelAfter: 0.3
-      reach: 2.7
-      radius: 1.1
+      baseDamage: 38
+      windup: 0.3
+      active: 0.12
+      recovery: 0.42
+      cancelAfter: 0.2
+      reach: 3.2
+      radius: 0.45
       lunge: 0.7
       tracking: 360
       blockable: 1
       parryable: 1
       dodgeable: 1
-      guardLoad: 50
-      poiseDamage: 45
+      guardLoad: 20
+      poiseDamage: 18
       heavy: 0
-      staminaCost: 26
+      staminaCost: 16
       projectileSpeed: 14
       projectileCount: 1
       spreadAngle: 0
       explosionRadius: 0
-      element: 3
-      elementShare: 0.5
+      element: 0
+      elementShare: 0
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0
-      statuses:
-      - kind: 3
-        stacks: 1
-        chance: 0.3
-      animation: 0
+      statuses: []
+      animation: 4
     heavy:
-      name: Egzekucja
+      name: Przebicie
       delivery: 0
       damageType: 0
-      baseDamage: 125
-      windup: 1.1
-      active: 0.2
-      recovery: 0.9
-      cancelAfter: 0.4
-      reach: 2.8
-      radius: 1.1
-      lunge: 1
+      baseDamage: 66
+      windup: 0.62
+      active: 0.16
+      recovery: 0.6
+      cancelAfter: 0.3
+      reach: 3.6
+      radius: 0.5
+      lunge: 1.2
       tracking: 360
       blockable: 1
       parryable: 1
       dodgeable: 1
-      guardLoad: 85
-      poiseDamage: 80
+      guardLoad: 45
+      poiseDamage: 40
       heavy: 1
-      staminaCost: 38
+      staminaCost: 28
       projectileSpeed: 14
       projectileCount: 1
       spreadAngle: 0
       explosionRadius: 0
-      element: 3
-      elementShare: 0.5
+      element: 0
+      elementShare: 0
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0
-      statuses:
-      - kind: 3
-        stacks: 1
-        chance: 1
-      animation: 0
-    lightComboLength: 2
-    strengthScaling: 1.8
-    dexterityScaling: 0.3
+      statuses: []
+      animation: 4
+    lightComboLength: 4
+    strengthScaling: 0.8
+    dexterityScaling: 1.4
     intelligenceScaling: 0
-    riposteMultiplier: 3
-    canBlock: 1
+    riposteMultiplier: 4
+    canBlock: 0
     guard:
-      physicalReduction: 0.75
+      physicalReduction: 0.6
       magicReduction: 0.2
-      stabilityMultiplier: 0.95
-      blockAngle: 110
+      stabilityMultiplier: 1.2
+      blockAngle: 100
       staminaRegenMultiplier: 0.3
     canParry: 0
     parry:
-      startup: 0.08
-      activeWindow: 0.2
-      recovery: 0.5
-      staminaCost: 15
-      poiseDamage: 70
+      startup: 0.06
+      activeWindow: 0.24
+      recovery: 0.45
+      staminaCost: 12
+      poiseDamage: 80
       angle: 150
   shield:
     guard:
@@ -128,6 +124,6 @@ MonoBehaviour:
       staminaCost: 15
       poiseDamage: 70
       angle: 150
-  color: {r: 0.75, g: 0.8, b: 1, a: 1}
-  weaponModel: 11
+  color: {r: 0.75, g: 0.75, b: 0.78, a: 1}
+  weaponModel: 12
   shieldModel: 0

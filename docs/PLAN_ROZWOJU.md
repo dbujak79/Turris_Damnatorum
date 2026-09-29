@@ -41,18 +41,39 @@ co najmniej: broń, 1–2 przedmioty, czar lub technikę oraz wroga, który go �
 
 ## Etap E – przemapowanie przycisków 🔴
 
-- [ ] **E1.** Ekran ustawień sterowania (osobno pad i klawiatura), zapis w profilu, podpowiedzi w HUD z bieżącego układu.
+- [x] **E1.** Ekran ustawień sterowania (osobno pad i klawiatura), zapis w profilu, podpowiedzi w HUD z bieżącego układu.
 
 ## Etap F – nowe modele i trudniejsze mechaniki 🔴
 
-- [ ] **F1.** Modele broni: włócznia (przebija w linii), kosa (leczy na krwawiących), młot, buława – `WeaponModel` + geometria w `GearBuilder`.
-- [ ] **F2.** Ciężki rzut (broń wraca po chwili, w tym czasie pięści).
+- [x] **F1.** Modele broni: włócznia (przebija w linii), kosa (leczy na krwawiących), młot, buława – `WeaponModel` + geometria w `GearBuilder`.
+- [x] **F2.** Ciężki rzut (broń wraca po chwili, w tym czasie pięści).
 
 ## Następne kroki
 
-1. **E1 – przemapowanie przycisków** (osobno pad i klawiatura): ekran ustawień, `PerformInteractiveRebinding`, zapis nadpisań w profilu, podpowiedzi w HUD z bieżącego układu.
+0. ~~G – cechy postaci~~ – zrobione.
+1. ~~E1 – przemapowanie przycisków~~ – zrobione. (osobno pad i klawiatura): ekran ustawień, `PerformInteractiveRebinding`, zapis nadpisań w profilu, podpowiedzi w HUD z bieżącego układu.
 2. **F1 – modele broni**: buława, młot i włócznia mają dziś zastępcze modele (topór/wielki topór); własna geometria w `GearBuilder` + zrzuty.
 3. **Balans w ręcznym graniu**: ceny sklepu, siła roztrzaskania (80%), częstość wariantów (40%), meteor/burza.
+
+## Etap G – cechy postaci (prośba z 2026-09-29) 🟡
+
+Cztery cechy zamiast sześciu atrybutów. Klasa ustawia wartości startowe, po każdym piętrze gracz rozwija jedną cechę o 1.
+
+| Cecha | Działanie |
+|---|---|
+| **Siła** | wymagania cięższych broni (bez niej broń słabsza *i wolniejsza*), obrażenia fizyczne przez skalowanie broni |
+| **Zręczność** | szansa na uchylenie (od 13 pkt, 1,5%/pkt, limit 25%), dłuższy unik (+2%/pkt ponad 10, limit +25%), szybkość ataku (+1%/pkt ponad 10, limit +20%), wymagania lekkich broni |
+| **Inteligencja** | mana i moc czarów; **twarde** wymagania czarów (bez niej czaru nie da się rzucić) |
+| **Wytrzymałość** | życie, udźwig i pula wytrzymałości |
+
+- [x] **G1.** Model: `Vigor` → `Toughness` (ta sama wartość w zapisie), Kondycja i Umysł wycofane – stare modyfikatory w assetach przeliczane na Wytrzymałość/Inteligencję; parametry w `BalanceConfig` (z `FormerlySerializedAs`).
+- [x] **G2.** Działanie cech: uchylenie, długość uniku, szybkość ataku, kara za niespełnione wymagania broni, twarde wymagania czarów.
+- [x] **G3.** Punkt cechy po każdym piętrze (panel między piętrami), wartości startowe klas.
+- [x] **G4.** UI: cechy i pochodne w przygotowaniu, ekwipunku i opisach; testy.
+
+## Kolejność dalszej realizacji
+
+G (cechy) → E1 (przemapowanie przycisków) → F1 (modele broni) → F2 (ciężki rzut) – zrealizowane w tej kolejności.
 
 ## Zasady realizacji
 
@@ -72,3 +93,10 @@ co najmniej: broń, 1–2 przedmioty, czar lub technikę oraz wroga, który go �
 | 2026-09-29 | C1–C2: `LevelFeature` (dodatkowe cele, promień, czas, warstwy efektu, płonąca ziemia po wybuchu, końcowe cięcie młynka) dla 18 umiejętności; opis pokazuje cechy (✓ / od +N), nagroda-ulepszenie mówi „nowa cecha” | EditMode 102/102, PlayMode 30/30 (łańcuch +4 → 6 celów, kula +4 → strefa) |
 | 2026-09-29 | D1–D2: `SoulShop` (czysta logika, zakupy atomowe), sklep obok panelu między piętrami, przerzucenie nagród na ekranie nagród; ceny ×(1 + 0,15 × (piętra − 1)) | EditMode 105/105, PlayMode 33/33; zrzuty `1f_reward_ui`, `2a_intermission_shop_ui` obejrzane |
 | 2026-09-29 | Poprawka: panel sklepu rysowany po panelu głównym – inaczej przejmował pierwszy fokus pada (wykrył to `FullFlow_WithGamepadOnly`) | – |
+| 2026-09-29 | G1–G4: cztery cechy (Siła, Zręczność, Inteligencja, Wytrzymałość); `Vigor`→`Toughness`, Kondycja/Umysł wycofane i przeliczane ze starych assetów; uchylenie (od 13 Zr., limit 25%), dłuższy unik i szybszy atak (limity), wolniejsza broń bez wymagań, twarde wymagania czarów; punkt cechy po każdym piętrze (panel między piętrami, obsługa padem) | EditMode 113/113, PlayMode 30/30 (`FullFlow_WithGamepadOnly` rozszerzony o wydanie punktu) |
+| 2026-09-29 | Poprawki po zrzutach: za długi opis Zręczności nachodził na przycisk; sklep nie proponuje już czarów, których postać nie może rzucić | EditMode 114/114 |
+| 2026-09-29 | E1: ekran „Sterowanie” (menu i pauza), interaktywne przypisanie osobno dla klawiatury/myszy i pada, zamiana przy kolizji, „Przywróć domyślne”, zapis w profilu (`bindingOverrides`), podpowiedzi w HUD i pomocy z bieżącego układu, polskie nazwy przycisków | PlayMode 34/34 (`InputRebindPlayTests`: zamiana, zapis/odczyt, nowy klawisz działa, przypisanie wirtualnym padem) |
+| 2026-09-29 | Poprawka: wbudowany zapis Input System dopasowuje po losowych id bindingów (mapa tworzona w kodzie) – układ nie wróciłby po restarcie; własny zapis po nazwie akcji i urządzeniu | wykryte testem |
+| 2026-09-29 | F1: modele buławy, młota, włóczni i kosy (`GearBuilder`), dwuręczne pozy; nowe bronie Włócznia (zasięg 3,2–3,6 m, pchnięcia przez linię) i Kosa (szeroki łuk, krwawienie, leczy na krwawiących – efekt `BleedingHitHeal`) | PlayMode 38/38 (`AllWeaponModels_Build_WithTipAwayFromHand`), zrzut `pose_weapons.png` obejrzany |
+| 2026-09-29 | Poprawki po zrzutach: pióra buławy prześwietlały się w białą „miotełkę” (ciemniejszy metal, węższe); segmenty ostrza kosy obrócone w złą stronę (rozsypany łuk) | zrzut po poprawce – czytelne |
+| 2026-09-29 | F2: technika „Ciężki rzut” (`ThrownWeapon`): broń leci i wraca, trafia w obie strony, w tym czasie pięści, brak bloku bronią i technik | PlayMode 39/39 (`HeavyThrow_HitsOutAndBack_FistsMeanwhile`) |

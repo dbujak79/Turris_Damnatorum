@@ -39,6 +39,10 @@ namespace Turris
 
         public DodgeParams dodge;
         public float loadRatio;
+        /// <summary>Szansa (0–1), że bezpośrednie trafienie wroga chybi (Zręczność).</summary>
+        public float evasionChance;
+        /// <summary>Mnożnik szybkości ataków bronią (Zręczność, kara za niespełnione wymagania broni).</summary>
+        public float attackSpeed = 1f;
 
         /// <summary>Umiejętności w slotach 1–3 (null = pusty slot).</summary>
         public readonly SpellRuntime[] skills = new SpellRuntime[RunState.SkillSlotCount];
@@ -112,10 +116,17 @@ namespace Turris
             float capacity = Mathf.Max(1f, snap.stats[StatType.EquipLoad]);
             snap.loadRatio = run.equipment.TotalWeight / capacity;
             bool heavy = snap.loadRatio > b.heavyLoadThreshold;
+            // Zręczność: dłuższy unik, uchylenie i szybsze ataki – z limitami („w granicach rozsądku”).
+            float dex = snap.stats[StatType.Dexterity];
+            float dexOver = Mathf.Max(0f, dex - 10f);
+            snap.evasionChance = Mathf.Clamp((dex - b.evasionFromDexterity) * b.evasionPerDexterity, 0f, b.maxEvasion) / 100f;
+            snap.attackSpeed = (1f + Mathf.Min(b.maxAttackSpeedBonus, dexOver * b.attackSpeedPerDexterity))
+                               * (snap.weaponEffectiveness < 1f ? b.unmetRequirementAttackSpeed : 1f);
+            float dodgeBonus = Mathf.Min(b.maxDodgeDistanceBonus, dexOver * b.dodgeDistancePerDexterity);
             snap.dodge = new DodgeParams
             {
                 staminaCost = b.dodgeStaminaCost * (heavy ? b.heavyDodgeCostMult : 1f),
-                distance = b.dodgeDistance * (heavy ? b.heavyDodgeDistanceMult : 1f),
+                distance = b.dodgeDistance * (heavy ? b.heavyDodgeDistanceMult : 1f) * (1f + dodgeBonus),
                 invulnStart = b.dodgeInvulnStart,
                 invulnDuration = b.dodgeInvulnDuration * (heavy ? b.heavyDodgeInvulnMult : 1f),
                 totalDuration = b.dodgeTotalDuration,

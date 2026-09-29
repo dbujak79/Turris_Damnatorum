@@ -8,12 +8,30 @@ namespace Turris
     [Serializable]
     public class BalanceConfig
     {
-        [Header("Atrybuty → statystyki")]
-        public float baseHealth = 200f, healthPerVigor = 15f;
-        public float baseStamina = 60f, staminaPerEndurance = 3f;
-        public float baseMana = 20f, manaPerMind = 6f;
+        [Header("Cechy → statystyki")]
+        public float baseHealth = 200f;
+        [UnityEngine.Serialization.FormerlySerializedAs("healthPerVigor")] public float healthPerToughness = 15f;
+        public float baseStamina = 60f;
+        [UnityEngine.Serialization.FormerlySerializedAs("staminaPerEndurance")] public float staminaPerToughness = 3f;
+        public float baseMana = 20f;
+        [UnityEngine.Serialization.FormerlySerializedAs("manaPerMind")] public float manaPerIntelligence = 6f;
         public float baseStaminaRegen = 38f;
-        public float baseEquipLoad = 30f, equipLoadPerEndurance = 1f;
+        public float baseEquipLoad = 30f;
+        [UnityEngine.Serialization.FormerlySerializedAs("equipLoadPerEndurance")] public float equipLoadPerToughness = 1f;
+        [Tooltip("Zręczność: uchylenie (%/pkt) liczone od tej wartości w górę.")]
+        public float evasionFromDexterity = 12f;
+        public float evasionPerDexterity = 1.5f;
+        [Tooltip("Limit szansy na uchylenie (%).")]
+        public float maxEvasion = 25f;
+        [Tooltip("Zręczność ponad 10: dłuższy unik (ułamek za punkt) i szybszy atak – z limitami.")]
+        public float dodgeDistancePerDexterity = 0.02f, maxDodgeDistanceBonus = 0.25f;
+        public float attackSpeedPerDexterity = 0.01f, maxAttackSpeedBonus = 0.2f;
+        [Tooltip("Broń bez wymaganych cech atakuje wolniej (mnożnik szybkości).")]
+        public float unmetRequirementAttackSpeed = 0.8f;
+        [Tooltip("Czar bez wymaganej Inteligencji nie może zostać rzucony.")]
+        public bool spellRequirementsAreHard = true;
+        [Tooltip("Punkty cech po każdym ukończonym piętrze.")]
+        public int attributePointsPerFloor = 1;
         [Tooltip("Obrona: redukcja = obrona / (obrona + stała).")]
         public float defenseConstant = 100f;
 

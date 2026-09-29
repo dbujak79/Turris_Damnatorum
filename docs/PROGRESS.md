@@ -17,6 +17,9 @@ Działają mysz z klawiaturą oraz pad, także w menu.
 | Umiejętności: 3 sloty pod osobnymi przyciskami, czary i techniki bronią, odnowienia i ładunki, odblokowania na stałe + nagrody tymczasowe | gotowe, pokryte testami (`SkillTests`, test w silniku szarży i rozpłatania) |
 | Żywioły (ogień, mróz, błyskawica) i efekty (krwawienie, podpalenie, chłód/zamrożenie, porażenie), 3 reakcje, słabości wrogów; 22 czary i 16 technik | gotowe, pokryte testami (`StatusEffectTests`, `ElementSetTests`, testy w silniku) |
 | Zestawy żywiołów: bronie i przedmioty żywiołów/krwawienia, odporności bohatera, warianty wrogów, cechy poziomów umiejętności, sklep dusz | gotowe – szczegóły i dziennik w [PLAN_ROZWOJU.md](PLAN_ROZWOJU.md) |
+| Cechy postaci: Siła, Zręczność, Inteligencja, Wytrzymałość; +1 punkt po każdym piętrze | gotowe, pokryte testami (`AttributeTests`) |
+| Przemapowanie przycisków (klawiatura/mysz i pad osobno), zapis w profilu | gotowe, pokryte testami (`InputRebindPlayTests`) |
+| Modele broni: buława, młot, włócznia, kosa; ciężki rzut | gotowe |
 | Wyposażenie, statystyki, nagrody, odblokowania, trudność, zapis z wersjonowaniem | gotowe, pokryte testami |
 | AI: 3 archetypy + boss z 2 fazami, elity, dodatkowe zachowania bossa | gotowe |
 | Postacie: proceduralne humanoidy (240–330 części), animacja zsynchronizowana z fazami walki | gotowe |
@@ -28,8 +31,8 @@ Działają mysz z klawiaturą oraz pad, także w menu.
 
 ### Wyniki testów (ostatni przebieg)
 
-- **EditMode:** 105/105.
-- **PlayMode:** 30/30 + 3 galerie pominięte (bez `TURRIS_SHOT_DIR`) w oknie edytora; z `TURRIS_SHOT_DIR` w oknie 33/33 (`python tools/run_tests.py PlayMode window`).
+- **EditMode:** 114/114.
+- **PlayMode:** 36/36 + 3 galerie pominięte (bez `TURRIS_SHOT_DIR`) w oknie edytora; z `TURRIS_SHOT_DIR` w oknie 39/39 (`python tools/run_tests.py PlayMode window`).
 - **PlayMode w trybie wsadowym:** 2 testy pada są pomijane, bo nie działa tam `OnGUI`. Galerie zrzutów są pomijane bez zmiennej `TURRIS_SHOT_DIR`.
 
 ### Metryki szczegółowości (z testu `DetailLevel_ManyParts_FewRenderers`)
@@ -105,6 +108,13 @@ Prośba: więcej czarów i technik bronią oraz efekty żywiołów i krwawienia.
 - **Treść w assetach:** `SyncContent` dodaje nowe assety i **uzupełnia nowe pola tylko, gdy są domyślne** (`FillNewDefaults`) – tak trafiło krwawienie do toporów/sztyletu i efekty/słabości do 4 wrogów.
 - **Zrzuty:** `fx_elements.png` (płonący+krwawiący, wychłodzony, zamrożony, porażony ghul, błyskawica, mróz, płonąca ziemia).
 - **Do oceny:** balans (siła krwawienia ×2 w ruchu, czas zamrożenia, obrażenia strefy); czy efekty wrogów (chłód heretyka) nie są zbyt karzące; ewentualne odporności gracza na żywioły (przedmioty/wzmocnienia) jako kolejny krok.
+
+### Sesja 2026-09-29: plan rozwoju – etapy G, E, F
+
+- **G – cechy:** `StatType.Vigor` → `Toughness` (ta sama liczba w assetach), `Endurance`/`Mind` → `LegacyEndurance`/`LegacyMind` (modyfikatory ze starych assetów przeliczane w `StatCalculator`), pola `BalanceConfig` przemianowane z `FormerlySerializedAs`, `ClassDefinition.toughness` (dawniej `vigor`). Zręczność: `BuildSnapshot.evasionChance`, `attackSpeed`, dłuższy unik. Twarde wymagania czarów (`spellRequirementsAreHard`). `RunState.attributePoints` + panel rozwoju między piętrami.
+- **E1 – przemapowanie:** bindingi mają grupy `KeyboardMouse`/`Gamepad`; `PlayerInputReader.ApplyRebind/StartRebind/SaveOverrides/LoadOverrides`; ekran `GameScreen.Controls`; `ProfileData.bindingOverrides`. **Pułapka:** `SaveBindingOverridesAsJson` dopasowuje po id bindingów, które przy mapie tworzonej w kodzie są losowe – dlatego własny zapis po nazwie akcji i urządzeniu.
+- **F1/F2:** `WeaponModel.Mace/Hammer/Spear/Scythe` (dopisane na końcu wyliczenia), Włócznia i Kosa, `ThrownWeapon` + `SpellKind.WeaponThrow`, `CharacterVisual.SetWeaponVisible`.
+- Pełny dziennik: [PLAN_ROZWOJU.md](PLAN_ROZWOJU.md).
 
 ### Sesja 2026-09-29: plan rozwoju – etapy A–D
 

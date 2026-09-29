@@ -19,6 +19,17 @@ namespace Turris
         public int souls;               // waluta podejścia
         public int ashEarned;           // popiół zdobyty w tym podejściu (już zapisany w profilu)
         public int kills;
+        /// <summary>Nierozdane punkty cech (1 za każde ukończone piętro).</summary>
+        public int attributePoints;
+
+        /// <summary>Wydaje punkt na rozwój cechy.</summary>
+        public bool SpendAttributePoint(AttributeType a)
+        {
+            if (attributePoints <= 0) return false;
+            attributePoints--;
+            attributes.Add(a);
+            return true;
+        }
 
         public readonly EquipmentSet equipment = new EquipmentSet();
         public readonly List<ItemInstance> inventory = new List<ItemInstance>();

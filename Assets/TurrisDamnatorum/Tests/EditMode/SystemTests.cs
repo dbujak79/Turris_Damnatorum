@@ -157,10 +157,10 @@ namespace Turris.Tests
             for (int i = 0; i < 5; i++)
             {
                 Assert.IsTrue(run.EquipFromInventory(ring, EquipSlot.Ring1));
-                Assert.AreEqual(baseHp + 2 * fx.Cfg.balance.healthPerVigor, BuildCalculator.Compute(run, fx.Cfg).MaxHealth, 0.01f);
+                Assert.AreEqual(baseHp + 2 * fx.Cfg.balance.healthPerToughness, BuildCalculator.Compute(run, fx.Cfg).MaxHealth, 0.01f);
                 Assert.IsTrue(run.EquipFromInventory(ring, EquipSlot.Ring2), "Przełożenie do drugiego slotu");
                 Assert.IsNull(run.equipment.Get(EquipSlot.Ring1));
-                Assert.AreEqual(baseHp + 2 * fx.Cfg.balance.healthPerVigor, BuildCalculator.Compute(run, fx.Cfg).MaxHealth, 0.01f);
+                Assert.AreEqual(baseHp + 2 * fx.Cfg.balance.healthPerToughness, BuildCalculator.Compute(run, fx.Cfg).MaxHealth, 0.01f);
                 Assert.IsTrue(run.UnequipToInventory(EquipSlot.Ring2));
                 Assert.AreEqual(baseHp, BuildCalculator.Compute(run, fx.Cfg).MaxHealth, 0.01f);
             }

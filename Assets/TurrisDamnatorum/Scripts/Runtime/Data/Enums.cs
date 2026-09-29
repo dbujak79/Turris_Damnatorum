@@ -17,12 +17,14 @@ namespace Turris
     public enum Faction { Player, Enemy }
 
     /// <summary>
-    /// Wszystkie modyfikowalne wartości postaci. Atrybuty (Vigor..Intelligence) są zwykłymi statystykami,
+    /// Wszystkie modyfikowalne wartości postaci. Cechy (Toughness, Strength, Dexterity, Intelligence) są zwykłymi statystykami,
     /// więc przedmioty i wzmocnienia mogą je podnosić tak samo jak statystyki pochodne.
+    /// Kolejność wartości jest zapisana w assetach – nie zmieniać; nowe dopisywać na końcu.
+    /// LegacyEndurance/LegacyMind to wycofane atrybuty: ich modyfikatory w starych assetach liczą się jako Wytrzymałość/Inteligencja.
     /// </summary>
     public enum StatType
     {
-        Vigor, Endurance, Mind, Strength, Dexterity, Intelligence,
+        Toughness, LegacyEndurance, LegacyMind, Strength, Dexterity, Intelligence,
         MaxHealth, MaxStamina, MaxMana,
         HealthRegen, StaminaRegen, ManaRegen,
         PhysicalDefense, MagicDefense,
@@ -42,7 +44,8 @@ namespace Turris
         BleedDamage,      // % premii do obrażeń krwawienia
     }
 
-    public enum AttributeType { Vigor, Endurance, Mind, Strength, Dexterity, Intelligence }
+    /// <summary>Cztery cechy postaci (wartości liczbowe zgodne ze <see cref="StatType"/>; 1 i 2 wycofane).</summary>
+    public enum AttributeType { Toughness = 0, Strength = 3, Dexterity = 4, Intelligence = 5 }
 
     public enum ModifierMode { Flat, Percent }
 
@@ -60,7 +63,7 @@ namespace Turris
     /// Warcry (okrzyk: premia do obrażeń), Meteor (zapowiedziany krąg), Storm (pioruny w losowych wrogów), BloodPact (życie za darmowe czary),
     /// FrostArmor (osłona + odwet chłodem), Pull (przyciąganie), Counter (postawa kontry), Rupture (rozdarcie ran).
     public enum SpellKind { Projectile, Nova, Heal, WeaponBuff, Barrier, Cleave, Charge, Whirlwind, Quake, ShieldBash, Cone, Chain, Zone, Flurry,
-        Warcry, Meteor, Storm, BloodPact, FrostArmor, Pull, Counter, Rupture }
+        Warcry, Meteor, Storm, BloodPact, FrostArmor, Pull, Counter, Rupture, WeaponThrow }
 
     /// <summary>Czar kosztuje manę i skaluje z Inteligencją; technika kosztuje wytrzymałość i skaluje z obrażeniami broni.</summary>
     public enum SkillCategory { Spell, Technique }
@@ -86,6 +89,7 @@ namespace Turris
         DodgeShockCharge,     // >0: po uniku następny cios bronią poraża
         BurnImmunity,         // >0: postać nie płonie
         BurningDamageBonus,   // +X% obrażeń, gdy postać płonie
+        BleedingHitHeal,      // +X życia za trafienie bronią krwawiącego celu
     }
 
     public enum HitOutcome { Ignored, Hit, Dodged, Parried, Blocked, GuardBroken }

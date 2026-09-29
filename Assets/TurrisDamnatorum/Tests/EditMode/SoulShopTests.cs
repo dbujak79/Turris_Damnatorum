@@ -45,6 +45,19 @@ namespace Turris.Tests
         }
 
         [Test]
+        public void Offer_NeverSellsSpellThatCannotBeCast()
+        {
+            var run = fx.NewRun("class_knight"); // Inteligencja 8
+            var pools = new MetaService(fx.Cfg, new MemoryProfileStorage()).BuildRewardPools();
+            var snap = BuildCalculator.Compute(run, fx.Cfg);
+            for (int seed = 0; seed < 80; seed++)
+            {
+                var o = SoulShop.PickOffer(run, snap, pools, new System.Random(seed), B);
+                if (o != null && o.IsSpell) Assert.IsTrue(StatCalculator.RequirementsMet(o.requirements, snap.stats), o.id);
+            }
+        }
+
+        [Test]
         public void Offer_IsUnknownAndUsable_PurchaseIsTemporary()
         {
             var run = fx.NewRun("class_mage");

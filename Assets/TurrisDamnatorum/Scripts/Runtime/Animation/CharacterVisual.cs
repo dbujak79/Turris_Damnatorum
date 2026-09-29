@@ -153,6 +153,14 @@ namespace Turris
             modelTint.SetTint(c, amount);
         }
 
+        /// <summary>Pokazuje/ukrywa broń w dłoni (np. na czas ciężkiego rzutu).</summary>
+        public void SetWeaponVisible(bool visible)
+        {
+            var socket = Rig != null ? Rig.WeaponSocket : weaponSocket;
+            if (socket == null) return;
+            foreach (Transform child in socket) child.gameObject.SetActive(visible);
+        }
+
         public void SetWeaponGlow(Color c, float intensity)
         {
             if (Rig != null) { Rig.SetWeaponGlow(c, intensity); return; }

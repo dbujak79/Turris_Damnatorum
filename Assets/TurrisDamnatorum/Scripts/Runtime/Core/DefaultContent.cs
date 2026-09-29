@@ -204,7 +204,7 @@ namespace Turris
             var athleteBelt = Armor("belt_athlete", "Pas atlety", ItemKind.Belt, 1.5f, "", BuildTag.Melee | BuildTag.Agile, Flat(StatType.MaxStamina, 15), Flat(StatType.StaminaRegen, 5));
             var scoutBoots = Armor("feet_scout", "Buty zwiadowcy", ItemKind.Feet, 1, "", BuildTag.Agile, Pct(StatType.MoveSpeed, 8), Flat(StatType.EquipLoad, 5));
             var ironBoots = Armor("feet_iron", "Okute buty", ItemKind.Feet, 3, "", BuildTag.Heavy | BuildTag.Guard, Flat(StatType.PhysicalDefense, 12), Flat(StatType.EquipLoad, 3));
-            var bloodRing = Armor("ring_blood", "Pierścień krwi", ItemKind.Ring, 0, "Powolna regeneracja życia.", BuildTag.None, Flat(StatType.HealthRegen, 1.2f), Flat(StatType.Vigor, 2));
+            var bloodRing = Armor("ring_blood", "Pierścień krwi", ItemKind.Ring, 0, "Powolna regeneracja życia.", BuildTag.None, Flat(StatType.HealthRegen, 1.2f), Flat(StatType.Toughness, 2));
             var manaRing = Armor("ring_mana", "Pierścień źródła", ItemKind.Ring, 0, "", BuildTag.Magic, Flat(StatType.ManaRegen, 1.0f));
             var strRing = Armor("ring_strength", "Pierścień siły", ItemKind.Ring, 0, "", BuildTag.Melee | BuildTag.Heavy, Flat(StatType.Strength, 4));
             var intRing = Armor("ring_intellect", "Pierścień intelektu", ItemKind.Ring, 0, "", BuildTag.Magic, Flat(StatType.Intelligence, 4));
@@ -267,7 +267,7 @@ namespace Turris
             var frostAxe = WeaponCopy(axe, "weapon_frostaxe", "Mroźny topór", "Szron na ostrzu: 40% obrażeń to mróz, ciężki cios wychładza.", BuildTag.Melee | BuildTag.Heavy | BuildTag.Magic, new Color(0.6f, 0.85f, 1f));
             frostAxe.weaponModel = WeaponModel.Axe; Imbue(frostAxe, Element.Frost, 0.4f, StatusKind.Chill, 0.3f);
             var stormHammer = WeaponCopy(greatAxe, "weapon_stormhammer", "Młot burzy", "Dwuręczny młot: połowa obrażeń to błyskawica, ciężki cios poraża. W zamrożonych – roztrzaskanie.", BuildTag.Melee | BuildTag.Heavy | BuildTag.Guard | BuildTag.Magic, new Color(0.75f, 0.8f, 1f));
-            stormHammer.weaponModel = WeaponModel.GreatAxe; Imbue(stormHammer, Element.Lightning, 0.5f, StatusKind.Shock, 0.3f);
+            stormHammer.weaponModel = WeaponModel.Hammer; Imbue(stormHammer, Element.Lightning, 0.5f, StatusKind.Shock, 0.3f);
             var serrated = WeaponCopy(sword, "weapon_serratedsword", "Ząbkowany miecz", "Każde cięcie rozrywa: lekki cios zawsze krwawi, ciężki – podwójnie. Słabo blokuje, nie paruje.", BuildTag.Melee | BuildTag.Agile, new Color(0.75f, 0.35f, 0.35f));
             serrated.weaponModel = WeaponModel.Sword;
             serrated.weapon.light.baseDamage = 34; serrated.weapon.heavy.baseDamage = 58;
@@ -275,7 +275,7 @@ namespace Turris
             serrated.weapon.canParry = false;
             serrated.weapon.guard = new GuardData { physicalReduction = 0.45f, magicReduction = 0.1f, stabilityMultiplier = 1.4f, blockAngle = 90f, staminaRegenMultiplier = 0.25f };
             var mace = WeaponCopy(axe, "weapon_mace", "Buława", "Obuch łamie postawę i rozbija lód: +50% przeciw zamrożonym (i kończy zamrożenie).", BuildTag.Melee | BuildTag.Heavy, new Color(0.55f, 0.55f, 0.6f));
-            mace.weaponModel = WeaponModel.Axe;
+            mace.weaponModel = WeaponModel.Mace;
             mace.weapon.light.baseDamage = 44; mace.weapon.light.poiseDamage = 40; mace.weapon.heavy.poiseDamage = 80;
             mace.weapon.light.bonusVsFrozen = 0.5f; mace.weapon.heavy.bonusVsFrozen = 0.5f;
             mace.weapon.light.name = "Uderzenie obuchem"; mace.weapon.heavy.name = "Miażdżący cios";
@@ -291,6 +291,25 @@ namespace Turris
             }
             var staffFire = ElementStaff("weapon_staff_fire", "Kostur ognia", Element.Fire, StatType.FireDamage, new Color(1f, 0.45f, 0.15f), "Katalizator ognia: +25% obrażeń od ognia.");
             var staffFrost = ElementStaff("weapon_staff_frost", "Kostur lodu", Element.Frost, StatType.FrostDamage, new Color(0.55f, 0.85f, 1f), "Katalizator mrozu: +25% obrażeń od mrozu.");
+            // Włócznia: najdłuższy zasięg, wąskie pchnięcia przebijające wrogów w linii (kapsuła trafia każdego na drodze).
+            var spearWeapon = WeaponCopy(dagger, "weapon_spear", "Włócznia", "Najdłuższy zasięg: pchnięcia przebijają wrogów stojących w linii. Dwuręczna, nie blokuje.", BuildTag.Melee | BuildTag.Agile, new Color(0.75f, 0.75f, 0.78f));
+            spearWeapon.weaponModel = WeaponModel.Spear; spearWeapon.twoHanded = true; spearWeapon.weight = 5;
+            spearWeapon.requirements.Clear(); spearWeapon.requirements.Add(Req(AttributeType.Dexterity, 12)); spearWeapon.requirements.Add(Req(AttributeType.Strength, 10));
+            spearWeapon.weapon.light = Atk("Pchnięcie włócznią", 38, 0.3f, 0.12f, 0.42f, 3.2f, 0.45f, 16, 0.7f, 18, 20, cancel: 0.2f);
+            spearWeapon.weapon.heavy = Atk("Przebicie", 66, 0.62f, 0.16f, 0.6f, 3.6f, 0.5f, 28, 1.2f, 40, 45, true, cancel: 0.3f);
+            spearWeapon.weapon.light.animation = AttackAnim.Thrust; spearWeapon.weapon.heavy.animation = AttackAnim.Thrust;
+            spearWeapon.weapon.strengthScaling = 0.8f; spearWeapon.weapon.dexterityScaling = 1.4f;
+            spearWeapon.weapon.canBlock = false; spearWeapon.weapon.canParry = false;
+            // Kosa: szeroki łuk, krwawienie, leczy przy trafieniu krwawiących.
+            var scythe = WeaponCopy(greatAxe, "weapon_scythe", "Kosa", "Szeroki łuk cięć, które otwierają rany; trafienie krwawiącego wroga leczy.", BuildTag.Melee | BuildTag.Agile, new Color(0.6f, 0.62f, 0.65f));
+            scythe.weaponModel = WeaponModel.Scythe; scythe.weight = 7;
+            scythe.requirements.Clear(); scythe.requirements.Add(Req(AttributeType.Strength, 12)); scythe.requirements.Add(Req(AttributeType.Dexterity, 12));
+            scythe.weapon.light = Atk("Żniwo", 50, 0.45f, 0.18f, 0.55f, 2.9f, 1.25f, 22, 0.6f, 25, 30, cancel: 0.25f);
+            scythe.weapon.heavy = Atk("Szerokie żniwo", 90, 0.9f, 0.22f, 0.75f, 3.1f, 1.4f, 34, 0.8f, 50, 55, true, cancel: 0.35f);
+            scythe.weapon.light.statuses.Add(St(StatusKind.Bleed, 1, 0.4f)); scythe.weapon.heavy.statuses.Add(St(StatusKind.Bleed, 2));
+            scythe.weapon.strengthScaling = 1.1f; scythe.weapon.dexterityScaling = 1.1f;
+            scythe.effects.Add(Fx(PassiveEffectType.BleedingHitHeal, 6f));
+
             var staffStorm = ElementStaff("weapon_staff_storm", "Kostur burzy", Element.Lightning, StatType.LightningDamage, new Color(0.8f, 0.85f, 1f), "Katalizator burzy: +25% obrażeń od błyskawic.");
 
             // ============================================================ UMIEJĘTNOŚCI: CZARY
@@ -418,6 +437,11 @@ namespace Turris
             knives.attack.delivery = AttackDelivery.Projectile; knives.attack.projectileCount = 3; knives.attack.spreadAngle = 10f; knives.attack.projectileSpeed = 24f;
             knives.attack.statuses.Add(St(StatusKind.Bleed, 1, 0.6f)); knives.color = new Color(0.85f, 0.85f, 0.9f);
 
+            // ---- Ciężki rzut (etap F2 planu)
+            var heavyThrow = Tech("skill_throw", "Ciężki rzut", SpellKind.WeaponThrow, 22, 0.35f, 0.1f, 0.3f, 8f, 1.4f, 9f, 0.8f, 40,
+                "Rzucasz bronią przed siebie – leci i wraca, raniąc wszystkich na drodze w obie strony. Do jej powrotu walczysz pięściami i nie blokujesz bronią.", BuildTag.Heavy);
+            heavyThrow.color = new Color(0.9f, 0.85f, 0.7f);
+
             // ---- Techniki zestawów (etap B4 planu)
             var counter = Tech("skill_counter", "Kontra", SpellKind.Counter, 12, 0.1f, 0.6f, 0.35f, 6f, 2.0f, 2f, 1f, 80,
                 "Postawa kontry na 0,6 s: cios wroga (do sparowania) zostaje zatrzymany, a ty oddajesz mocnym cięciem i łamiesz postawę.", BuildTag.Parry);
@@ -458,7 +482,7 @@ namespace Turris
             var bParry = Boon("boon_parrymaster", "Mistrz parowania", "", BuildTag.Parry, 2, Flat(StatType.ParryWindow, 0.03f));
             bParry.effects.Add(Fx(PassiveEffectType.ParryRestoreStamina, 20));
             var bTitan = Boon("boon_titan", "Siła tytana", "", BuildTag.Melee | BuildTag.Heavy, 3, Flat(StatType.Strength, 3));
-            var bMind = Boon("boon_mind", "Bystry umysł", "", BuildTag.Magic, 3, Flat(StatType.Intelligence, 3), Flat(StatType.Mind, 1));
+            var bMind = Boon("boon_mind", "Bystry umysł", "", BuildTag.Magic, 3, Flat(StatType.Intelligence, 4));
             var bAgile = Boon("boon_agile", "Zwinność", "", BuildTag.Agile | BuildTag.Parry, 3, Flat(StatType.Dexterity, 3), Flat(StatType.EquipLoad, 4));
             var bVamp = Boon("boon_vampire", "Pijawka", "", BuildTag.Melee, 2);
             bVamp.effects.Add(Fx(PassiveEffectType.HealOnKill, 40));
@@ -477,13 +501,13 @@ namespace Turris
 
             // ============================================================ KLASY
             var knight = Make<ClassDefinition>("class_knight", "Rycerz", "Miecz, tarcza i solidny pancerz. Techniki: Rozpłatanie i Uderzenie tarczą. Może później uczyć się czarów.");
-            knight.vigor = 12; knight.endurance = 12; knight.mind = 6; knight.strength = 14; knight.dexterity = 12; knight.intelligence = 8;
+            knight.toughness = 12; knight.strength = 14; knight.dexterity = 12; knight.intelligence = 8;
             knight.startingItems.AddRange(new[] { sword, heater, chain });
             knight.startingSpells.AddRange(new[] { cleave, bash });
             knight.healthFlasks = 4; knight.manaFlasks = 1; knight.color = new Color(0.7f, 0.72f, 0.8f);
 
             var mage = Make<ClassDefinition>("class_mage", "Mag", "Kostur, dwa czary i wysoka Inteligencja. Może później sięgnąć po topór i ciężką zbroję.");
-            mage.vigor = 9; mage.endurance = 9; mage.mind = 14; mage.strength = 10; mage.dexterity = 10; mage.intelligence = 16;
+            mage.toughness = 9; mage.strength = 10; mage.dexterity = 10; mage.intelligence = 16;
             mage.startingItems.AddRange(new[] { staff, robe });
             mage.startingSpells.AddRange(new[] { bolt, nova });
             mage.healthFlasks = 3; mage.manaFlasks = 3; mage.color = new Color(0.35f, 0.35f, 0.75f);
@@ -641,8 +665,8 @@ namespace Turris
             cfg.baseBoonPool.AddRange(new[] { bIron, bVigor, bBreath, bWrath, bWell, bArcane, bBlood, bFlask, bManaFlask, bParry, bTitan, bMind, bAgile, bVamp, bAlch, bBulwark });
             // Umiejętności do zdobycia tymczasowo (na jedno podejście). Te z listy odblokowań dochodzą, gdy gracz dotrze na ich piętro.
             cfg.baseSpellPool.AddRange(new[] { bolt, nova, enchant, cleave, bash, charge, fireball, frostCone, flameBlade, rend, lunge, knives,
-                spark, iceLance, chains, leapSlash, warcry });
-            cfg.baseItemPool.AddRange(new[] { flameSword, frostAxe, serrated, mace, staffFire, staffFrost, emberRing, frostVein, furHelm, groundedChain, stormBoots });
+                spark, iceLance, chains, leapSlash, warcry, heavyThrow });
+            cfg.baseItemPool.AddRange(new[] { flameSword, frostAxe, serrated, mace, staffFire, staffFrost, emberRing, frostVein, furHelm, groundedChain, stormBoots, spearWeapon });
 
             // ============================================================ ODBLOKOWANIA
             UnlockDefinition Unlock(string id, UnlockKind kind, ContentDefinition target, int ash, int loadout, bool byDefault = false, int floor = 0, int victory = -1)
@@ -691,6 +715,7 @@ namespace Turris
             Unlock("unlock_execute", UnlockKind.Spell, execute, 25, 0, floor: 2);
             Unlock("unlock_rupture", UnlockKind.Spell, rupture, 25, 0, floor: 2);
             Unlock("unlock_stormhammer", UnlockKind.StartingItem, stormHammer, 30, 3, floor: 3);
+            Unlock("unlock_scythe", UnlockKind.StartingItem, scythe, 25, 2, floor: 2);
             Unlock("unlock_staff_storm", UnlockKind.StartingItem, staffStorm, 20, 2, floor: 2);
             Unlock("unlock_conductor", UnlockKind.StartingItem, conductor, 25, 2, floor: 2);
             Unlock("unlock_butcher", UnlockKind.StartingItem, butcher, 20, 2);

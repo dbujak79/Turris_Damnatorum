@@ -35,7 +35,8 @@ namespace Turris
         public bool stone;
         public Color stoneColor = new Color(0.55f, 0.53f, 0.5f);
 
-        public bool TwoHanded => weapon == WeaponModel.GreatAxe || weapon == WeaponModel.GreatSword || weapon == WeaponModel.Halberd;
+        public bool TwoHanded => weapon == WeaponModel.GreatAxe || weapon == WeaponModel.GreatSword || weapon == WeaponModel.Halberd
+                                 || weapon == WeaponModel.Hammer || weapon == WeaponModel.Spear || weapon == WeaponModel.Scythe;
 
         /// <summary>Wygląd gracza wynika z założonego sprzętu (a nie z klasy) – kolor klasy tylko barwi tkaniny.</summary>
         public static RigLook ForPlayer(RunState run, GameConfig cfg)

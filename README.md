@@ -66,7 +66,10 @@ W trybie `-batchmode` Unity nie wywołuje `OnGUI`, więc testy obsługi menu pad
 | Pomoc w HUD | F1 | Select |
 | Wybór nagrody | 1 / 2 / 3 | D-pad / gałka + A |
 | Szybki restart po śmierci | R | Y |
+| Zmiana przypisań | menu główne lub pauza → **Sterowanie** | to samo |
 | (dev) +100 popiołu w menu głównym | F9 | — |
+
+**Przypisania przycisków** można zmienić w menu **Sterowanie** (z menu głównego i z pauzy), osobno dla klawiatury z myszą i dla pada. Wybierz przycisk akcji i naciśnij nowy klawisz (Esc – anuluj); jeśli inna akcja miała ten przycisk, zamienią się miejscami. Układ zapisuje się w profilu, a podpowiedzi w HUD i pomocy pokazują bieżące przypisania.
 
 **Menu i ekrany między piętrami** obsługuje się myszą, padem albo strzałkami:
 
@@ -86,6 +89,17 @@ Kolory sygnalizacji ataków przeciwników (przeciwnik świeci podczas zamachu, n
 - **fioletowy** — atak nie do sparowania, ale da się go zablokować;
 - **czerwony** — atak nie do zablokowania. Trzeba zrobić unik; niektóre z tych ataków da się też sparować, np. pchnięcie bossa;
 - **różowy z kręgiem na ziemi** — atak obszarowy, przed którym nie chroni niewrażliwość uniku. Trzeba wyjść z kręgu albo zablokować.
+
+## Cechy postaci
+
+| Cecha | Działanie |
+|---|---|
+| **Siła** | wymagania cięższych broni (bez niej broń jest słabsza i wolniejsza), obrażenia broni przez skalowanie |
+| **Zręczność** | uchylenie (od 13 pkt, 1,5%/pkt, limit 25% – trafienie chybia, bez efektów), dłuższy unik (+2%/pkt ponad 10, limit +25%), szybkość ataku (+1%/pkt ponad 10, limit +20%), wymagania lekkich broni |
+| **Inteligencja** | mana i moc czarów; wymagania czarów są twarde – bez Inteligencji czaru nie da się rzucić |
+| **Wytrzymałość** | życie, udźwig i pula wytrzymałości |
+
+Klasa ustala wartości startowe (rycerz: Siła 14, Zręczność 12, Inteligencja 8, Wytrzymałość 12; mag: 10/10/16/9). **Po każdym piętrze** gracz dostaje 1 punkt i na ekranie między piętrami rozwija wybraną cechę. Stare atrybuty (Witalność, Kondycja, Umysł) zostały scalone – modyfikatory w starych assetach liczą się jako Wytrzymałość lub Inteligencja.
 
 ## Umiejętności
 
@@ -159,6 +173,8 @@ Reakcje (raz na trafienie, tyknięcia i obrażenia reakcji ich nie wywołują):
 - **Roztrzaskanie** – błyskawica w zamrożony cel: lód pęka, wybuch mrozu (80% obrażeń trafienia) rani innych wrogów w promieniu 3 m.
 
 **Bronie i przedmioty zestawów:** Płonący miecz, Mroźny topór, Młot burzy (część obrażeń to żywioł, ciężki cios nakłada efekt), Ząbkowany miecz (każde cięcie krwawi), Buława (+50% w zamrożonych, rozbija lód), kostury ognia/lodu/burzy (+25% obrażeń żywiołu); Pierścień rozżarzenia (dłuższe podpalenie), Pierścień szronu w żyłach (zamrożenie po 2 warstwach), Amulet przewodnika (przewodzenie przeskakuje), Rękawice rzeźnika (+1 warstwa, ×3 w ruchu), Buty burzy (po uniku cios poraża), Szata popiołu (płonąc zadajesz +25%), Amulet salamandry (nie płoniesz), Hełm z futrem i Uziemiona kolczuga (odporności). Bohater ma **odporności na żywioły** (limit 75%) i premie do obrażeń żywiołów – widoczne w statystykach ekwipunku.
+
+**Nowe modele i bronie:** buława, młot, włócznia (najdłuższy zasięg, pchnięcia przebijają linię) i kosa (szeroki łuk, krwawienie, leczy przy trafieniu krwawiących). Technika **Ciężki rzut**: broń leci i wraca, raniąc w obie strony; do jej powrotu walczysz pięściami i nie blokujesz bronią.
 
 **Warianty wrogów** (piętro losuje z szansą 40% zamiast zwykłego wroga): Płonący ghul, Lodowy strażnik, Kultysta burzy – z aurą i poświatą broni w kolorze żywiołu.
 
@@ -375,7 +391,7 @@ Kluczowe decyzje architektoniczne:
 
 Testy uruchamiałem w Unity 6000.6.3f1: EditMode w trybie wsadowym, PlayMode w oknie edytora (`tools/run_tests.py PlayMode window`).
 
-**EditMode: 105/105 zaliczonych.** Testy sprawdzają kryteria ukończenia na prawdziwym komponencie `PlayerCombat`:
+**EditMode: 114/114 zaliczonych.** Testy sprawdzają kryteria ukończenia na prawdziwym komponencie `PlayerCombat`:
 
 - mag zakłada topór i nim atakuje: ataki pochodzą z topora, zużywają wytrzymałość i można blokować toporem;
 - rycerz uczy się czaru i rzuca go, zużywając manę; bez many czar nie zostaje rzucony;

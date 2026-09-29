@@ -7,7 +7,10 @@ namespace Turris
     [CreateAssetMenu(menuName = "Turris/Class", fileName = "Class")]
     public class ClassDefinition : ContentDefinition
     {
-        public int vigor = 10, endurance = 10, mind = 10, strength = 10, dexterity = 10, intelligence = 10;
+        [Header("Cechy startowe")]
+        [UnityEngine.Serialization.FormerlySerializedAs("vigor")] public int toughness = 10;
+        public int strength = 10, dexterity = 10, intelligence = 10;
+        [HideInInspector] public int endurance = 10, mind = 10; // wycofane (zostają tylko dla zgodności zapisanych assetów)
         public List<ItemDefinition> startingItems = new List<ItemDefinition>();
         public List<SpellDefinition> startingSpells = new List<SpellDefinition>();
         public List<BoonDefinition> startingTalents = new List<BoonDefinition>();
@@ -21,9 +24,7 @@ namespace Turris
         {
             switch (a)
             {
-                case AttributeType.Vigor: return vigor;
-                case AttributeType.Endurance: return endurance;
-                case AttributeType.Mind: return mind;
+                case AttributeType.Toughness: return toughness;
                 case AttributeType.Strength: return strength;
                 case AttributeType.Dexterity: return dexterity;
                 default: return intelligence;

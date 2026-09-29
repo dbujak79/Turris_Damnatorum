@@ -29,24 +29,33 @@ namespace Turris
     [Serializable]
     public struct AttributeBlock
     {
-        public int vigor, endurance, mind, strength, dexterity, intelligence;
+        public int toughness, strength, dexterity, intelligence;
 
         public static AttributeBlock From(ClassDefinition c) => new AttributeBlock
         {
-            vigor = c.vigor, endurance = c.endurance, mind = c.mind,
-            strength = c.strength, dexterity = c.dexterity, intelligence = c.intelligence
+            toughness = c.toughness, strength = c.strength, dexterity = c.dexterity, intelligence = c.intelligence
         };
 
         public int Get(AttributeType a)
         {
             switch (a)
             {
-                case AttributeType.Vigor: return vigor;
-                case AttributeType.Endurance: return endurance;
-                case AttributeType.Mind: return mind;
+                case AttributeType.Toughness: return toughness;
                 case AttributeType.Strength: return strength;
                 case AttributeType.Dexterity: return dexterity;
                 default: return intelligence;
+            }
+        }
+
+        /// <summary>Rozwój cechy o <paramref name="amount"/> (punkt po piętrze).</summary>
+        public void Add(AttributeType a, int amount = 1)
+        {
+            switch (a)
+            {
+                case AttributeType.Toughness: toughness += amount; break;
+                case AttributeType.Strength: strength += amount; break;
+                case AttributeType.Dexterity: dexterity += amount; break;
+                default: intelligence += amount; break;
             }
         }
     }
@@ -73,18 +82,23 @@ namespace Turris
             var sheet = new StatSheet();
             float Final(StatType s, float baseValue) => (baseValue + flat[(int)s]) * (1f + pct[(int)s] / 100f);
 
-            sheet[StatType.Vigor] = Final(StatType.Vigor, attributes.vigor);
-            sheet[StatType.Endurance] = Final(StatType.Endurance, attributes.endurance);
-            sheet[StatType.Mind] = Final(StatType.Mind, attributes.mind);
+            // Wycofane atrybuty ze starych assetów: Kondycja liczy się jako Wytrzymałość, Umysł jako Inteligencja.
+            flat[(int)StatType.Toughness] += flat[(int)StatType.LegacyEndurance];
+            pct[(int)StatType.Toughness] += pct[(int)StatType.LegacyEndurance];
+            flat[(int)StatType.Intelligence] += flat[(int)StatType.LegacyMind];
+            pct[(int)StatType.Intelligence] += pct[(int)StatType.LegacyMind];
+
+            sheet[StatType.Toughness] = Final(StatType.Toughness, attributes.toughness);
             sheet[StatType.Strength] = Final(StatType.Strength, attributes.strength);
             sheet[StatType.Dexterity] = Final(StatType.Dexterity, attributes.dexterity);
             sheet[StatType.Intelligence] = Final(StatType.Intelligence, attributes.intelligence);
 
-            sheet[StatType.MaxHealth] = Final(StatType.MaxHealth, b.baseHealth + b.healthPerVigor * sheet[StatType.Vigor]);
-            sheet[StatType.MaxStamina] = Final(StatType.MaxStamina, b.baseStamina + b.staminaPerEndurance * sheet[StatType.Endurance]);
-            sheet[StatType.MaxMana] = Final(StatType.MaxMana, b.baseMana + b.manaPerMind * sheet[StatType.Mind]);
+            // Wytrzymałość: życie, pula wytrzymałości i udźwig; Inteligencja: mana.
+            sheet[StatType.MaxHealth] = Final(StatType.MaxHealth, b.baseHealth + b.healthPerToughness * sheet[StatType.Toughness]);
+            sheet[StatType.MaxStamina] = Final(StatType.MaxStamina, b.baseStamina + b.staminaPerToughness * sheet[StatType.Toughness]);
+            sheet[StatType.MaxMana] = Final(StatType.MaxMana, b.baseMana + b.manaPerIntelligence * sheet[StatType.Intelligence]);
             sheet[StatType.StaminaRegen] = Final(StatType.StaminaRegen, b.baseStaminaRegen);
-            sheet[StatType.EquipLoad] = Final(StatType.EquipLoad, b.baseEquipLoad + b.equipLoadPerEndurance * sheet[StatType.Endurance]);
+            sheet[StatType.EquipLoad] = Final(StatType.EquipLoad, b.baseEquipLoad + b.equipLoadPerToughness * sheet[StatType.Toughness]);
 
             StatType[] plain = { StatType.HealthRegen, StatType.ManaRegen, StatType.PhysicalDefense, StatType.MagicDefense, StatType.ParryWindow };
             foreach (var s in plain) sheet[s] = Final(s, 0f);

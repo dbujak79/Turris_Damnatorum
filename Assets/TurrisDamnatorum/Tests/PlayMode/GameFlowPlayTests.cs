@@ -320,6 +320,32 @@ namespace Turris.Tests
         }
 
         [UnityTest]
+        public IEnumerator HeavyThrow_HitsOutAndBack_FistsMeanwhile()
+        {
+            var bundle = DefaultContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "class_knight");
+            var e = Dummy(new Vector3(0, 0.05f, 5f), pc, bundle.config.balance);
+            yield return new WaitForSeconds(0.1f);
+            Equip(pc, bundle, "skill_throw", 2);
+            float oneHit = pc.Build.WeaponDamage(pc.Build.weapon.light) * pc.Skill(2).power;
+            pc.RequestSkill(2);
+            yield return new WaitForSeconds(0.45f);
+            Assert.IsTrue(pc.WeaponThrown, "Broń w locie");
+            Assert.AreEqual(1, ThrownWeapon.Active.Count);
+
+            // W tym czasie cios pięścią (krótszy zamach niż miecz) i brak bloku bronią… ale rycerz ma tarczę.
+            pc.Actions.Reset();
+            pc.Request(ActionType.LightAttack);
+            Assert.AreEqual(ActionType.LightAttack, pc.Actions.Current);
+            Assert.Less(pc.AttackWindup, pc.ScaleStartup(pc.Build.weapon.light.windup) / pc.Build.attackSpeed + 1e-4f, "Pięści zamiast broni");
+
+            float t = 0;
+            while (pc.WeaponThrown && t < 4f) { t += Time.deltaTime; yield return null; }
+            Assert.IsFalse(pc.WeaponThrown, "Broń wróciła do dłoni");
+            Assert.AreEqual(1000f - 2f * oneHit, e.Health.Current, oneHit * 0.05f + 1f, "Trafienie w locie tam i z powrotem");
+        }
+
+        [UnityTest]
         public IEnumerator Shatter_LightningOnFrozenEnemy_ExplodesOnNeighbour()
         {
             var bundle = DefaultContent.Create();

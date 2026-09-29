@@ -119,6 +119,14 @@ namespace Turris.Tests
             yield return Press(GamepadButton.East);
             Assert.AreEqual(GameScreen.Intermission, root.Screen);
 
+            // Rozwój cechy padem: pierwszy przycisk pod „Ekwipunek” to +1 Siła.
+            Assert.AreEqual(1, root.Run.attributePoints, "Punkt cechy za ukończone piętro");
+            int strength = root.Run.attributes.strength;
+            yield return PressTimes(GamepadButton.DpadDown, 1);
+            yield return Press(GamepadButton.South);
+            Assert.AreEqual(strength + 1, root.Run.attributes.strength, "A rozwija wybraną cechę");
+            Assert.AreEqual(0, root.Run.attributePoints);
+
             // W dół do "Wejdź wyżej".
             yield return PressTimes(GamepadButton.DpadDown, 4);
             yield return Press(GamepadButton.South);

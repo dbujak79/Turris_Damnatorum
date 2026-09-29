@@ -14,14 +14,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.GameConfig
   balance:
     baseHealth: 200
-    healthPerVigor: 15
+    healthPerToughness: 15
     baseStamina: 60
-    staminaPerEndurance: 3
+    staminaPerToughness: 3
     baseMana: 20
-    manaPerMind: 6
+    manaPerIntelligence: 6
     baseStaminaRegen: 38
     baseEquipLoad: 30
-    equipLoadPerEndurance: 1
+    equipLoadPerToughness: 1
+    evasionFromDexterity: 12
+    evasionPerDexterity: 1.5
+    maxEvasion: 25
+    dodgeDistancePerDexterity: 0.02
+    maxDodgeDistanceBonus: 0.25
+    attackSpeedPerDexterity: 0.01
+    maxAttackSpeedBonus: 0.2
+    unmetRequirementAttackSpeed: 0.8
+    spellRequirementsAreHard: 1
+    attributePointsPerFloor: 1
     defenseConstant: 100
     staminaRegenDelay: 0.6
     sprintStaminaPerSecond: 12
@@ -85,6 +95,10 @@ MonoBehaviour:
     rewardExplorationChance: 0.3
     learnNewSpellChance: 0.35
     weaponUpgradeSoulCost: 150
+    skillUpgradeSoulCost: 60
+    skillOfferSoulCost: 110
+    rewardRerollSoulCost: 40
+    shopInflationPerFloor: 0.15
     flaskUpgradeSoulCost: 200
     maxItemLevel: 5
   classes:
@@ -131,6 +145,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 248027aecb039064b96c501357c42763, type: 2}
   - {fileID: 11400000, guid: a8acfd159cf056441a44f44fb3e5b52f, type: 2}
   - {fileID: 11400000, guid: b8b636113f1bd0447ab15ad402c7180a, type: 2}
+  - {fileID: 11400000, guid: caa515ce41cefa345acb08f978bea407, type: 2}
   baseBoonPool:
   - {fileID: 11400000, guid: c7a69608f028027439b0d5c1efab35e5, type: 2}
   - {fileID: 11400000, guid: c0d1baef0cb3c63449a1de1fc1fdfd7c, type: 2}
@@ -166,6 +181,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2b23fecadb1143940a31f2a532559b14, type: 2}
   - {fileID: 11400000, guid: 48452b749d46db24295404b91133ca09, type: 2}
   - {fileID: 11400000, guid: c0752538fc5541d4e80b5407a421b891, type: 2}
+  - {fileID: 11400000, guid: 982ccf87183da494fa4d9ce9f6eda3d9, type: 2}
   unlocks:
   - {fileID: 11400000, guid: 3ba55fd0a97f74f44ba8fecda70c1dfc, type: 2}
   - {fileID: 11400000, guid: 49567dd930c4b5c43ae5b92b70433d12, type: 2}
@@ -214,4 +230,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 55e7205f62645ae4a983d74cf013a78a, type: 2}
   - {fileID: 11400000, guid: 0b38dc63df9450841861a45d97000874, type: 2}
   - {fileID: 11400000, guid: 4dae3e14eb7ff3f4eaa32e30cea0a279, type: 2}
+  - {fileID: 11400000, guid: 78643eae4845d244aba926a920234501, type: 2}
   unarmed: {fileID: 11400000, guid: 63095368e2852db44a01bc274b98192e, type: 2}

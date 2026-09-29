@@ -71,6 +71,9 @@ namespace Turris
                 case WeaponModel.GreatAxe:
                 case WeaponModel.GreatSword:
                 case WeaponModel.Halberd:
+                case WeaponModel.Hammer:
+                case WeaponModel.Spear:
+                case WeaponModel.Scythe:
                     p.handR = new Vector3(0.2f, 0.95f, 0.22f);
                     p.weaponDir = new Vector3(-0.25f, 0.75f, 0.6f);
                     p.armsOverride = 1f;

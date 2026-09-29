@@ -92,7 +92,9 @@ namespace Turris
                 nav.NavMode = UsingPad; // grając padem od razu widać fokus na nowym ekranie
                 heldDir = Vector2.zero;
             }
-            if (root.Screen != GameScreen.Playing) HandleMenuInput(dt);
+            TickPendingRebind();
+            bool listening = root.Input != null && (root.Input.IsRebinding || pendingRebind != null);
+            if (root.Screen != GameScreen.Playing && !listening) HandleMenuInput(dt);
 
             for (int i = floating.Count - 1; i >= 0; i--)
             {
@@ -105,6 +107,7 @@ namespace Turris
                 if (m.t > 2.2f) messages.RemoveAt(i);
             }
             var kb = Keyboard.current;
+            if (listening) return;
             if (kb != null && kb.f1Key.wasPressedThisFrame) showHelp = !showHelp;
             if (Gamepad.current != null && Gamepad.current.selectButton.wasPressedThisFrame) showHelp = !showHelp;
             if (kb != null && root.Screen == GameScreen.Reward)
@@ -224,6 +227,9 @@ namespace Turris
                 case GameScreen.Equipment:
                     root.CloseEquipment();
                     break;
+                case GameScreen.Controls:
+                    root.CloseControls();
+                    break;
                 case GameScreen.Paused:
                     root.TogglePause();
                     break;
@@ -291,7 +297,7 @@ namespace Turris
         {
             if (!UsingPad && !nav.NavMode) return;
             var s = root.Screen;
-            bool hasBack = s == GameScreen.Unlocks || s == GameScreen.Loadout || s == GameScreen.Victory || s == GameScreen.Equipment || s == GameScreen.Paused;
+            bool hasBack = s == GameScreen.Unlocks || s == GameScreen.Loadout || s == GameScreen.Victory || s == GameScreen.Equipment || s == GameScreen.Paused || s == GameScreen.Controls;
             string text;
             if (UsingPad)
             {
@@ -359,6 +365,7 @@ namespace Turris
                 case GameScreen.Reward: DrawReward(); break;
                 case GameScreen.Intermission: DrawIntermission(); break;
                 case GameScreen.Equipment: DrawEquipment(); break;
+                case GameScreen.Controls: DrawControls(); break;
                 case GameScreen.Death: DrawHud(); DrawDeath(); break;
                 case GameScreen.Victory: DrawVictory(); break;
             }
@@ -386,6 +393,7 @@ namespace Turris
                     if (!root.TryStartRun(root.Meta.LastPlan(), out var reason)) status = reason;
                 }, GUILayout.Height(48));
             Btn("Odblokowania", button, root.ShowUnlocks, GUILayout.Height(48));
+            Btn("Sterowanie", button, root.ShowControls, GUILayout.Height(44));
             Btn("Wyjdź", button, Application.Quit, GUILayout.Height(40));
             GUILayout.Space(10);
             if (status != null) GUILayout.Label(status, small);
@@ -474,7 +482,7 @@ namespace Turris
                 var c = plan.classDef;
                 GUILayout.Space(8);
                 GUILayout.Label(c.description, small);
-                GUILayout.Label($"Witalność {c.vigor} · Kondycja {c.endurance} · Umysł {c.mind}\nSiła {c.strength} · Zręczność {c.dexterity} · Inteligencja {c.intelligence}", small);
+                GUILayout.Label($"Siła {c.strength} · Zręczność {c.dexterity} · Inteligencja {c.intelligence} · Wytrzymałość {c.toughness}\n<size=14>Po każdym piętrze: +1 do wybranej cechy.</size>", small);
                 GUILayout.Label("Wyposażenie: " + string.Join(", ", c.startingItems.Select(i => i.displayName)), small);
                 if (c.startingSpells.Count > 0) GUILayout.Label("Umiejętności klasy: " + string.Join(", ", c.startingSpells.Select(s => s.displayName)), small);
                 GUILayout.Label($"Flaszki: życia {c.healthFlasks}, many {c.manaFlasks}", small);
@@ -533,9 +541,9 @@ namespace Turris
 
         static string KindShort(UnlockKind k) => k == UnlockKind.StartingItem ? "przedmiot" : k == UnlockKind.Spell ? "umiejętność" : "talent";
 
-        static readonly string[] SkillKeys = { "Q", "E", "R" };
-        static readonly string[] SkillPad = { "A", "X", "Y" };
-        string SkillButton(int slot) => UsingPad ? SkillPad[slot] : SkillKeys[slot];
+        /// <summary>Podpowiedź przycisku akcji z bieżącego układu: „[Q]” na klawiaturze, „(A)” na padzie.</summary>
+        string K(string action) => root.Input == null ? "?" : UsingPad ? $"({root.Input.Display(action, true)})" : $"[{root.Input.Display(action, false)}]";
+        string SkillButton(int slot) => root.Input == null ? (slot + 1).ToString() : root.Input.Display("Skill" + (slot + 1), UsingPad);
         /// <summary>Przycisk slotu: zaznaczony wyróżniony nawiasami, by było widać przypisanie.</summary>
         string SlotToggleText(int slot, bool on) => on ? $"[{SkillButton(slot)}]" : SkillButton(slot);
 
@@ -578,7 +586,7 @@ namespace Turris
                 GUI.color = new Color(0, 0, 0, 0.65f);
                 GUI.DrawTexture(r, white);
                 string head, sub = "";
-                if (sk == null) head = $"<b>{Prompt("[" + SkillKeys[i] + "]", "(" + SkillPad[i] + ")")}</b> <color=#888888>pusty slot</color>";
+                if (sk == null) head = $"<b>{K("Skill" + (i + 1))}</b> <color=#888888>pusty slot</color>";
                 else
                 {
                     var inst = sk.instance;
@@ -592,7 +600,7 @@ namespace Turris
                     var c = sk.Def.color; if (!usable) c *= 0.45f; c.a = 1f;
                     GUI.color = c;
                     GUI.DrawTexture(new Rect(r.x, r.y, 6, r.height), white);
-                    head = $"<b>{Prompt("[" + SkillKeys[i] + "]", "(" + SkillPad[i] + ")")}</b> <b>{inst.Name}</b>";
+                    head = $"<b>{K("Skill" + (i + 1))}</b> <b>{inst.Name}</b>";
                     string cost = sk.Def.IsSpell ? $"{sk.manaCost:0} many" : $"{sk.staminaCost:0} wytrz.";
                     string charges = inst.MaxCharges > 1 ? $" · ładunki {inst.Charges}/{inst.MaxCharges}" : "";
                     string state = !sk.equipmentMet ? $"<color=#ff9966>{Names.Requirement(sk.Def.requiredTags)}</color>"
@@ -631,7 +639,7 @@ namespace Turris
             if (buffs.Count > 0) GUI.Label(new Rect(x, y + (pc.BarrierAmount > 0 ? 116 : 98), 900, 26), "<size=16><b>" + string.Join("   ", buffs) + "</b></size>", rich);
 
             // Flaszki i sloty umiejętności
-            GUI.Label(new Rect(40, H - 200, 900, 30), $"<b>{Prompt("[1]", "(D-pad ↑)")}</b> Flaszka życia: {run.healthFlasks}/{run.MaxHealthFlasks}    <b>{Prompt("[2]", "(D-pad ↓)")}</b> Flaszka many: {run.manaFlasks}/{run.MaxManaFlasks}", rich);
+            GUI.Label(new Rect(40, H - 200, 900, 30), $"<b>{K("FlaskHealth")}</b> Flaszka życia: {run.healthFlasks}/{run.MaxHealthFlasks}    <b>{K("FlaskMana")}</b> Flaszka many: {run.manaFlasks}/{run.MaxManaFlasks}", rich);
             DrawSkillSlots(pc, 40, H - 164);
             string defense = pc.Build.CanBlock ? (pc.Build.guardIsShield ? "Blok: tarcza" : "Blok: broń") : "Blok: brak";
             defense += pc.Build.CanParry ? " · Parowanie: tak" : " · Parowanie: brak";
@@ -674,7 +682,7 @@ namespace Turris
                 {
                     var st = new GUIStyle(center) { fontSize = 22, fontStyle = FontStyle.Bold };
                     st.normal.textColor = new Color(1f, 0.9f, 0.3f);
-                    GUI.Label(new Rect(sx - 200, sy - 60, 400, 30), "RIPOSTA – " + Prompt("[LPM]", "(RB)") + " z bliska", st);
+                    GUI.Label(new Rect(sx - 200, sy - 60, 400, 30), "RIPOSTA – " + K("Light") + " z bliska", st);
                 }
                 if (root.Controller.LockTarget == e)
                 {
@@ -727,9 +735,14 @@ namespace Turris
 
             if (showHelp)
             {
-                string controls = UsingPad
-                    ? "<b>Sterowanie – pad</b> [Select ukryj]\nLewa gałka ruch · Prawa gałka kamera · L3 bieg\nRB szybki atak / riposta · RT mocny atak\nLB blok (tarcza lub broń) · LT parowanie\nB unik (przerywa atak) · A / X / Y umiejętności 1–3\nD-pad ↑ flaszka życia · D-pad ↓ flaszka many\nR3 namierzanie · prawa gałka / D-pad ←→ zmiana celu\nStart pauza"
-                    : "<b>Sterowanie</b> [F1 ukryj]\nWASD ruch · Mysz kamera · Shift bieg\nLPM szybki atak / riposta · F mocny atak\nPPM blok (tarcza lub broń) · Ctrl / boczny przycisk myszy parowanie\nSpacja unik (przerywa atak) · Q / E / R umiejętności 1–3\n1 flaszka życia · 2 flaszka many\nTab / ŚPM namierzanie · Z/C lub ruch myszą – zmiana celu\nEsc pauza";
+                string controls = $"<b>Sterowanie{(UsingPad ? " – pad" : "")}</b> [{(UsingPad ? "Select" : "F1")} ukryj · zmiana: menu → Sterowanie]\n" +
+                    (UsingPad ? "Lewa gałka ruch · Prawa gałka kamera\n" : "WASD ruch · Mysz kamera\n") +
+                    $"{K("Sprint")} bieg · {K("Light")} szybki atak / riposta · {K("Heavy")} mocny atak\n" +
+                    $"{K("Block")} blok · {K("Parry")} parowanie · {K("Dodge")} unik (przerywa atak)\n" +
+                    $"{K("Skill1")} {K("Skill2")} {K("Skill3")} umiejętności 1–3\n" +
+                    $"{K("FlaskHealth")} flaszka życia · {K("FlaskMana")} flaszka many\n" +
+                    $"{K("LockOn")} namierzanie · {K("SwitchLeft")} / {K("SwitchRight")} zmiana celu\n" +
+                    (UsingPad ? "(Start) pauza" : "[Esc] pauza");
                 GUI.Label(new Rect(W - 470, H - 330, 450, 320),
                     "<size=15>" + controls + "\n\n<b>Sygnały ataków</b>\n<color=#e6e6e6>biały</color> zwykły · <color=#ff8c1a>pomarańczowy</color> ciężki\n<color=#bf59ff>fiolet</color> nie do sparowania · <color=#ff1a1a>czerwony</color> nie do zablokowania\n<color=#ff33cc>różowy</color> obszarowy – unik nie chroni, uciekaj lub blokuj</size>", rich);
             }
@@ -773,9 +786,10 @@ namespace Turris
 
         void DrawPause()
         {
-            GUILayout.BeginArea(new Rect(W / 2 - 220, H / 2 - 150, 440, 300), box);
+            GUILayout.BeginArea(new Rect(W / 2 - 220, H / 2 - 170, 440, 340), box);
             GUILayout.Label("Pauza", header);
             Btn("Wznów", button, root.TogglePause, GUILayout.Height(50));
+            Btn("Sterowanie", button, root.ShowControls, GUILayout.Height(50));
             Btn("Porzuć podejście (liczy się jak śmierć)", button, root.AbandonRun, GUILayout.Height(50));
             GUILayout.EndArea();
         }
@@ -860,6 +874,18 @@ namespace Turris
             GUILayout.Label($"Dusze: {run.souls}", label);
             GUILayout.Space(10);
             Btn("Ekwipunek, umiejętności i statystyki", button, root.OpenEquipment, GUILayout.Height(54));
+            if (run.attributePoints > 0)
+            {
+                // Rozwój cechy: +1 za każde ukończone piętro.
+                GUILayout.Space(8);
+                GUILayout.Label($"<b>Rozwój cechy</b> – punkty: {run.attributePoints}", label);
+                foreach (var a in Names.Attributes)
+                {
+                    var attr = a;
+                    Btn($"+1 {Names.Attribute(attr)} ({run.attributes.Get(attr)} → {run.attributes.Get(attr) + 1}) – {Names.AttributeHelp(attr)}", button,
+                        () => root.SpendAttributePoint(attr), GUILayout.Height(38));
+                }
+            }
 
             if (root.AtRestPoint)
             {
@@ -916,6 +942,74 @@ namespace Turris
             }
             EndScroll();
             GUILayout.EndArea();
+        }
+
+        // ================================================================== Sterowanie
+
+        (string action, bool pad)? pendingRebind;
+        string listeningLabel;
+
+        void DrawControls()
+        {
+            var inp = root.Input;
+            GUI.Label(new Rect(40, 30, W - 80, 50), "Sterowanie – przypisanie przycisków", header);
+            GUILayout.BeginArea(new Rect(W / 2 - 560, 90, 1120, H - 210), box);
+            GUILayout.Label("<size=15>Wybierz przycisk i naciśnij nowy klawisz, przycisk myszy lub pada (Esc – anuluj). Jeśli inna akcja miała ten przycisk, zamienią się miejscami. Zapis w profilu.</size>", label);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("<b>Akcja</b>", label, GUILayout.Width(440));
+            GUILayout.Label("<b>Klawiatura / mysz</b>", label, GUILayout.Width(320));
+            GUILayout.Label("<b>Pad</b>", label, GUILayout.Width(320));
+            GUILayout.EndHorizontal();
+            BeginScroll(scrollA, H - 360);
+            foreach (var (action, lbl) in PlayerInputReader.Rebindable)
+            {
+                string act = action, name = lbl;
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(name, label, GUILayout.Width(440));
+                bool kbWait = listeningLabel == name && pendingOrActivePad == false;
+                bool padWait = listeningLabel == name && pendingOrActivePad == true;
+                Btn(kbWait ? "naciśnij…" : inp.Display(act, false), button, () => BeginListen(act, false, name), GUILayout.Width(320), GUILayout.Height(40));
+                Btn(padWait ? "naciśnij…" : inp.Display(act, true), button, () => BeginListen(act, true, name), GUILayout.Width(320), GUILayout.Height(40));
+                GUILayout.EndHorizontal();
+            }
+            EndScroll();
+            GUILayout.EndArea();
+            BtnRect(new Rect(40, H - 100, 240, 54), "Wróć", button, root.CloseControls);
+            BtnRect(new Rect(W - 420, H - 100, 380, 54), "Przywróć domyślne", button, () => { inp.ResetOverrides(); root.SaveBindings(); });
+            if (listeningLabel != null)
+            {
+                var st = new GUIStyle(bigCenter);
+                st.normal.textColor = new Color(1f, 0.85f, 0.45f);
+                GUI.Label(new Rect(0, H - 170, W, 50), $"Naciśnij nowy przycisk: {listeningLabel}  (Esc – anuluj)", st);
+            }
+        }
+
+        bool? pendingOrActivePad;
+
+        /// <summary>Nasłuch zaczyna się po puszczeniu przycisku, którym go wywołano – inaczej ten sam przycisk zostałby przypisany.</summary>
+        void BeginListen(string action, bool pad, string label)
+        {
+            if (root.Input == null || root.Input.IsRebinding) return;
+            pendingRebind = (action, pad);
+            pendingOrActivePad = pad;
+            listeningLabel = label;
+        }
+
+        void TickPendingRebind()
+        {
+            if (pendingRebind == null || root.Input == null) return;
+            var g = Gamepad.current; var kb = Keyboard.current; var m = Mouse.current;
+            bool held = (g != null && (g.buttonSouth.isPressed || g.buttonEast.isPressed)) ||
+                        (kb != null && (kb.enterKey.isPressed || kb.spaceKey.isPressed)) || (m != null && m.leftButton.isPressed);
+            if (held) return;
+            var (action, pad) = pendingRebind.Value;
+            pendingRebind = null;
+            root.Input.StartRebind(action, pad, ok =>
+            {
+                listeningLabel = null;
+                pendingOrActivePad = null;
+                if (ok) root.SaveBindings();
+            });
         }
 
         // ================================================================== Ekwipunek
@@ -992,7 +1086,8 @@ namespace Turris
             GUILayout.Label("Statystyki", header);
             scrollC.pos = GUILayout.BeginScrollView(scrollC.pos);
             var st = snap.stats;
-            GUILayout.Label($"Witalność {st[StatType.Vigor]:0} · Kondycja {st[StatType.Endurance]:0} · Umysł {st[StatType.Mind]:0}\nSiła {st[StatType.Strength]:0} · Zręczność {st[StatType.Dexterity]:0} · Inteligencja {st[StatType.Intelligence]:0}", label);
+            GUILayout.Label($"Siła {st[StatType.Strength]:0} · Zręczność {st[StatType.Dexterity]:0} · Inteligencja {st[StatType.Intelligence]:0} · Wytrzymałość {st[StatType.Toughness]:0}", label);
+            GUILayout.Label($"Zręczność: uchylenie {snap.evasionChance * 100:0.#}% · szybkość ataku ×{snap.attackSpeed:0.00} · unik {snap.dodge.distance:0.#} m", small);
             GUILayout.Label($"Życie {st[StatType.MaxHealth]:0} (reg. {st[StatType.HealthRegen]:0.#}/s)\nWytrzymałość {st[StatType.MaxStamina]:0} (reg. {st[StatType.StaminaRegen]:0}/s)\nMana {st[StatType.MaxMana]:0} (reg. {st[StatType.ManaRegen]:0.#}/s)", label);
             GUILayout.Label($"Redukcja fiz. {snap.PhysicalReduction(b) * 100:0}% · mag. {snap.MagicReduction(b) * 100:0}%", label);
             GUILayout.Label($"Broń: {snap.mainHand.Name} – lekki {snap.WeaponDamage(snap.weapon.light):0}, ciężki {snap.WeaponDamage(snap.weapon.heavy):0}" +

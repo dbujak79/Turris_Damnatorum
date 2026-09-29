@@ -7,9 +7,9 @@ namespace Turris
         {
             switch (s)
             {
-                case StatType.Vigor: return "Witalność";
-                case StatType.Endurance: return "Kondycja";
-                case StatType.Mind: return "Umysł";
+                case StatType.Toughness: return "Wytrzymałość";
+                case StatType.LegacyEndurance: return "Wytrzymałość";   // wycofana Kondycja – liczona jako Wytrzymałość
+                case StatType.LegacyMind: return "Inteligencja";        // wycofany Umysł – liczony jako Inteligencja
                 case StatType.Strength: return "Siła";
                 case StatType.Dexterity: return "Zręczność";
                 case StatType.Intelligence: return "Inteligencja";
@@ -40,6 +40,20 @@ namespace Turris
         }
 
         public static string Attribute(AttributeType a) => Stat((StatType)(int)a);
+
+        /// <summary>Krótki opis działania cechy (panel rozwoju).</summary>
+        public static string AttributeHelp(AttributeType a)
+        {
+            switch (a)
+            {
+                case AttributeType.Strength: return "cięższe bronie, obrażenia fizyczne";
+                case AttributeType.Dexterity: return "uchylenie, unik, szybkość ataku";
+                case AttributeType.Intelligence: return "mana, moc czarów, mocniejsze czary";
+                default: return "życie, udźwig, wytrzymałość";
+            }
+        }
+
+        public static readonly AttributeType[] Attributes = { AttributeType.Strength, AttributeType.Dexterity, AttributeType.Intelligence, AttributeType.Toughness };
 
         /// <summary>Opis wymaganego wyposażenia umiejętności, np. "wymaga tarczy".</summary>
         public static string Requirement(BuildTag tags)
@@ -164,6 +178,7 @@ namespace Turris
                 case PassiveEffectType.DodgeShockCharge: return "Po uniku następny cios bronią poraża";
                 case PassiveEffectType.BurnImmunity: return "Odporność na podpalenie";
                 case PassiveEffectType.BurningDamageBonus: return $"Płonąc, zadajesz +{v:0}% obrażeń";
+                case PassiveEffectType.BleedingHitHeal: return $"Trafienie bronią krwawiącego celu: +{v:0} życia";
             }
             return t.ToString();
         }

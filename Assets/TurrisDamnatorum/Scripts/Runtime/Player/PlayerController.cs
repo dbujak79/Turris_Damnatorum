@@ -120,7 +120,7 @@ namespace Turris
                 case ActionType.HeavyAttack:
                 {
                     var atk = cur == ActionType.LightAttack ? combat.Build.weapon.light : combat.Build.weapon.heavy;
-                    float t = combat.AttackWindup + combat.AttackActive;
+                    float t = combat.AttackWindup + combat.AttackActive; // już ze Zręcznością i tempem
                     if (actions.Elapsed < t && t > 0) horizontal = transform.forward * (atk.lunge / t);
                     steered = false;
                     if (actions.Elapsed < combat.AttackWindup * 0.6f)

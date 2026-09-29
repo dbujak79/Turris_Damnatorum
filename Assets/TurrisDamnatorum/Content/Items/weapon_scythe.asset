@@ -10,92 +10,96 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 636ee652052ecf443b59ebf79a72207a, type: 3}
-  m_Name: weapon_stormhammer
+  m_Name: weapon_scythe
   m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ItemDefinition
-  id: weapon_stormhammer
-  displayName: "M\u0142ot burzy"
-  description: "Dwur\u0119czny m\u0142ot: po\u0142owa obra\u017Ce\u0144 to b\u0142yskawica, ci\u0119\u017Cki cios pora\u017Ca. W zamro\u017Conych \u2013 roztrzaskanie."
-  tags: 147
+  id: weapon_scythe
+  displayName: Kosa
+  description: "Szeroki \u0142uk ci\u0119\u0107, kt\xF3re otwieraj\u0105 rany; trafienie krwawi\u0105cego wroga leczy."
+  tags: 33
   kind: 0
   twoHanded: 1
-  weight: 10
+  weight: 7
   requirements:
   - attribute: 3
-    value: 16
+    value: 12
+  - attribute: 4
+    value: 12
   modifiers: []
-  effects: []
+  effects:
+  - type: 18
+    value: 6
   weapon:
     light:
-      name: Zamach
+      name: "\u017Bniwo"
       delivery: 0
       damageType: 0
-      baseDamage: 72
-      windup: 0.58
-      active: 0.2
-      recovery: 0.65
-      cancelAfter: 0.3
-      reach: 2.7
-      radius: 1.1
-      lunge: 0.7
+      baseDamage: 50
+      windup: 0.45
+      active: 0.18
+      recovery: 0.55
+      cancelAfter: 0.25
+      reach: 2.9
+      radius: 1.25
+      lunge: 0.6
       tracking: 360
       blockable: 1
       parryable: 1
       dodgeable: 1
-      guardLoad: 50
-      poiseDamage: 45
+      guardLoad: 30
+      poiseDamage: 25
       heavy: 0
-      staminaCost: 26
+      staminaCost: 22
       projectileSpeed: 14
       projectileCount: 1
       spreadAngle: 0
       explosionRadius: 0
-      element: 3
-      elementShare: 0.5
+      element: 0
+      elementShare: 0
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0
       statuses:
-      - kind: 3
+      - kind: 0
         stacks: 1
-        chance: 0.3
+        chance: 0.4
       animation: 0
     heavy:
-      name: Egzekucja
+      name: "Szerokie \u017Cniwo"
       delivery: 0
       damageType: 0
-      baseDamage: 125
-      windup: 1.1
-      active: 0.2
-      recovery: 0.9
-      cancelAfter: 0.4
-      reach: 2.8
-      radius: 1.1
-      lunge: 1
+      baseDamage: 90
+      windup: 0.9
+      active: 0.22
+      recovery: 0.75
+      cancelAfter: 0.35
+      reach: 3.1
+      radius: 1.4
+      lunge: 0.8
       tracking: 360
       blockable: 1
       parryable: 1
       dodgeable: 1
-      guardLoad: 85
-      poiseDamage: 80
+      guardLoad: 55
+      poiseDamage: 50
       heavy: 1
-      staminaCost: 38
+      staminaCost: 34
       projectileSpeed: 14
       projectileCount: 1
       spreadAngle: 0
       explosionRadius: 0
-      element: 3
-      elementShare: 0.5
+      element: 0
+      elementShare: 0
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0
       statuses:
-      - kind: 3
-        stacks: 1
+      - kind: 0
+        stacks: 2
         chance: 1
       animation: 0
     lightComboLength: 2
-    strengthScaling: 1.8
-    dexterityScaling: 0.3
+    strengthScaling: 1.1
+    dexterityScaling: 1.1
     intelligenceScaling: 0
     riposteMultiplier: 3
     canBlock: 1
@@ -128,6 +132,6 @@ MonoBehaviour:
       staminaCost: 15
       poiseDamage: 70
       angle: 150
-  color: {r: 0.75, g: 0.8, b: 1, a: 1}
-  weaponModel: 11
+  color: {r: 0.6, g: 0.62, b: 0.65, a: 1}
+  weaponModel: 13
   shieldModel: 0

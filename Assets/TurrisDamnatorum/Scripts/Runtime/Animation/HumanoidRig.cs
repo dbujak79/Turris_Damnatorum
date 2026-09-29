@@ -1148,6 +1148,10 @@ namespace Turris
                 {
                     case WeaponModel.GreatSword: len = 1.6f; break;
                     case WeaponModel.Halberd: len = 1.65f; break;
+                    case WeaponModel.Spear: len = 1.7f; break;
+                    case WeaponModel.Scythe: len = 1.45f; break;
+                    case WeaponModel.Hammer: len = 1.1f; break;
+                    case WeaponModel.Mace: len = 0.72f; break;
                     case WeaponModel.GreatAxe: len = 1.0f; break;
                     case WeaponModel.Staff: len = 1.2f; break;
                     case WeaponModel.Dagger: len = 0.4f; break;
