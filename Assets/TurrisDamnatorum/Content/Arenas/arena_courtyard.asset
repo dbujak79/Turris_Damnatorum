@@ -17,12 +17,12 @@ MonoBehaviour:
   description: 
   tags: 0
   circular: 1
-  size: 13
+  size: 14.6
   pillars:
-  - {x: 6, y: 0, z: 6}
-  - {x: -6, y: 0, z: 6}
-  - {x: 6, y: 0, z: -6}
-  - {x: -6, y: 0, z: -6}
+  - {x: 6.7, y: 0, z: 6.7}
+  - {x: -6.7, y: 0, z: 6.7}
+  - {x: 6.7, y: 0, z: -6.7}
+  - {x: -6.7, y: 0, z: -6.7}
   floorColor: {r: 0.25, g: 0.24, b: 0.22, a: 1}
   wallColor: {r: 0.35, g: 0.33, b: 0.3, a: 1}
   lightColor: {r: 1, g: 0.9, b: 0.8, a: 1}

@@ -14,6 +14,9 @@ namespace Turris
         static readonly Color Gold = new Color(0.8f, 0.64f, 0.26f);
         static readonly Color Steel = new Color(0.72f, 0.73f, 0.76f);
 
+        /// <summary>Końce ramion łuku w przestrzeni broni (dla żywej cięciwy w szkielecie).</summary>
+        public static readonly Vector3 BowTipUp = new Vector3(0, 0.63f, 0f), BowTipDown = new Vector3(0, -0.63f, 0f);
+
         static void P(Transform t, Mesh m, Surface s, Color c, Vector3 pos, Vector3 scale, Vector3 euler = default)
             => PartBuilder.Add(t, m, s, c, pos, scale, euler);
 
@@ -28,12 +31,13 @@ namespace Turris
                 P(p, ProcMesh.Torus(0.3f), Surface.Leather, c * 0.75f, new Vector3(0, 0, z0 + (i + 0.5f) * length / rings), new Vector3(diameter * 1.12f, 0.2f, diameter * 1.12f), new Vector3(90f, 0, 0));
         }
 
-        public static GameObject Weapon(Transform parent, WeaponModel model, Color color)
+        public static GameObject Weapon(Transform parent, WeaponModel model, Color color, bool bowString = true)
         {
             var go = new GameObject("Weapon");
             go.transform.SetParent(parent, false);
             var p = go.transform;
             Color metal = color;
+            if (model == WeaponModel.Knives) model = WeaponModel.Dagger; // pojedynczy nóż (drugi buduje szkielet w lewej dłoni)
             switch (model)
             {
                 case WeaponModel.Sword:
@@ -189,6 +193,37 @@ namespace Turris
                         // Oś Y segmentu wzdłuż łuku (AlongY), szerokość ostrza w płaszczyźnie łuku.
                         P(p, ProcMesh.Box(), Surface.Metal, metal, mid, new Vector3(0.012f, d.magnitude * 1.15f, w), AlongY(d));
                         prev = pt;
+                    }
+                    break;
+                }
+
+                case WeaponModel.Bow:
+                {
+                    // Łuk refleksyjny: ramiona wzdłuż lokalnej ±Y wygięte od łucznika (+Z), cięciwa po stronie łucznika.
+                    P(p, ProcMesh.Tube(0.9f), Surface.Leather, GripLeather, Vector3.zero, new Vector3(0.05f, 0.16f, 0.05f));
+                    Vector3 prevUp = new Vector3(0, 0.08f, 0), prevDown = new Vector3(0, -0.08f, 0);
+                    Vector3 tipUp = prevUp, tipDown = prevDown;
+                    for (int i = 1; i <= 5; i++)
+                    {
+                        float t = i / 5f;
+                        float y = 0.08f + 0.55f * t;
+                        float z = 0.12f * Mathf.Sin(t * Mathf.PI * 0.8f) - 0.07f * t * t; // wygięcie z odbiciem na końcu (refleks)
+                        foreach (int side in new[] { 1, -1 })
+                        {
+                            var pt = new Vector3(0, side * y, z);
+                            var prev = side > 0 ? prevUp : prevDown;
+                            var d = pt - prev;
+                            P(p, ProcMesh.Box(), Surface.Wood, Wood * (1.25f - 0.15f * t), (prev + pt) * 0.5f, new Vector3(0.05f * (1.1f - 0.45f * t), d.magnitude * 1.1f, 0.045f), AlongY(d));
+                            if (side > 0) { prevUp = pt; tipUp = pt; } else { prevDown = pt; tipDown = pt; }
+                        }
+                    }
+                    P(p, ProcMesh.Sphere(), Surface.Gold, Gold, tipUp, Vector3.one * 0.03f);
+                    P(p, ProcMesh.Sphere(), Surface.Gold, Gold, tipDown, Vector3.one * 0.03f);
+                    // Cięciwa: prosto między końcami ramion (w szkielecie zastępuje ją żywa cięciwa, naciągana dłonią).
+                    if (bowString)
+                    {
+                        var sd = tipUp - tipDown;
+                        P(p, ProcMesh.Box(), Surface.Cloth, new Color(0.85f, 0.82f, 0.7f), (tipUp + tipDown) * 0.5f, new Vector3(0.006f, sd.magnitude, 0.006f), AlongY(sd));
                     }
                     break;
                 }

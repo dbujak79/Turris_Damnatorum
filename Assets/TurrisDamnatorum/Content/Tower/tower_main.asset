@@ -21,6 +21,13 @@ MonoBehaviour:
     arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
     enemies:
     - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
+    extraWaves:
+    - enemies:
+      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
+      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
+    - enemies:
+      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
+      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
     statScale: 1
     isDuel: 1
     isBoss: 0
@@ -30,6 +37,14 @@ MonoBehaviour:
     arena: {fileID: 11400000, guid: 4154374c7a45b5d4a804c84f8b75c3c0, type: 2}
     enemies:
     - {fileID: 11400000, guid: d319f454e72c6b542a30bb9cec6a4157, type: 2}
+    extraWaves:
+    - enemies:
+      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
+      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
+      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
+    - enemies:
+      - {fileID: 11400000, guid: d319f454e72c6b542a30bb9cec6a4157, type: 2}
+      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
     statScale: 1.05
     isDuel: 1
     isBoss: 0
@@ -41,6 +56,18 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
     - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
     - {fileID: 11400000, guid: d319f454e72c6b542a30bb9cec6a4157, type: 2}
+    extraWaves:
+    - enemies:
+      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
+      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
+      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
+    - enemies:
+      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
+      - {fileID: 11400000, guid: d319f454e72c6b542a30bb9cec6a4157, type: 2}
+      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
+      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
+    - enemies:
+      - {fileID: 11400000, guid: 0f03c0977312be74c92e3e218d770a73, type: 2}
     statScale: 0.9
     isDuel: 0
     isBoss: 0
@@ -50,6 +77,19 @@ MonoBehaviour:
     arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
     enemies:
     - {fileID: 11400000, guid: 0f03c0977312be74c92e3e218d770a73, type: 2}
+    extraWaves:
+    - enemies:
+      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
+      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
+      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
+    - enemies:
+      - {fileID: 11400000, guid: d319f454e72c6b542a30bb9cec6a4157, type: 2}
+      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
+      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
+      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
+    - enemies:
+      - {fileID: 11400000, guid: 0f03c0977312be74c92e3e218d770a73, type: 2}
+      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
     statScale: 1.12
     isDuel: 1
     isBoss: 0
@@ -59,6 +99,7 @@ MonoBehaviour:
     arena: {fileID: 11400000, guid: d0a20cbccaa75fb47804f5f8af05e300, type: 2}
     enemies:
     - {fileID: 11400000, guid: 683e4e057c00765458c223ee2667f1a4, type: 2}
+    extraWaves: []
     statScale: 1
     isDuel: 1
     isBoss: 1

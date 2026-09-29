@@ -114,5 +114,6 @@ namespace Turris
         Agile = 1 << 5,
         Flask = 1 << 6,
         Guard = 1 << 7,
+        Ranged = 1 << 8,   // broń dystansowa (łuk) – wymagana przez strzały specjalne
     }
 }

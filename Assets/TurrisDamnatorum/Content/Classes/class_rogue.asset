@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 364e1a8d61b62a543b912077a454451b, type: 3}
+  m_Name: class_rogue
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ClassDefinition
+  id: class_rogue
+  displayName: "\u0141otrzyk"
+  description: "No\u017Ce bli\u017Aniacze i sk\xF3rznia. Zr\u0119czno\u015B\u0107: uchylenie, d\u0142ugi unik i szybkie ataki. Techniki: Wypad i Rzut no\u017Cami."
+  tags: 0
+  toughness: 10
+  strength: 10
+  dexterity: 16
+  intelligence: 10
+  endurance: 10
+  mind: 10
+  startingItems:
+  - {fileID: 11400000, guid: 0dfec5e7a81128a498ea326e35f41328, type: 2}
+  - {fileID: 11400000, guid: 9ae482a8e59b1594982f88a35bd5e4e4, type: 2}
+  - {fileID: 11400000, guid: 8bedcc70c079ec04689419018eecf68b, type: 2}
+  startingSpells:
+  - {fileID: 11400000, guid: 8de9464719d1ceb488060fe8cdb76a20, type: 2}
+  - {fileID: 11400000, guid: 4917e706fa64320469d4cb9e61ffdbb6, type: 2}
+  startingTalents: []
+  healthFlasks: 3
+  manaFlasks: 1
+  color: {r: 0.25, g: 0.42, b: 0.3, a: 1}
+  visual: {fileID: 0}

@@ -225,6 +225,8 @@ namespace Turris
             stormBoots.effects.Add(Fx(PassiveEffectType.DodgeShockCharge, 1f));
             var ashRobe = Armor("body_ash", "Szata popiołu", ItemKind.Body, 3, "Płonąc, zadajesz więcej; ogień mniej parzy.", BuildTag.Magic, Flat(StatType.MagicDefense, 20), Flat(StatType.FireResist, 40), Flat(StatType.FireDamage, 10));
             ashRobe.effects.Add(Fx(PassiveEffectType.BurningDamageBonus, 25f));
+            var leather = Armor("body_leather", "Skórznia", ItemKind.Body, 3, "Lekka zbroja – nie spowalnia uniku.", BuildTag.Agile | BuildTag.Melee, Flat(StatType.PhysicalDefense, 18), Flat(StatType.MagicDefense, 8), Flat(StatType.Dexterity, 1));
+            var rogueHood = Armor("head_rogue_hood", "Kaptur zwiadowcy", ItemKind.Head, 1, "", BuildTag.Agile, Flat(StatType.PhysicalDefense, 4), Flat(StatType.Dexterity, 1));
             var furHelm = Armor("head_fur", "Hełm z futrem", ItemKind.Head, 2, "Chroni przed mrozem.", BuildTag.Melee, Flat(StatType.PhysicalDefense, 8), Flat(StatType.FrostResist, 30));
             var groundedChain = Armor("body_grounded", "Uziemiona kolczuga", ItemKind.Body, 7, "Odprowadza błyskawice.", BuildTag.Melee | BuildTag.Guard, Flat(StatType.PhysicalDefense, 30), Flat(StatType.LightningResist, 35));
             riposteRing.effects.Add(Fx(PassiveEffectType.ParryRestoreStamina, 25));
@@ -309,6 +311,30 @@ namespace Turris
             scythe.weapon.light.statuses.Add(St(StatusKind.Bleed, 1, 0.4f)); scythe.weapon.heavy.statuses.Add(St(StatusKind.Bleed, 2));
             scythe.weapon.strengthScaling = 1.1f; scythe.weapon.dexterityScaling = 1.1f;
             scythe.effects.Add(Fx(PassiveEffectType.BleedingHitHeal, 6f));
+
+            // Noże: para ostrzy (zajmują obie ręce) – bardzo szybkie cięcia na przemian, seria 4, krwawienie; parują, nie blokują.
+            var knivesW = WeaponCopy(dagger, "weapon_knives", "Noże bliźniacze", "Para noży: najszybsze cięcia (seria 4), każde może otworzyć ranę. Parują, nie blokują.", BuildTag.Melee | BuildTag.Agile | BuildTag.Parry, new Color(0.82f, 0.82f, 0.86f));
+            knivesW.weaponModel = WeaponModel.Knives; knivesW.twoHanded = true; knivesW.weight = 2;
+            knivesW.requirements.Clear(); knivesW.requirements.Add(Req(AttributeType.Dexterity, 13));
+            knivesW.weapon.light = Atk("Cięcie nożami", 22, 0.18f, 0.1f, 0.26f, 1.9f, 0.85f, 8, 0.5f, 8, 12, cancel: 0.1f);
+            knivesW.weapon.heavy = Atk("Krzyżowe cięcie", 46, 0.42f, 0.14f, 0.45f, 2.0f, 1.0f, 20, 0.8f, 25, 28, true, cancel: 0.25f);
+            knivesW.weapon.light.statuses.Add(St(StatusKind.Bleed, 1, 0.3f)); knivesW.weapon.heavy.statuses.Add(St(StatusKind.Bleed, 2));
+            knivesW.weapon.lightComboLength = 4;
+            knivesW.weapon.strengthScaling = 0.4f; knivesW.weapon.dexterityScaling = 1.7f;
+            knivesW.weapon.canBlock = false; knivesW.weapon.canParry = true;
+
+            // Łuk: atak szybki i mocny to strzały (pociski fizyczne); dwuręczny, bez bloku i parowania.
+            var bow = WeaponCopy(dagger, "weapon_bow", "Łuk refleksyjny", "Strzały zamiast cięć: szybki strzał i napięty strzał (mocniejszy, szybszy pocisk). Z namierzeniem strzały lekko się naprowadzają.", BuildTag.Agile, new Color(0.5f, 0.35f, 0.22f));
+            bow.weaponModel = WeaponModel.Bow; bow.twoHanded = true; bow.weight = 3;
+            bow.requirements.Clear(); bow.requirements.Add(Req(AttributeType.Dexterity, 12));
+            bow.weapon.light = Proj("Strzał", 30, 0.32f, 30f, poise: 10, guardLoad: 14, type: DamageType.Physical, recovery: 0.32f);
+            bow.weapon.heavy = Proj("Napięty strzał", 72, 0.85f, 40f, poise: 35, guardLoad: 35, heavy: true, type: DamageType.Physical, recovery: 0.45f);
+            bow.weapon.light.staminaCost = 10; bow.weapon.heavy.staminaCost = 22;
+            bow.weapon.light.parryable = true; bow.weapon.heavy.parryable = true;
+            bow.weapon.light.cancelAfter = 0.12f; bow.weapon.heavy.cancelAfter = 0.2f;
+            bow.weapon.lightComboLength = 3;
+            bow.weapon.strengthScaling = 0.5f; bow.weapon.dexterityScaling = 1.5f;
+            bow.weapon.canBlock = false; bow.weapon.canParry = false;
 
             var staffStorm = ElementStaff("weapon_staff_storm", "Kostur burzy", Element.Lightning, StatType.LightningDamage, new Color(0.8f, 0.85f, 1f), "Katalizator burzy: +25% obrażeń od błyskawic.");
 
@@ -437,6 +463,21 @@ namespace Turris
             knives.attack.delivery = AttackDelivery.Projectile; knives.attack.projectileCount = 3; knives.attack.spreadAngle = 10f; knives.attack.projectileSpeed = 24f;
             knives.attack.statuses.Add(St(StatusKind.Bleed, 1, 0.6f)); knives.color = new Color(0.85f, 0.85f, 0.9f);
 
+            // ---- Strzały specjalne (wymagają łuku): naciąg widać jako zamach techniki.
+            SpellDefinition ArrowTech(string id, string name, float stamina, float draw, float cooldown, float mult, float speed, string desc)
+            {
+                var t = Tech(id, name, SpellKind.Projectile, stamina, draw, 0.05f, 0.35f, cooldown, mult, 0f, 0.15f, 15, desc, BuildTag.Agile | BuildTag.Ranged);
+                t.requiredTags = BuildTag.Ranged;
+                t.attack.delivery = AttackDelivery.Projectile; t.attack.projectileSpeed = speed; t.attack.animation = AttackAnim.BowDraw;
+                return t;
+            }
+            var fireArrow = ArrowTech("skill_firearrow", "Ognista strzała", 16, 0.5f, 6f, 1.6f, 32f, "Płonąca strzała: połowa obrażeń to ogień, wybucha przy trafieniu i podpala.");
+            fireArrow.attack.element = Element.Fire; fireArrow.attack.explosionRadius = 1.8f; fireArrow.attack.statuses.Add(St(StatusKind.Burn)); fireArrow.color = new Color(1f, 0.5f, 0.15f);
+            var frostArrow = ArrowTech("skill_frostarrow", "Mroźna strzała", 16, 0.5f, 6f, 1.4f, 32f, "Strzała ze szronem: dwie warstwy chłodu – dwie takie strzały zamrażają.");
+            frostArrow.attack.element = Element.Frost; frostArrow.attack.statuses.Add(St(StatusKind.Chill, 2)); frostArrow.color = new Color(0.6f, 0.88f, 1f);
+            var volley = ArrowTech("skill_volley", "Salwa", 22, 0.6f, 8f, 0.75f, 28f, "Pięć strzał w wachlarzu naraz, każda może otworzyć ranę.");
+            volley.attack.projectileCount = 5; volley.attack.spreadAngle = 14f; volley.attack.statuses.Add(St(StatusKind.Bleed, 1, 0.3f)); volley.color = new Color(0.9f, 0.85f, 0.75f);
+
             // ---- Ciężki rzut (etap F2 planu)
             var heavyThrow = Tech("skill_throw", "Ciężki rzut", SpellKind.WeaponThrow, 22, 0.35f, 0.1f, 0.3f, 8f, 1.4f, 9f, 0.8f, 40,
                 "Rzucasz bronią przed siebie – leci i wraca, raniąc wszystkich na drodze w obie strony. Do jej powrotu walczysz pięściami i nie blokujesz bronią.", BuildTag.Heavy);
@@ -512,7 +553,13 @@ namespace Turris
             mage.startingSpells.AddRange(new[] { bolt, nova });
             mage.healthFlasks = 3; mage.manaFlasks = 3; mage.color = new Color(0.35f, 0.35f, 0.75f);
 
-            cfg.classes.Add(knight); cfg.classes.Add(mage);
+            var rogue = Make<ClassDefinition>("class_rogue", "Łotrzyk", "Noże bliźniacze i skórznia. Zręczność: uchylenie, długi unik i szybkie ataki. Techniki: Wypad i Rzut nożami.");
+            rogue.toughness = 10; rogue.strength = 10; rogue.dexterity = 16; rogue.intelligence = 10;
+            rogue.startingItems.AddRange(new[] { knivesW, leather, rogueHood });
+            rogue.startingSpells.AddRange(new[] { lunge, knives });
+            rogue.healthFlasks = 3; rogue.manaFlasks = 1; rogue.color = new Color(0.25f, 0.42f, 0.3f);
+
+            cfg.classes.Add(knight); cfg.classes.Add(mage); cfg.classes.Add(rogue);
 
             // ============================================================ PRZECIWNICY
             var ghoul = Make<EnemyDefinition>("enemy_ghoul", "Ghul Wieży", "Szybki, agresywny, łatwo traci postawę.");
@@ -538,6 +585,19 @@ namespace Turris
             heretic.attacks[0].attack.element = Element.Frost; heretic.attacks[0].attack.statuses.Add(St(StatusKind.Chill));
             heretic.attacks[1].attack.element = Element.Frost; heretic.attacks[1].attack.statuses.Add(St(StatusKind.Chill, 1, 0.5f));
             heretic.frostMultiplier = 0.5f; heretic.lightningMultiplier = 1.5f;
+
+            // Szkieletowy łucznik: trzyma dystans, ucieka przed zwarciem, strzela z naciągiem (widać zamach cięciwy).
+            var archer = Make<EnemyDefinition>("enemy_archer", "Szkieletowy łucznik", "Trzyma dystans i ostrzeliwuje z łuku; ucieka, gdy podejdziesz. Kruchy w zwarciu.");
+            archer.archetype = "Strzelec";
+            archer.maxHealth = 170; archer.maxPoise = 18; archer.moveSpeed = 3.8f; archer.preferredRange = 10; archer.retreatRange = 5.5f;
+            archer.attackInterval = new Vector2(1.1f, 2.0f); archer.strafeChance = 0.6f; archer.evadeChance = 0.25f;
+            archer.color = new Color(0.4f, 0.32f, 0.25f); archer.soulReward = 55; archer.weaponModel = WeaponModel.Bow;
+            archer.attacks.Add(Entry(Proj("Strzał", 26, 0.85f, 26f, poise: 10, guardLoad: 14, type: DamageType.Physical), 4, 20, 3));
+            archer.attacks.Add(Entry(Proj("Salwa", 18, 1.2f, 24f, 3, 9f, poise: 8, guardLoad: 10, type: DamageType.Physical), 5, 18, 1.5f, cooldown: 5));
+            archer.attacks.Add(Entry(Proj("Strzał w nogi", 30, 1.0f, 30f, poise: 20, guardLoad: 18, type: DamageType.Physical), 3, 12, 1f, cooldown: 7));
+            archer.attacks[0].attack.statuses.Add(St(StatusKind.Bleed, 1, 0.25f));
+            archer.attacks[2].attack.statuses.Add(St(StatusKind.Chill, 1)); // strzał w nogi spowalnia
+            archer.fireMultiplier = 1.3f; archer.bleedMultiplier = 0.4f; // kości: dobrze się palą, słabo krwawią
             var push = Atk("Odepchnięcie", 25, 0.8f, 0.1f, 0.5f, 0, 3f, 0, 0, 30, 30, parryable: false, type: DamageType.Magic, delivery: AttackDelivery.AreaAroundSelf);
             heretic.attacks.Add(Entry(push, 0, 3.2f, 4, cooldown: 5, retreatAfter: 5));
             heretic.attacks.Add(Entry(Proj("Opóźniony pocisk", 50, 1.2f, 8f, poise: 30, guardLoad: 35, heavy: true), 5, 18, 1.5f, cooldown: 6, eliteOnly: true));
@@ -619,23 +679,29 @@ namespace Turris
             ghoul.variants.Add(fireGhoul); warden.variants.Add(frostWarden); heretic.variants.Add(stormCultist);
 
             // ============================================================ ARENY I WIEŻA
+            // Rozmiary powiększone ×1,12 (≈ +25% powierzchni) pod dłuższe piętra z falami wrogów.
             var courtyard = Make<ArenaDefinition>("arena_courtyard", "Dziedziniec", "");
-            courtyard.circular = true; courtyard.size = 13;
-            courtyard.pillars.AddRange(new[] { new Vector3(6, 0, 6), new Vector3(-6, 0, 6), new Vector3(6, 0, -6), new Vector3(-6, 0, -6) });
+            courtyard.circular = true; courtyard.size = 14.6f;
+            courtyard.pillars.AddRange(new[] { new Vector3(6.7f, 0, 6.7f), new Vector3(-6.7f, 0, 6.7f), new Vector3(6.7f, 0, -6.7f), new Vector3(-6.7f, 0, -6.7f) });
             var crypt = Make<ArenaDefinition>("arena_crypt", "Krypta", "");
-            crypt.circular = false; crypt.size = 22;
-            crypt.pillars.AddRange(new[] { new Vector3(5, 0, 0), new Vector3(-5, 0, 0), new Vector3(5, 0, 6), new Vector3(-5, 0, 6), new Vector3(5, 0, -6), new Vector3(-5, 0, -6) });
+            crypt.circular = false; crypt.size = 24.6f;
+            crypt.pillars.AddRange(new[] { new Vector3(5.6f, 0, 0), new Vector3(-5.6f, 0, 0), new Vector3(5.6f, 0, 6.7f), new Vector3(-5.6f, 0, 6.7f), new Vector3(5.6f, 0, -6.7f), new Vector3(-5.6f, 0, -6.7f) });
             crypt.floorColor = new Color(0.2f, 0.2f, 0.24f); crypt.wallColor = new Color(0.28f, 0.28f, 0.33f); crypt.lightColor = new Color(0.75f, 0.8f, 1f);
             var summit = Make<ArenaDefinition>("arena_summit", "Szczyt", "");
-            summit.circular = true; summit.size = 17;
+            summit.circular = true; summit.size = 19;
             summit.floorColor = new Color(0.28f, 0.2f, 0.2f); summit.wallColor = new Color(0.3f, 0.18f, 0.18f); summit.lightColor = new Color(1f, 0.6f, 0.5f); summit.fogColor = new Color(0.15f, 0.05f, 0.05f);
 
             var tower = Make<TowerDefinition>("tower_main", "Turris Damnatorum", "");
             tower.victoryAshBonus = 40;
-            tower.floors.Add(new FloorDefinition { name = "I. Przedsionek", arena = courtyard, enemies = { ghoul }, statScale = 1.0f, isDuel = true, ashReward = 3 });
-            tower.floors.Add(new FloorDefinition { name = "II. Skryptorium herezji", arena = crypt, enemies = { heretic }, statScale = 1.05f, isDuel = true, ashReward = 6, restAfter = true });
-            tower.floors.Add(new FloorDefinition { name = "III. Zbrojownia", arena = crypt, enemies = { ghoul, ghoul, heretic }, statScale = 0.9f, isDuel = false, ashReward = 10 });
-            tower.floors.Add(new FloorDefinition { name = "IV. Brama Strażnika", arena = courtyard, enemies = { warden }, statScale = 1.12f, isDuel = true, ashReward = 15, restAfter = true });
+            EnemyWave Wave(params EnemyDefinition[] e) { var w = new EnemyWave(); w.enemies.AddRange(e); return w; }
+            tower.floors.Add(new FloorDefinition { name = "I. Przedsionek", arena = courtyard, enemies = { ghoul }, statScale = 1.0f, isDuel = true, ashReward = 3,
+                extraWaves = { Wave(ghoul, archer), Wave(ghoul, ghoul) } });
+            tower.floors.Add(new FloorDefinition { name = "II. Skryptorium herezji", arena = crypt, enemies = { heretic }, statScale = 1.05f, isDuel = true, ashReward = 6, restAfter = true,
+                extraWaves = { Wave(ghoul, ghoul, archer), Wave(heretic, archer) } });
+            tower.floors.Add(new FloorDefinition { name = "III. Zbrojownia", arena = crypt, enemies = { ghoul, ghoul, heretic }, statScale = 0.9f, isDuel = false, ashReward = 10,
+                extraWaves = { Wave(archer, archer, ghoul), Wave(ghoul, heretic, archer, ghoul), Wave(warden) } });
+            tower.floors.Add(new FloorDefinition { name = "IV. Brama Strażnika", arena = courtyard, enemies = { warden }, statScale = 1.12f, isDuel = true, ashReward = 15, restAfter = true,
+                extraWaves = { Wave(ghoul, ghoul, archer), Wave(heretic, archer, archer, ghoul), Wave(warden, archer) } });
             tower.floors.Add(new FloorDefinition { name = "V. Szczyt Wieży", arena = summit, enemies = { boss }, statScale = 1.0f, isDuel = true, isBoss = true, ashReward = 30 });
             cfg.tower = tower;
 
@@ -665,8 +731,8 @@ namespace Turris
             cfg.baseBoonPool.AddRange(new[] { bIron, bVigor, bBreath, bWrath, bWell, bArcane, bBlood, bFlask, bManaFlask, bParry, bTitan, bMind, bAgile, bVamp, bAlch, bBulwark });
             // Umiejętności do zdobycia tymczasowo (na jedno podejście). Te z listy odblokowań dochodzą, gdy gracz dotrze na ich piętro.
             cfg.baseSpellPool.AddRange(new[] { bolt, nova, enchant, cleave, bash, charge, fireball, frostCone, flameBlade, rend, lunge, knives,
-                spark, iceLance, chains, leapSlash, warcry, heavyThrow });
-            cfg.baseItemPool.AddRange(new[] { flameSword, frostAxe, serrated, mace, staffFire, staffFrost, emberRing, frostVein, furHelm, groundedChain, stormBoots, spearWeapon });
+                spark, iceLance, chains, leapSlash, warcry, heavyThrow, fireArrow, frostArrow, volley });
+            cfg.baseItemPool.AddRange(new[] { flameSword, frostAxe, serrated, mace, staffFire, staffFrost, emberRing, frostVein, furHelm, groundedChain, stormBoots, spearWeapon, knivesW, bow, leather });
 
             // ============================================================ ODBLOKOWANIA
             UnlockDefinition Unlock(string id, UnlockKind kind, ContentDefinition target, int ash, int loadout, bool byDefault = false, int floor = 0, int victory = -1)
@@ -716,6 +782,7 @@ namespace Turris
             Unlock("unlock_rupture", UnlockKind.Spell, rupture, 25, 0, floor: 2);
             Unlock("unlock_stormhammer", UnlockKind.StartingItem, stormHammer, 30, 3, floor: 3);
             Unlock("unlock_scythe", UnlockKind.StartingItem, scythe, 25, 2, floor: 2);
+            Unlock("unlock_bow", UnlockKind.StartingItem, bow, 15, 2);
             Unlock("unlock_staff_storm", UnlockKind.StartingItem, staffStorm, 20, 2, floor: 2);
             Unlock("unlock_conductor", UnlockKind.StartingItem, conductor, 25, 2, floor: 2);
             Unlock("unlock_butcher", UnlockKind.StartingItem, butcher, 20, 2);

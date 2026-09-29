@@ -182,6 +182,7 @@ namespace Turris
             if (snap.guard != null) t |= BuildTag.Guard;
             if (snap.parry != null) t |= BuildTag.Parry;
             if (snap.loadRatio > 0.6f) t |= BuildTag.Heavy; else t |= BuildTag.Agile;
+            if (snap.weapon != null && snap.weapon.light != null && snap.weapon.light.delivery == AttackDelivery.Projectile) t |= BuildTag.Ranged;
             return t;
         }
     }

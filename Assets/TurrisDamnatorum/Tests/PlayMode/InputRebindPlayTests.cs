@@ -14,10 +14,18 @@ namespace Turris.Tests
         PlayerInputReader reader;
         Keyboard kb;
         Gamepad pad;
+        InputSettings.BackgroundBehavior savedBackground;
+        InputSettings.EditorInputBehaviorInPlayMode savedEditorInput;
 
         [SetUp]
         public void SetUp()
         {
+            // Klawiatura (w przeciwieństwie do pada) jest wyłączana, gdy okno edytora traci fokus –
+            // test nie może zależeć od tego, czy ktoś akurat kliknął w inne okno.
+            savedBackground = InputSystem.settings.backgroundBehavior;
+            savedEditorInput = InputSystem.settings.editorInputBehaviorInPlayMode;
+            InputSystem.settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
+            InputSystem.settings.editorInputBehaviorInPlayMode = InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
             kb = InputSystem.AddDevice<Keyboard>("RebindTestKeyboard");
             pad = InputSystem.AddDevice<Gamepad>("RebindTestGamepad");
             go = new GameObject("InputTest");
@@ -30,6 +38,8 @@ namespace Turris.Tests
             Object.Destroy(go);
             InputSystem.RemoveDevice(kb);
             InputSystem.RemoveDevice(pad);
+            InputSystem.settings.backgroundBehavior = savedBackground;
+            InputSystem.settings.editorInputBehaviorInPlayMode = savedEditorInput;
         }
 
         [Test]
@@ -68,9 +78,12 @@ namespace Turris.Tests
             reader.ApplyRebind("Skill1", false, "<Keyboard>/g");
             int fired = -1;
             reader.SkillPressed += s => fired = s;
+            // Kilka klatek wciśnięcia i puszczenia (jak w testach pada) – odporne na taktowanie klatek.
             InputSystem.QueueStateEvent(kb, new KeyboardState(Key.G));
             yield return null;
+            yield return null;
             InputSystem.QueueStateEvent(kb, new KeyboardState());
+            yield return null;
             yield return null;
             Assert.AreEqual(0, fired, "Nowy klawisz uruchamia umiejętność 1");
         }

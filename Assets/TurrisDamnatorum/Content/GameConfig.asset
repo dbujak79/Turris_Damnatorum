@@ -104,6 +104,7 @@ MonoBehaviour:
   classes:
   - {fileID: 11400000, guid: 14b6652c1c070c941b190a5c9859be54, type: 2}
   - {fileID: 11400000, guid: 238a470220177034c9a2fb416776b492, type: 2}
+  - {fileID: 11400000, guid: 732b37bdf25d91e489b61471fb1ebc3e, type: 2}
   difficulties:
   - {fileID: 11400000, guid: 9c1c9d7ae87b2ab448e3e3dbe7ac61c3, type: 2}
   - {fileID: 11400000, guid: f80dba16096f0d5409922ba52dd03e23, type: 2}
@@ -146,6 +147,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a8acfd159cf056441a44f44fb3e5b52f, type: 2}
   - {fileID: 11400000, guid: b8b636113f1bd0447ab15ad402c7180a, type: 2}
   - {fileID: 11400000, guid: caa515ce41cefa345acb08f978bea407, type: 2}
+  - {fileID: 11400000, guid: 0dfec5e7a81128a498ea326e35f41328, type: 2}
+  - {fileID: 11400000, guid: d98463947c256884c83d1eb865ee49d5, type: 2}
+  - {fileID: 11400000, guid: 9ae482a8e59b1594982f88a35bd5e4e4, type: 2}
   baseBoonPool:
   - {fileID: 11400000, guid: c7a69608f028027439b0d5c1efab35e5, type: 2}
   - {fileID: 11400000, guid: c0d1baef0cb3c63449a1de1fc1fdfd7c, type: 2}
@@ -182,6 +186,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 48452b749d46db24295404b91133ca09, type: 2}
   - {fileID: 11400000, guid: c0752538fc5541d4e80b5407a421b891, type: 2}
   - {fileID: 11400000, guid: 982ccf87183da494fa4d9ce9f6eda3d9, type: 2}
+  - {fileID: 11400000, guid: db906cc3320fa7f48baa06be897794ef, type: 2}
+  - {fileID: 11400000, guid: e05ecdbcbf6dbe747ac6e4c7912f421c, type: 2}
+  - {fileID: 11400000, guid: 403464ef91cbcb04695cd8c8d557980e, type: 2}
   unlocks:
   - {fileID: 11400000, guid: 3ba55fd0a97f74f44ba8fecda70c1dfc, type: 2}
   - {fileID: 11400000, guid: 49567dd930c4b5c43ae5b92b70433d12, type: 2}
@@ -231,4 +238,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0b38dc63df9450841861a45d97000874, type: 2}
   - {fileID: 11400000, guid: 4dae3e14eb7ff3f4eaa32e30cea0a279, type: 2}
   - {fileID: 11400000, guid: 78643eae4845d244aba926a920234501, type: 2}
+  - {fileID: 11400000, guid: e2e4694847d58e84998ec6c15dc69e4e, type: 2}
   unarmed: {fileID: 11400000, guid: 63095368e2852db44a01bc274b98192e, type: 2}

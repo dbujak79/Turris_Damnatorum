@@ -44,6 +44,9 @@ namespace Turris
         Light sun;
         System.Random rng;
         float clearTimer = -1f;
+        float nextWaveTimer = -1f;
+        /// <summary>Bieżąca fala na piętrze (0 = pierwsza).</summary>
+        public int WaveIndex { get; private set; }
         float deathTimer = -1f;
 
         void Awake()
@@ -209,25 +212,44 @@ namespace Turris
             Player.OnFloorStart();
             CameraRig.SnapBehindTarget();
 
-            var spawns = WorldBuilder.EnemySpawns(floor.arena, floor.enemies.Count);
-            bool elite = Run.difficulty.elites && floor.isDuel && !floor.isBoss;
-            for (int i = 0; i < floor.enemies.Count; i++)
-            {
-                // Wariant żywiołu (np. płonący ghul) zamiast zwykłego wroga – z szansą z definicji.
-                var def = floor.enemies[i];
-                if (def.variants != null && def.variants.Count > 0 && rng.NextDouble() < def.variantChance)
-                    def = def.variants[rng.Next(def.variants.Count)] ?? def;
-                var e = WorldBuilder.CreateEnemy(def, spawns[i], world);
-                e.transform.rotation = Quaternion.LookRotation(-spawns[i].normalized);
-                e.Setup(def, Player, floor.statScale, Run.difficulty, elite, config.balance);
-                enemies.Add(e);
-            }
+            WaveIndex = 0;
+            nextWaveTimer = -1f;
+            SpawnWave(floor, floor.enemies, Run.difficulty.elites && floor.isDuel && !floor.isBoss, false);
 
             Meta.RecordReachedFloor(index);
             clearTimer = -1f;
             deathTimer = -1f;
             SetScreen(GameScreen.Playing);
             CombatEvents.RaiseMessage(floor.name, new Color(0.95f, 0.85f, 0.6f));
+        }
+
+        /// <summary>
+        /// Wprowadza falę wrogów. Kolejne fale wchodzą po przeciwnej stronie areny niż stoi gracz,
+        /// żeby nie pojawiały się mu pod nosem.
+        /// </summary>
+        void SpawnWave(FloorDefinition floor, List<EnemyDefinition> defs, bool elite, bool oppositePlayer)
+        {
+            var spawns = WorldBuilder.EnemySpawns(floor.arena, defs.Count);
+            if (oppositePlayer && Player != null)
+            {
+                Vector3 pp = Player.transform.position; pp.y = 0;
+                float playerAngle = pp.sqrMagnitude > 0.01f ? Mathf.Atan2(pp.x, pp.z) * Mathf.Rad2Deg : 180f;
+                var rot = Quaternion.Euler(0, playerAngle + 180f, 0);
+                for (int i = 0; i < spawns.Count; i++) spawns[i] = rot * spawns[i];
+            }
+            for (int i = 0; i < defs.Count; i++)
+            {
+                // Wariant żywiołu (np. płonący ghul) zamiast zwykłego wroga – z szansą z definicji.
+                var def = defs[i];
+                if (def == null) continue;
+                if (def.variants != null && def.variants.Count > 0 && rng.NextDouble() < def.variantChance)
+                    def = def.variants[rng.Next(def.variants.Count)] ?? def;
+                var e = WorldBuilder.CreateEnemy(def, spawns[i], world);
+                e.transform.rotation = Quaternion.LookRotation(-new Vector3(spawns[i].x, 0, spawns[i].z).normalized);
+                e.Setup(def, Player, floor.statScale, Run.difficulty, elite, config.balance);
+                enemies.Add(e);
+            }
+            if (oppositePlayer) foreach (var e in enemies) if (e != null && !e.IsDead) FxLibrary.Dust(e.transform.position, 1.5f);
         }
 
         void ClearWorld()
@@ -249,11 +271,25 @@ namespace Turris
             if (Run == null || !(who is EnemyBrain e) || !enemies.Contains(e)) return;
             Run.kills++;
             Run.souls += Mathf.RoundToInt(e.Def.soulReward * Run.difficulty.soulMultiplier * (e.IsElite ? 1.5f : 1f));
-            if (enemies.All(x => x == null || x.IsDead) && !Player.IsDead) clearTimer = 1.5f;
+            if (enemies.All(x => x == null || x.IsDead) && !Player.IsDead)
+            {
+                var floor = CurrentFloor;
+                if (floor != null && WaveIndex + 1 < floor.WaveCount)
+                {
+                    nextWaveTimer = 2f;
+                    CombatEvents.RaiseMessage($"Fala {WaveIndex + 2}/{floor.WaveCount} nadchodzi…", new Color(1f, 0.75f, 0.4f));
+                }
+                else clearTimer = 1.5f;
+            }
         }
 
         void Update()
         {
+            if (Screen == GameScreen.Playing && nextWaveTimer > 0)
+            {
+                nextWaveTimer -= Time.deltaTime;
+                if (nextWaveTimer <= 0) StartNextWave();
+            }
             if (Screen == GameScreen.Playing && clearTimer > 0)
             {
                 clearTimer -= Time.deltaTime;
@@ -270,9 +306,21 @@ namespace Turris
                 Meta.DebugAddAsh(100);
         }
 
+        void StartNextWave()
+        {
+            nextWaveTimer = -1f;
+            var floor = CurrentFloor;
+            var waves = floor.extraWaves.Where(w => w != null && w.enemies.Count > 0).ToList();
+            if (WaveIndex >= waves.Count) { clearTimer = 1.5f; return; }
+            WaveIndex++;
+            SpawnWave(floor, waves[WaveIndex - 1].enemies, false, true);
+            CombatEvents.RaiseMessage($"Fala {WaveIndex + 1}/{floor.WaveCount}", new Color(1f, 0.6f, 0.3f));
+        }
+
         void CompleteFloor()
         {
             clearTimer = -1f;
+            nextWaveTimer = -1f;
             var floor = CurrentFloor;
             Run.floorsCleared++;
             Run.attributePoints += config.balance.attributePointsPerFloor;

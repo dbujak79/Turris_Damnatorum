@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bfc9e3d0e146d4086347f0e38c03cf, type: 3}
+  m_Name: skill_frostarrow
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
+  id: skill_frostarrow
+  displayName: "Mro\u017Ana strza\u0142a"
+  description: "Strza\u0142a ze szronem: dwie warstwy ch\u0142odu \u2013 dwie takie strza\u0142y zamra\u017Caj\u0105."
+  tags: 289
+  kind: 0
+  category: 1
+  manaCost: 0
+  castTime: 0.5
+  recovery: 0.35
+  cancelAfter: 0.2
+  staminaCost: 16
+  requirements: []
+  requiredTags: 256
+  intelligenceScaling: 0
+  attack:
+    name: "Mro\u017Ana strza\u0142a"
+    delivery: 1
+    damageType: 0
+    baseDamage: 0
+    windup: 0.5
+    active: 0.05
+    recovery: 0.35
+    cancelAfter: 0.2
+    reach: 0
+    radius: 0.15
+    lunge: 0
+    tracking: 360
+    blockable: 1
+    parryable: 1
+    dodgeable: 1
+    guardLoad: 12
+    poiseDamage: 15
+    heavy: 0
+    staminaCost: 0
+    projectileSpeed: 32
+    projectileCount: 1
+    spreadAngle: 0
+    explosionRadius: 0
+    element: 2
+    elementShare: 0
+    bonusVsFrozen: 0
+    bonusVsBleeding: 0
+    executeBonus: 0
+    statuses:
+    - kind: 2
+      stacks: 2
+      chance: 1
+    animation: 10
+  amount: 60
+  duration: 0.05
+  cooldown: 6
+  charges: 1
+  extraChargeAtLevel: 0
+  cooldownReductionPerLevel: 0.06
+  weaponMultiplier: 1.4
+  arcAngle: 150
+  tickInterval: 0.35
+  moveMultiplier: 0.5
+  levelFeatures: []
+  maxLevel: 4
+  powerPerLevel: 0.15
+  costReductionPerLevel: 0.06
+  color: {r: 0.6, g: 0.88, b: 1, a: 1}

@@ -330,7 +330,7 @@ namespace Turris
                 var c = TelegraphColors.For(a.Telegraph); c.a = 1f;
                 marker = VisualFx.GroundMarker(transform.position, a.radius, c);
             }
-            if (a.delivery == AttackDelivery.Projectile && visual != null)
+            if (a.delivery == AttackDelivery.Projectile && visual != null && weaponModel != WeaponModel.Bow)
                 FxLibrary.Gather(visual.RightHand != null ? visual.RightHand : transform, TelegraphColors.For(a.Telegraph), a.windup / Mathf.Max(0.1f, SpeedMult));
         }
 
@@ -389,7 +389,10 @@ namespace Turris
                         float ang = count == 1 ? 0 : Mathf.Lerp(-a.spreadAngle, a.spreadAngle, i / (float)(count - 1));
                         Vector3 dir = Quaternion.Euler(0, ang, 0) * aim.normalized;
                         var hit = HitData.FromAttack(a, dmg, origin, this);
-                        Projectile.Spawn(origin, dir, a.projectileSpeed, hit, Faction.Enemy, this, TelegraphColors.For(a.Telegraph) * 0.8f + new Color(0.2f, 0.1f, 0.4f), 0.3f);
+                        if (weaponModel == WeaponModel.Bow)
+                            Projectile.Spawn(origin, dir, a.projectileSpeed, hit, Faction.Enemy, this, new Color(0.85f, 0.8f, 0.7f), 0.12f, 3f, arrow: true);
+                        else
+                            Projectile.Spawn(origin, dir, a.projectileSpeed, hit, Faction.Enemy, this, TelegraphColors.For(a.Telegraph) * 0.8f + new Color(0.2f, 0.1f, 0.4f), 0.3f);
                     }
                     break;
                 }

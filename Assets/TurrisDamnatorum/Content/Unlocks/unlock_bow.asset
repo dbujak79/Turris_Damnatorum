@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04a8fe60f9299784cac74fcbd7b0d11b, type: 3}
+  m_Name: unlock_bow
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.UnlockDefinition
+  id: unlock_bow
+  displayName: "\u0141uk refleksyjny"
+  description: "Strza\u0142y zamiast ci\u0119\u0107: szybki strza\u0142 i napi\u0119ty strza\u0142 (mocniejszy, szybszy pocisk). Z namierzeniem strza\u0142y lekko si\u0119 naprowadzaj\u0105."
+  tags: 0
+  kind: 0
+  target: {fileID: 11400000, guid: d98463947c256884c83d1eb865ee49d5, type: 2}
+  ashCost: 15
+  loadoutCost: 2
+  unlockedByDefault: 0
+  requiredBestFloor: 0
+  requiredVictoryTier: -1

@@ -19,7 +19,9 @@ Działają mysz z klawiaturą oraz pad, także w menu.
 | Zestawy żywiołów: bronie i przedmioty żywiołów/krwawienia, odporności bohatera, warianty wrogów, cechy poziomów umiejętności, sklep dusz | gotowe – szczegóły i dziennik w [PLAN_ROZWOJU.md](PLAN_ROZWOJU.md) |
 | Cechy postaci: Siła, Zręczność, Inteligencja, Wytrzymałość; +1 punkt po każdym piętrze | gotowe, pokryte testami (`AttributeTests`) |
 | Przemapowanie przycisków (klawiatura/mysz i pad osobno), zapis w profilu | gotowe, pokryte testami (`InputRebindPlayTests`) |
-| Modele broni: buława, młot, włócznia, kosa; ciężki rzut | gotowe |
+| Modele broni: buława, młot, włócznia, kosa, noże bliźniacze, łuk; ciężki rzut ze smugą | gotowe |
+| Klasy: Rycerz, Mag, Łotrzyk | gotowe |
+| Fale wrogów na piętrach (36 wrogów na wieżę), Szkieletowy łucznik, strzały specjalne | gotowe – do oceny długość pięter w ręcznym graniu |
 | Wyposażenie, statystyki, nagrody, odblokowania, trudność, zapis z wersjonowaniem | gotowe, pokryte testami |
 | AI: 3 archetypy + boss z 2 fazami, elity, dodatkowe zachowania bossa | gotowe |
 | Postacie: proceduralne humanoidy (240–330 części), animacja zsynchronizowana z fazami walki | gotowe |
@@ -31,8 +33,8 @@ Działają mysz z klawiaturą oraz pad, także w menu.
 
 ### Wyniki testów (ostatni przebieg)
 
-- **EditMode:** 114/114.
-- **PlayMode:** 36/36 + 3 galerie pominięte (bez `TURRIS_SHOT_DIR`) w oknie edytora; z `TURRIS_SHOT_DIR` w oknie 39/39 (`python tools/run_tests.py PlayMode window`).
+- **EditMode:** 120/120.
+- **PlayMode:** 42/42 + 3 galerie pominięte (bez `TURRIS_SHOT_DIR`) w oknie edytora; z `TURRIS_SHOT_DIR` w oknie 45/45 (`python tools/run_tests.py PlayMode window`).
 - **PlayMode w trybie wsadowym:** 2 testy pada są pomijane, bo nie działa tam `OnGUI`. Galerie zrzutów są pomijane bez zmiennej `TURRIS_SHOT_DIR`.
 
 ### Metryki szczegółowości (z testu `DetailLevel_ManyParts_FewRenderers`)
@@ -48,13 +50,13 @@ Części ciała postaci (bez broni i tarczy) i liczba rendererów:
 | Strażnik | 291 | 20 |
 | Kasztelan | 332 | 21 |
 
-Areny z testu `Arenas_BuildWithSimpleCollidersAndBakedVisuals`:
+Areny z testu `Arenas_BuildWithSimpleCollidersAndBakedVisuals` (po powiększeniu o ~25% powierzchni: rozmiary 14,6 / 24,6 / 19):
 
 | Arena | Wierzchołki | Światła | Systemy cząsteczek |
 |---|---|---|---|
-| Dziedziniec | ~120 tys. | 5 | 20 |
-| Krypta | ~66 tys. | 12 | 44 |
-| Szczyt | ~121 tys. | 4 | 16 |
+| Dziedziniec | ~128 tys. | 5 | 20 |
+| Krypta | ~67 tys. | 12 | 44 |
+| Szczyt | ~128 tys. | 4 | 16 |
 
 ### Stan repozytorium
 

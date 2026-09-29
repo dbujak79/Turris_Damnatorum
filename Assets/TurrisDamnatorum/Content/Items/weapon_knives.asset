@@ -1,0 +1,133 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 636ee652052ecf443b59ebf79a72207a, type: 3}
+  m_Name: weapon_knives
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ItemDefinition
+  id: weapon_knives
+  displayName: "No\u017Ce bli\u017Aniacze"
+  description: "Para no\u017Cy: najszybsze ci\u0119cia (seria 4), ka\u017Cde mo\u017Ce otworzy\u0107 ran\u0119. Paruj\u0105, nie blokuj\u0105."
+  tags: 41
+  kind: 0
+  twoHanded: 1
+  weight: 2
+  requirements:
+  - attribute: 4
+    value: 13
+  modifiers: []
+  effects: []
+  weapon:
+    light:
+      name: "Ci\u0119cie no\u017Cami"
+      delivery: 0
+      damageType: 0
+      baseDamage: 22
+      windup: 0.18
+      active: 0.1
+      recovery: 0.26
+      cancelAfter: 0.1
+      reach: 1.9
+      radius: 0.85
+      lunge: 0.5
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 12
+      poiseDamage: 8
+      heavy: 0
+      staminaCost: 8
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 0
+        stacks: 1
+        chance: 0.3
+      animation: 0
+    heavy:
+      name: "Krzy\u017Cowe ci\u0119cie"
+      delivery: 0
+      damageType: 0
+      baseDamage: 46
+      windup: 0.42
+      active: 0.14
+      recovery: 0.45
+      cancelAfter: 0.25
+      reach: 2
+      radius: 1
+      lunge: 0.8
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 28
+      poiseDamage: 25
+      heavy: 1
+      staminaCost: 20
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 0
+        stacks: 2
+        chance: 1
+      animation: 0
+    lightComboLength: 4
+    strengthScaling: 0.4
+    dexterityScaling: 1.7
+    intelligenceScaling: 0
+    riposteMultiplier: 4
+    canBlock: 0
+    guard:
+      physicalReduction: 0.6
+      magicReduction: 0.2
+      stabilityMultiplier: 1.2
+      blockAngle: 100
+      staminaRegenMultiplier: 0.3
+    canParry: 1
+    parry:
+      startup: 0.06
+      activeWindow: 0.24
+      recovery: 0.45
+      staminaCost: 12
+      poiseDamage: 80
+      angle: 150
+  shield:
+    guard:
+      physicalReduction: 1
+      magicReduction: 0.4
+      stabilityMultiplier: 0.7
+      blockAngle: 140
+      staminaRegenMultiplier: 0.3
+    canParry: 1
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  color: {r: 0.82, g: 0.82, b: 0.86, a: 1}
+  weaponModel: 14
+  shieldModel: 0

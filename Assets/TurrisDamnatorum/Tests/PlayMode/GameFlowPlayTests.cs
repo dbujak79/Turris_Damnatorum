@@ -320,6 +320,95 @@ namespace Turris.Tests
         }
 
         [UnityTest]
+        public IEnumerator Floor_WavesComeOneAfterAnother_ThenReward()
+        {
+            var root = CreateGame(out var bundle);
+            var plan = new LoadoutPlan { classDef = bundle.Get<ClassDefinition>("class_knight"), difficulty = bundle.config.difficulties[0] };
+            Assert.IsTrue(root.TryStartRun(plan, out var reason), reason);
+            yield return null;
+            var floor = root.CurrentFloor;
+            Assert.GreaterOrEqual(floor.WaveCount, 3);
+            for (int wave = 0; wave < floor.WaveCount; wave++)
+            {
+                Assert.AreEqual(wave, root.WaveIndex);
+                Assert.AreEqual(GameScreen.Playing, root.Screen, $"Fala {wave + 1}: nadal walka");
+                var alive = root.Enemies.Where(e => e != null && !e.IsDead).ToList();
+                Assert.Greater(alive.Count, 0, $"Fala {wave + 1} ma wrogów");
+                foreach (var e in alive) e.DebugKill();
+                float t = 0;
+                while (t < 4f && root.Screen == GameScreen.Playing && root.WaveIndex == wave) { t += Time.deltaTime; yield return null; }
+            }
+            Assert.AreEqual(GameScreen.Reward, root.Screen, "Po ostatniej fali – nagroda");
+        }
+
+        [UnityTest]
+        public IEnumerator Archer_ShootsArrowsAtPlayer_FromDistance()
+        {
+            var bundle = DefaultContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "class_knight");
+            var archer = SpawnEnemy(bundle.Get<EnemyDefinition>("enemy_archer"), new Vector3(0, 0.05f, 11f), pc, bundle.config.balance);
+            float hp = pc.Health.Current;
+            float t = 0;
+            bool shot = false;
+            while (t < 8f && pc.Health.Current >= hp) { shot |= Projectile.Active.Count > 0; t += Time.deltaTime; yield return null; }
+            Assert.IsTrue(shot, "Łucznik strzelił");
+            Assert.Less(pc.Health.Current, hp, "Strzała trafiła bohatera");
+            Assert.Greater(Vector3.Distance(archer.transform.position, pc.transform.position), 4f, "Strzela z dystansu");
+            Assert.IsNotNull(archer.GetComponent<CharacterVisual>().Rig.transform.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name == "Quiver"), "Kołczan na plecach");
+        }
+
+        [UnityTest]
+        public IEnumerator FireArrow_Explodes_AndBurns()
+        {
+            var bundle = DefaultContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "class_rogue");
+            var bow = new ItemInstance(bundle.Get<ItemDefinition>("weapon_bow"));
+            pc.Run.inventory.Add(bow);
+            pc.Run.EquipFromInventory(bow, EquipSlot.MainHand);
+            var e = Dummy(new Vector3(0, 0.05f, 8f), pc, bundle.config.balance);
+            yield return new WaitForSeconds(0.1f);
+            Equip(pc, bundle, "skill_firearrow", 0);
+            pc.RequestSkill(0);
+            float t = 0;
+            while (t < 2f && e.Health.Current >= 1000f) { t += Time.deltaTime; yield return null; }
+            yield return null;
+            Assert.Less(e.Health.Current, 1000f, "Ognista strzała trafiła");
+            Assert.IsTrue(e.Status.Burning, "…i podpaliła");
+        }
+
+        [UnityTest]
+        public IEnumerator Bow_ArrowHitsDistantEnemy()
+        {
+            var bundle = DefaultContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "class_rogue");
+            var bow = new ItemInstance(bundle.Get<ItemDefinition>("weapon_bow"));
+            pc.Run.inventory.Add(bow);
+            pc.Run.EquipFromInventory(bow, EquipSlot.MainHand);
+            pc.RefreshBuild();
+            var e = Dummy(new Vector3(0, 0.05f, 9f), pc, bundle.config.balance);
+            yield return new WaitForSeconds(0.2f);
+            float expected = pc.Build.WeaponDamage(pc.Build.weapon.light);
+            pc.Request(ActionType.LightAttack);
+            float t = 0;
+            bool sawArrow = false;
+            while (t < 1.5f && e.Health.Current >= 1000f) { sawArrow |= Projectile.Active.Count > 0; t += Time.deltaTime; yield return null; }
+            Assert.IsTrue(sawArrow, "Wystrzelono strzałę");
+            Assert.AreEqual(1000f - expected, e.Health.Current, 0.5f, "Strzała trafia cel 9 m dalej za obrażenia z łuku");
+        }
+
+        [UnityTest]
+        public IEnumerator Rogue_HoldsKnifeInEachHand()
+        {
+            var bundle = DefaultContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "class_rogue");
+            yield return null;
+            var rig = pc.GetComponent<CharacterVisual>().Rig;
+            Assert.IsNotNull(rig.WeaponSocket.GetComponentInChildren<MeshRenderer>(), "Nóż w prawej dłoni");
+            Assert.IsNotNull(rig.OffhandSocket.GetComponentInChildren<MeshRenderer>(), "Nóż w lewej dłoni");
+            Assert.Less(Vector3.Distance(rig.OffhandSocket.position, rig[Bone.HandL].position), 0.2f, "Drugi nóż trzymany lewą dłonią");
+        }
+
+        [UnityTest]
         public IEnumerator HeavyThrow_HitsOutAndBack_FistsMeanwhile()
         {
             var bundle = DefaultContent.Create();
@@ -332,6 +421,7 @@ namespace Turris.Tests
             yield return new WaitForSeconds(0.45f);
             Assert.IsTrue(pc.WeaponThrown, "Broń w locie");
             Assert.AreEqual(1, ThrownWeapon.Active.Count);
+            Assert.IsNotNull(ThrownWeapon.Active[0].GetComponent<TrailRenderer>(), "Smuga za lecącą bronią");
 
             // W tym czasie cios pięścią (krótszy zamach niż miecz) i brak bloku bronią… ale rycerz ma tarczę.
             pc.Actions.Reset();

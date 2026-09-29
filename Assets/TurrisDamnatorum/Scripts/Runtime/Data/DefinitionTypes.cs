@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Turris
@@ -36,12 +37,21 @@ namespace Turris
         public string announcement = "Wróg wpada w szał!";
     }
 
+    /// <summary>Kolejna fala wrogów na piętrze (wchodzi, gdy poprzednia zginie).</summary>
+    [Serializable]
+    public class EnemyWave
+    {
+        public List<EnemyDefinition> enemies = new List<EnemyDefinition>();
+    }
+
     [Serializable]
     public class FloorDefinition
     {
         public string name = "Piętro";
         public ArenaDefinition arena;
         public List<EnemyDefinition> enemies = new List<EnemyDefinition>();
+        [Tooltip("Kolejne fale po pierwszej (enemies). Piętro kończy się po pokonaniu ostatniej.")]
+        public List<EnemyWave> extraWaves = new List<EnemyWave>();
         [Tooltip("Umiarkowane skalowanie życia i obrażeń przeciwników.")]
         public float statScale = 1f;
         public bool isDuel = true;
@@ -50,5 +60,7 @@ namespace Turris
         public bool restAfter;
         [Tooltip("Popiół (waluta trwała) za ukończenie piętra, przed mnożnikiem trudności.")]
         public int ashReward = 5;
+
+        public int WaveCount => 1 + (extraWaves?.Count(w => w != null && w.enemies.Count > 0) ?? 0);
     }
 }

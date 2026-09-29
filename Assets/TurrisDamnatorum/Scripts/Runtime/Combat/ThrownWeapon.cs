@@ -41,6 +41,9 @@ namespace Turris
                 var w = GearBuilder.Weapon(pivot, weaponModel, color);
                 w.transform.localPosition = new Vector3(0, 0, -0.45f); // obrót wokół środka broni, nie rękojeści
                 go.transform.rotation = Quaternion.LookRotation(t.dir);
+                // Smuga za lecącą bronią – czytelny tor lotu także z bliska.
+                Projectile.AddTrail(go, Color.Lerp(color, Color.white, 0.5f), 0.35f, 0.3f);
+                FxLibrary.Aura(go.transform, Vector3.zero, Color.Lerp(color, Color.white, 0.5f), 40f, 0.25f, 0.08f);
             }
             return t;
         }

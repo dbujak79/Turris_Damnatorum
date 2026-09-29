@@ -649,6 +649,8 @@ namespace Turris
             // Piętro, dusze
             var floor = root.CurrentFloor;
             GUI.Label(new Rect(W - 520, 30, 480, 30), $"{floor?.name}  ({run.floorIndex + 1}/{root.config.tower.floors.Count})", header);
+            if (floor != null && floor.WaveCount > 1)
+                GUI.Label(new Rect(W - 520, 96, 480, 30), $"<b>Fala {root.WaveIndex + 1}/{floor.WaveCount}</b> · wrogowie: {root.Enemies.Count(e => e != null && !e.IsDead)}", rich);
             GUI.Label(new Rect(W - 520, 70, 480, 30), $"Dusze: {run.souls}   Popiół w podejściu: {run.ashEarned}   Trudność: {run.difficulty.displayName}", small);
 
             // Wrogowie: paski, telegrafy

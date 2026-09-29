@@ -192,6 +192,9 @@ namespace Turris
             if (rig.Look.TwoHanded && rig.Look.shield == ShieldModel.None && s.action != AnimAction.Drink && s.action != AnimAction.Death && s.action != AnimAction.GuardBroken)
                 applied.handL = applied.handR + applied.weaponDir.normalized * 0.28f;
 
+            // Naciąg cięciwy: rośnie w czasie zamachu ataku łukiem, w chwili strzału puszcza.
+            bowDrawNow = s.action == AnimAction.Attack && s.attack == AttackAnim.BowDraw && s.phase == ActionPhase.Startup
+                ? Mathf.SmoothStep(0f, 1f, s.phaseProgress) : 0f;
             Apply(applied, moveDir, pivotRot, pivotOffset, s.action == AnimAction.Death);
             rig.ShowFlask(flask);
         }
@@ -258,12 +261,63 @@ namespace Turris
             rig.WeaponSocket.position = hand.position + hand.rotation * new Vector3(0, -0.07f * s, 0);
             rig.WeaponSocket.rotation = root.rotation * SafeLook(p.weaponDir, p.weaponUp);
 
+            // Żywa cięciwa: w czasie naciągania (zamach ataku łukiem) środek podąża za lewą dłonią, po strzale wraca prosto.
+            if (rig.BowStringUpper != null)
+            {
+                Vector3 up = rig.WeaponSocket.TransformPoint(GearBuilder.BowTipUp);
+                Vector3 down = rig.WeaponSocket.TransformPoint(GearBuilder.BowTipDown);
+                Vector3 stringMid = (up + down) * 0.5f;
+                float draw = bowDrawNow;
+                Vector3 nock = Vector3.Lerp(stringMid, rig[Bone.HandL].position, draw);
+                PlaceString(rig.BowStringUpper, up, nock);
+                PlaceString(rig.BowStringLower, down, nock);
+                lastBowDraw = draw;
+                // Strzała na cięciwie: od nasadki (dłoń) przez łuk do przodu – tylko w czasie naciągu.
+                if (rig.NockedArrow != null)
+                {
+                    bool show = draw > 0.05f;
+                    if (rig.NockedArrow.gameObject.activeSelf != show) rig.NockedArrow.gameObject.SetActive(show);
+                    if (show)
+                    {
+                        Vector3 grip = rig.WeaponSocket.position;
+                        Vector3 aimDir = (grip - nock).sqrMagnitude > 1e-4f ? (grip - nock).normalized : rig.VisualRoot.forward;
+                        rig.NockedArrow.SetPositionAndRotation(nock, Quaternion.LookRotation(aimDir, Vector3.up));
+                    }
+                }
+            }
+
+            // Druga broń (noże) w lewej dłoni – kierunek lustrzany do prawej.
+            if (rig.OffhandSocket != null)
+            {
+                var hl = rig[Bone.HandL];
+                Vector3 mirrored = new Vector3(-p.weaponDir.x, p.weaponDir.y, p.weaponDir.z);
+                rig.OffhandSocket.position = hl.position + hl.rotation * new Vector3(0, -0.07f * s, 0);
+                rig.OffhandSocket.rotation = root.rotation * SafeLook(mirrored, p.weaponUp);
+            }
+
             // Tarcza na lewym przedramieniu.
             var fa = rig[Bone.ForearmL];
             var handL = rig[Bone.HandL];
             Vector3 mid = Vector3.Lerp(fa.position, handL.position, 0.55f);
             Quaternion shieldRot = root.rotation * SafeLook(p.shieldNormal, p.shieldUp);
             rig.ShieldSocket.SetPositionAndRotation(mid + shieldRot * Vector3.forward * (0.06f * s), shieldRot);
+        }
+
+        /// <summary>Stopień naciągnięcia cięciwy w ostatniej klatce (0–1) – dla testów i efektów.</summary>
+        public float BowDraw => lastBowDraw;
+        float lastBowDraw;
+
+        float bowDrawNow;
+
+        void PlaceString(Transform seg, Vector3 a, Vector3 b)
+        {
+            Vector3 d = b - a;
+            float len = d.magnitude;
+            if (len < 1e-4f) return;
+            seg.position = (a + b) * 0.5f;
+            seg.rotation = Quaternion.FromToRotation(Vector3.up, d / len);
+            float ps = seg.parent != null ? Mathf.Max(0.001f, seg.parent.lossyScale.x) : 1f;
+            seg.localScale = new Vector3(0.007f / ps, len / ps, 0.007f / ps);
         }
 
         static Quaternion SafeLook(Vector3 dir, Vector3 up)

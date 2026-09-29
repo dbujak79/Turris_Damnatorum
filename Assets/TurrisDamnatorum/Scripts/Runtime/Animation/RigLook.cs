@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Turris
 {
     public enum HeadGear { Bare, GreatHelm, Hood, HornedHelm, Skull, Coif }
-    public enum BodyGear { Tunic, Chain, Plate, Robe, Rags }
+    public enum BodyGear { Tunic, Chain, Plate, Robe, Rags, Leather }
 
     /// <summary>Opis wyglądu proceduralnego humanoida (sylwetka, pancerz, kolory, broń).</summary>
     public class RigLook
@@ -56,6 +56,7 @@ namespace Turris
             if (bid.Contains("plate")) { look.body = BodyGear.Plate; look.pauldrons = true; look.cape = true; look.bulk = 1.08f; }
             else if (bid.Contains("chain")) { look.body = BodyGear.Chain; look.cape = true; look.armor = new Color(0.52f, 0.53f, 0.56f); }
             else if (bid.Contains("robe")) { look.body = BodyGear.Robe; look.style = RigStyle.Mage; }
+            else if (bid.Contains("leather")) { look.body = BodyGear.Leather; look.cape = true; }
             else look.body = BodyGear.Tunic;
 
             var head = run.equipment.Get(EquipSlot.Head)?.definition;
@@ -93,6 +94,12 @@ namespace Turris
                     look.head = HeadGear.GreatHelm; look.body = BodyGear.Plate; look.pauldrons = true; look.bulk = 1.2f; look.limbThickness = 1.2f;
                     look.armor = new Color(0.45f, 0.47f, 0.52f); look.cloth = new Color(0.2f, 0.25f, 0.35f);
                     look.shield = ShieldModel.Tower; look.shieldColor = new Color(0.35f, 0.37f, 0.42f); look.weaponColor = new Color(0.6f, 0.6f, 0.62f);
+                    break;
+                case RigStyle.Archer:
+                    // Szkielet łucznika w podartej skórzni, z kapturem i kołczanem.
+                    look.head = HeadGear.Skull; look.body = BodyGear.Leather; look.hunch = 6f; look.limbThickness = 0.72f;
+                    look.skin = new Color(0.78f, 0.75f, 0.66f); look.leather = new Color(0.28f, 0.2f, 0.14f); look.cloth = new Color(0.22f, 0.18f, 0.16f);
+                    look.eyes = new Color(0.4f, 0.8f, 1f); look.glowingEyes = true; look.weaponColor = new Color(0.4f, 0.3f, 0.2f); look.cape = true;
                     break;
                 case RigStyle.Castellan:
                     look.head = HeadGear.HornedHelm; look.body = BodyGear.Plate; look.pauldrons = true; look.cape = true; look.bulk = 1.15f;

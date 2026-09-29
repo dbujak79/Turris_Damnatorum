@@ -17,6 +17,13 @@ namespace Turris
         public Transform Pivot { get; private set; }
         public Transform WeaponSocket { get; private set; }
         public Transform ShieldSocket { get; private set; }
+        /// <summary>Gniazdo drugiej broni w lewej dłoni (noże).</summary>
+        public Transform OffhandSocket { get; private set; }
+        /// <summary>Żywa cięciwa łuku: dwa odcinki od końców ramion do punktu naciągu (null bez łuku).</summary>
+        public Transform BowStringUpper { get; private set; }
+        public Transform BowStringLower { get; private set; }
+        /// <summary>Strzała nałożona na cięciwę w czasie naciągu (ukryta poza nim).</summary>
+        public Transform NockedArrow { get; private set; }
         public Transform CapePivot { get; private set; }
         public Transform CapeLower { get; private set; }
         public RigLook Look { get; private set; }
@@ -32,7 +39,7 @@ namespace Turris
 
         readonly TintSet bodyTint = new TintSet();
         readonly TintSet weaponTint = new TintSet();
-        GameObject weaponObject, shieldObject, flaskObject;
+        GameObject weaponObject, shieldObject, flaskObject, offhandObject, quiverObject;
 
         public Transform this[Bone b] => bones[(int)b];
 
@@ -142,6 +149,7 @@ namespace Turris
 
             WeaponSocket = Node("WeaponSocket", VisualRoot, Vector3.zero);
             ShieldSocket = Node("ShieldSocket", VisualRoot, Vector3.zero);
+            OffhandSocket = Node("OffhandSocket", VisualRoot, Vector3.zero);
             SetWeapon(look.weapon, look.weaponColor);
             SetShield(look.shield, look.shieldColor);
         }
@@ -232,10 +240,12 @@ namespace Turris
             {
                 case BodyGear.Chain:
                 case BodyGear.Tunic:
+                case BodyGear.Leather:
                 {
                     bool chain = look.body == BodyGear.Chain;
-                    Surface s = chain ? Surface.Chain : Surface.Cloth;
-                    Color c = chain ? Ch : Cd;
+                    bool leatherBody = look.body == BodyGear.Leather;
+                    Surface s = chain ? Surface.Chain : leatherBody ? Surface.Leather : Surface.Cloth;
+                    Color c = chain ? Ch : leatherBody ? Le * 1.15f : Cd;
                     P(hips, Fr(1.1f, 1.05f), Surface.Leather, Ld, Vector3.zero, new Vector3(0.32f * w, 0.18f, 0.2f));
                     P(spine, Fr(1.18f, 1.08f), s, c, new Vector3(0, 0.1f, 0), new Vector3(0.31f * w, 0.22f, 0.2f));
                     P(chest, Fr(1.28f, 1.12f), s, c, new Vector3(0, 0.12f, 0), new Vector3(0.35f * w, 0.34f, 0.22f));
@@ -243,6 +253,25 @@ namespace Turris
                     P(chest, Tor(0.3f), Surface.Cloth, Cl * 0.55f, new Vector3(0, 0.33f, 0), new Vector3(0.2f, 0.4f, 0.17f));
                     if (chain) P(hips, Bell(0.8f, 0.02f), Surface.Chain, Ch * 0.95f, new Vector3(0, -0.14f, 0), new Vector3(0.36f * w, 0.3f, 0.26f));
                     else P(hips, Bell(0.85f, 0.02f), Surface.Cloth, Cd, new Vector3(0, -0.1f, 0), new Vector3(0.34f * w, 0.22f, 0.25f));
+
+                    if (leatherBody)
+                    {
+                        // Kurtka skórzana: nabijane ćwieki, dwa pasy na krzyż z pochwami noży, krótka pelerynka z kapturem na ramionach.
+                        for (int row = 0; row < 4; row++)
+                            for (int col = -2; col <= 2; col++)
+                                P(chest, Sph, Surface.Metal, new Color(0.55f, 0.5f, 0.42f), new Vector3(col * 0.055f * w, 0.02f + row * 0.07f, 0.128f), Vector3.one * 0.016f);
+                        for (int d = -1; d <= 1; d += 2)
+                        {
+                            P(chest, Box, Surface.Leather, Le * 0.55f, new Vector3(0, 0.1f, 0.136f), new Vector3(0.035f, 0.46f, 0.01f), new Vector3(0, 0, d * 35f));
+                            P(chest, Box, Surface.Leather, Le * 0.45f, new Vector3(d * 0.07f, 0.16f, 0.142f), new Vector3(0.03f, 0.12f, 0.012f), new Vector3(0, 0, d * 35f));
+                            P(chest, Box, Surface.Metal, new Color(0.75f, 0.75f, 0.78f), new Vector3(d * 0.085f, 0.23f, 0.146f), new Vector3(0.012f, 0.05f, 0.006f), new Vector3(0, 0, d * 35f));
+                        }
+                        P(chest, Fr(1.25f, 0.9f), Surface.Cloth, Cl, new Vector3(0, 0.31f, 0), new Vector3(0.4f * w, 0.09f, 0.24f));
+                        for (int i = 0; i < 6; i++)
+                            P(hips, Box, Surface.Leather, Le * (i % 2 == 0 ? 0.9f : 0.75f), new Vector3((-0.125f + i * 0.05f) * w, -0.2f, 0.12f), new Vector3(0.045f * w, 0.18f, 0.012f), new Vector3(-6f, 0, 0));
+                        Belt(Le);
+                        break;
+                    }
 
                     // Tabard z herbem (przód i tył)
                     for (int side = -1; side <= 1; side += 2)
@@ -527,6 +556,7 @@ namespace Turris
                     }
                     case BodyGear.Chain:
                     case BodyGear.Tunic:
+                    case BodyGear.Leather:
                         // Sznurowanie butów, sprzączka, ostroga
                         for (int k = 0; k < 4; k++)
                             for (int d = -1; d <= 1; d += 2)
@@ -607,6 +637,11 @@ namespace Turris
                         break;
                     case BodyGear.Tunic:
                         for (int k = 0; k < 3; k++) P(ua, Tor(0.18f), Surface.Cloth, Cl * 0.6f, new Vector3(0, -0.04f - k * 0.06f, 0), new Vector3(0.14f, 0.2f, 0.14f));
+                        break;
+                    case BodyGear.Leather:
+                        // Karwasze na przedramionach (łucznik, nożownik).
+                        for (int k = 0; k < 3; k++) P(fa, Tor(0.2f), Surface.Leather, Le * 0.6f, new Vector3(0, -0.06f - k * 0.05f, 0), new Vector3(0.12f, 0.2f, 0.12f));
+                        P(fa, Tube(0.9f), Surface.Leather, Le * 0.85f, new Vector3(0, -0.11f, 0), new Vector3(0.108f, 0.14f, 0.108f));
                         break;
                     case BodyGear.Plate:
                     {
@@ -930,6 +965,7 @@ namespace Turris
             {
                 case BodyGear.Plate: limbS = Surface.Chain; limbC = Ch; handS = Surface.Metal; handC = A * 0.9f; break;
                 case BodyGear.Chain: limbS = Surface.Chain; limbC = Ch; handS = Surface.Leather; handC = Le; break;
+                case BodyGear.Leather: limbS = Surface.Leather; limbC = Le * 0.95f; handS = Surface.Leather; handC = Le * 0.7f; break;
                 case BodyGear.Robe: limbS = Surface.Cloth; limbC = Cl; handS = Surface.Skin; handC = Sk; break;
                 case BodyGear.Rags: limbS = Surface.Skin; limbC = Sk; handS = Surface.Skin; handC = Sk; break;
                 default: limbS = Surface.Cloth; limbC = Cl * 0.8f; handS = Surface.Leather; handC = Le; break;
@@ -1105,11 +1141,62 @@ namespace Turris
         public void SetWeapon(WeaponModel model, Color color)
         {
             if (weaponObject != null) Util.DestroyNow(weaponObject);
+            if (offhandObject != null) Util.DestroyNow(offhandObject);
             Look.weapon = model;
-            weaponObject = GearBuilder.Weapon(WeaponSocket, model, color);
+            // Noże: po jednym ostrzu w każdej dłoni.
+            if (BowStringUpper != null) { Util.DestroyNow(BowStringUpper.gameObject); Util.DestroyNow(BowStringLower.gameObject); BowStringUpper = BowStringLower = null; }
+            if (NockedArrow != null) { Util.DestroyNow(NockedArrow.gameObject); NockedArrow = null; }
+            if (quiverObject != null) { Util.DestroyNow(quiverObject); quiverObject = null; }
+            weaponObject = GearBuilder.Weapon(WeaponSocket, model == WeaponModel.Knives ? WeaponModel.Dagger : model, color, bowString: model != WeaponModel.Bow);
+            if (model == WeaponModel.Bow)
+            {
+                var stringColor = new Color(0.85f, 0.82f, 0.7f);
+                BowStringUpper = PartBuilder.Add(VisualRoot, ProcMesh.Box(), Surface.Cloth, stringColor, Vector3.zero, Vector3.one).transform;
+                BowStringLower = PartBuilder.Add(VisualRoot, ProcMesh.Box(), Surface.Cloth, stringColor, Vector3.zero, Vector3.one).transform;
+                BowStringUpper.name = "BowStringUpper"; BowStringLower.name = "BowStringLower";
+                foreach (var st in new[] { BowStringUpper, BowStringLower })
+                    st.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                // Strzała: węzeł w (0,0,0) = nasadka na cięciwie, grot wzdłuż +Z.
+                var arrow = new GameObject("NockedArrow").transform;
+                arrow.SetParent(VisualRoot, false);
+                PartBuilder.Add(arrow, ProcMesh.Box(), Surface.Wood, new Color(0.45f, 0.32f, 0.2f), new Vector3(0, 0, 0.36f), new Vector3(0.016f, 0.016f, 0.72f));
+                PartBuilder.Add(arrow, ProcMesh.Cone(), Surface.Metal, new Color(0.75f, 0.75f, 0.78f), new Vector3(0, 0, 0.75f), new Vector3(0.03f, 0.07f, 0.03f), new Vector3(90f, 0, 0));
+                for (int i = 0; i < 3; i++)
+                    PartBuilder.Add(arrow, ProcMesh.Box(), Surface.Cloth, new Color(0.8f, 0.2f, 0.15f), new Vector3(0, 0, 0.06f), new Vector3(0.004f, 0.05f, 0.09f), new Vector3(0, 0, i * 60f));
+                PartBuilder.BakeAll(arrow);
+                arrow.gameObject.SetActive(false);
+                NockedArrow = arrow;
+                quiverObject = BuildQuiver();
+            }
+            if (model == WeaponModel.Knives && OffhandSocket != null) offhandObject = GearBuilder.Weapon(OffhandSocket, WeaponModel.Dagger, color);
             weaponTint.Clear();
             weaponTint.Collect(weaponObject.GetComponentsInChildren<Renderer>(true));
+            if (offhandObject != null) weaponTint.Collect(offhandObject.GetComponentsInChildren<Renderer>(true));
             CollectBodyTint();
+        }
+
+        /// <summary>Kołczan na plecach (skos od prawego barku) z wystającymi strzałami.</summary>
+        GameObject BuildQuiver()
+        {
+            var chest = this[Bone.Chest];
+            var q = new GameObject("Quiver").transform;
+            q.SetParent(chest, false);
+            q.localPosition = new Vector3(0.1f, 0.14f, -0.17f);
+            q.localRotation = Quaternion.Euler(0, 0, -22f);
+            var leather = Look.leather;
+            PartBuilder.Add(q, ProcMesh.Tube(0.85f), Surface.Leather, leather * 0.8f, Vector3.zero, new Vector3(0.1f, 0.42f, 0.1f));
+            PartBuilder.Add(q, ProcMesh.Torus(0.25f), Surface.Leather, leather * 0.55f, new Vector3(0, 0.2f, 0), new Vector3(0.11f, 0.25f, 0.11f));
+            PartBuilder.Add(q, ProcMesh.Torus(0.25f), Surface.Leather, leather * 0.55f, new Vector3(0, -0.12f, 0), new Vector3(0.11f, 0.25f, 0.11f));
+            PartBuilder.Add(q, ProcMesh.Sphere(), Surface.Leather, leather * 0.6f, new Vector3(0, -0.21f, 0), new Vector3(0.1f, 0.04f, 0.1f));
+            for (int i = 0; i < 6; i++)
+            {
+                float a = i / 6f * Mathf.PI * 2f;
+                var off = new Vector3(Mathf.Cos(a) * 0.025f, 0, Mathf.Sin(a) * 0.025f);
+                PartBuilder.Add(q, ProcMesh.Box(), Surface.Wood, new Color(0.45f, 0.32f, 0.2f), off + new Vector3(0, 0.26f, 0), new Vector3(0.008f, 0.16f, 0.008f));
+                PartBuilder.Add(q, ProcMesh.Box(), Surface.Cloth, new Color(0.8f, 0.2f, 0.15f), off + new Vector3(0, 0.32f, 0), new Vector3(0.004f, 0.06f, 0.035f), new Vector3(0, i * 30f, 0));
+            }
+            PartBuilder.BakeAll(q);
+            return q.gameObject;
         }
 
         public void SetShield(ShieldModel model, Color color)
@@ -1152,6 +1239,8 @@ namespace Turris
                     case WeaponModel.Scythe: len = 1.45f; break;
                     case WeaponModel.Hammer: len = 1.1f; break;
                     case WeaponModel.Mace: len = 0.72f; break;
+                    case WeaponModel.Knives: len = 0.4f; break;
+                    case WeaponModel.Bow: len = 0.65f; break;
                     case WeaponModel.GreatAxe: len = 1.0f; break;
                     case WeaponModel.Staff: len = 1.2f; break;
                     case WeaponModel.Dagger: len = 0.4f; break;

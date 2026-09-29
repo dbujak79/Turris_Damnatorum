@@ -17,7 +17,7 @@ MonoBehaviour:
   description: 
   tags: 0
   circular: 1
-  size: 17
+  size: 19
   pillars: []
   floorColor: {r: 0.28, g: 0.2, b: 0.2, a: 1}
   wallColor: {r: 0.3, g: 0.18, b: 0.18, a: 1}

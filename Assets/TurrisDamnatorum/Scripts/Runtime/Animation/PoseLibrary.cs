@@ -83,6 +83,19 @@ namespace Turris
                     p.handR = new Vector3(0.3f, 0.95f, 0.3f);
                     p.weaponDir = Vector3.forward;
                     break;
+                case WeaponModel.Bow:
+                    // Łuk trzymany pionowo przed sobą.
+                    p.handR = new Vector3(0.22f, 1.12f, 0.32f);
+                    p.weaponDir = new Vector3(0.1f, 0f, 1f);
+                    p.weaponUp = Vector3.up;
+                    break;
+                case WeaponModel.Knives:
+                    // Noże: obie dłonie nisko z przodu, ostrza do przodu.
+                    p.handR = new Vector3(0.3f, 1.0f, 0.3f);
+                    p.handL = new Vector3(-0.3f, 1.0f, 0.3f);
+                    p.weaponDir = new Vector3(0.1f, 0.35f, 1f);
+                    p.armsOverride = 1f;
+                    break;
                 default:
                     p.handR = new Vector3(0.3f, 0.98f, 0.28f);
                     p.weaponDir = new Vector3(0.05f, 0.45f, 1f);
@@ -294,6 +307,19 @@ namespace Turris
                     k.wind = Key(r, new Vector3(0.45f, 1.55f, -0.12f), new Vector3(1f, 0f, -0.5f), Vector3.forward, 32f, -5f, 0.12f, 0.3f);
                     k.hit = Key(r, new Vector3(-0.05f, 1.1f, 0.65f), new Vector3(1f, -0.5f, 0f), Vector3.forward, -15f, 15f, 0.15f, 1f);
                     k.follow = Key(r, new Vector3(-0.4f, 0.8f, 0.3f), new Vector3(0.8f, -1f, 0f), Vector3.forward, -35f, 20f, 0.18f, 1f);
+                    break;
+                case AttackAnim.BowDraw:
+                    // Ręka z łukiem wyciągnięta przed siebie na wysokości barku, druga naciąga cięciwę pod brodę;
+                    // przy strzale dłoń odskakuje do tyłu (puszczenie), potem obie ręce wracają.
+                    k.wind = Key(r, new Vector3(0.08f, 1.42f, 0.62f), new Vector3(1f, -0.3f, 0.2f), new Vector3(0.05f, 0f, 1f), -25f, 0f, 0.05f, 0.4f);
+                    k.wind.weaponUp = Vector3.up;
+                    k.wind.handL = new Vector3(-0.02f, 1.45f, 0.08f); k.wind.hintL = new Vector3(-1f, 0.2f, -0.6f);
+                    k.hit = k.wind;
+                    k.hit.handL = new Vector3(-0.14f, 1.47f, -0.06f); k.hit.hintL = new Vector3(-1f, 0.4f, -0.8f);
+                    k.follow = k.hit;
+                    k.follow.handR = new Vector3(0.14f, 1.3f, 0.55f);
+                    k.follow.handL = new Vector3(-0.22f, 1.2f, 0.1f);
+                    k.follow.chestYaw = -12f;
                     break;
                 case AttackAnim.Leap:
                     k.wind = Key(r, new Vector3(0.35f, 0.95f, -0.35f), new Vector3(0.6f, -0.6f, -1f), new Vector3(0f, 0.3f, -1f), 0f, 25f, 0.38f, 0f);

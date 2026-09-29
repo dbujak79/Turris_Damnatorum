@@ -254,6 +254,31 @@ namespace Turris.Tests
             }
         }
 
+        [UnityTest]
+        public IEnumerator Bow_StringDrawsToHand_AndSnapsBackOnRelease()
+        {
+            var look = new RigLook { body = BodyGear.Leather, head = HeadGear.Hood, weapon = WeaponModel.Bow, shield = ShieldModel.None };
+            var (v, src) = Dummy(look, Vector3.zero);
+            var anim = (ProceduralHumanoidAnimator)v.Driver;
+            Assert.IsNotNull(v.Rig.BowStringUpper, "Łuk ma żywą cięciwę");
+
+            src.state = Attack(AttackAnim.BowDraw, ActionPhase.Startup, 1f);
+            for (int i = 0; i < 20; i++) v.Tick(1f / 60f);
+            Assert.Greater(anim.BowDraw, 0.95f, "Pełny naciąg na końcu zamachu");
+            Vector3 handL = v.Rig[Bone.HandL].position;
+            Vector3 nockEnd = v.Rig.BowStringUpper.position + v.Rig.BowStringUpper.up * v.Rig.BowStringUpper.lossyScale.y * 0.5f;
+            Assert.Less(Vector3.Distance(nockEnd, handL), 0.08f, "Cięciwa sięga dłoni naciągającej");
+            Vector3 wrist = v.Rig.WeaponSocket.position;
+            Assert.Greater(Vector3.Distance(handL, wrist), 0.35f, "Dłoń odciągnięta od łuku");
+            Assert.IsTrue(v.Rig.NockedArrow.gameObject.activeSelf, "Strzała na cięciwie w czasie naciągu");
+
+            src.state = Attack(AttackAnim.BowDraw, ActionPhase.Active, 0.2f);
+            v.Tick(1f / 60f);
+            Assert.AreEqual(0f, anim.BowDraw, "Po strzale cięciwa wraca");
+            Assert.IsFalse(v.Rig.NockedArrow.gameObject.activeSelf, "Strzała wypuszczona – znika z cięciwy");
+            yield return null;
+        }
+
         // ------------------------------------------------------------------ Galeria (zrzuty do przeglądu)
 
         [UnityTest]
@@ -352,17 +377,29 @@ namespace Turris.Tests
             Shot("pose_roll_side.png", new Vector3(-15f, 1.2f, 14f), new Vector3(0, 0.8f, 14f));
 
             // Wszystkie modele broni w dłoni (nowe: buława, młot, włócznia, kosa).
-            WeaponModel[] models = { WeaponModel.Sword, WeaponModel.Axe, WeaponModel.Mace, WeaponModel.Dagger, WeaponModel.GreatAxe, WeaponModel.Hammer, WeaponModel.Spear, WeaponModel.Scythe, WeaponModel.Staff };
+            WeaponModel[] models = { WeaponModel.Sword, WeaponModel.Axe, WeaponModel.Mace, WeaponModel.Knives, WeaponModel.Bow, WeaponModel.GreatAxe, WeaponModel.Hammer, WeaponModel.Spear, WeaponModel.Scythe, WeaponModel.Staff };
             for (int i = 0; i < models.Length; i++)
             {
                 var look = Knight(); look.weapon = models[i];
-                if (look.TwoHanded) look.shield = ShieldModel.None;
-                var (v, s) = Dummy(look, new Vector3((i - 4) * 2.0f, 0, 40f));
+                if (look.TwoHanded || look.weapon == WeaponModel.Knives || look.weapon == WeaponModel.Bow) look.shield = ShieldModel.None; // jak w grze: bronie dwuręczne
+                var (v, s) = Dummy(look, new Vector3((i - 4.5f) * 1.9f, 0, 40f));
                 s.state = new CharacterAnimState();
                 for (int k = 0; k < 10; k++) v.Tick(1f / 60f);
             }
             yield return null;
             Shot("pose_weapons.png", new Vector3(0, 1.6f, 27f), new Vector3(0, 1.1f, 40f));
+
+            // Zbliżenie: Łotrzyk z nożami i z łukiem (skórznia, kaptur).
+            var rogueLook = new RigLook { body = BodyGear.Leather, head = HeadGear.Hood, style = RigStyle.Knight, weapon = WeaponModel.Knives, shield = ShieldModel.None, cape = true, cloth = new Color(0.2f, 0.34f, 0.24f) };
+            var (rk, rks) = Dummy(rogueLook, new Vector3(-0.8f, 0, 60f));
+            rks.state = new CharacterAnimState();
+            var bowLook = new RigLook { body = BodyGear.Leather, head = HeadGear.Hood, style = RigStyle.Knight, weapon = WeaponModel.Bow, shield = ShieldModel.None, cape = true, cloth = new Color(0.2f, 0.34f, 0.24f) };
+            var (rb, rbs) = Dummy(bowLook, new Vector3(0.8f, 0, 60f));
+            rbs.state = Attack(AttackAnim.BowDraw, ActionPhase.Startup, 1f); // pełny naciąg
+            for (int k = 0; k < 10; k++) { rk.Tick(1f / 60f); rb.Tick(1f / 60f); }
+            yield return null;
+            Shot("pose_close_rogue.png", new Vector3(0.6f, 1.5f, 56.4f), new Vector3(0, 1.1f, 60f));
+            Shot("pose_bow_side.png", new Vector3(3.6f, 1.5f, 59.6f), new Vector3(0.8f, 1.3f, 60f)); // cięciwa w naciągu z boku
         }
     }
 }

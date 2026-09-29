@@ -355,6 +355,8 @@ namespace Turris
                 case ActionType.LightAttack:
                 case ActionType.HeavyAttack:
                     if (phase == ActionPhase.Startup) tracker.Reset();
+                    // Broń dystansowa (łuk): w fazie aktywnej wypuszcza strzały zamiast cięcia.
+                    if (phase == ActionPhase.Active && currentAttack != null && currentAttack.delivery == AttackDelivery.Projectile) FireArrows(currentAttack);
                     break;
                 case ActionType.Cast:
                     if (phase == ActionPhase.Active) { skillActiveStart = clock; FireSpell(currentSpell); }
@@ -439,8 +441,9 @@ namespace Turris
                         float angle = count == 1 ? 0 : Mathf.Lerp(-spread, spread, i / (float)(count - 1));
                         Vector3 dir = Quaternion.Euler(0, angle, 0) * aim.normalized;
                         var hit = SkillHitData(spell, origin);
+                        bool arrow = (def.requiredTags & BuildTag.Ranged) != 0; // strzały specjalne z łuku
                         Projectile.Spawn(origin, dir, def.attack.projectileSpeed, hit, Faction.Player, this, def.color, def.IsSpell ? 0.22f : 0.12f, 3f,
-                            LockTarget, LockTarget != null ? 90f : 0f);
+                            LockTarget, LockTarget != null ? (arrow ? 60f : 90f) : 0f, arrow);
                     }
                     break;
                 }
@@ -556,6 +559,7 @@ namespace Turris
                     Vector3 origin = transform.position + Vector3.up * 1.2f + transform.forward * 0.6f;
                     Vector3 dir = LockTarget != null ? (LockTarget.AimPoint - origin) : transform.forward;
                     var model = AnimResolve.ForItem(Build.mainHand.definition);
+                    if (model == WeaponModel.Knives) model = WeaponModel.Dagger;
                     ThrownWeapon.Spawn(this, origin, dir, Radius(sk, def.attack.reach), 16f, def.attack.radius, model,
                         Build.mainHand.definition.color, () => SkillHitData(sk, transform.position), CatchWeapon);
                     FxLibrary.Dust(transform.position, 1f);
@@ -909,10 +913,29 @@ namespace Turris
             else if (Actions.IsBlocking) Actions.EndBlock();
         }
 
+        /// <summary>Strzały z łuku: celują w namierzonego wroga (lekkie naprowadzanie), inaczej prosto przed siebie.</summary>
+        void FireArrows(AttackDefinition atk)
+        {
+            Vector3 origin = transform.position + Vector3.up * 1.3f + transform.forward * 0.7f;
+            Vector3 aim = LockTarget != null ? (LockTarget.AimPoint - origin) : transform.forward;
+            if (LockTarget == null) aim.y = 0f;
+            int count = Mathf.Max(1, atk.projectileCount);
+            for (int i = 0; i < count; i++)
+            {
+                float angle = count == 1 ? 0 : Mathf.Lerp(-atk.spreadAngle, atk.spreadAngle, i / (float)(count - 1));
+                Vector3 dir = Quaternion.Euler(0, angle, 0) * aim.normalized;
+                var hit = HitData.FromAttack(atk, Build.WeaponDamage(atk), origin, this);
+                ApplyWeaponBuff(ref hit);
+                PrepareOutgoing(ref hit);
+                Projectile.Spawn(origin, dir, atk.projectileSpeed, hit, Faction.Player, this, WeaponBuffTime > 0 ? WeaponBuffColor : new Color(1f, 0.95f, 0.85f),
+                    0.12f, 3f, LockTarget, LockTarget != null ? 60f : 0f, arrow: true);
+            }
+        }
+
         void SweepWeapon()
         {
             var atk = currentAttack;
-            if (atk == null) return;
+            if (atk == null || atk.delivery == AttackDelivery.Projectile) return;
             Vector3 from = transform.position + Vector3.up * 1.0f + transform.forward * 0.3f;
             Vector3 to = transform.position + Vector3.up * 1.0f + transform.forward * atk.reach;
             HitQuery.Capsule(from, to, atk.radius, Faction.Player, tracker, target =>

@@ -6,14 +6,14 @@ namespace Turris
     public enum AnimAction { None, Attack, Block, Parry, Dodge, Backstep, Cast, Drink, Flinch, GuardBroken, Kneel, Death }
 
     /// <summary>Styl ruchu ataku. Auto = wyliczany z parametrów ataku i broni.</summary>
-    public enum AttackAnim { Auto, SlashRight, SlashLeft, Overhead, Thrust, Slam, Burst, Cast, Claw, Leap }
+    public enum AttackAnim { Auto, SlashRight, SlashLeft, Overhead, Thrust, Slam, Burst, Cast, Claw, Leap, BowDraw }
 
     /// <summary>Model broni. Wartości zapisane w assetach – nowe tylko na końcu.</summary>
-    public enum WeaponModel { Auto, None, Sword, Axe, GreatAxe, Dagger, Staff, Halberd, GreatSword, Claws, Mace, Hammer, Spear, Scythe }
+    public enum WeaponModel { Auto, None, Sword, Axe, GreatAxe, Dagger, Staff, Halberd, GreatSword, Claws, Mace, Hammer, Spear, Scythe, Knives, Bow }
 
     public enum ShieldModel { Auto, None, Heater, Buckler, Tower }
 
-    public enum RigStyle { Auto, Knight, Mage, Ghoul, Heretic, Warden, Castellan }
+    public enum RigStyle { Auto, Knight, Mage, Ghoul, Heretic, Warden, Castellan, Archer }
 
     /// <summary>
     /// Migawka tego, co postać robi, podawana co klatkę sterownikowi animacji.
@@ -53,6 +53,8 @@ namespace Turris
             if (a.heavy) return AttackAnim.Overhead;
             if (weapon == WeaponModel.Dagger) return combo % 2 == 0 ? AttackAnim.Thrust : AttackAnim.SlashRight;
             if (weapon == WeaponModel.Spear) return AttackAnim.Thrust; // włócznia zawsze pchnięciami
+            if (weapon == WeaponModel.Bow) return AttackAnim.BowDraw;  // łuk: naciągnięcie cięciwy i strzał
+            if (weapon == WeaponModel.Knives) return combo % 2 == 0 ? AttackAnim.SlashRight : AttackAnim.SlashLeft; // na przemian
             switch (combo % 3)
             {
                 case 0: return AttackAnim.SlashRight;
@@ -67,6 +69,8 @@ namespace Turris
             if (item.weaponModel != WeaponModel.Auto) return item.weaponModel;
             string id = item.id ?? "";
             if (id.Contains("fists")) return WeaponModel.None;
+            if (id.Contains("knives")) return WeaponModel.Knives;
+            if (id.Contains("bow")) return WeaponModel.Bow;
             if (id.Contains("mace")) return WeaponModel.Mace;
             if (id.Contains("hammer")) return WeaponModel.Hammer;
             if (id.Contains("spear")) return WeaponModel.Spear;
@@ -95,6 +99,7 @@ namespace Turris
             if (e.rigStyle != RigStyle.Auto) return e.rigStyle;
             string id = e.id ?? "";
             if (e.isBoss) return RigStyle.Castellan;
+            if (id.Contains("archer")) return RigStyle.Archer;
             if (id.Contains("ghoul")) return RigStyle.Ghoul;
             if (id.Contains("heretic") || e.retreatRange > 0) return RigStyle.Heretic;
             if (id.Contains("warden") || e.guardChance > 0) return RigStyle.Warden;
@@ -110,6 +115,7 @@ namespace Turris
                 case RigStyle.Heretic: return WeaponModel.Staff;
                 case RigStyle.Warden: return WeaponModel.Halberd;
                 case RigStyle.Castellan: return WeaponModel.GreatSword;
+                case RigStyle.Archer: return WeaponModel.Bow;
                 default: return WeaponModel.Sword;
             }
         }

@@ -170,12 +170,12 @@ namespace Turris.Tests
                     // Zestawy: warianty wrogów żywiołów, zapowiedź meteoru, piorun burzy.
                     foreach (var eb in Object.FindObjectsByType<EnemyBrain>(FindObjectsInactive.Exclude)) Object.Destroy(eb.gameObject);
                     yield return new WaitForSeconds(1.5f);
-                    string[] variantIds = { "enemy_ghoul_fire", "enemy_warden_frost", "enemy_heretic_storm" };
+                    string[] variantIds = { "enemy_ghoul_fire", "enemy_warden_frost", "enemy_heretic_storm", "enemy_archer" };
                     for (int i = 0; i < variantIds.Length; i++)
                     {
                         var vd = content.Get<EnemyDefinition>(variantIds[i]);
-                        var ve = WorldBuilder.CreateEnemy(vd, new Vector3(-2.4f + i * 2.4f, 0, 1.6f), null);
-                        ve.transform.rotation = Quaternion.LookRotation(Vector3.back);
+                        var ve = WorldBuilder.CreateEnemy(vd, new Vector3(-3.3f + i * 2.2f, 0, 1.6f), null);
+                        ve.transform.rotation = Quaternion.LookRotation(i == 3 ? new Vector3(-1f, 0, -0.6f) : Vector3.back); // łucznik bokiem – widać kołczan
                         ve.Setup(vd, null, 1f, null, false, bal);
                         cleanup.Add(ve.gameObject);
                     }
@@ -184,6 +184,7 @@ namespace Turris.Tests
                     FxLibrary.Lightning(new Vector3(0f, 9f, 1.8f), new Vector3(0f, 1.2f, 1.6f), new Color(0.8f, 0.85f, 1f));
                     yield return new WaitForSeconds(0.05f); Shot("fx_sets.png");
                     foreach (var ds in Object.FindObjectsByType<DelayedStrike>(FindObjectsInactive.Exclude)) Object.Destroy(ds.gameObject);
+                    foreach (var eb in Object.FindObjectsByType<EnemyBrain>(FindObjectsInactive.Exclude)) Object.Destroy(eb.gameObject); // czyste zrzuty kolejnych aren
                     foreach (var d in Object.FindObjectsByType<FxDecal>(FindObjectsInactive.Exclude)) Object.Destroy(d.gameObject);
                     foreach (var pr in Object.FindObjectsByType<Projectile>(FindObjectsInactive.Exclude)) Object.Destroy(pr.gameObject);
                 }

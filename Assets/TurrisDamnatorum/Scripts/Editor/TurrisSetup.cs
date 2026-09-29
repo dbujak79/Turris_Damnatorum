@@ -79,6 +79,7 @@ namespace Turris.EditorTools
             foreach (var so in bundle.all)
                 if (so is ContentDefinition cd && !created.Contains(cd.id) && real.TryGetValue(cd.id, out var existing) && FillNewDefaults(so, existing))
                 {
+                    RemapReferences(existing, real); // skopiowane listy mogą wskazywać na obiekty z pamięci
                     EditorUtility.SetDirty(existing);
                     filled++;
                 }
@@ -120,6 +121,17 @@ namespace Turris.EditorTools
                 case ItemDefinition src when target is ItemDefinition dst && src.IsWeapon && dst.IsWeapon:
                     changed |= FillAttack(src.weapon.light, dst.weapon.light);
                     changed |= FillAttack(src.weapon.heavy, dst.weapon.heavy);
+                    break;
+                case TowerDefinition src when target is TowerDefinition dst:
+                    for (int i = 0; i < Mathf.Min(src.floors.Count, dst.floors.Count); i++)
+                    {
+                        var sf = src.floors[i]; var df = dst.floors[i];
+                        if ((df.extraWaves == null || df.extraWaves.Count == 0) && sf.extraWaves.Count > 0)
+                        {
+                            df.extraWaves = sf.extraWaves.Select(w => new EnemyWave { enemies = new System.Collections.Generic.List<EnemyDefinition>(w.enemies) }).ToList();
+                            changed = true;
+                        }
+                    }
                     break;
                 case SpellDefinition src when target is SpellDefinition dst:
                     changed |= FillAttack(src.attack, dst.attack);

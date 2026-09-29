@@ -63,6 +63,7 @@ namespace Turris
             if ((tags & BuildTag.Guard) != 0) parts.Add("gardy (tarczy lub broni blokującej)");
             if ((tags & BuildTag.Parry) != 0) parts.Add("możliwości parowania");
             if ((tags & BuildTag.Magic) != 0) parts.Add("znajomości czarów");
+            if ((tags & BuildTag.Ranged) != 0) parts.Add("łuku");
             return parts.Count == 0 ? "" : "wymaga " + string.Join(", ", parts);
         }
 

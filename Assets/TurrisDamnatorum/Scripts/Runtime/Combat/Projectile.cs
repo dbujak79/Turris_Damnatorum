@@ -20,19 +20,52 @@ namespace Turris
         float life;
         IHitReceiver homingTarget;
         float homing;
+        Transform arrowModel;
+
+        /// <summary>Smuga za lecącym obiektem (strzała, rzucona broń).</summary>
+        public static TrailRenderer AddTrail(GameObject go, Color c, float width, float time)
+        {
+            var tr = go.AddComponent<TrailRenderer>();
+            tr.material = FxMaterials.Additive;
+            tr.time = time;
+            tr.startWidth = width; tr.endWidth = 0f;
+            var g = new Gradient();
+            g.SetKeys(new[] { new GradientColorKey(c, 0f), new GradientColorKey(c, 1f) }, new[] { new GradientAlphaKey(0.9f, 0f), new GradientAlphaKey(0f, 1f) });
+            tr.colorGradient = g;
+            tr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            tr.minVertexDistance = 0.05f;
+            return tr;
+        }
         readonly HitTracker tracker = new HitTracker();
 
         public static Projectile Spawn(Vector3 pos, Vector3 dir, float speed, HitData hit, Faction faction, IHitReceiver owner,
-                                       Color color, float radius = 0.25f, float lifetime = 4f, IHitReceiver homingTarget = null, float homing = 0f)
+                                       Color color, float radius = 0.25f, float lifetime = 4f, IHitReceiver homingTarget = null, float homing = 0f, bool arrow = false)
         {
             if (!Application.isPlaying) return null;
             var go = new GameObject("Projectile");
             go.transform.position = pos;
-            // Jądro pocisku + oprawa (halo, smuga, krążące iskry, światło).
-            var core = PartBuilder.Add(go.transform, ProcMesh.Sphere(), Surface.Glow, Color.Lerp(color, Color.white, 0.5f), Vector3.zero, Vector3.one * radius * 1.1f);
-            core.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             var p = go.AddComponent<Projectile>();
-            p.fx = FxLibrary.ProjectileVisual(go.transform, color, radius);
+            if (arrow)
+            {
+                // Strzała: drzewce, grot i lotki, zwrócona w kierunku lotu; cienka smuga zamiast świecącego jądra.
+                p.arrowModel = new GameObject("Arrow").transform;
+                p.arrowModel.SetParent(go.transform, false);
+                var a = p.arrowModel;
+                PartBuilder.Add(a, ProcMesh.Box(), Surface.Wood, new Color(0.45f, 0.32f, 0.2f), new Vector3(0, 0, -0.2f), new Vector3(0.018f, 0.018f, 0.7f));
+                PartBuilder.Add(a, ProcMesh.Cone(), Surface.Metal, new Color(0.75f, 0.75f, 0.78f), new Vector3(0, 0, 0.17f), new Vector3(0.035f, 0.08f, 0.035f), new Vector3(90f, 0, 0));
+                for (int i = 0; i < 3; i++)
+                    PartBuilder.Add(a, ProcMesh.Box(), Surface.Cloth, new Color(0.8f, 0.2f, 0.15f), new Vector3(0, 0, -0.5f), new Vector3(0.004f, 0.06f, 0.1f), new Vector3(0, 0, i * 60f));
+                PartBuilder.BakeAll(a);
+                AddTrail(go, Color.Lerp(color, Color.white, 0.6f), 0.05f, 0.15f);
+                a.rotation = Quaternion.LookRotation(dir);
+            }
+            else
+            {
+                // Jądro pocisku + oprawa (halo, smuga, krążące iskry, światło).
+                var core = PartBuilder.Add(go.transform, ProcMesh.Sphere(), Surface.Glow, Color.Lerp(color, Color.white, 0.5f), Vector3.zero, Vector3.one * radius * 1.1f);
+                core.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                p.fx = FxLibrary.ProjectileVisual(go.transform, color, radius);
+            }
             p.color = color;
             p.radiusVisual = radius;
             FxLibrary.Flash(pos, color, 0.5f);
@@ -46,7 +79,7 @@ namespace Turris
         {
             FxLibrary.DetachProjectileVisual(fx);
             fx = null;
-            if (impact) FxLibrary.Impact(transform.position, color, Mathf.Clamp(radiusVisual * 4f, 0.7f, 1.6f));
+            if (impact) FxLibrary.Impact(transform.position, color, arrowModel != null ? 0.5f : Mathf.Clamp(radiusVisual * 4f, 0.7f, 1.6f));
             if (impact && hit.explosionRadius > 0f)
             {
                 // Wybuch: pozostali w promieniu dostają część obrażeń (trafiony bezpośrednio – nie drugi raz).
@@ -123,6 +156,7 @@ namespace Turris
                 return;
             }
             transform.position += step;
+            if (arrowModel != null && velocity.sqrMagnitude > 0.01f) arrowModel.rotation = Quaternion.LookRotation(velocity);
         }
     }
 }

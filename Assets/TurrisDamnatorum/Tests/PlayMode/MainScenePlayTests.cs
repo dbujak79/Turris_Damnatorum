@@ -38,7 +38,7 @@ namespace Turris.Tests
             var root = Object.FindAnyObjectByType<GameRoot>();
             Assert.IsNotNull(root, "Scena zawiera GameRoot");
             Assert.IsNotNull(root.config, "Konfiguracja przypisana w scenie");
-            Assert.AreEqual(2, root.config.classes.Count);
+            Assert.AreEqual(3, root.config.classes.Count);
             Assert.AreEqual(5, root.config.tower.floors.Count);
             Assert.AreEqual(GameScreen.MainMenu, root.Screen);
 
