@@ -1,0 +1,133 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 636ee652052ecf443b59ebf79a72207a, type: 3}
+  m_Name: weapon_stormhammer
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ItemDefinition
+  id: weapon_stormhammer
+  displayName: "M\u0142ot burzy"
+  description: "Dwur\u0119czny m\u0142ot: po\u0142owa obra\u017Ce\u0144 to b\u0142yskawica, ci\u0119\u017Cki cios pora\u017Ca. W zamro\u017Conych \u2013 roztrzaskanie."
+  tags: 147
+  kind: 0
+  twoHanded: 1
+  weight: 10
+  requirements:
+  - attribute: 3
+    value: 16
+  modifiers: []
+  effects: []
+  weapon:
+    light:
+      name: Zamach
+      delivery: 0
+      damageType: 0
+      baseDamage: 72
+      windup: 0.58
+      active: 0.2
+      recovery: 0.65
+      cancelAfter: 0.3
+      reach: 2.7
+      radius: 1.1
+      lunge: 0.7
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 50
+      poiseDamage: 45
+      heavy: 0
+      staminaCost: 26
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 3
+      elementShare: 0.5
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 3
+        stacks: 1
+        chance: 0.3
+      animation: 0
+    heavy:
+      name: Egzekucja
+      delivery: 0
+      damageType: 0
+      baseDamage: 125
+      windup: 1.1
+      active: 0.2
+      recovery: 0.9
+      cancelAfter: 0.4
+      reach: 2.8
+      radius: 1.1
+      lunge: 1
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 85
+      poiseDamage: 80
+      heavy: 1
+      staminaCost: 38
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 3
+      elementShare: 0.5
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 3
+        stacks: 1
+        chance: 1
+      animation: 0
+    lightComboLength: 2
+    strengthScaling: 1.8
+    dexterityScaling: 0.3
+    intelligenceScaling: 0
+    riposteMultiplier: 3
+    canBlock: 1
+    guard:
+      physicalReduction: 0.75
+      magicReduction: 0.2
+      stabilityMultiplier: 0.95
+      blockAngle: 110
+      staminaRegenMultiplier: 0.3
+    canParry: 0
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  shield:
+    guard:
+      physicalReduction: 1
+      magicReduction: 0.4
+      stabilityMultiplier: 0.7
+      blockAngle: 140
+      staminaRegenMultiplier: 0.3
+    canParry: 1
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  color: {r: 0.75, g: 0.8, b: 1, a: 1}
+  weaponModel: 4
+  shieldModel: 0

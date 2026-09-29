@@ -51,6 +51,10 @@ namespace Turris
 
         public event Action<EnemyBrain> Died;
 
+        /// <summary>Efekty trwające (krwawienie, podpalenie, chłód, porażenie, zamrożenie).</summary>
+        public readonly StatusEffects Status = new StatusEffects();
+        readonly StatusFx statusFx = new StatusFx();
+
         // Skalowanie
         float damageMult = 1f, aggressionMult = 1f;
         bool bossExtra;
@@ -107,6 +111,11 @@ namespace Turris
             Stamina = new ResourcePool(def.maxStamina);
             cooldowns = new float[def.attacks.Count];
             nextAttackTime = Time.time + 1.2f;
+            Status.Clear();
+            if (def.element != Element.None && FxLibrary.Enabled)
+                FxLibrary.Aura(transform, Vector3.up * 1.0f * def.scale, Names.ElementColor(def.element), 70f, 0.7f * def.scale, 0.2f);
+            Status.ControlMultiplier = def.isBoss ? balance.bossControlMultiplier : elite ? balance.eliteControlMultiplier : 1f;
+            Status.BleedMultiplier = def.bleedMultiplier;
             stateTimer = 1.0f;
             CurrentState = State.Dormant;
 
@@ -117,13 +126,15 @@ namespace Turris
         {
             All.Remove(this);
             ClearMarker();
+            statusFx.Clear();
         }
 
         // ------------------------------------------------------------------ Pętla
 
         void Update()
         {
-            if (Def == null || player == null) return;
+            if (Def == null) return;
+            if (player == null) { UpdateVisuals(); return; } // bez celu (np. podgląd) – tylko wygląd
             float dt = Time.deltaTime;
             if (dt <= 0) return;
 
@@ -133,6 +144,12 @@ namespace Turris
                 if (Time.time - stateEnterTime > 1.6f) transform.position += Vector3.down * 0.5f * dt;
                 return;
             }
+
+            // Efekty trwające: tyknięcia obrażeń, a zamrożony wróg stoi (bieżący stan czeka).
+            float statusDamage = Status.Tick(dt, cc.velocity.sqrMagnitude > 0.25f, rules);
+            if (statusDamage > 0f) { TakeStatusDamage(statusDamage); if (IsDead) return; }
+            statusFx.Update(Status, transform, Def.scale, dt);
+            if (Status.Frozen) { ApplyMove(Vector3.zero, dt); UpdateVisuals(); return; }
 
             // Regeneracja postawy i wytrzymałości
             if (poiseTimer > 0) poiseTimer -= dt; else Poise.Restore(Def.poiseRegen * dt);
@@ -168,7 +185,7 @@ namespace Turris
                     break;
 
                 case State.Evading:
-                    move = evadeDir * evadeSpeed;
+                    move = evadeDir * evadeSpeed * Status.MoveMultiplier(rules);
                     stateTimer -= dt;
                     if (stateTimer <= 0) EnterMoving();
                     break;
@@ -185,6 +202,7 @@ namespace Turris
                     break;
             }
 
+            if (displacementTime > 0) { move += displacement; displacementTime -= dt; }
             ApplyMove(move, dt);
             UpdateVisuals();
         }
@@ -224,7 +242,7 @@ namespace Turris
 
             Vector3 to = player.transform.position - transform.position; to.y = 0;
             Vector3 dir = to.sqrMagnitude > 0.001f ? to.normalized : transform.forward;
-            float speed = Def.moveSpeed * SpeedMult;
+            float speed = Def.moveSpeed * SpeedMult * Status.MoveMultiplier(rules);
 
             if (Def.retreatRange > 0 && dist < Def.retreatRange) return -dir * speed * 0.9f;
             if (dist > Def.preferredRange) return dir * speed;
@@ -319,7 +337,7 @@ namespace Turris
         Vector3 TickAttack(float dt)
         {
             var a = current.attack;
-            float speed = SpeedMult;
+            float speed = SpeedMult * Status.ActionSpeedMultiplier(rules); // chłód spowalnia także zamach
             attackT += dt * speed;
             Vector3 move = Vector3.zero;
 
@@ -468,10 +486,38 @@ namespace Turris
 
         public HitResult ReceiveHit(HitData hit)
         {
+            // Słabość/odporność dotyczy części z żywiołem; porażenie i szok termiczny – przed pancerzem.
+            if (hit.element != Element.None && hit.magic > 0)
+            {
+                float m = Def.ElementMultiplier(hit.element);
+                hit.magic *= m;
+                if (m > 1.01f && !IsDead) CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.4f, "SŁABOŚĆ", Names.ElementColor(hit.element));
+            }
+            // Egzekucja: premia przeciw osłabionym (poniżej 30% życia) lub z przełamaną postawą.
+            if (hit.executeBonus > 0 && (Health.Fraction < 0.3f || CurrentState == State.PoiseBroken))
+            {
+                hit.physical *= 1f + hit.executeBonus; hit.magic *= 1f + hit.executeBonus;
+                CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.4f, "EGZEKUCJA", new Color(1f, 0.3f, 0.2f));
+            }
+            string reaction = Status.ModifyIncoming(ref hit, rules);
+
             var r = DamageResolver.Resolve(hit, CurrentDefense(), rules);
             if (r.outcome == HitOutcome.Ignored) return r;
+            float instant = Status.OnLanded(hit, r, rules, out var landedReaction, out bool froze, out float shatter);
+            if (shatter > 0) Shatter(shatter, hit);
+            if (hit.mods.conductionJump && Status.LastConductionDamage > 0) JumpConduction(Status.LastConductionDamage * 0.5f, hit);
+            r.healthDamage += instant;
+            reaction = reaction ?? landedReaction;
+            if (reaction != null) CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.7f, reaction, Names.ElementColor(hit.element));
             Health.Drain(r.healthDamage);
             if (r.staminaDamage > 0) Stamina.Drain(r.staminaDamage, 1f);
+            if (froze && Health.Current > 0)
+            {
+                // Zamrożenie przerywa atak (także z pancerzem) – krócej na bossach i elitach.
+                // Na czas zamrożenia pętla stoi, więc po odmrożeniu zostaje tylko krótkie drgnięcie.
+                Interrupt(State.Staggered, 0.2f);
+                CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.7f, "ZAMROŻONY", Names.StatusColor(StatusKind.Frozen));
+            }
 
             if (Health.Current <= 0)
             {
@@ -546,9 +592,98 @@ namespace Turris
             Poise.SetCurrent(Poise.Max);
         }
 
+        /// <summary>Roztrzaskanie: lód pęka, wybuch mrozu rani innych wrogów wokół (bez kolejnych reakcji).</summary>
+        void Shatter(float damage, in HitData source)
+        {
+            var splash = new HitData
+            {
+                magic = damage, poiseDamage = 20, guardLoad = 20, blockable = true, parryable = false, dodgeable = true,
+                sourcePosition = transform.position, attacker = source.attacker, element = Element.Frost, isReaction = true,
+                attackName = "Roztrzaskanie", mods = StatusModifiers.None,
+            };
+            var tr = new HitTracker();
+            tr.TryRegister(this);
+            var attacker = source.attacker as IHitReceiver;
+            // Wybuch rani stronę przeciwną atakującemu (dla gracza – innych wrogów).
+            HitQuery.Sphere(transform.position + Vector3.up, rules.shatterRadius, attacker != null ? attacker.Faction : Faction.Player, tr, r => HitQuery.Apply(attacker, r, splash, false));
+            FxLibrary.Shockwave(transform.position, Names.StatusColor(StatusKind.Frozen), rules.shatterRadius, false);
+            FxLibrary.Impact(AimPoint, Names.StatusColor(StatusKind.Frozen), 1.5f);
+        }
+
+        /// <summary>Przewodzenie przeskakuje na najbliższego innego wroga (przedmiot „Amulet przewodnika”).</summary>
+        void JumpConduction(float damage, in HitData source)
+        {
+            EnemyBrain best = null; float bestD = 6f;
+            foreach (var e in All)
+            {
+                if (e == this || e.IsDead) continue;
+                float d = Vector3.Distance(e.transform.position, transform.position);
+                if (d < bestD) { bestD = d; best = e; }
+            }
+            if (best == null) return;
+            var jump = new HitData
+            {
+                magic = damage, blockable = true, parryable = false, dodgeable = true, sourcePosition = transform.position,
+                attacker = source.attacker, element = Element.Lightning, isReaction = true, attackName = "Przewodzenie", mods = StatusModifiers.None,
+            };
+            FxLibrary.Lightning(AimPoint, best.AimPoint, Names.ElementColor(Element.Lightning));
+            HitQuery.Apply(source.attacker as IHitReceiver, best, jump, false);
+        }
+
+        // ------------------------------------------------------------------ Wpływy umiejętności gracza
+
+        Vector3 displacement; float displacementTime;
+
+        /// <summary>Nałożenie efektu poza zwykłym trafieniem (np. odwet mroźnej zbroi). Zamrożenie przerywa atak.</summary>
+        public void ApplyStatus(StatusKind kind, float landedPhysical, float landedMagic)
+        {
+            if (IsDead) return;
+            if (Status.Apply(kind, landedPhysical, landedMagic, rules) && kind != StatusKind.Bleed)
+            {
+                Interrupt(State.Staggered, 0.2f);
+                CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.7f, "ZAMROŻONY", Names.StatusColor(StatusKind.Frozen));
+            }
+        }
+
+        /// <summary>Przyciągnięcie (łańcuchy): przesunięcie w stronę punktu przez krótki czas; bossy ×0,25, elity ×0,5.</summary>
+        public void Pull(Vector3 toward, float distance, float time = 0.3f)
+        {
+            if (IsDead) return;
+            float m = Def.isBoss ? 0.25f : IsElite ? 0.5f : 1f;
+            Vector3 d = toward - transform.position; d.y = 0;
+            float len = Mathf.Min(d.magnitude - 0.8f, distance * m);
+            if (len <= 0.05f) return;
+            displacement = d.normalized * (len / time);
+            displacementTime = time;
+            if (CurrentState == State.Attacking && current != null && !current.hyperArmor) Interrupt(State.Staggered, time + 0.2f);
+        }
+
+        /// <summary>Rozdarcie ran: całe pozostałe krwawienie od razu (× mnożnik). Zwraca zadane obrażenia.</summary>
+        public float RuptureBleed(float multiplier)
+        {
+            if (IsDead) return 0f;
+            float dmg = Status.ConsumeBleed() * multiplier;
+            if (dmg <= 0f) return 0f;
+            Health.Drain(dmg);
+            CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.7f, $"ROZDARCIE {dmg:0}", Names.StatusColor(StatusKind.Bleed));
+            FxLibrary.Blood(AimPoint, Vector3.up, 2.5f);
+            if (Health.Current <= 0) Die();
+            return dmg;
+        }
+
+        /// <summary>Tyknięcie efektu (krwawienie, podpalenie): już po pancerzu, bez postawy i drgnięcia.</summary>
+        void TakeStatusDamage(float dmg)
+        {
+            Health.Drain(dmg);
+            CombatEvents.RaiseWorldText(AimPoint, $"{dmg:0}", Status.BleedStacks > 0 ? Names.StatusColor(StatusKind.Bleed) : Names.StatusColor(StatusKind.Burn));
+            if (Health.Current <= 0) Die();
+        }
+
         void Die()
         {
             ClearMarker();
+            Status.Clear();
+            statusFx.Clear();
             CurrentState = State.Dead;
             MarkState(0f);
             current = null;
@@ -576,7 +711,7 @@ namespace Turris
         {
             var st = new CharacterAnimState
             {
-                actionTime = Time.time - stateEnterTime,
+                actionTime = Status.Frozen ? 0.12f : Time.time - stateEnterTime, // zamrożony – poza zatrzymana
                 actionDuration = stateLength,
                 hasShield = Def != null && Def.guardChance > 0,
             };
@@ -630,8 +765,16 @@ namespace Turris
                 visual.SetTrailColor(Color.Lerp(tc, Color.white, 0.3f));
             }
             else if (CurrentState == State.PoiseBroken) { tint = Color.yellow; tintAmount = 0.25f + 0.2f * Mathf.Sin(Time.time * 12f); }
+            if ((Status.Frozen || tintAmount <= 0f) && StatusFx.Tint(Status, out var sc, out var sa)) { tint = sc; tintAmount = sa; }
             else if (CurrentState == State.Staggered || CurrentState == State.Recoil) { tint = Color.white; tintAmount = 0.35f; }
             if (IsElite && tintAmount <= 0f) { tint = new Color(0.9f, 0.7f, 0.2f); tintAmount = 0.18f; }
+            if (Def.element != Element.None)
+            {
+                // Wariant żywiołu: stała poświata broni i lekkie zabarwienie w kolorze żywiołu.
+                var ec = Names.ElementColor(Def.element);
+                if (glowAmount <= 0f) { glow = ec; glowAmount = 0.6f; }
+                if (tintAmount <= 0f) { tint = ec; tintAmount = 0.3f; }
+            }
             visual.SetTint(tint, tintAmount);
             visual.SetWeaponGlow(glow, glowAmount);
         }

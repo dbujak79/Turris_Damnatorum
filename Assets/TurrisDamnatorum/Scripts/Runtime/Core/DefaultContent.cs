@@ -34,6 +34,7 @@ namespace Turris
         static StatModifier Pct(StatType s, float v) => new StatModifier(s, v, ModifierMode.Percent);
         static PassiveEffect Fx(PassiveEffectType t, float v) => new PassiveEffect(t, v);
         static AttributeRequirement Req(AttributeType a, int v) => new AttributeRequirement(a, v);
+        static StatusApplication St(StatusKind k, int stacks = 1, float chance = 1f) => new StatusApplication(k, stacks, chance);
 
         static AttackDefinition Atk(string name, float dmg, float windup, float active, float recovery, float reach, float radius,
             float stamina = 0, float lunge = 0.4f, float poise = 15, float guardLoad = 20, bool heavy = false,
@@ -127,6 +128,11 @@ namespace Turris
                 guard = new GuardData { physicalReduction = 0.75f, magicReduction = 0.2f, stabilityMultiplier = 0.95f, blockAngle = 110f, staminaRegenMultiplier = 0.3f },
             };
 
+            // Krwawienie z ostrzy: topory rąbią głęboko, sztylet szybko otwiera rany.
+            axe.weapon.light.statuses.Add(St(StatusKind.Bleed, 1, 0.3f));
+            axe.weapon.heavy.statuses.Add(St(StatusKind.Bleed, 1));
+            greatAxe.weapon.heavy.statuses.Add(St(StatusKind.Bleed, 2));
+
             var dagger = Make<ItemDefinition>("weapon_dagger", "Sztylet parujący", "Szybkie pchnięcia i najdłuższe okno parowania. Nie blokuje.", BuildTag.Melee | BuildTag.Parry | BuildTag.Agile);
             dagger.kind = ItemKind.Weapon; dagger.weight = 1.5f; dagger.color = new Color(0.9f, 0.85f, 0.6f);
             dagger.requirements.Add(Req(AttributeType.Dexterity, 11));
@@ -203,6 +209,24 @@ namespace Turris
             var strRing = Armor("ring_strength", "Pierścień siły", ItemKind.Ring, 0, "", BuildTag.Melee | BuildTag.Heavy, Flat(StatType.Strength, 4));
             var intRing = Armor("ring_intellect", "Pierścień intelektu", ItemKind.Ring, 0, "", BuildTag.Magic, Flat(StatType.Intelligence, 4));
             var riposteRing = Armor("ring_riposte", "Pierścień riposty", ItemKind.Ring, 0, "", BuildTag.Parry, Pct(StatType.RiposteDamage, 40));
+
+            // ---- Przedmioty zestawów żywiołów i krwawienia
+            var emberRing = Armor("ring_embers", "Pierścień rozżarzenia", ItemKind.Ring, 0, "Ogień pali mocniej i dłużej.", BuildTag.Magic, Flat(StatType.FireDamage, 30));
+            emberRing.effects.Add(Fx(PassiveEffectType.BurnDurationBonus, 1f));
+            var frostVein = Armor("ring_frostvein", "Pierścień szronu w żyłach", ItemKind.Ring, 0, "Zamrażasz szybciej: wystarczą dwie warstwy chłodu.", BuildTag.Magic, Flat(StatType.FrostDamage, 15));
+            frostVein.effects.Add(Fx(PassiveEffectType.FreezeStacksReduction, 1f));
+            var conductor = Armor("amulet_conductor", "Amulet przewodnika", ItemKind.Amulet, 0, "Przewodzenie mocniejsze i przeskakuje na kolejnego wroga.", BuildTag.Magic | BuildTag.Melee, Flat(StatType.LightningDamage, 10));
+            conductor.effects.Add(Fx(PassiveEffectType.ConductionBonus, 50f)); conductor.effects.Add(Fx(PassiveEffectType.ConductionJump, 1f));
+            var salamander = Armor("amulet_salamander", "Amulet salamandry", ItemKind.Amulet, 0, "Nie płoniesz; odporność na ogień.", BuildTag.Guard, Flat(StatType.FireResist, 25));
+            salamander.effects.Add(Fx(PassiveEffectType.BurnImmunity, 1f));
+            var butcher = Armor("hands_butcher", "Rękawice rzeźnika", ItemKind.Hands, 1, "Więcej warstw krwawienia; w ruchu rany bolą ×3.", BuildTag.Melee | BuildTag.Agile, Flat(StatType.BleedDamage, 15));
+            butcher.effects.Add(Fx(PassiveEffectType.BleedMaxStacksBonus, 1f)); butcher.effects.Add(Fx(PassiveEffectType.BleedMovingBonus, 1f));
+            var stormBoots = Armor("feet_storm", "Buty burzy", ItemKind.Feet, 1, "Po uniku następny cios bronią poraża.", BuildTag.Agile | BuildTag.Magic, Flat(StatType.LightningResist, 15), Flat(StatType.LightningDamage, 10));
+            stormBoots.effects.Add(Fx(PassiveEffectType.DodgeShockCharge, 1f));
+            var ashRobe = Armor("body_ash", "Szata popiołu", ItemKind.Body, 3, "Płonąc, zadajesz więcej; ogień mniej parzy.", BuildTag.Magic, Flat(StatType.MagicDefense, 20), Flat(StatType.FireResist, 40), Flat(StatType.FireDamage, 10));
+            ashRobe.effects.Add(Fx(PassiveEffectType.BurningDamageBonus, 25f));
+            var furHelm = Armor("head_fur", "Hełm z futrem", ItemKind.Head, 2, "Chroni przed mrozem.", BuildTag.Melee, Flat(StatType.PhysicalDefense, 8), Flat(StatType.FrostResist, 30));
+            var groundedChain = Armor("body_grounded", "Uziemiona kolczuga", ItemKind.Body, 7, "Odprowadza błyskawice.", BuildTag.Melee | BuildTag.Guard, Flat(StatType.PhysicalDefense, 30), Flat(StatType.LightningResist, 35));
             riposteRing.effects.Add(Fx(PassiveEffectType.ParryRestoreStamina, 25));
             var parryAmulet = Armor("amulet_parry", "Amulet szermierza", ItemKind.Amulet, 0, "", BuildTag.Parry, Flat(StatType.ParryWindow, 0.05f));
             parryAmulet.effects.Add(Fx(PassiveEffectType.ParryHeal, 30));
@@ -210,6 +234,64 @@ namespace Turris
             casterAmulet.effects.Add(Fx(PassiveEffectType.SpellStaminaRefund, 10));
             var bastionAmulet = Armor("amulet_bastion", "Amulet bastionu", ItemKind.Amulet, 0, "Zablokowane ciosy zasilają manę.", BuildTag.Shield | BuildTag.Guard | BuildTag.Magic, Flat(StatType.MaxStamina, 10));
             bastionAmulet.effects.Add(Fx(PassiveEffectType.BlockManaGain, 4));
+
+            dagger.weapon.light.statuses.Add(St(StatusKind.Bleed, 1, 0.35f));
+
+            // ============================================================ BRONIE ŻYWIOŁÓW I ZESTAWÓW
+            // Część obrażeń fizycznych zamienia się w żywioł (elementShare); efekt głównie na ciężkim ataku.
+            ItemDefinition WeaponCopy(ItemDefinition src, string id, string name, string desc, BuildTag tags, Color color)
+            {
+                var w = Make<ItemDefinition>(id, name, desc, tags);
+                w.kind = ItemKind.Weapon; w.weight = src.weight; w.color = color; w.twoHanded = src.twoHanded;
+                w.requirements.AddRange(src.requirements);
+                var d = src.weapon;
+                w.weapon = new WeaponData
+                {
+                    light = d.light.Clone(), heavy = d.heavy.Clone(), lightComboLength = d.lightComboLength,
+                    strengthScaling = d.strengthScaling, dexterityScaling = d.dexterityScaling, intelligenceScaling = d.intelligenceScaling,
+                    riposteMultiplier = d.riposteMultiplier, canBlock = d.canBlock, guard = d.guard, canParry = d.canParry, parry = d.parry,
+                };
+                w.weapon.light.statuses = new List<StatusApplication>();
+                w.weapon.heavy.statuses = new List<StatusApplication>();
+                return w;
+            }
+            void Imbue(ItemDefinition w, Element e, float share, StatusKind k, float lightChance)
+            {
+                foreach (var a in new[] { w.weapon.light, w.weapon.heavy }) { a.element = e; a.elementShare = share; }
+                w.weapon.heavy.statuses.Add(St(k));
+                if (lightChance > 0) w.weapon.light.statuses.Add(St(k, 1, lightChance));
+            }
+
+            var flameSword = WeaponCopy(sword, "weapon_flamesword", "Płonący miecz", "Miecz w ogniu: 40% obrażeń to ogień, ciężki cios podpala.", BuildTag.Melee | BuildTag.Guard | BuildTag.Parry | BuildTag.Magic, new Color(1f, 0.55f, 0.2f));
+            flameSword.weaponModel = WeaponModel.Sword; Imbue(flameSword, Element.Fire, 0.4f, StatusKind.Burn, 0.2f);
+            var frostAxe = WeaponCopy(axe, "weapon_frostaxe", "Mroźny topór", "Szron na ostrzu: 40% obrażeń to mróz, ciężki cios wychładza.", BuildTag.Melee | BuildTag.Heavy | BuildTag.Magic, new Color(0.6f, 0.85f, 1f));
+            frostAxe.weaponModel = WeaponModel.Axe; Imbue(frostAxe, Element.Frost, 0.4f, StatusKind.Chill, 0.3f);
+            var stormHammer = WeaponCopy(greatAxe, "weapon_stormhammer", "Młot burzy", "Dwuręczny młot: połowa obrażeń to błyskawica, ciężki cios poraża. W zamrożonych – roztrzaskanie.", BuildTag.Melee | BuildTag.Heavy | BuildTag.Guard | BuildTag.Magic, new Color(0.75f, 0.8f, 1f));
+            stormHammer.weaponModel = WeaponModel.GreatAxe; Imbue(stormHammer, Element.Lightning, 0.5f, StatusKind.Shock, 0.3f);
+            var serrated = WeaponCopy(sword, "weapon_serratedsword", "Ząbkowany miecz", "Każde cięcie rozrywa: lekki cios zawsze krwawi, ciężki – podwójnie. Słabo blokuje, nie paruje.", BuildTag.Melee | BuildTag.Agile, new Color(0.75f, 0.35f, 0.35f));
+            serrated.weaponModel = WeaponModel.Sword;
+            serrated.weapon.light.baseDamage = 34; serrated.weapon.heavy.baseDamage = 58;
+            serrated.weapon.light.statuses.Add(St(StatusKind.Bleed)); serrated.weapon.heavy.statuses.Add(St(StatusKind.Bleed, 2));
+            serrated.weapon.canParry = false;
+            serrated.weapon.guard = new GuardData { physicalReduction = 0.45f, magicReduction = 0.1f, stabilityMultiplier = 1.4f, blockAngle = 90f, staminaRegenMultiplier = 0.25f };
+            var mace = WeaponCopy(axe, "weapon_mace", "Buława", "Obuch łamie postawę i rozbija lód: +50% przeciw zamrożonym (i kończy zamrożenie).", BuildTag.Melee | BuildTag.Heavy, new Color(0.55f, 0.55f, 0.6f));
+            mace.weaponModel = WeaponModel.Axe;
+            mace.weapon.light.baseDamage = 44; mace.weapon.light.poiseDamage = 40; mace.weapon.heavy.poiseDamage = 80;
+            mace.weapon.light.bonusVsFrozen = 0.5f; mace.weapon.heavy.bonusVsFrozen = 0.5f;
+            mace.weapon.light.name = "Uderzenie obuchem"; mace.weapon.heavy.name = "Miażdżący cios";
+
+            ItemDefinition ElementStaff(string id, string name, Element e, StatType bonus, Color color, string desc)
+            {
+                var st = WeaponCopy(staff, id, name, desc, BuildTag.Magic, color);
+                st.weaponModel = WeaponModel.Staff;
+                st.modifiers.Add(Pct(StatType.SpellPower, 10)); st.modifiers.Add(Flat(bonus, 25)); st.modifiers.Add(Flat(StatType.ManaRegen, 0.6f));
+                st.requirements.Clear(); st.requirements.Add(Req(AttributeType.Intelligence, 12));
+                foreach (var a in new[] { st.weapon.light, st.weapon.heavy }) { a.element = e; a.elementShare = 0.6f; }
+                return st;
+            }
+            var staffFire = ElementStaff("weapon_staff_fire", "Kostur ognia", Element.Fire, StatType.FireDamage, new Color(1f, 0.45f, 0.15f), "Katalizator ognia: +25% obrażeń od ognia.");
+            var staffFrost = ElementStaff("weapon_staff_frost", "Kostur lodu", Element.Frost, StatType.FrostDamage, new Color(0.55f, 0.85f, 1f), "Katalizator mrozu: +25% obrażeń od mrozu.");
+            var staffStorm = ElementStaff("weapon_staff_storm", "Kostur burzy", Element.Lightning, StatType.LightningDamage, new Color(0.8f, 0.85f, 1f), "Katalizator burzy: +25% obrażeń od błyskawic.");
 
             // ============================================================ UMIEJĘTNOŚCI: CZARY
             SpellDefinition Spell(string id, string name, SpellKind kind, float mana, float cast, float recovery, int reqInt, string desc, BuildTag tags, float cooldown = 1f)
@@ -240,6 +322,54 @@ namespace Turris
             var barrier = Spell("spell_barrier", "Kamienna osłona", SpellKind.Barrier, 25, 0.5f, 0.35f, 10, "Osłona pochłania obrażenia; w pełni pochłonięty cios nie przerywa akcji.", BuildTag.Guard, 16f);
             barrier.amount = 70; barrier.duration = 8f; barrier.intelligenceScaling = 2f; barrier.color = new Color(0.8f, 0.66f, 0.42f);
 
+            // ---- Czary żywiołów
+            var fireball = Spell("spell_fireball", "Kula ognia", SpellKind.Projectile, 24, 0.55f, 0.45f, 12, "Pocisk, który wybucha przy trafieniu i podpala.", BuildTag.None, 2.5f);
+            fireball.attack = Proj("Kula ognia", 44, 0.55f, 17f, poise: 20, guardLoad: 25);
+            fireball.attack.explosionRadius = 2.4f; fireball.attack.element = Element.Fire; fireball.attack.statuses.Add(St(StatusKind.Burn));
+            fireball.color = new Color(1f, 0.45f, 0.12f);
+            var frostCone = Spell("spell_frostcone", "Lodowy podmuch", SpellKind.Cone, 20, 0.4f, 0.4f, 10, "Mroźny podmuch w stożku: wychładza (trzy warstwy chłodu zamrażają).", BuildTag.None, 4f);
+            frostCone.attack = Atk("Lodowy podmuch", 30, 0.4f, 0.1f, 0.4f, 4.5f, 1f, 0, 0, 15, 15, type: DamageType.Magic);
+            frostCone.attack.parryable = false; frostCone.attack.element = Element.Frost; frostCone.attack.statuses.Add(St(StatusKind.Chill));
+            frostCone.arcAngle = 70f; frostCone.color = new Color(0.55f, 0.85f, 1f);
+            var chainSpell = Spell("spell_chain", "Łańcuch błyskawic", SpellKind.Chain, 26, 0.35f, 0.4f, 13, "Błyskawica skacze między wrogami i poraża (porażony otrzymuje więcej obrażeń). W krwawiący cel – przewodzenie.", BuildTag.None, 5f);
+            chainSpell.attack = Atk("Łańcuch błyskawic", 40, 0.35f, 0.05f, 0.4f, 12f, 6f, 0, 0, 12, 20, type: DamageType.Magic);
+            chainSpell.attack.projectileCount = 4; chainSpell.attack.parryable = false; chainSpell.attack.element = Element.Lightning; chainSpell.attack.statuses.Add(St(StatusKind.Shock));
+            chainSpell.color = new Color(0.8f, 0.85f, 1f);
+            var burningGround = Spell("spell_burningground", "Płonąca ziemia", SpellKind.Zone, 30, 0.6f, 0.4f, 14, "Krąg ognia na ziemi (na namierzonym wrogu): pali i podpala każdego, kto w nim stoi.", BuildTag.None, 12f);
+            burningGround.attack = Atk("Płonąca ziemia", 14, 0.6f, 0.05f, 0.4f, 9f, 2.6f, 0, 0, 4, 5, parryable: false, type: DamageType.Magic);
+            burningGround.attack.element = Element.Fire; burningGround.attack.statuses.Add(St(StatusKind.Burn));
+            burningGround.duration = 5f; burningGround.tickInterval = 0.5f; burningGround.color = new Color(1f, 0.5f, 0.15f);
+            var flameBlade = Spell("spell_flameblade", "Płomienne ostrze", SpellKind.WeaponBuff, 25, 0.6f, 0.35f, 10, "Broń płonie: ciosy i techniki zadają obrażenia od ognia i mogą podpalić.", BuildTag.Melee, 20f);
+            flameBlade.amount = 14; flameBlade.duration = 18f; flameBlade.intelligenceScaling = 2f; flameBlade.color = new Color(1f, 0.5f, 0.15f);
+            flameBlade.attack.element = Element.Fire; flameBlade.attack.statuses.Add(St(StatusKind.Burn, 1, 0.5f));
+            var frostNova = Spell("spell_frostnova", "Mroźna fala", SpellKind.Nova, 26, 0.5f, 0.5f, 12, "Fala mrozu wokół postaci: dwie warstwy chłodu – dobry wstęp do zamrożenia.", BuildTag.None, 8f);
+            frostNova.attack = Atk("Mroźna fala", 32, 0.5f, 0.1f, 0.5f, 0, 3.8f, 0, 0, 20, 25, type: DamageType.Magic, delivery: AttackDelivery.AreaAroundSelf);
+            frostNova.attack.parryable = false; frostNova.attack.element = Element.Frost; frostNova.attack.statuses.Add(St(StatusKind.Chill, 2));
+            frostNova.color = new Color(0.6f, 0.88f, 1f);
+
+            // ---- Czary zestawów (etap B3 planu)
+            var spark = Spell("spell_spark", "Iskra", SpellKind.Projectile, 8, 0.25f, 0.3f, 8, "Szybki, tani pocisk błyskawicy – 50% szans na porażenie.", BuildTag.None, 0.4f);
+            spark.attack = Proj("Iskra", 22, 0.25f, 26f, poise: 5, guardLoad: 10);
+            spark.attack.element = Element.Lightning; spark.attack.statuses.Add(St(StatusKind.Shock, 1, 0.5f)); spark.color = new Color(0.85f, 0.9f, 1f);
+            var iceLance = Spell("spell_icelance", "Lodowa włócznia", SpellKind.Projectile, 22, 0.5f, 0.45f, 12, "Ciężki sopel: wychładza, a w zamrożony cel zadaje podwójnie i rozbija lód.", BuildTag.None, 3f);
+            iceLance.attack = Proj("Lodowa włócznia", 55, 0.5f, 20f, poise: 30, guardLoad: 30);
+            iceLance.attack.element = Element.Frost; iceLance.attack.bonusVsFrozen = 1f; iceLance.attack.statuses.Add(St(StatusKind.Chill)); iceLance.color = new Color(0.6f, 0.9f, 1f);
+            var meteor = Spell("spell_meteor", "Meteor", SpellKind.Meteor, 40, 0.8f, 0.5f, 16, "Po sekundzie w zaznaczony krąg spada meteor: ogromne obrażenia, podpalenie i płonąca ziemia.", BuildTag.None, 14f);
+            meteor.attack = Atk("Meteor", 110, 0.8f, 0.05f, 0.5f, 12f, 3f, 0, 0, 60, 60, true, parryable: false, type: DamageType.Magic);
+            meteor.attack.element = Element.Fire; meteor.attack.statuses.Add(St(StatusKind.Burn));
+            meteor.duration = 3f; meteor.tickInterval = 0.5f; meteor.color = new Color(1f, 0.4f, 0.1f);
+            var storm = Spell("spell_storm", "Burza", SpellKind.Storm, 35, 0.6f, 0.4f, 14, "Przez 6 s pioruny co 0,8 s biją w losowych wrogów wokół ciebie i porażają.", BuildTag.None, 18f);
+            storm.attack = Atk("Burza", 30, 0.6f, 0.05f, 0.4f, 0, 9f, 0, 0, 10, 10, parryable: false, type: DamageType.Magic);
+            storm.attack.element = Element.Lightning; storm.attack.statuses.Add(St(StatusKind.Shock));
+            storm.duration = 6f; storm.tickInterval = 0.8f; storm.color = new Color(0.8f, 0.85f, 1f);
+            var bloodPact = Spell("spell_bloodpact", "Krwawy pakt", SpellKind.BloodPact, 0, 0.4f, 0.3f, 0, "Poświęcasz 15% życia – trzy kolejne czary nie kosztują many.", BuildTag.None, 20f);
+            bloodPact.amount = 15; bloodPact.attack.projectileCount = 3; bloodPact.color = new Color(0.85f, 0.1f, 0.15f);
+            var frostArmor = Spell("spell_frostarmor", "Mroźna zbroja", SpellKind.FrostArmor, 30, 0.5f, 0.35f, 12, "Osłona z lodu; kto uderzy cię z bliska, zostaje wychłodzony.", BuildTag.Guard, 18f);
+            frostArmor.amount = 60; frostArmor.duration = 8f; frostArmor.intelligenceScaling = 2f; frostArmor.attack.element = Element.Frost; frostArmor.color = new Color(0.6f, 0.88f, 1f);
+            var chains = Spell("spell_chains", "Łańcuchy potępionych", SpellKind.Pull, 22, 0.45f, 0.4f, 11, "Przyciąga wrogów z okolicy przed ciebie – idealne pod płonącą ziemię i młynek.", BuildTag.None, 9f);
+            chains.attack = Atk("Łańcuchy", 15, 0.45f, 0.05f, 0.4f, 5f, 7f, 0, 0, 30, 20, parryable: false, type: DamageType.Magic);
+            chains.color = new Color(0.55f, 0.35f, 0.75f);
+
             // ============================================================ UMIEJĘTNOŚCI: TECHNIKI BRONIĄ
             // Obrażenia = lekki atak aktualnej broni × mnożnik, więc techniki rosną razem z bronią i jej ulepszeniami.
             SpellDefinition Tech(string id, string name, SpellKind kind, float stamina, float cast, float active, float recovery, float cooldown,
@@ -268,6 +398,42 @@ namespace Turris
             var quakeSkill = Tech("skill_quake", "Trzęsienie", SpellKind.Quake, 32, 0.55f, 0.12f, 0.6f, 9f, 2.0f, 1.6f, 3.2f, 70,
                 "Uderzenie w ziemię przed sobą: duże obrażenia i łamanie postawy w kręgu.", BuildTag.Heavy);
             quakeSkill.requirements.Add(Req(AttributeType.Strength, 14)); quakeSkill.color = new Color(0.82f, 0.6f, 0.35f);
+
+            // ---- Techniki z krwawieniem i żywiołem
+            var rend = Tech("skill_rend", "Krwawe cięcie", SpellKind.Cleave, 20, 0.3f, 0.12f, 0.4f, 6f, 1.2f, 2.6f, 1f, 20,
+                "Szarpiące cięcie w łuku: dwie warstwy krwawienia. Krwawienie boli bardziej, gdy wróg się rusza.", BuildTag.None);
+            rend.arcAngle = 120f; rend.attack.statuses.Add(St(StatusKind.Bleed, 2)); rend.color = new Color(0.9f, 0.2f, 0.2f);
+            var lunge = Tech("skill_lunge", "Wypad", SpellKind.Charge, 14, 0.18f, 0.2f, 0.3f, 4f, 1.1f, 3.2f, 0.8f, 25,
+                "Krótki, szybki wypad z pchnięciem; otwiera ranę.", BuildTag.Agile);
+            lunge.attack.statuses.Add(St(StatusKind.Bleed)); lunge.extraChargeAtLevel = 2; lunge.color = new Color(1f, 0.4f, 0.35f);
+            var flurry = Tech("skill_flurry", "Seria cięć", SpellKind.Flurry, 26, 0.2f, 0.9f, 0.4f, 8f, 0.55f, 2.4f, 1f, 10,
+                "Cztery szybkie cięcia przed sobą, każde może wywołać krwawienie.", BuildTag.Agile);
+            flurry.tickInterval = 0.22f; flurry.arcAngle = 120f; flurry.attack.statuses.Add(St(StatusKind.Bleed, 1, 0.5f));
+            flurry.requirements.Add(Req(AttributeType.Dexterity, 12)); flurry.color = new Color(0.95f, 0.75f, 0.75f);
+            var thunder = Tech("skill_thunder", "Uderzenie gromu", SpellKind.Quake, 30, 0.5f, 0.12f, 0.55f, 9f, 1.8f, 1.5f, 3f, 50,
+                "Broń uderza w ziemię z piorunem: połowa obrażeń to błyskawica, poraża. W krwawiących – przewodzenie.", BuildTag.Heavy | BuildTag.Magic);
+            thunder.attack.element = Element.Lightning; thunder.attack.statuses.Add(St(StatusKind.Shock)); thunder.color = new Color(0.8f, 0.85f, 1f);
+            var knives = Tech("skill_knives", "Rzut nożami", SpellKind.Projectile, 16, 0.22f, 0.1f, 0.3f, 5f, 0.7f, 0f, 0.3f, 8,
+                "Trzy noże w wachlarzu, każdy może otworzyć ranę – atak z dystansu dla wojownika.", BuildTag.Agile);
+            knives.attack.delivery = AttackDelivery.Projectile; knives.attack.projectileCount = 3; knives.attack.spreadAngle = 10f; knives.attack.projectileSpeed = 24f;
+            knives.attack.statuses.Add(St(StatusKind.Bleed, 1, 0.6f)); knives.color = new Color(0.85f, 0.85f, 0.9f);
+
+            // ---- Techniki zestawów (etap B4 planu)
+            var counter = Tech("skill_counter", "Kontra", SpellKind.Counter, 12, 0.1f, 0.6f, 0.35f, 6f, 2.0f, 2f, 1f, 80,
+                "Postawa kontry na 0,6 s: cios wroga (do sparowania) zostaje zatrzymany, a ty oddajesz mocnym cięciem i łamiesz postawę.", BuildTag.Parry);
+            counter.color = new Color(1f, 0.9f, 0.5f);
+            var leapSlash = Tech("skill_leapslash", "Cięcie z wyskoku", SpellKind.Charge, 24, 0.3f, 0.45f, 0.45f, 8f, 1.8f, 5f, 1.2f, 60,
+                "Skok na cel i cios z góry; łamie postawę każdego na drodze.", BuildTag.Heavy);
+            leapSlash.attack.animation = AttackAnim.Leap; leapSlash.color = new Color(1f, 0.7f, 0.4f);
+            var execute = Tech("skill_execute", "Egzekucja", SpellKind.Cleave, 22, 0.45f, 0.12f, 0.5f, 7f, 1.6f, 2.6f, 1f, 40,
+                "Cios z góry: +100% obrażeń celom poniżej 30% życia lub z przełamaną postawą.", BuildTag.Heavy);
+            execute.arcAngle = 70f; execute.attack.executeBonus = 1f; execute.attack.animation = AttackAnim.Overhead; execute.color = new Color(0.9f, 0.25f, 0.2f);
+            var warcry = Tech("skill_warcry", "Okrzyk wojenny", SpellKind.Warcry, 0, 0.3f, 0.1f, 0.35f, 20f, 0f, 0f, 0f, 0,
+                "+25% obrażeń na 8 s i odnowienie 40% wytrzymałości.", BuildTag.Melee);
+            warcry.amount = 25; warcry.duration = 8f; warcry.color = new Color(1f, 0.35f, 0.25f);
+            var rupture = Tech("skill_rupture", "Rozdarcie ran", SpellKind.Rupture, 18, 0.3f, 0.12f, 0.4f, 8f, 0.6f, 2.6f, 1f, 15,
+                "Cięcie, które rozrywa rany: całe pozostałe krwawienie celu od razu, ×1,5.", BuildTag.Melee);
+            rupture.arcAngle = 120f; rupture.amount = 1.5f; rupture.color = new Color(0.8f, 0.1f, 0.1f);
 
             // ============================================================ WZMOCNIENIA / TALENTY
             BoonDefinition Boon(string id, string name, string desc, BuildTag tags, int maxStacks, params StatModifier[] mods)
@@ -332,6 +498,9 @@ namespace Turris
             ghoul.color = new Color(0.5f, 0.58f, 0.32f); ghoul.scale = 0.95f; ghoul.soulReward = 60;
             ghoul.attacks.Add(Entry(Atk("Pazury", 28, 0.38f, 0.12f, 0.45f, 1.9f, 0.8f, 0, 1.2f, 12, 18, tracking: 420f), 0, 2.4f, 3, followUp: 1, followChance: 0.6f));
             ghoul.attacks.Add(Entry(Atk("Druga seria", 28, 0.3f, 0.12f, 0.6f, 1.9f, 0.8f, 0, 0.9f, 12, 18, tracking: 300f), 0, 2.6f, 0));
+            ghoul.attacks[0].attack.statuses.Add(St(StatusKind.Bleed, 1, 0.5f));
+            ghoul.attacks[1].attack.statuses.Add(St(StatusKind.Bleed, 1, 0.5f));
+            ghoul.fireMultiplier = 1.5f; // truchło dobrze się pali
             ghoul.attacks.Add(Entry(Atk("Skok", 42, 0.6f, 0.22f, 0.7f, 1.9f, 0.9f, 0, 5f, 25, 30, true, tracking: 240f), 3.5f, 7.5f, 1.5f, cooldown: 3));
             ghoul.attacks.Add(Entry(Atk("Wściekły szał", 34, 0.5f, 0.35f, 0.7f, 2.3f, 1.2f, 0, 1.5f, 20, 28, parryable: false, tracking: 300f), 0, 2.5f, 1.5f, cooldown: 6, eliteOnly: true));
 
@@ -342,6 +511,9 @@ namespace Turris
             heretic.color = new Color(0.45f, 0.25f, 0.6f); heretic.soulReward = 70;
             heretic.attacks.Add(Entry(Proj("Pocisk herezji", 30, 0.7f, 15f), 4, 18, 3));
             heretic.attacks.Add(Entry(Proj("Wachlarz", 22, 1.0f, 14f, 3, 14f), 4, 14, 1.5f, cooldown: 4));
+            heretic.attacks[0].attack.element = Element.Frost; heretic.attacks[0].attack.statuses.Add(St(StatusKind.Chill));
+            heretic.attacks[1].attack.element = Element.Frost; heretic.attacks[1].attack.statuses.Add(St(StatusKind.Chill, 1, 0.5f));
+            heretic.frostMultiplier = 0.5f; heretic.lightningMultiplier = 1.5f;
             var push = Atk("Odepchnięcie", 25, 0.8f, 0.1f, 0.5f, 0, 3f, 0, 0, 30, 30, parryable: false, type: DamageType.Magic, delivery: AttackDelivery.AreaAroundSelf);
             heretic.attacks.Add(Entry(push, 0, 3.2f, 4, cooldown: 5, retreatAfter: 5));
             heretic.attacks.Add(Entry(Proj("Opóźniony pocisk", 50, 1.2f, 8f, poise: 30, guardLoad: 35, heavy: true), 5, 18, 1.5f, cooldown: 6, eliteOnly: true));
@@ -353,6 +525,8 @@ namespace Turris
             warden.guardChance = 0.35f; warden.guard = new GuardData { physicalReduction = 0.8f, magicReduction = 0.2f, stabilityMultiplier = 0.8f, blockAngle = 140f };
             warden.color = new Color(0.5f, 0.52f, 0.58f); warden.scale = 1.25f; warden.soulReward = 110;
             warden.attacks.Add(Entry(Atk("Cięcie halabardą", 50, 0.8f, 0.18f, 0.8f, 3.0f, 1.0f, 0, 0.8f, 25, 35, tracking: 200f), 0, 3.2f, 3));
+            warden.attacks[0].attack.statuses.Add(St(StatusKind.Bleed, 1, 0.35f));
+            warden.lightningMultiplier = 1.4f; warden.bleedMultiplier = 0.5f; // pancerz: mniej krwawi, ale przewodzi
             warden.attacks.Add(Entry(Atk("Miażdżący cios", 90, 1.3f, 0.15f, 1.1f, 3.0f, 1.1f, 0, 0.6f, 45, 70, true, parryable: false, tracking: 160f), 0, 3.2f, 2, cooldown: 3, hyperArmor: true));
             warden.attacks.Add(Entry(Atk("Szarża tarczą", 60, 1.0f, 0.4f, 0.9f, 1.8f, 1.1f, 0, 7f, 40, 50, blockable: false, parryable: false, tracking: 220f), 4, 10, 2, cooldown: 5, hyperArmor: true));
             var quake = Atk("Wstrząs", 45, 1.1f, 0.1f, 0.9f, 0, 4f, 0, 0, 35, 40, parryable: false, dodgeable: false, delivery: AttackDelivery.AreaAroundSelf);
@@ -369,9 +543,56 @@ namespace Turris
             boss.attacks.Add(Entry(Atk("Miażdżące uderzenie", 110, 1.25f, 0.15f, 1.0f, 3.3f, 1.3f, 0, 0.8f, 50, 75, true, parryable: false, tracking: 180f), 0, 3.8f, 2, cooldown: 2.5f, hyperArmor: true));
             boss.attacks.Add(Entry(Atk("Pchnięcie szarży", 85, 1.0f, 0.35f, 1.0f, 2.2f, 1.1f, 0, 9f, 40, 50, blockable: false, parryable: true, tracking: 200f), 4, 12, 2, cooldown: 4, hyperArmor: true));
             var doom = Atk("Fala potępienia", 65, 1.5f, 0.1f, 1.2f, 0, 6f, 0, 0, 40, 50, parryable: false, dodgeable: false, type: DamageType.Magic, delivery: AttackDelivery.AreaAroundSelf);
+            doom.element = Element.Fire; doom.statuses.Add(St(StatusKind.Burn));
             boss.attacks.Add(Entry(doom, 0, 5f, 2, cooldown: 8, minPhase: 1, hyperArmor: true));
             boss.attacks.Add(Entry(Proj("Salwa dusz", 40, 0.9f, 16f, 3, 12f, poise: 20, guardLoad: 25), 5, 20, 2, cooldown: 5, minPhase: 1));
+            boss.attacks[boss.attacks.Count - 1].attack.element = Element.Fire;
+            boss.attacks[boss.attacks.Count - 1].attack.statuses.Add(St(StatusKind.Burn, 1, 0.4f));
+            boss.attacks[0].attack.statuses.Add(St(StatusKind.Bleed, 1, 0.4f));
+            boss.fireMultiplier = 0.5f; boss.frostMultiplier = 1.3f;
             boss.attacks.Add(Entry(Atk("Opóźnione cięcie", 80, 1.6f, 0.2f, 0.8f, 3.5f, 1.4f, 0, 1.2f, 35, 45, tracking: 300f), 0, 3.8f, 2, cooldown: 5, bossExtraOnly: true));
+
+            // ============================================================ CECHY POZIOMÓW (etap C planu)
+            // Poziom +2 i +4 dodaje cechę, nie tylko procenty – ulepszenie zmienia sposób użycia.
+            void Lv(SpellDefinition d, int level, LevelFeatureKind k, float v) => d.levelFeatures.Add(new LevelFeature(level, k, v));
+            Lv(bolt, 2, LevelFeatureKind.ExtraTargets, 1);
+            Lv(nova, 2, LevelFeatureKind.RadiusBonus, 0.25f);
+            Lv(fireball, 2, LevelFeatureKind.RadiusBonus, 0.3f); Lv(fireball, 4, LevelFeatureKind.LeaveZone, 3f);
+            Lv(chainSpell, 2, LevelFeatureKind.ExtraTargets, 1); Lv(chainSpell, 4, LevelFeatureKind.ExtraTargets, 1);
+            Lv(frostCone, 2, LevelFeatureKind.RadiusBonus, 0.25f); Lv(frostCone, 4, LevelFeatureKind.ExtraStatusStacks, 1);
+            Lv(frostNova, 4, LevelFeatureKind.RadiusBonus, 0.3f);
+            Lv(burningGround, 2, LevelFeatureKind.DurationBonus, 2f); Lv(burningGround, 4, LevelFeatureKind.RadiusBonus, 0.3f);
+            Lv(meteor, 2, LevelFeatureKind.DurationBonus, 2f); Lv(meteor, 4, LevelFeatureKind.RadiusBonus, 0.3f);
+            Lv(storm, 2, LevelFeatureKind.DurationBonus, 2f); Lv(storm, 4, LevelFeatureKind.RadiusBonus, 0.3f);
+            Lv(spark, 4, LevelFeatureKind.ExtraTargets, 1);
+            Lv(iceLance, 4, LevelFeatureKind.ExtraStatusStacks, 1);
+            Lv(whirl, 2, LevelFeatureKind.DurationBonus, 0.5f); Lv(whirl, 4, LevelFeatureKind.FinalSlash, 1.5f);
+            Lv(cleave, 4, LevelFeatureKind.RadiusBonus, 0.25f);
+            Lv(rend, 2, LevelFeatureKind.ExtraStatusStacks, 1);
+            Lv(knives, 2, LevelFeatureKind.ExtraTargets, 2);
+            Lv(quakeSkill, 4, LevelFeatureKind.RadiusBonus, 0.3f);
+            Lv(thunder, 4, LevelFeatureKind.RadiusBonus, 0.3f);
+            Lv(warcry, 2, LevelFeatureKind.DurationBonus, 4f);
+
+            // ============================================================ WARIANTY ŻYWIOŁÓW (etap B5 planu)
+            EnemyDefinition Variant(EnemyDefinition src, string id, string name, string desc, Color color)
+            {
+                var v = Object.Instantiate(src); // głęboka kopia (ataki, fazy) przez serializację
+                v.id = id; v.name = id; v.displayName = name; v.description = desc; v.color = color;
+                v.variants = new List<EnemyDefinition>();
+                bundle.all.Add(v); bundle.byId[id] = v;
+                return v;
+            }
+            var fireGhoul = Variant(ghoul, "enemy_ghoul_fire", "Płonący ghul", "Ghul w ogniu: pazury podpalają. Słaby na mróz, odporny na ogień.", new Color(0.8f, 0.4f, 0.2f));
+            fireGhoul.fireMultiplier = 0.4f; fireGhoul.frostMultiplier = 1.5f; fireGhoul.element = Element.Fire;
+            foreach (var at in fireGhoul.attacks) { at.attack.element = Element.Fire; at.attack.elementShare = 0.5f; at.attack.statuses = new List<StatusApplication> { St(StatusKind.Burn, 1, 0.5f) }; }
+            var frostWarden = Variant(warden, "enemy_warden_frost", "Lodowy strażnik", "Halabarda ze szronu wychładza. Odporny na mróz, słaby na ogień.", new Color(0.55f, 0.75f, 0.9f));
+            frostWarden.frostMultiplier = 0.3f; frostWarden.fireMultiplier = 1.5f; frostWarden.lightningMultiplier = 1f; frostWarden.element = Element.Frost;
+            foreach (var at in frostWarden.attacks) { at.attack.element = Element.Frost; at.attack.elementShare = 0.4f; at.attack.statuses = new List<StatusApplication> { St(StatusKind.Chill, 1, 0.6f) }; }
+            var stormCultist = Variant(heretic, "enemy_heretic_storm", "Kultysta burzy", "Ciska błyskawicami, które porażają. Odporny na błyskawice, łatwo krwawi.", new Color(0.45f, 0.5f, 0.8f));
+            stormCultist.lightningMultiplier = 0.4f; stormCultist.frostMultiplier = 1f; stormCultist.bleedMultiplier = 1.5f; stormCultist.element = Element.Lightning;
+            foreach (var at in stormCultist.attacks) { at.attack.element = Element.Lightning; at.attack.statuses = new List<StatusApplication> { St(StatusKind.Shock, 1, 0.6f) }; }
+            ghoul.variants.Add(fireGhoul); warden.variants.Add(frostWarden); heretic.variants.Add(stormCultist);
 
             // ============================================================ ARENY I WIEŻA
             var courtyard = Make<ArenaDefinition>("arena_courtyard", "Dziedziniec", "");
@@ -419,7 +640,9 @@ namespace Turris
                 pilgrimBelt, athleteBelt, scoutBoots, ironBoots, bloodRing, manaRing, strRing, intRing, parryAmulet, casterAmulet, bastionAmulet });
             cfg.baseBoonPool.AddRange(new[] { bIron, bVigor, bBreath, bWrath, bWell, bArcane, bBlood, bFlask, bManaFlask, bParry, bTitan, bMind, bAgile, bVamp, bAlch, bBulwark });
             // Umiejętności do zdobycia tymczasowo (na jedno podejście). Te z listy odblokowań dochodzą, gdy gracz dotrze na ich piętro.
-            cfg.baseSpellPool.AddRange(new[] { bolt, nova, enchant, cleave, bash, charge });
+            cfg.baseSpellPool.AddRange(new[] { bolt, nova, enchant, cleave, bash, charge, fireball, frostCone, flameBlade, rend, lunge, knives,
+                spark, iceLance, chains, leapSlash, warcry });
+            cfg.baseItemPool.AddRange(new[] { flameSword, frostAxe, serrated, mace, staffFire, staffFrost, emberRing, frostVein, furHelm, groundedChain, stormBoots });
 
             // ============================================================ ODBLOKOWANIA
             UnlockDefinition Unlock(string id, UnlockKind kind, ContentDefinition target, int ash, int loadout, bool byDefault = false, int floor = 0, int victory = -1)
@@ -448,6 +671,31 @@ namespace Turris
             Unlock("unlock_barrier", UnlockKind.Spell, barrier, 20, 0);
             Unlock("unlock_whirlwind", UnlockKind.Spell, whirl, 25, 0, floor: 2);
             Unlock("unlock_quake", UnlockKind.Spell, quakeSkill, 30, 0, floor: 3);
+            Unlock("unlock_fireball", UnlockKind.Spell, fireball, 20, 0);
+            Unlock("unlock_frostcone", UnlockKind.Spell, frostCone, 20, 0);
+            Unlock("unlock_flameblade", UnlockKind.Spell, flameBlade, 20, 0);
+            Unlock("unlock_frostnova", UnlockKind.Spell, frostNova, 25, 0, floor: 2);
+            Unlock("unlock_chain", UnlockKind.Spell, chainSpell, 30, 0, floor: 2);
+            Unlock("unlock_burningground", UnlockKind.Spell, burningGround, 35, 0, floor: 3);
+            Unlock("unlock_rend", UnlockKind.Spell, rend, 15, 0);
+            Unlock("unlock_lunge", UnlockKind.Spell, lunge, 15, 0);
+            Unlock("unlock_knives", UnlockKind.Spell, knives, 15, 0);
+            Unlock("unlock_flurry", UnlockKind.Spell, flurry, 25, 0, floor: 2);
+            Unlock("unlock_thunder", UnlockKind.Spell, thunder, 30, 0, floor: 3);
+            // Etap B6 planu: zestawy żywiołów i krwawienia
+            Unlock("unlock_meteor", UnlockKind.Spell, meteor, 40, 0, floor: 4);
+            Unlock("unlock_storm", UnlockKind.Spell, storm, 35, 0, floor: 3);
+            Unlock("unlock_bloodpact", UnlockKind.Spell, bloodPact, 25, 0, floor: 2);
+            Unlock("unlock_frostarmor", UnlockKind.Spell, frostArmor, 25, 0, floor: 2);
+            Unlock("unlock_counter", UnlockKind.Spell, counter, 20, 0);
+            Unlock("unlock_execute", UnlockKind.Spell, execute, 25, 0, floor: 2);
+            Unlock("unlock_rupture", UnlockKind.Spell, rupture, 25, 0, floor: 2);
+            Unlock("unlock_stormhammer", UnlockKind.StartingItem, stormHammer, 30, 3, floor: 3);
+            Unlock("unlock_staff_storm", UnlockKind.StartingItem, staffStorm, 20, 2, floor: 2);
+            Unlock("unlock_conductor", UnlockKind.StartingItem, conductor, 25, 2, floor: 2);
+            Unlock("unlock_butcher", UnlockKind.StartingItem, butcher, 20, 2);
+            Unlock("unlock_salamander", UnlockKind.StartingItem, salamander, 20, 1, floor: 3);
+            Unlock("unlock_ashrobe", UnlockKind.StartingItem, ashRobe, 25, 2, floor: 2);
             Unlock("unlock_bloodriposte", UnlockKind.Boon, tBloodRiposte, 20, 2);
             Unlock("unlock_spellguard", UnlockKind.Boon, tSpellguard, 20, 2);
             Unlock("unlock_survivor", UnlockKind.Boon, tSurvivor, 15, 2);

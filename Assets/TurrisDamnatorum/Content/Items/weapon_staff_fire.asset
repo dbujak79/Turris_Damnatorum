@@ -1,0 +1,136 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 636ee652052ecf443b59ebf79a72207a, type: 3}
+  m_Name: weapon_staff_fire
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ItemDefinition
+  id: weapon_staff_fire
+  displayName: Kostur ognia
+  description: "Katalizator ognia: +25% obra\u017Ce\u0144 od ognia."
+  tags: 2
+  kind: 0
+  twoHanded: 0
+  weight: 3
+  requirements:
+  - attribute: 5
+    value: 12
+  modifiers:
+  - stat: 15
+    mode: 1
+    value: 10
+  - stat: 24
+    mode: 0
+    value: 25
+  - stat: 11
+    mode: 0
+    value: 0.6
+  effects: []
+  weapon:
+    light:
+      name: Uderzenie kosturem
+      delivery: 0
+      damageType: 0
+      baseDamage: 22
+      windup: 0.35
+      active: 0.14
+      recovery: 0.45
+      cancelAfter: 0.2
+      reach: 2.3
+      radius: 0.8
+      lunge: 0.4
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 18
+      poiseDamage: 14
+      heavy: 0
+      staminaCost: 14
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 1
+      elementShare: 0.6
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses: []
+      animation: 0
+    heavy:
+      name: Zamach kosturem
+      delivery: 0
+      damageType: 0
+      baseDamage: 34
+      windup: 0.62
+      active: 0.16
+      recovery: 0.6
+      cancelAfter: 0.3
+      reach: 2.4
+      radius: 0.9
+      lunge: 0.6
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 32
+      poiseDamage: 30
+      heavy: 1
+      staminaCost: 22
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 1
+      elementShare: 0.6
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses: []
+      animation: 0
+    lightComboLength: 3
+    strengthScaling: 0.6
+    dexterityScaling: 0.4
+    intelligenceScaling: 0.5
+    riposteMultiplier: 2.5
+    canBlock: 0
+    guard:
+      physicalReduction: 0.6
+      magicReduction: 0.2
+      stabilityMultiplier: 1.2
+      blockAngle: 100
+      staminaRegenMultiplier: 0.3
+    canParry: 0
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  shield:
+    guard:
+      physicalReduction: 1
+      magicReduction: 0.4
+      stabilityMultiplier: 0.7
+      blockAngle: 140
+      staminaRegenMultiplier: 0.3
+    canParry: 1
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  color: {r: 1, g: 0.45, b: 0.15, a: 1}
+  weaponModel: 6
+  shieldModel: 0

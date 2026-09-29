@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bfc9e3d0e146d4086347f0e38c03cf, type: 3}
+  m_Name: spell_flameblade
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
+  id: spell_flameblade
+  displayName: "P\u0142omienne ostrze"
+  description: "Bro\u0144 p\u0142onie: ciosy i techniki zadaj\u0105 obra\u017Cenia od ognia i mog\u0105 podpali\u0107."
+  tags: 3
+  kind: 3
+  category: 0
+  manaCost: 25
+  castTime: 0.6
+  recovery: 0.35
+  cancelAfter: 0.2
+  staminaCost: 5
+  requirements:
+  - attribute: 5
+    value: 10
+  requiredTags: 0
+  intelligenceScaling: 2
+  attack:
+    name: Atak
+    delivery: 0
+    damageType: 1
+    baseDamage: 30
+    windup: 0.35
+    active: 0.15
+    recovery: 0.45
+    cancelAfter: 0.2
+    reach: 2
+    radius: 0.9
+    lunge: 0.5
+    tracking: 360
+    blockable: 1
+    parryable: 1
+    dodgeable: 1
+    guardLoad: 20
+    poiseDamage: 15
+    heavy: 0
+    staminaCost: 15
+    projectileSpeed: 14
+    projectileCount: 1
+    spreadAngle: 0
+    explosionRadius: 0
+    element: 1
+    statuses:
+    - kind: 1
+      stacks: 1
+      chance: 0.5
+    animation: 0
+  amount: 14
+  duration: 18
+  cooldown: 20
+  charges: 1
+  extraChargeAtLevel: 0
+  cooldownReductionPerLevel: 0.06
+  weaponMultiplier: 1.5
+  arcAngle: 150
+  tickInterval: 0.35
+  moveMultiplier: 0.5
+  maxLevel: 4
+  powerPerLevel: 0.15
+  costReductionPerLevel: 0.06
+  color: {r: 1, g: 0.5, b: 0.15, a: 1}

@@ -84,14 +84,17 @@ namespace Turris
         public static event Action<Vector3, HitResult, bool> HitResolved;   // pozycja, wynik, czy cel to gracz
         public static event Action<string, Color> Message;
         public static event Action<IHitReceiver> Died;
+        /// <summary>Napis w świecie (tyknięcia efektów, reakcje, słabości) – bez efektów trafienia.</summary>
+        public static event Action<Vector3, string, Color> WorldText;
 
         public static void RaiseHit(Vector3 pos, HitResult r, bool targetIsPlayer) => HitResolved?.Invoke(pos, r, targetIsPlayer);
         public static void RaiseMessage(string msg, Color c) => Message?.Invoke(msg, c);
         public static void RaiseDied(IHitReceiver r) => Died?.Invoke(r);
+        public static void RaiseWorldText(Vector3 pos, string text, Color c) => WorldText?.Invoke(pos, text, c);
 
         public static void ClearAll()
         {
-            HitResolved = null; Message = null; Died = null;
+            HitResolved = null; Message = null; Died = null; WorldText = null;
         }
     }
 }

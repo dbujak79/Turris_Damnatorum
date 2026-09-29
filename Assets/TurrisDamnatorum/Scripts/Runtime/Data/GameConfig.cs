@@ -34,6 +34,40 @@ namespace Turris
         public float flinchDuration = 0.35f;
         public float inputBuffer = 0.3f;
 
+        [Header("Efekty i żywioły")]
+        [Tooltip("Krwawienie: łączne obrażenia warstwy = ułamek wylądowanych obrażeń fizycznych.")]
+        public float bleedShare = 0.35f;
+        public float bleedDuration = 3f;
+        public int bleedMaxStacks = 5;
+        [Tooltip("Mnożnik krwawienia, gdy cel się porusza.")]
+        public float bleedMovingMultiplier = 2f;
+        [Tooltip("Podpalenie: łączne obrażenia = ułamek wylądowanych obrażeń ognia.")]
+        public float burnShare = 0.8f;
+        public float burnDuration = 2.5f;
+        public float chillDuration = 3f;
+        [Tooltip("Spowolnienie ruchu i akcji za warstwę chłodu.")]
+        public float chillSlowPerStack = 0.15f;
+        [Tooltip("Tyle warstw chłodu zamraża cel.")]
+        public int chillStacksToFreeze = 3;
+        public float freezeDuration = 1.2f;
+        [Tooltip("Po zamrożeniu cel jest przez chwilę odporny na kolejne.")]
+        public float freezeImmunity = 2.5f;
+        public float shockDuration = 4f;
+        [Tooltip("Porażony cel otrzymuje tyle więcej obrażeń.")]
+        public float shockDamageBonus = 0.2f;
+        [Tooltip("Szok termiczny: ogień w wychłodzony cel – premia do części ognia; chłód znika.")]
+        public float thermalShockBonus = 0.5f;
+        [Tooltip("Przewodzenie: błyskawica w krwawiący cel – pozostałe obrażenia krwawienia od razu (× ten mnożnik).")]
+        public float conductionMultiplier = 1f;
+        public float statusTickInterval = 0.5f;
+        [Tooltip("Roztrzaskanie: błyskawica w zamrożony cel – wybuch wokół celu za tę część obrażeń trafienia.")]
+        public float shatterShare = 0.8f;
+        public float shatterRadius = 3f;
+        [Tooltip("Maksymalna odporność bohatera na żywioł.")]
+        public float maxElementResist = 75f;
+        [Tooltip("Czas kontroli (zamrożenie, spowolnienie) na bossach i elitach.")]
+        public float bossControlMultiplier = 0.5f, eliteControlMultiplier = 0.7f;
+
         [Header("Tempo")]
         [Tooltip("Globalna szybkość rozgrywki (Time.timeScale w trakcie gry). 1 = czas rzeczywisty.")]
         [Range(0.5f, 2f)] public float gameSpeed = 1.1f;
@@ -92,6 +126,13 @@ namespace Turris
         [Range(0, 1)] public float rewardExplorationChance = 0.3f;
         [Range(0, 1)] public float learnNewSpellChance = 0.35f;
         public int weaponUpgradeSoulCost = 150;
+        [Header("Sklep dusz (między piętrami)")]
+        [Tooltip("Ulepszenie umiejętności: koszt × (poziom + 1).")]
+        public int skillUpgradeSoulCost = 60;
+        public int skillOfferSoulCost = 110;
+        public int rewardRerollSoulCost = 40;
+        [Tooltip("Wzrost cen za każde ukończone piętro po pierwszym.")]
+        public float shopInflationPerFloor = 0.15f;
         public int flaskUpgradeSoulCost = 200;
         public int maxItemLevel = 5;
     }

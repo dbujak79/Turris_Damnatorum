@@ -127,7 +127,7 @@ namespace Turris.Tests
                     FxLibrary.GuardBreak(new Vector3(0, 1.8f, 1f));
                     yield return new WaitForSeconds(0.1f); Shot("fx_hits.png");
                     yield return new WaitForSeconds(1f);
-                    VisualFx.GroundMarker(new Vector3(0, 0, 1.5f), 3f, TelegraphColors.For(TelegraphKind.NoDodge));
+                    var groundMarker = VisualFx.GroundMarker(new Vector3(0, 0, 1.5f), 3f, TelegraphColors.For(TelegraphKind.NoDodge));
                     FxLibrary.Heal(v.transform, new Color(1f, 0.9f, 0.5f), 2f);
                     FxLibrary.Gather(v.transform, new Color(0.45f, 0.65f, 1f), 1f);
                     Projectile.Spawn(new Vector3(-3f, 1.3f, -1.5f), Vector3.right, 7f, hit, Faction.Player, null, new Color(0.45f, 0.65f, 1f), 0.22f, 2f);
@@ -135,6 +135,55 @@ namespace Turris.Tests
                     yield return new WaitForSeconds(0.45f); Shot("fx_spells.png");
                     FxLibrary.DeathAsh(new Vector3(0, 0, 1f), 1f);
                     yield return new WaitForSeconds(0.5f); Shot("fx_death.png");
+
+                    // Żywioły i efekty: płonący, wychłodzony, zamrożony i porażony ghul, błyskawica, mróz, płonąca ziemia.
+                    Object.Destroy(groundMarker);
+                    yield return new WaitForSeconds(1f);
+                    var content = DefaultContent.Create();
+                    var ghoulDef = content.Get<EnemyDefinition>("enemy_ghoul");
+                    var bal = content.config.balance;
+                    Vector3[] at = { new Vector3(-2.6f, 0, 1.2f), new Vector3(-0.9f, 0, 1.8f), new Vector3(0.9f, 0, 1.8f), new Vector3(2.6f, 0, 1.2f) };
+                    for (int i = 0; i < at.Length; i++)
+                    {
+                        var e = WorldBuilder.CreateEnemy(ghoulDef, at[i], null);
+                        e.transform.rotation = Quaternion.LookRotation(Vector3.back);
+                        e.Setup(ghoulDef, null, 1f, null, false, bal);
+                        cleanup.Add(e.gameObject);
+                        var st = new StatusEffects();
+                        switch (i)
+                        {
+                            case 0: st.Apply(StatusKind.Burn, 0, 50, bal); st.Apply(StatusKind.Bleed, 50, 0, bal); st.Apply(StatusKind.Bleed, 50, 0, bal); break;
+                            case 1: st.Apply(StatusKind.Chill, 0, 10, bal); st.Apply(StatusKind.Chill, 0, 10, bal); break;
+                            case 2: st.Apply(StatusKind.Frozen, 0, 0, bal); break;
+                            default: st.Apply(StatusKind.Shock, 0, 0, bal); break;
+                        }
+                        new StatusFx().Update(st, e.transform, ghoulDef.scale, 0.1f);
+                        if (StatusFx.Tint(st, out var tc, out var ta)) e.GetComponent<CharacterVisual>().SetTint(tc, ta);
+                    }
+                    FxLibrary.BurningGround(new Vector3(0, 0, 4.2f), 1.6f, new Color(1f, 0.5f, 0.15f), 3f);
+                    yield return new WaitForSeconds(0.6f);
+                    FxLibrary.FrostCone(new Vector3(-4.5f, 1.2f, -1.5f), new Vector3(0.6f, 0, 1f).normalized, new Color(0.55f, 0.85f, 1f), 4.5f, 70f);
+                    FxLibrary.Lightning(new Vector3(4.5f, 2.6f, -1.5f), at[3] + Vector3.up * 1.1f, new Color(0.8f, 0.85f, 1f));
+                    FxLibrary.Lightning(at[3] + Vector3.up * 1.1f, at[2] + Vector3.up * 1.1f, new Color(0.8f, 0.85f, 1f));
+                    yield return new WaitForSeconds(0.1f); Shot("fx_elements.png");
+
+                    // Zestawy: warianty wrogów żywiołów, zapowiedź meteoru, piorun burzy.
+                    foreach (var eb in Object.FindObjectsByType<EnemyBrain>(FindObjectsInactive.Exclude)) Object.Destroy(eb.gameObject);
+                    yield return new WaitForSeconds(1.5f);
+                    string[] variantIds = { "enemy_ghoul_fire", "enemy_warden_frost", "enemy_heretic_storm" };
+                    for (int i = 0; i < variantIds.Length; i++)
+                    {
+                        var vd = content.Get<EnemyDefinition>(variantIds[i]);
+                        var ve = WorldBuilder.CreateEnemy(vd, new Vector3(-2.4f + i * 2.4f, 0, 1.6f), null);
+                        ve.transform.rotation = Quaternion.LookRotation(Vector3.back);
+                        ve.Setup(vd, null, 1f, null, false, bal);
+                        cleanup.Add(ve.gameObject);
+                    }
+                    DelayedStrike.Spawn(new Vector3(2.8f, 0, -0.8f), 2f, 5f, new HitData(), Faction.Player, null, new Color(1f, 0.4f, 0.1f));
+                    yield return new WaitForSeconds(0.6f);
+                    FxLibrary.Lightning(new Vector3(0f, 9f, 1.8f), new Vector3(0f, 1.2f, 1.6f), new Color(0.8f, 0.85f, 1f));
+                    yield return new WaitForSeconds(0.05f); Shot("fx_sets.png");
+                    foreach (var ds in Object.FindObjectsByType<DelayedStrike>(FindObjectsInactive.Exclude)) Object.Destroy(ds.gameObject);
                     foreach (var d in Object.FindObjectsByType<FxDecal>(FindObjectsInactive.Exclude)) Object.Destroy(d.gameObject);
                     foreach (var pr in Object.FindObjectsByType<Projectile>(FindObjectsInactive.Exclude)) Object.Destroy(pr.gameObject);
                 }

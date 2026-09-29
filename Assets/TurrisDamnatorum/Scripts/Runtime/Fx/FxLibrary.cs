@@ -355,6 +355,61 @@ namespace Turris
             Object.Destroy(fx, 1.2f);
         }
 
+        /// <summary>Błyskawica między dwoma punktami: poszarpana linia, rozbłysk i iskry na końcu.</summary>
+        public static void Lightning(Vector3 from, Vector3 to, Color c)
+        {
+            if (!Enabled) return;
+            var go = new GameObject("Lightning");
+            var lr = go.AddComponent<LineRenderer>();
+            int n = Mathf.Clamp(Mathf.RoundToInt(Vector3.Distance(from, to) * 2.5f), 4, 24);
+            lr.positionCount = n + 1;
+            Vector3 side = Vector3.Cross((to - from).normalized, Vector3.up);
+            for (int i = 0; i <= n; i++)
+            {
+                float t = i / (float)n;
+                Vector3 p = Vector3.Lerp(from, to, t);
+                if (i > 0 && i < n) p += (side * Random.Range(-0.35f, 0.35f) + Vector3.up * Random.Range(-0.25f, 0.25f)) * Mathf.Sin(t * Mathf.PI);
+                lr.SetPosition(i, p);
+            }
+            lr.material = FxMaterials.Additive;
+            lr.startColor = lr.endColor = Color.Lerp(c, Color.white, 0.4f);
+            lr.startWidth = 0.16f; lr.endWidth = 0.08f;
+            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            Object.Destroy(go, 0.18f);
+            Particles(to, new Emit { burst = 18, life = new Vector2(0.15f, 0.35f), speed = new Vector2(3f, 6f), size = new Vector2(0.05f, 0.1f), colorA = c, colorB = Color.white, stretch = true, sizeGrow = 0.2f });
+            PointLight((from + to) * 0.5f, c, 4f, 6f, 0.15f);
+        }
+
+        /// <summary>Podmuch mrozu w stożku przed postacią.</summary>
+        public static void FrostCone(Vector3 origin, Vector3 forward, Color c, float range, float angle)
+        {
+            if (!Enabled) return;
+            var rot = Quaternion.LookRotation(forward).eulerAngles;
+            Particles(origin, new Emit { burst = 90, life = new Vector2(0.35f, 0.6f), speed = new Vector2(range * 1.4f, range * 2.2f), size = new Vector2(0.15f, 0.35f), colorA = c, colorB = Color.white, shape = ParticleSystemShapeType.Cone, angle = angle * 0.45f, radius = 0.15f, rotation = rot, drag = 1.5f, sizeGrow = 2f });
+            Particles(origin, new Emit { burst = 40, life = new Vector2(0.6f, 1f), speed = new Vector2(range * 0.8f, range * 1.4f), size = new Vector2(0.4f, 0.7f), colorA = new Color(0.8f, 0.9f, 1f, 0.35f), alpha = true, shape = ParticleSystemShapeType.Cone, angle = angle * 0.45f, radius = 0.2f, rotation = rot, drag = 2f, sizeGrow = 2.5f });
+            PointLight(origin + forward * range * 0.5f, c, 3f, range * 1.5f, 0.3f);
+        }
+
+        /// <summary>Płonąca ziemia: krąg i kilka ognisk na czas trwania strefy.</summary>
+        public static GameObject BurningGround(Vector3 center, float radius, Color c, float life)
+        {
+            if (!Enabled) return null;
+            var root = new GameObject("BurningGround");
+            root.transform.position = center;
+            Decal(center, FxMaterials.Glyph, c, radius * 2f, radius * 2.1f, life, 20f, 0.2f);
+            Decal(center, FxMaterials.Ring, c, radius * 1.6f, radius * 2.05f, life, 0f, 0.2f);
+            // Języki ognia nad całą strefą przez cały czas jej trwania.
+            Particles(center + Vector3.up * 0.1f, new Emit { rate = 45f * radius, duration = life, life = new Vector2(0.5f, 0.9f), speed = new Vector2(0.6f, 1.6f), size = new Vector2(0.3f, 0.6f), colorA = c, colorB = new Color(1f, 0.85f, 0.4f), shape = ParticleSystemShapeType.Circle, radius = radius * 0.9f, rotation = new Vector3(-90, 0, 0), sizeGrow = 0.3f, noise = 0.4f }, root.transform);
+            int fires = Mathf.Clamp(Mathf.RoundToInt(radius * 2.5f), 3, 8);
+            for (int i = 0; i < fires; i++)
+            {
+                Vector2 p = Random.insideUnitCircle * radius * 0.8f;
+                Fire(center + new Vector3(p.x, 0.05f, p.y), Random.Range(0.6f, 1f), root.transform);
+            }
+            Object.Destroy(root, life);
+            return root;
+        }
+
         /// <summary>Wybuch pocisku przy trafieniu.</summary>
         public static void Impact(Vector3 pos, Color c, float scale = 1f)
         {

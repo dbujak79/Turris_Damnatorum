@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bfc9e3d0e146d4086347f0e38c03cf, type: 3}
+  m_Name: skill_counter
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
+  id: skill_counter
+  displayName: Kontra
+  description: "Postawa kontry na 0,6 s: cios wroga (do sparowania) zostaje zatrzymany, a ty oddajesz mocnym ci\u0119ciem i \u0142amiesz postaw\u0119."
+  tags: 9
+  kind: 20
+  category: 1
+  manaCost: 0
+  castTime: 0.1
+  recovery: 0.35
+  cancelAfter: 0.2
+  staminaCost: 12
+  requirements: []
+  requiredTags: 0
+  intelligenceScaling: 0
+  attack:
+    name: Kontra
+    delivery: 0
+    damageType: 0
+    baseDamage: 0
+    windup: 0.1
+    active: 0.6
+    recovery: 0.35
+    cancelAfter: 0.2
+    reach: 2
+    radius: 1
+    lunge: 0
+    tracking: 360
+    blockable: 1
+    parryable: 1
+    dodgeable: 1
+    guardLoad: 64
+    poiseDamage: 80
+    heavy: 1
+    staminaCost: 0
+    projectileSpeed: 14
+    projectileCount: 1
+    spreadAngle: 0
+    explosionRadius: 0
+    element: 0
+    elementShare: 0
+    bonusVsFrozen: 0
+    bonusVsBleeding: 0
+    executeBonus: 0
+    statuses: []
+    animation: 0
+  amount: 60
+  duration: 0.6
+  cooldown: 6
+  charges: 1
+  extraChargeAtLevel: 0
+  cooldownReductionPerLevel: 0.06
+  weaponMultiplier: 2
+  arcAngle: 150
+  tickInterval: 0.35
+  moveMultiplier: 0.5
+  maxLevel: 4
+  powerPerLevel: 0.15
+  costReductionPerLevel: 0.06
+  color: {r: 1, g: 0.9, b: 0.5, a: 1}

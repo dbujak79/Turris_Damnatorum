@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Turris
@@ -18,6 +19,14 @@ namespace Turris
         public object attacker;        // IHitReceiver atakującego (do reakcji na parowanie)
         public bool fromMeleeWeapon;   // dla efektów "trafienie bronią"
         public string attackName;
+        public Element element;        // żywioł części magicznej
+        public List<StatusApplication> statuses; // efekty nakładane po trafieniu (może być null)
+        public float explosionRadius;  // pocisk: wybuch przy trafieniu
+        public float leaveZoneDuration;// pocisk: wybuch zostawia płonącą ziemię na tyle sekund (0 = nie)
+        public bool isStatusTick;      // tyknięcie efektu – bez reakcji, postawy i drgnięcia
+        public bool isReaction;        // obrażenia reakcji (roztrzaskanie, przeskok przewodzenia) – nie wywołują kolejnych reakcji
+        public float bonusVsFrozen, bonusVsBleeding, executeBonus;
+        public StatusModifiers mods;   // modyfikatory efektów z wyposażenia atakującego
 
         public float Total => physical + magic;
 
@@ -25,8 +34,9 @@ namespace Turris
         {
             return new HitData
             {
-                physical = a.damageType == DamageType.Physical ? damage : 0f,
-                magic = a.damageType == DamageType.Magic ? damage : 0f,
+                // Broń z żywiołem: część obrażeń fizycznych staje się obrażeniami żywiołu (magicznymi).
+                physical = a.damageType == DamageType.Physical ? damage * (1f - (a.element != Element.None ? a.elementShare : 0f)) : 0f,
+                magic = a.damageType == DamageType.Magic ? damage : (a.element != Element.None ? damage * a.elementShare : 0f),
                 guardLoad = a.guardLoad,
                 poiseDamage = a.poiseDamage,
                 blockable = a.blockable,
@@ -36,8 +46,29 @@ namespace Turris
                 sourcePosition = source,
                 attacker = attacker,
                 attackName = a.name,
+                element = a.element,
+                statuses = a.statuses,
+                explosionRadius = a.explosionRadius,
+                bonusVsFrozen = a.bonusVsFrozen,
+                bonusVsBleeding = a.bonusVsBleeding,
+                executeBonus = a.executeBonus,
+                mods = StatusModifiers.None,
             };
         }
+    }
+
+    /// <summary>Modyfikatory efektów pochodzące z wyposażenia atakującego (przenoszone w trafieniu).</summary>
+    public struct StatusModifiers
+    {
+        public float burnDurationBonus;   // + s podpalenia
+        public int bleedStackBonus;       // + maks. warstw krwawienia
+        public float bleedMovingBonus;    // + do mnożnika krwawienia w ruchu
+        public float bleedDamageMult;     // mnożnik siły krwawienia
+        public int freezeReduction;       // mniej warstw chłodu do zamrożenia
+        public float conductionMult;      // mnożnik przewodzenia
+        public bool conductionJump;       // przewodzenie przeskakuje na kolejnego wroga
+
+        public static StatusModifiers None => new StatusModifiers { bleedDamageMult = 1f, conductionMult = 1f };
     }
 
     /// <summary>Migawka stanu obronnego celu w chwili trafienia.</summary>

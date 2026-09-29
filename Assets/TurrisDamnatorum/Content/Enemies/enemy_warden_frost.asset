@@ -1,0 +1,237 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 180b36b7263f32b49b05445d75c51ead, type: 3}
+  m_Name: enemy_warden_frost
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.EnemyDefinition
+  id: enemy_warden_frost
+  displayName: "Lodowy stra\u017Cnik"
+  description: "Halabarda ze szronu wych\u0142adza. Odporny na mr\xF3z, s\u0142aby na ogie\u0144."
+  tags: 0
+  archetype: Opancerzony
+  maxHealth: 520
+  maxPoise: 80
+  poiseRegenDelay: 2
+  poiseRegen: 20
+  maxStamina: 120
+  physicalResist: 0.35
+  magicResist: 0
+  moveSpeed: 2.6
+  turnSpeed: 200
+  fireMultiplier: 1.5
+  frostMultiplier: 0.3
+  lightningMultiplier: 1
+  bleedMultiplier: 0.5
+  element: 2
+  variants: []
+  variantChance: 0.4
+  preferredRange: 2.4
+  retreatRange: 0
+  attackInterval: {x: 1, y: 2}
+  strafeChance: 0.4
+  evadeChance: 0
+  guardChance: 0.35
+  guard:
+    physicalReduction: 0.8
+    magicReduction: 0.2
+    stabilityMultiplier: 0.8
+    blockAngle: 140
+    staminaRegenMultiplier: 0.3
+  riposteWindow: 1.8
+  attacks:
+  - attack:
+      name: "Ci\u0119cie halabard\u0105"
+      delivery: 0
+      damageType: 0
+      baseDamage: 50
+      windup: 0.8
+      active: 0.18
+      recovery: 0.8
+      cancelAfter: 0.2
+      reach: 3
+      radius: 1
+      lunge: 0.8
+      tracking: 200
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 35
+      poiseDamage: 25
+      heavy: 0
+      staminaCost: 0
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 2
+      elementShare: 0.4
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 2
+        stacks: 1
+        chance: 0.6
+      animation: 0
+    minRange: 0
+    maxRange: 3.2
+    weight: 3
+    cooldown: 0
+    minPhase: 0
+    eliteOnly: 0
+    bossExtraOnly: 0
+    followUp: -1
+    followUpChance: 0.5
+    hyperArmor: 0
+    retreatAfter: 0
+  - attack:
+      name: "Mia\u017Cd\u017C\u0105cy cios"
+      delivery: 0
+      damageType: 0
+      baseDamage: 90
+      windup: 1.3
+      active: 0.15
+      recovery: 1.1
+      cancelAfter: 0.2
+      reach: 3
+      radius: 1.1
+      lunge: 0.6
+      tracking: 160
+      blockable: 1
+      parryable: 0
+      dodgeable: 1
+      guardLoad: 70
+      poiseDamage: 45
+      heavy: 1
+      staminaCost: 0
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 2
+      elementShare: 0.4
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 2
+        stacks: 1
+        chance: 0.6
+      animation: 0
+    minRange: 0
+    maxRange: 3.2
+    weight: 2
+    cooldown: 3
+    minPhase: 0
+    eliteOnly: 0
+    bossExtraOnly: 0
+    followUp: -1
+    followUpChance: 0.5
+    hyperArmor: 1
+    retreatAfter: 0
+  - attack:
+      name: "Szar\u017Ca tarcz\u0105"
+      delivery: 0
+      damageType: 0
+      baseDamage: 60
+      windup: 1
+      active: 0.4
+      recovery: 0.9
+      cancelAfter: 0.2
+      reach: 1.8
+      radius: 1.1
+      lunge: 7
+      tracking: 220
+      blockable: 0
+      parryable: 0
+      dodgeable: 1
+      guardLoad: 50
+      poiseDamage: 40
+      heavy: 0
+      staminaCost: 0
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 2
+      elementShare: 0.4
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 2
+        stacks: 1
+        chance: 0.6
+      animation: 0
+    minRange: 4
+    maxRange: 10
+    weight: 2
+    cooldown: 5
+    minPhase: 0
+    eliteOnly: 0
+    bossExtraOnly: 0
+    followUp: -1
+    followUpChance: 0.5
+    hyperArmor: 1
+    retreatAfter: 0
+  - attack:
+      name: "Wstrz\u0105s"
+      delivery: 2
+      damageType: 0
+      baseDamage: 45
+      windup: 1.1
+      active: 0.1
+      recovery: 0.9
+      cancelAfter: 0.2
+      reach: 0
+      radius: 4
+      lunge: 0
+      tracking: 360
+      blockable: 1
+      parryable: 0
+      dodgeable: 0
+      guardLoad: 40
+      poiseDamage: 35
+      heavy: 0
+      staminaCost: 0
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 2
+      elementShare: 0.4
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 2
+        stacks: 1
+        chance: 0.6
+      animation: 0
+    minRange: 0
+    maxRange: 3.5
+    weight: 1.5
+    cooldown: 7
+    minPhase: 0
+    eliteOnly: 1
+    bossExtraOnly: 0
+    followUp: -1
+    followUpChance: 0.5
+    hyperArmor: 1
+    retreatAfter: 0
+  phases: []
+  isBoss: 0
+  soulReward: 110
+  color: {r: 0.55, g: 0.75, b: 0.9, a: 1}
+  scale: 1.25
+  rigStyle: 0
+  weaponModel: 0
+  visual: {fileID: 0}

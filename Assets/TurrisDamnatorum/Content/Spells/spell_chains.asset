@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bfc9e3d0e146d4086347f0e38c03cf, type: 3}
+  m_Name: spell_chains
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
+  id: spell_chains
+  displayName: "\u0141a\u0144cuchy pot\u0119pionych"
+  description: "Przyci\u0105ga wrog\xF3w z okolicy przed ciebie \u2013 idealne pod p\u0142on\u0105c\u0105 ziemi\u0119 i m\u0142ynek."
+  tags: 2
+  kind: 19
+  category: 0
+  manaCost: 22
+  castTime: 0.45
+  recovery: 0.4
+  cancelAfter: 0.2
+  staminaCost: 5
+  requirements:
+  - attribute: 5
+    value: 11
+  requiredTags: 0
+  intelligenceScaling: 2.5
+  attack:
+    name: "\u0141a\u0144cuchy"
+    delivery: 0
+    damageType: 1
+    baseDamage: 15
+    windup: 0.45
+    active: 0.05
+    recovery: 0.4
+    cancelAfter: 0.2
+    reach: 5
+    radius: 7
+    lunge: 0
+    tracking: 360
+    blockable: 1
+    parryable: 0
+    dodgeable: 1
+    guardLoad: 20
+    poiseDamage: 30
+    heavy: 0
+    staminaCost: 0
+    projectileSpeed: 14
+    projectileCount: 1
+    spreadAngle: 0
+    explosionRadius: 0
+    element: 0
+    elementShare: 0
+    bonusVsFrozen: 0
+    bonusVsBleeding: 0
+    executeBonus: 0
+    statuses: []
+    animation: 0
+  amount: 60
+  duration: 3
+  cooldown: 9
+  charges: 1
+  extraChargeAtLevel: 0
+  cooldownReductionPerLevel: 0.06
+  weaponMultiplier: 1.5
+  arcAngle: 150
+  tickInterval: 0.35
+  moveMultiplier: 0.5
+  maxLevel: 4
+  powerPerLevel: 0.15
+  costReductionPerLevel: 0.06
+  color: {r: 0.55, g: 0.35, b: 0.75, a: 1}

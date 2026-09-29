@@ -91,7 +91,8 @@ namespace Turris
 
             // Statystyki, których wartość sama jest premią procentową: modyfikatory płaskie i procentowe sumują się
             // (np. "+15% mocy czarów" z kostura i "+12%" ze wzmocnienia = 27%).
-            StatType[] percentStats = { StatType.PhysicalDamage, StatType.SpellPower, StatType.FlaskPotency, StatType.RiposteDamage, StatType.MoveSpeed };
+            StatType[] percentStats = { StatType.PhysicalDamage, StatType.SpellPower, StatType.FlaskPotency, StatType.RiposteDamage, StatType.MoveSpeed,
+                StatType.FireResist, StatType.FrostResist, StatType.LightningResist, StatType.FireDamage, StatType.FrostDamage, StatType.LightningDamage, StatType.BleedDamage };
             foreach (var s in percentStats) sheet[s] = flat[(int)s] + pct[(int)s];
             return sheet;
         }

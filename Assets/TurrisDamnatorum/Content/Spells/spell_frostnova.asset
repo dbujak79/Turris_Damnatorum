@@ -1,0 +1,82 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bfc9e3d0e146d4086347f0e38c03cf, type: 3}
+  m_Name: spell_frostnova
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
+  id: spell_frostnova
+  displayName: "Mro\u017Ana fala"
+  description: "Fala mrozu wok\xF3\u0142 postaci: dwie warstwy ch\u0142odu \u2013 dobry wst\u0119p do zamro\u017Cenia."
+  tags: 2
+  kind: 1
+  category: 0
+  manaCost: 26
+  castTime: 0.5
+  recovery: 0.5
+  cancelAfter: 0.2
+  staminaCost: 5
+  requirements:
+  - attribute: 5
+    value: 12
+  requiredTags: 0
+  intelligenceScaling: 2.5
+  attack:
+    name: "Mro\u017Ana fala"
+    delivery: 2
+    damageType: 1
+    baseDamage: 32
+    windup: 0.5
+    active: 0.1
+    recovery: 0.5
+    cancelAfter: 0.2
+    reach: 0
+    radius: 3.8
+    lunge: 0
+    tracking: 360
+    blockable: 1
+    parryable: 0
+    dodgeable: 1
+    guardLoad: 25
+    poiseDamage: 20
+    heavy: 0
+    staminaCost: 0
+    projectileSpeed: 14
+    projectileCount: 1
+    spreadAngle: 0
+    explosionRadius: 0
+    element: 2
+    elementShare: 0
+    bonusVsFrozen: 0
+    bonusVsBleeding: 0
+    executeBonus: 0
+    statuses:
+    - kind: 2
+      stacks: 2
+      chance: 1
+    animation: 0
+  amount: 60
+  duration: 3
+  cooldown: 8
+  charges: 1
+  extraChargeAtLevel: 0
+  cooldownReductionPerLevel: 0.06
+  weaponMultiplier: 1.5
+  arcAngle: 150
+  tickInterval: 0.35
+  moveMultiplier: 0.5
+  levelFeatures:
+  - level: 4
+    kind: 1
+    value: 0.3
+  maxLevel: 4
+  powerPerLevel: 0.15
+  costReductionPerLevel: 0.06
+  color: {r: 0.6, g: 0.88, b: 1, a: 1}

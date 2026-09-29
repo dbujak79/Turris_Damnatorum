@@ -158,6 +158,11 @@ namespace Turris
             {
                 var w = d.weapon;
                 sb.Append($"Lekki: {w.light.baseDamage * inst.WeaponLevelFactor:0} {Names.Damage(w.light.damageType)}, ciężki: {w.heavy.baseDamage * inst.WeaponLevelFactor:0}\n");
+                if (w.light.element != Element.None && w.light.elementShare > 0) sb.Append($"Żywioł: {Names.Element(w.light.element)} ({w.light.elementShare * 100:0}% obrażeń)\n");
+                if (w.light.bonusVsFrozen > 0) sb.Append($"+{w.light.bonusVsFrozen * 100:0}% przeciw zamrożonym (rozbija lód)\n");
+                string ls = Names.Statuses(w.light.statuses), hs = Names.Statuses(w.heavy.statuses);
+                if (ls.Length > 0 || hs.Length > 0)
+                    sb.Append("Efekty: ").Append(ls.Length > 0 ? "lekki – " + ls : "").Append(ls.Length > 0 && hs.Length > 0 ? "; " : "").Append(hs.Length > 0 ? "ciężki – " + hs : "").Append('\n');
                 sb.Append($"Skalowanie: S {w.strengthScaling:0.#} / Z {w.dexterityScaling:0.#} / I {w.intelligenceScaling:0.#}\n");
                 if (w.canBlock) sb.Append($"Blok bronią: {w.guard.physicalReduction * 100:0}% fiz. / {w.guard.magicReduction * 100:0}% mag., stabilność ×{w.guard.stabilityMultiplier:0.##}\n");
                 if (w.canParry) sb.Append($"Parowanie: okno {w.parry.activeWindow:0.00}s\n");
@@ -192,7 +197,7 @@ namespace Turris
             float mult = s.weaponMultiplier * (1f + s.powerPerLevel * level) * 100f;
             switch (s.kind)
             {
-                case SpellKind.Projectile: sb.Append($"Pocisk: {s.attack.baseDamage:0} obrażeń magicznych"); if (s.attack.projectileCount > 1) sb.Append($" ×{s.attack.projectileCount}"); sb.Append('\n'); break;
+                case SpellKind.Projectile: if (!s.IsSpell) break; sb.Append($"Pocisk: {s.attack.baseDamage:0} obrażeń magicznych"); if (s.attack.projectileCount > 1) sb.Append($" ×{s.attack.projectileCount}"); sb.Append('\n'); break;
                 case SpellKind.Nova: sb.Append($"Fala wokół postaci (promień {s.attack.radius:0.#} m): {s.attack.baseDamage:0} obrażeń, postawa {s.attack.poiseDamage:0}\n"); break;
                 case SpellKind.Heal: sb.Append($"Leczy {s.amount:0} przez {s.duration:0.#}s (skaluje z Inteligencją)\n"); break;
                 case SpellKind.WeaponBuff: sb.Append($"Broń zadaje +{s.amount:0} obrażeń magicznych przez {s.duration:0}s\n"); break;
@@ -202,7 +207,29 @@ namespace Turris
                 case SpellKind.Charge: sb.Append($"Szarża na {s.attack.reach:0.#} m: {mult:0}% lekkiego ataku każdemu na drodze\n"); break;
                 case SpellKind.Whirlwind: sb.Append($"Młynek przez {s.duration:0.#}s (promień {s.attack.radius:0.#} m): {mult:0}% lekkiego ataku co {s.tickInterval:0.##}s\n"); break;
                 case SpellKind.Quake: sb.Append($"Uderzenie w ziemię (promień {s.attack.radius:0.#} m): {mult:0}% lekkiego ataku, postawa {s.attack.poiseDamage:0}\n"); break;
+                case SpellKind.Cone: sb.Append($"Stożek {s.arcAngle:0}° na {s.attack.reach:0.#} m: {s.attack.baseDamage:0} obrażeń\n"); break;
+                case SpellKind.Chain: sb.Append($"Błyskawica do {s.attack.projectileCount} celów (skok do {s.attack.radius:0.#} m, każdy −20%): {s.attack.baseDamage:0} obrażeń\n"); break;
+                case SpellKind.Zone: sb.Append($"Strefa (promień {s.attack.radius:0.#} m) przez {s.duration:0.#}s: {s.attack.baseDamage:0} obrażeń co {s.tickInterval:0.##}s\n"); break;
+                case SpellKind.Flurry: sb.Append($"Seria cięć przez {s.duration:0.#}s (co {s.tickInterval:0.##}s): {mult:0}% lekkiego ataku za cięcie\n"); break;
+                case SpellKind.Warcry: sb.Append($"+{s.amount:0}% obrażeń przez {s.duration:0}s, odnawia 40% wytrzymałości\n"); break;
+                case SpellKind.Meteor: sb.Append($"Po 1 s wybuch w kręgu {s.attack.radius:0.#} m: {s.attack.baseDamage:0} obrażeń; potem płonąca ziemia przez {s.duration:0.#}s\n"); break;
+                case SpellKind.Storm: sb.Append($"Przez {s.duration:0}s piorun co {s.tickInterval:0.#}s w losowego wroga do {s.attack.radius:0} m: {s.attack.baseDamage:0} obrażeń\n"); break;
+                case SpellKind.BloodPact: sb.Append($"Kosztuje {s.amount:0}% maks. życia; {s.attack.projectileCount} kolejne czary bez many\n"); break;
+                case SpellKind.FrostArmor: sb.Append($"Osłona {s.amount:0} na {s.duration:0}s (skaluje z Inteligencją); napastnik z bliska dostaje chłód\n"); break;
+                case SpellKind.Pull: sb.Append($"Przyciąga wrogów z {s.attack.radius:0} m przed ciebie (bossy słabiej): {s.attack.baseDamage:0} obrażeń\n"); break;
+                case SpellKind.Counter: sb.Append($"Postawa kontry {s.duration:0.#}s: zatrzymuje cios do sparowania, oddaje {mult:0}% lekkiego ataku, postawa {s.attack.poiseDamage:0}\n"); break;
+                case SpellKind.Rupture: sb.Append($"Cięcie ({mult:0}% lekkiego ataku) i całe pozostałe krwawienie celu od razu ×{s.amount:0.#}\n"); break;
             }
+            if (!s.IsSpell && s.kind == SpellKind.Projectile)
+                sb.Append($"Rzut ({s.attack.projectileCount} szt.): {mult:0}% lekkiego ataku każdy\n");
+            if (s.attack.bonusVsFrozen > 0) sb.Append($"+{s.attack.bonusVsFrozen * 100:0}% przeciw zamrożonym\n");
+            foreach (var f in s.levelFeatures)
+                sb.Append(level >= f.level ? $"<color=#99dd99>✓ +{f.level}: {Names.LevelFeature(f)}</color>\n" : $"<color=#999999>od +{f.level}: {Names.LevelFeature(f)}</color>\n");
+            if (s.attack.executeBonus > 0) sb.Append($"Egzekucja: +{s.attack.executeBonus * 100:0}% poniżej 30% życia lub przy przełamanej postawie\n");
+            if (s.attack.explosionRadius > 0) sb.Append($"Wybuch przy trafieniu: promień {s.attack.explosionRadius:0.#} m ({Projectile.SplashShare * 100:0}% obrażeń)\n");
+            if (s.attack.element != Element.None) sb.Append($"Żywioł: {Names.Element(s.attack.element)}{(s.IsSpell ? "" : " (połowa obrażeń)")}\n");
+            string st = Names.Statuses(s.attack.statuses);
+            if (st.Length > 0) sb.Append((s.kind == SpellKind.WeaponBuff ? "Ciosy nakładają: " : "Nakłada: ") + st).Append('\n');
             if (s.requiredTags != BuildTag.None) sb.Append(char.ToUpper(Names.Requirement(s.requiredTags)[0]) + Names.Requirement(s.requiredTags).Substring(1)).Append('\n');
             if (s.requirements.Count > 0)
             {
@@ -240,6 +267,7 @@ namespace Turris
                     var s = o.spellToUpgrade;
                     var d = s.definition;
                     string extra = d.extraChargeAtLevel > 0 && s.level + 1 == d.extraChargeAtLevel ? ", <b>+1 ładunek</b>" : "";
+                    foreach (var f in d.levelFeatures) if (f.level == s.level + 1) extra += $", <b>nowa cecha: {Names.LevelFeature(f)}</b>";
                     return $"Moc +{d.powerPerLevel * 100:0}%, koszt −{d.costReductionPerLevel * 100:0}%, odnowienie −{d.cooldownReductionPerLevel * 100:0}%{extra}\n" + Spell(d, s.level + 1, stats, b);
                 }
             }

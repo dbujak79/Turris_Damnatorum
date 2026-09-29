@@ -17,6 +17,7 @@ MonoBehaviour:
   description: "Odpycha wrog\xF3w wok\xF3\u0142. Silnie narusza postaw\u0119."
   tags: 2
   kind: 1
+  category: 0
   manaCost: 22
   castTime: 0.55
   recovery: 0.5
@@ -25,6 +26,7 @@ MonoBehaviour:
   requirements:
   - attribute: 5
     value: 12
+  requiredTags: 0
   intelligenceScaling: 2.5
   attack:
     name: Fala mocy
@@ -49,9 +51,28 @@ MonoBehaviour:
     projectileSpeed: 14
     projectileCount: 1
     spreadAngle: 0
+    explosionRadius: 0
+    element: 0
+    elementShare: 0
+    bonusVsFrozen: 0
+    bonusVsBleeding: 0
+    executeBonus: 0
+    statuses: []
+    animation: 0
   amount: 60
   duration: 3
   cooldown: 6
+  charges: 1
+  extraChargeAtLevel: 0
+  cooldownReductionPerLevel: 0.06
+  weaponMultiplier: 1.5
+  arcAngle: 150
+  tickInterval: 0.35
+  moveMultiplier: 0.5
+  levelFeatures:
+  - level: 2
+    kind: 1
+    value: 0.25
   maxLevel: 4
   powerPerLevel: 0.15
   costReductionPerLevel: 0.06

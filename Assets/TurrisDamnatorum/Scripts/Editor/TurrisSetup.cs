@@ -74,6 +74,16 @@ namespace Turris.EditorTools
                 if (so is ContentDefinition cd && !created.Contains(cd.id) && real.TryGetValue(cd.id, out var existing))
                     AppendNewReferences(so, existing, real, created);
 
+            // Nowe pola w istniejących assetach (żywioły, efekty, słabości) – uzupełniane tylko, gdy są jeszcze domyślne.
+            int filled = 0;
+            foreach (var so in bundle.all)
+                if (so is ContentDefinition cd && !created.Contains(cd.id) && real.TryGetValue(cd.id, out var existing) && FillNewDefaults(so, existing))
+                {
+                    EditorUtility.SetDirty(existing);
+                    filled++;
+                }
+            if (filled > 0) Debug.Log($"[Turris] Uzupełniono nowe pola (żywioły/efekty) w {filled} assetach.");
+
             foreach (var id in created) EditorUtility.SetDirty(real[id]);
             AssetDatabase.SaveAssets();
             // Obiekty z pamięci, które nie stały się assetami, nie są już potrzebne.
@@ -81,6 +91,60 @@ namespace Turris.EditorTools
                 if (!(so is ContentDefinition cd && created.Contains(cd.id)) && !AssetDatabase.Contains(so)) Object.DestroyImmediate(so);
             Debug.Log($"[Turris] Dodano nową treść: {created.Count} ({string.Join(", ", created)}).");
             return created.Count;
+        }
+
+        /// <summary>
+        /// Kopiuje z domyślnej treści pola dodane po utworzeniu assetów, ale tylko gdy w assecie mają jeszcze wartość domyślną
+        /// (pusta lista efektów, brak żywiołu, mnożniki = 1). Wartości ustawione ręcznie zostają.
+        /// </summary>
+        static bool FillNewDefaults(ScriptableObject source, ContentDefinition target)
+        {
+            bool changed = false;
+            switch (source)
+            {
+                case EnemyDefinition src when target is EnemyDefinition dst:
+                    if (dst.fireMultiplier == 1f && dst.frostMultiplier == 1f && dst.lightningMultiplier == 1f && dst.bleedMultiplier == 1f &&
+                        (src.fireMultiplier != 1f || src.frostMultiplier != 1f || src.lightningMultiplier != 1f || src.bleedMultiplier != 1f))
+                    {
+                        dst.fireMultiplier = src.fireMultiplier; dst.frostMultiplier = src.frostMultiplier;
+                        dst.lightningMultiplier = src.lightningMultiplier; dst.bleedMultiplier = src.bleedMultiplier;
+                        changed = true;
+                    }
+                    if (dst.element == Element.None && src.element != Element.None) { dst.element = src.element; changed = true; }
+                    foreach (var e in dst.attacks)
+                    {
+                        var match = src.attacks.FirstOrDefault(x => x.attack.name == e.attack.name);
+                        if (match != null) changed |= FillAttack(match.attack, e.attack);
+                    }
+                    break;
+                case ItemDefinition src when target is ItemDefinition dst && src.IsWeapon && dst.IsWeapon:
+                    changed |= FillAttack(src.weapon.light, dst.weapon.light);
+                    changed |= FillAttack(src.weapon.heavy, dst.weapon.heavy);
+                    break;
+                case SpellDefinition src when target is SpellDefinition dst:
+                    changed |= FillAttack(src.attack, dst.attack);
+                    if ((dst.levelFeatures == null || dst.levelFeatures.Count == 0) && src.levelFeatures.Count > 0)
+                    {
+                        dst.levelFeatures = src.levelFeatures.Select(f => new LevelFeature(f.level, f.kind, f.value)).ToList();
+                        changed = true;
+                    }
+                    break;
+            }
+            return changed;
+        }
+
+        static bool FillAttack(AttackDefinition src, AttackDefinition dst)
+        {
+            if (src == null || dst == null) return false;
+            bool changed = false;
+            if (dst.element == Element.None && src.element != Element.None) { dst.element = src.element; changed = true; }
+            if ((dst.statuses == null || dst.statuses.Count == 0) && src.statuses != null && src.statuses.Count > 0)
+            {
+                dst.statuses = src.statuses.Select(s => new StatusApplication(s.kind, s.stacks, s.chance)).ToList();
+                changed = true;
+            }
+            if (dst.explosionRadius == 0f && src.explosionRadius > 0f) { dst.explosionRadius = src.explosionRadius; changed = true; }
+            return changed;
         }
 
         static void RemapReferences(Object obj, System.Collections.Generic.Dictionary<string, ContentDefinition> real)

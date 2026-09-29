@@ -47,8 +47,29 @@ namespace Turris
             FxLibrary.DetachProjectileVisual(fx);
             fx = null;
             if (impact) FxLibrary.Impact(transform.position, color, Mathf.Clamp(radiusVisual * 4f, 0.7f, 1.6f));
+            if (impact && hit.explosionRadius > 0f)
+            {
+                // Wybuch: pozostali w promieniu dostają część obrażeń (trafiony bezpośrednio – nie drugi raz).
+                var splash = hit;
+                splash.physical *= SplashShare; splash.magic *= SplashShare;
+                splash.sourcePosition = transform.position;
+                HitQuery.Sphere(transform.position, hit.explosionRadius, faction, tracker, r => HitQuery.Apply(owner, r, splash, false));
+                FxLibrary.Shockwave(transform.position, color, hit.explosionRadius, false);
+                FxLibrary.Impact(transform.position, color, 1.6f);
+                if (hit.leaveZoneDuration > 0f)
+                {
+                    // Płonąca ziemia pod wybuchem: 15% obrażeń na tyknięcie, bez kolejnego wybuchu.
+                    Vector3 ground = transform.position;
+                    if (Physics.Raycast(transform.position + Vector3.up * 0.2f, Vector3.down, out var gh, 6f, ~0, QueryTriggerInteraction.Ignore)) ground = gh.point;
+                    var zh = hit; zh.physical *= 0.15f; zh.magic *= 0.15f; zh.explosionRadius = 0; zh.leaveZoneDuration = 0; zh.poiseDamage *= 0.1f;
+                    DamageZone.Spawn(ground, hit.explosionRadius * 0.7f, hit.leaveZoneDuration, 0.5f, zh, faction, owner, color);
+                }
+            }
             Destroy(gameObject);
         }
+
+        /// <summary>Część obrażeń pocisku, jaką dostają cele w promieniu wybuchu.</summary>
+        public const float SplashShare = 0.6f;
 
         static readonly RaycastHit[] Hits = new RaycastHit[16];
         static readonly Collider[] Overlaps = new Collider[8];

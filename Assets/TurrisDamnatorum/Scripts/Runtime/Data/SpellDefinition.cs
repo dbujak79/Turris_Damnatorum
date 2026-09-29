@@ -4,6 +4,29 @@ using UnityEngine;
 
 namespace Turris
 {
+    /// <summary>Cecha odblokowywana poziomem umiejętności (poza zwykłym wzrostem mocy).</summary>
+    public enum LevelFeatureKind
+    {
+        ExtraTargets,      // +N pocisków / celów łańcucha
+        RadiusBonus,       // +X (ułamek) promienia i zasięgu
+        DurationBonus,     // +X s czasu trwania (strefa, burza, młynek, wzmocnienia)
+        ExtraStatusStacks, // +N warstw nakładanych efektów
+        LeaveZone,         // wybuch pocisku zostawia płonącą ziemię na X s
+        FinalSlash,        // młynek kończy się cięciem za X × moc
+    }
+
+    [Serializable]
+    public class LevelFeature
+    {
+        [Tooltip("Poziom umiejętności (+N), od którego cecha działa.")]
+        public int level = 2;
+        public LevelFeatureKind kind;
+        public float value = 1f;
+
+        public LevelFeature() { }
+        public LevelFeature(int level, LevelFeatureKind kind, float value) { this.level = level; this.kind = kind; this.value = value; }
+    }
+
     /// <summary>
     /// Umiejętność: czar (mana, Inteligencja) albo technika bronią (wytrzymałość, obrażenia broni).
     /// Nazwa klasy zostaje historyczna ("Spell"), bo odwołują się do niej zapisane assety.
@@ -51,12 +74,22 @@ namespace Turris
         public float moveMultiplier = 0.5f;
 
         [Header("Ulepszenia")]
+        [Tooltip("Cechy dochodzące z poziomem (np. od +2 większy promień, od +4 płonąca ziemia).")]
+        public List<LevelFeature> levelFeatures = new List<LevelFeature>();
         public int maxLevel = 4;
         public float powerPerLevel = 0.15f;
         public float costReductionPerLevel = 0.06f;
         public Color color = new Color(0.4f, 0.6f, 1f);
 
         public bool IsSpell => category == SkillCategory.Spell;
+
+        /// <summary>Suma wartości cechy dostępnej na danym poziomie.</summary>
+        public float Feature(LevelFeatureKind k, int level)
+        {
+            float v = 0;
+            foreach (var f in levelFeatures) if (f != null && f.kind == k && level >= f.level) v += f.value;
+            return v;
+        }
 
         public int MaxCharges(int level) => Mathf.Max(1, charges + (extraChargeAtLevel > 0 && level >= extraChargeAtLevel ? 1 : 0));
         public float CooldownAt(int level) => cooldown * Mathf.Max(0.4f, 1f - cooldownReductionPerLevel * level);

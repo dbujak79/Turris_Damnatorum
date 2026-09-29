@@ -17,6 +17,21 @@ namespace Turris
         [Range(0, 0.9f)] public float magicResist;
         public float moveSpeed = 3.5f;
         public float turnSpeed = 360f;
+        [Header("Żywioły (mnożnik obrażeń danego żywiołu: >1 słabość, <1 odporność)")]
+        public float fireMultiplier = 1f;
+        public float frostMultiplier = 1f;
+        public float lightningMultiplier = 1f;
+        [Tooltip("Mnożnik obrażeń krwawienia (0 = odporny).")]
+        public float bleedMultiplier = 1f;
+
+        [Tooltip("Żywioł wroga (wariant): stała aura i poświata broni w jego kolorze – od razu widać, z kim walczysz.")]
+        public Element element = Element.None;
+        [Header("Warianty żywiołów")]
+        [Tooltip("Warianty (np. płonący ghul) losowane na piętrze zamiast tego wroga.")]
+        public List<EnemyDefinition> variants = new List<EnemyDefinition>();
+        [Range(0, 1)] public float variantChance = 0.4f;
+
+        public float ElementMultiplier(Element e) => e == Element.Fire ? fireMultiplier : e == Element.Frost ? frostMultiplier : e == Element.Lightning ? lightningMultiplier : 1f;
         public float preferredRange = 2.2f;
         [Tooltip("Poniżej tej odległości przeciwnik próbuje się wycofać (przeciwnik dystansowy).")]
         public float retreatRange;

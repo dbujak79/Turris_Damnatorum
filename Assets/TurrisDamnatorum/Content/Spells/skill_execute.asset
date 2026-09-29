@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bfc9e3d0e146d4086347f0e38c03cf, type: 3}
+  m_Name: skill_execute
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
+  id: skill_execute
+  displayName: Egzekucja
+  description: "Cios z g\xF3ry: +100% obra\u017Ce\u0144 celom poni\u017Cej 30% \u017Cycia lub z prze\u0142aman\u0105 postaw\u0105."
+  tags: 17
+  kind: 5
+  category: 1
+  manaCost: 0
+  castTime: 0.45
+  recovery: 0.5
+  cancelAfter: 0.2
+  staminaCost: 22
+  requirements: []
+  requiredTags: 0
+  intelligenceScaling: 0
+  attack:
+    name: Egzekucja
+    delivery: 0
+    damageType: 0
+    baseDamage: 0
+    windup: 0.45
+    active: 0.12
+    recovery: 0.5
+    cancelAfter: 0.2
+    reach: 2.6
+    radius: 1
+    lunge: 0
+    tracking: 360
+    blockable: 1
+    parryable: 1
+    dodgeable: 1
+    guardLoad: 32
+    poiseDamage: 40
+    heavy: 0
+    staminaCost: 0
+    projectileSpeed: 14
+    projectileCount: 1
+    spreadAngle: 0
+    explosionRadius: 0
+    element: 0
+    elementShare: 0
+    bonusVsFrozen: 0
+    bonusVsBleeding: 0
+    executeBonus: 1
+    statuses: []
+    animation: 3
+  amount: 60
+  duration: 0.12
+  cooldown: 7
+  charges: 1
+  extraChargeAtLevel: 0
+  cooldownReductionPerLevel: 0.06
+  weaponMultiplier: 1.6
+  arcAngle: 70
+  tickInterval: 0.35
+  moveMultiplier: 0.5
+  maxLevel: 4
+  powerPerLevel: 0.15
+  costReductionPerLevel: 0.06
+  color: {r: 0.9, g: 0.25, b: 0.2, a: 1}

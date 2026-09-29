@@ -15,6 +15,8 @@ Działają mysz z klawiaturą oraz pad, także w menu.
 |---|---|
 | Walka (blok tarczą i bronią, parowanie, unik z oknem niewrażliwości, przełamanie gardy, riposta, flaszki) | gotowe, pokryte testami |
 | Umiejętności: 3 sloty pod osobnymi przyciskami, czary i techniki bronią, odnowienia i ładunki, odblokowania na stałe + nagrody tymczasowe | gotowe, pokryte testami (`SkillTests`, test w silniku szarży i rozpłatania) |
+| Żywioły (ogień, mróz, błyskawica) i efekty (krwawienie, podpalenie, chłód/zamrożenie, porażenie), 3 reakcje, słabości wrogów; 22 czary i 16 technik | gotowe, pokryte testami (`StatusEffectTests`, `ElementSetTests`, testy w silniku) |
+| Zestawy żywiołów: bronie i przedmioty żywiołów/krwawienia, odporności bohatera, warianty wrogów, cechy poziomów umiejętności, sklep dusz | gotowe – szczegóły i dziennik w [PLAN_ROZWOJU.md](PLAN_ROZWOJU.md) |
 | Wyposażenie, statystyki, nagrody, odblokowania, trudność, zapis z wersjonowaniem | gotowe, pokryte testami |
 | AI: 3 archetypy + boss z 2 fazami, elity, dodatkowe zachowania bossa | gotowe |
 | Postacie: proceduralne humanoidy (240–330 części), animacja zsynchronizowana z fazami walki | gotowe |
@@ -26,8 +28,8 @@ Działają mysz z klawiaturą oraz pad, także w menu.
 
 ### Wyniki testów (ostatni przebieg)
 
-- **EditMode:** 75/75.
-- **PlayMode:** 21/21 + 3 galerie pominięte (bez `TURRIS_SHOT_DIR`) w oknie edytora; z `TURRIS_SHOT_DIR` w oknie 24/24 (`python tools/run_tests.py PlayMode window`).
+- **EditMode:** 105/105.
+- **PlayMode:** 30/30 + 3 galerie pominięte (bez `TURRIS_SHOT_DIR`) w oknie edytora; z `TURRIS_SHOT_DIR` w oknie 33/33 (`python tools/run_tests.py PlayMode window`).
 - **PlayMode w trybie wsadowym:** 2 testy pada są pomijane, bo nie działa tam `OnGUI`. Galerie zrzutów są pomijane bez zmiennej `TURRIS_SHOT_DIR`.
 
 ### Metryki szczegółowości (z testu `DetailLevel_ManyParts_FewRenderers`)
@@ -92,6 +94,22 @@ Prośba: szybki atak, mocny atak i trzy umiejętności (w tym czary) przypisywan
 - **Zrzuty:** nowe `UiShot` (ScreenCapture, tylko w oknie) – `0b_loadout_ui`, `1e_hud_skills_ui`, `2b_equipment_ui`; `1d_whirlwind` z kamery.
 - **Do oceny / dalsze kroki:** balans odnowień i mnożników technik; ewentualne ograniczenie zmiany slotów tylko między piętrami (teraz ekwipunek i tak jest dostępny tylko tam); przemapowanie przycisków (osobno pad i klawiatura) jak w inspiracji; efekty statusów (krwawienie, podpalenie) i żywioły z inspiracji to osobny, większy krok.
 
+### Sesja 2026-09-29: żywioły, efekty, więcej umiejętności
+
+Prośba: więcej czarów i technik bronią oraz efekty żywiołów i krwawienia.
+- **Model:** `Element` (None/Fire/Frost/Lightning), `StatusKind`, `StatusApplication` (rodzaj, warstwy, szansa). `AttackDefinition` ma `element`, `statuses`, `explosionRadius`; `HitData` je przenosi (+ `isStatusTick`). Obrażenia żywiołów to część magiczna.
+- **Logika:** `Combat/StatusEffects.cs` – wspólna dla gracza i wrogów (warstwy, tyknięcia co 0,5 s, spowolnienie, zamrożenie z odpornością, porażenie, reakcje szok termiczny/przewodzenie, mnożnik kontroli dla bossów/elit). Parametry w `BalanceConfig` („Efekty i żywioły”).
+- **Wróg:** słabości/odporności (`EnemyDefinition.fire/frost/lightning/bleedMultiplier`), efekty przy trafieniu, tyknięcia, chłód spowalnia ruch i zamach, zamrożenie przerywa atak (także z pancerzem). **Gracz:** to samo po stronie obrony (zamrożenie = wymuszone drgnięcie, chłód spowalnia akcje), osłona pochłania tyknięcia.
+- **Nowe umiejętności:** czary Kula ognia (wybuch, `Projectile.SplashShare` 60%), Lodowy podmuch (`Cone`), Mroźna fala, Łańcuch błyskawic (`Chain`), Płonąca ziemia (`Zone` → `DamageZone`), Płomienne ostrze (zaklęcie z żywiołem i efektem – działa też na techniki); techniki Krwawe cięcie, Wypad, Seria cięć (`Flurry`), Uderzenie gromu (technika z żywiołem – pół na pół), Rzut nożami (technika-pocisk).
+- **Efekty wizualne:** `Fx/StatusFx.cs` (ogień, szron, iskry, krew + zabarwienie), `FxLibrary.Lightning/FrostCone/BurningGround`. Liczby tyknięć i reakcje przez nowe `CombatEvents.WorldText` (bez efektów trafienia).
+- **Treść w assetach:** `SyncContent` dodaje nowe assety i **uzupełnia nowe pola tylko, gdy są domyślne** (`FillNewDefaults`) – tak trafiło krwawienie do toporów/sztyletu i efekty/słabości do 4 wrogów.
+- **Zrzuty:** `fx_elements.png` (płonący+krwawiący, wychłodzony, zamrożony, porażony ghul, błyskawica, mróz, płonąca ziemia).
+- **Do oceny:** balans (siła krwawienia ×2 w ruchu, czas zamrożenia, obrażenia strefy); czy efekty wrogów (chłód heretyka) nie są zbyt karzące; ewentualne odporności gracza na żywioły (przedmioty/wzmocnienia) jako kolejny krok.
+
+### Sesja 2026-09-29: plan rozwoju – etapy A–D
+
+Plan z etapami i dziennikiem: [PLAN_ROZWOJU.md](PLAN_ROZWOJU.md). Zrobione: fundamenty (roztrzaskanie, odporności i premie żywiołów, modyfikatory efektów, broń z żywiołem, 8 nowych rodzajów umiejętności), treść (8 broni, 9 przedmiotów, 7 czarów, 5 technik, 3 warianty wrogów), cechy poziomów umiejętności, sklep dusz. Do zrobienia: przemapowanie przycisków (E), modele broni (F).
+
 - **Do oceny w ręcznym graniu:** czy tempo nie jest za duże dla wrogów (gameSpeed przyspiesza też AI) i czy unik-przerwanie nie jest zbyt „bezpieczne” (ewentualnie dodać koszt wytrzymałości lub minimalny czas zamachu).
 
 ## 3. Jak pracować z projektem (ważne dla kolejnej sesji)
@@ -123,6 +141,7 @@ Prośba: szybki atak, mocny atak i trzy umiejętności (w tym czary) przypisywan
 - `renderer.material` w EditMode tworzy wycieki i ostrzeżenia. Podświetlenia działają przez `MaterialPropertyBlock` (`TintSet`), a efekty poza trybem gry zwracają `null`.
 - Wybór „słońca” w `GameRoot` obejmuje tylko `LightType.Directional`, bo światła pochodni są niszczone przy zmianie areny.
 - Otwarte bryły obrotowe (szaty, rękawy, kaptur) są dwustronne (`ProcMesh.Lathe(doubleSided)`), inaczej od środka znikają.
+- **`WaitForEndOfFrame` nigdy nie nadchodzi w `-batchmode`** – test czekający na niego wisi bez końca (tak zawiesił się przebieg `gfx`). Zrzuty z interfejsem (`UiShot`, `ScreenCapture`) robi się tylko w trybie `window`; w trybie wsadowym są pomijane.
 - Scalanie części (`PartBuilder.BakeAll`) łączy tylko bezpośrednie dzieci z `RigPart`. Obiekty przełączane (flaszka) i przestawiane (gniazda broni) muszą być osobnymi węzłami.
 
 ## 5. Kolejne kroki (propozycja priorytetów)

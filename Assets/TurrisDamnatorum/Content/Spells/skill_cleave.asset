@@ -49,6 +49,13 @@ MonoBehaviour:
     projectileSpeed: 14
     projectileCount: 1
     spreadAngle: 0
+    explosionRadius: 0
+    element: 0
+    elementShare: 0
+    bonusVsFrozen: 0
+    bonusVsBleeding: 0
+    executeBonus: 0
+    statuses: []
     animation: 0
   amount: 60
   duration: 0.12
@@ -60,6 +67,10 @@ MonoBehaviour:
   arcAngle: 160
   tickInterval: 0.35
   moveMultiplier: 0.5
+  levelFeatures:
+  - level: 4
+    kind: 1
+    value: 0.25
   maxLevel: 4
   powerPerLevel: 0.15
   costReductionPerLevel: 0.06

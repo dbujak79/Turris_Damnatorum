@@ -26,6 +26,10 @@ MonoBehaviour:
   magicResist: 0.2
   moveSpeed: 3.4
   turnSpeed: 260
+  fireMultiplier: 0.5
+  frostMultiplier: 1.3
+  lightningMultiplier: 1
+  bleedMultiplier: 1
   preferredRange: 2.8
   retreatRange: 0
   attackInterval: {x: 0.8, y: 1.6}
@@ -63,6 +67,13 @@ MonoBehaviour:
       projectileSpeed: 14
       projectileCount: 1
       spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      statuses:
+      - kind: 0
+        stacks: 1
+        chance: 0.4
+      animation: 0
     minRange: 0
     maxRange: 3.8
     weight: 3
@@ -97,6 +108,10 @@ MonoBehaviour:
       projectileSpeed: 14
       projectileCount: 1
       spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      statuses: []
+      animation: 0
     minRange: 0
     maxRange: 3.8
     weight: 2
@@ -131,6 +146,10 @@ MonoBehaviour:
       projectileSpeed: 14
       projectileCount: 1
       spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      statuses: []
+      animation: 0
     minRange: 4
     maxRange: 12
     weight: 2
@@ -165,6 +184,13 @@ MonoBehaviour:
       projectileSpeed: 14
       projectileCount: 1
       spreadAngle: 0
+      explosionRadius: 0
+      element: 1
+      statuses:
+      - kind: 1
+        stacks: 1
+        chance: 1
+      animation: 0
     minRange: 0
     maxRange: 5
     weight: 2
@@ -199,6 +225,13 @@ MonoBehaviour:
       projectileSpeed: 16
       projectileCount: 3
       spreadAngle: 12
+      explosionRadius: 0
+      element: 1
+      statuses:
+      - kind: 1
+        stacks: 1
+        chance: 0.4
+      animation: 0
     minRange: 5
     maxRange: 20
     weight: 2
@@ -233,6 +266,10 @@ MonoBehaviour:
       projectileSpeed: 14
       projectileCount: 1
       spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      statuses: []
+      animation: 0
     minRange: 0
     maxRange: 3.8
     weight: 2
@@ -253,3 +290,6 @@ MonoBehaviour:
   soulReward: 400
   color: {r: 0.55, g: 0.12, b: 0.12, a: 1}
   scale: 1.6
+  rigStyle: 0
+  weaponModel: 0
+  visual: {fileID: 0}

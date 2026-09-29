@@ -82,7 +82,8 @@ namespace Turris
 
             var actions = combat.Actions;
             var cur = actions.Current;
-            float speed = b.moveSpeed * (1f + combat.Build.stats[StatType.MoveSpeed] / 100f);
+            // Chłód spowalnia ruch (zamrożenie zatrzymuje go przez wymuszone drgnięcie).
+            float speed = b.moveSpeed * (1f + combat.Build.stats[StatType.MoveSpeed] / 100f) * combat.Status.MoveMultiplier(b);
             Vector3 horizontal = Vector3.zero;
             Vector3? face = null;
             float faceSpeed = b.playerTurnSpeed > 0 ? b.playerTurnSpeed : turnSpeed;

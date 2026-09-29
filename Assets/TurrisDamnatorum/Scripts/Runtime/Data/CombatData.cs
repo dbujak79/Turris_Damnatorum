@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Turris
@@ -41,6 +42,18 @@ namespace Turris
         public AttributeType attribute;
         public int value;
         public AttributeRequirement(AttributeType a, int v) { attribute = a; value = v; }
+    }
+
+    /// <summary>Efekt nakładany przez atak, gdy trafienie dojdzie do celu (nie zablokowane, nie sparowane, nie uniknięte).</summary>
+    [Serializable]
+    public class StatusApplication
+    {
+        public StatusKind kind;
+        [Min(1)] public int stacks = 1;
+        [Range(0, 1)] public float chance = 1f;
+
+        public StatusApplication() { }
+        public StatusApplication(StatusKind kind, int stacks = 1, float chance = 1f) { this.kind = kind; this.stacks = stacks; this.chance = chance; }
     }
 
     /// <summary>
@@ -87,6 +100,22 @@ namespace Turris
         public float projectileSpeed = 14f;
         public int projectileCount = 1;
         public float spreadAngle = 0f;
+
+        [Tooltip("Pocisk: promień wybuchu przy trafieniu (0 = bez wybuchu).")]
+        public float explosionRadius = 0f;
+
+        [Header("Żywioły i efekty")]
+        public Element element = Element.None;
+        [Tooltip("Broń z żywiołem: ta część obrażeń fizycznych zamienia się w obrażenia żywiołu (0–1).")]
+        [Range(0, 1)] public float elementShare = 0f;
+        [Tooltip("Premia do obrażeń przeciw zamrożonym (0.5 = +50%). Rozbija lód.")]
+        public float bonusVsFrozen = 0f;
+        [Tooltip("Premia do obrażeń przeciw krwawiącym.")]
+        public float bonusVsBleeding = 0f;
+        [Tooltip("Egzekucja: premia przeciw celom poniżej 30% życia lub z przełamaną postawą.")]
+        public float executeBonus = 0f;
+        [Tooltip("Efekty nakładane przy trafieniu, które dotarło do celu.")]
+        public List<StatusApplication> statuses = new List<StatusApplication>();
 
         [Header("Animacja")]
         [Tooltip("Styl ruchu ataku. Auto = wyliczany z parametrów (ciężki → z góry, pocisk → czar itd.).")]

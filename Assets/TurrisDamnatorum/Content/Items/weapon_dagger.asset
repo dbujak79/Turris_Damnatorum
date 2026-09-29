@@ -48,6 +48,13 @@ MonoBehaviour:
       projectileSpeed: 14
       projectileCount: 1
       spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      statuses:
+      - kind: 0
+        stacks: 1
+        chance: 0.35
+      animation: 0
     heavy:
       name: "Podw\xF3jne pchni\u0119cie"
       delivery: 0
@@ -71,6 +78,10 @@ MonoBehaviour:
       projectileSpeed: 14
       projectileCount: 1
       spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      statuses: []
+      animation: 0
     lightComboLength: 4
     strengthScaling: 0.4
     dexterityScaling: 1.7
@@ -107,3 +118,5 @@ MonoBehaviour:
       poiseDamage: 70
       angle: 150
   color: {r: 0.9, g: 0.85, b: 0.6, a: 1}
+  weaponModel: 0
+  shieldModel: 0

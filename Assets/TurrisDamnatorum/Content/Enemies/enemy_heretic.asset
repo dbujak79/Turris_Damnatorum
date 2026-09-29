@@ -26,6 +26,13 @@ MonoBehaviour:
   magicResist: 0.3
   moveSpeed: 3.4
   turnSpeed: 360
+  fireMultiplier: 1
+  frostMultiplier: 0.5
+  lightningMultiplier: 1.5
+  bleedMultiplier: 1
+  variants:
+  - {fileID: 11400000, guid: e04963f818427874d94fdfc5c3b5e333, type: 2}
+  variantChance: 0.4
   preferredRange: 9
   retreatRange: 5
   attackInterval: {x: 1, y: 1.8}
@@ -63,6 +70,17 @@ MonoBehaviour:
       projectileSpeed: 15
       projectileCount: 1
       spreadAngle: 0
+      explosionRadius: 0
+      element: 2
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 2
+        stacks: 1
+        chance: 1
+      animation: 0
     minRange: 4
     maxRange: 18
     weight: 3
@@ -97,6 +115,17 @@ MonoBehaviour:
       projectileSpeed: 14
       projectileCount: 3
       spreadAngle: 14
+      explosionRadius: 0
+      element: 2
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 2
+        stacks: 1
+        chance: 0.5
+      animation: 0
     minRange: 4
     maxRange: 14
     weight: 1.5
@@ -131,6 +160,14 @@ MonoBehaviour:
       projectileSpeed: 14
       projectileCount: 1
       spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses: []
+      animation: 0
     minRange: 0
     maxRange: 3.2
     weight: 4
@@ -165,6 +202,14 @@ MonoBehaviour:
       projectileSpeed: 8
       projectileCount: 1
       spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses: []
+      animation: 0
     minRange: 5
     maxRange: 18
     weight: 1.5
@@ -181,3 +226,6 @@ MonoBehaviour:
   soulReward: 70
   color: {r: 0.45, g: 0.25, b: 0.6, a: 1}
   scale: 1
+  rigStyle: 0
+  weaponModel: 0
+  visual: {fileID: 0}

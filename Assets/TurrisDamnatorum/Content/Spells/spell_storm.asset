@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bfc9e3d0e146d4086347f0e38c03cf, type: 3}
+  m_Name: spell_storm
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
+  id: spell_storm
+  displayName: Burza
+  description: "Przez 6 s pioruny co 0,8 s bij\u0105 w losowych wrog\xF3w wok\xF3\u0142 ciebie i pora\u017Caj\u0105."
+  tags: 2
+  kind: 16
+  category: 0
+  manaCost: 35
+  castTime: 0.6
+  recovery: 0.4
+  cancelAfter: 0.2
+  staminaCost: 5
+  requirements:
+  - attribute: 5
+    value: 14
+  requiredTags: 0
+  intelligenceScaling: 2.5
+  attack:
+    name: Burza
+    delivery: 0
+    damageType: 1
+    baseDamage: 30
+    windup: 0.6
+    active: 0.05
+    recovery: 0.4
+    cancelAfter: 0.2
+    reach: 0
+    radius: 9
+    lunge: 0
+    tracking: 360
+    blockable: 1
+    parryable: 0
+    dodgeable: 1
+    guardLoad: 10
+    poiseDamage: 10
+    heavy: 0
+    staminaCost: 0
+    projectileSpeed: 14
+    projectileCount: 1
+    spreadAngle: 0
+    explosionRadius: 0
+    element: 3
+    elementShare: 0
+    bonusVsFrozen: 0
+    bonusVsBleeding: 0
+    executeBonus: 0
+    statuses:
+    - kind: 3
+      stacks: 1
+      chance: 1
+    animation: 0
+  amount: 60
+  duration: 6
+  cooldown: 18
+  charges: 1
+  extraChargeAtLevel: 0
+  cooldownReductionPerLevel: 0.06
+  weaponMultiplier: 1.5
+  arcAngle: 150
+  tickInterval: 0.8
+  moveMultiplier: 0.5
+  levelFeatures:
+  - level: 2
+    kind: 2
+    value: 2
+  - level: 4
+    kind: 1
+    value: 0.3
+  maxLevel: 4
+  powerPerLevel: 0.15
+  costReductionPerLevel: 0.06
+  color: {r: 0.8, g: 0.85, b: 1, a: 1}

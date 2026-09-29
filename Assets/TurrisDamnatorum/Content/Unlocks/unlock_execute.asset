@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04a8fe60f9299784cac74fcbd7b0d11b, type: 3}
+  m_Name: unlock_execute
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.UnlockDefinition
+  id: unlock_execute
+  displayName: Egzekucja
+  description: "Cios z g\xF3ry: +100% obra\u017Ce\u0144 celom poni\u017Cej 30% \u017Cycia lub z prze\u0142aman\u0105 postaw\u0105."
+  tags: 0
+  kind: 1
+  target: {fileID: 11400000, guid: 095f4b4e2060aa441ae15dc06dc13db9, type: 2}
+  ashCost: 25
+  loadoutCost: 0
+  unlockedByDefault: 0
+  requiredBestFloor: 2
+  requiredVictoryTier: -1

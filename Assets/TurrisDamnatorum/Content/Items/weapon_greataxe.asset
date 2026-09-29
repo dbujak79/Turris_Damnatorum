@@ -48,6 +48,10 @@ MonoBehaviour:
       projectileSpeed: 14
       projectileCount: 1
       spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      statuses: []
+      animation: 0
     heavy:
       name: Egzekucja
       delivery: 0
@@ -71,6 +75,13 @@ MonoBehaviour:
       projectileSpeed: 14
       projectileCount: 1
       spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      statuses:
+      - kind: 0
+        stacks: 2
+        chance: 1
+      animation: 0
     lightComboLength: 2
     strengthScaling: 1.8
     dexterityScaling: 0.3
@@ -107,3 +118,5 @@ MonoBehaviour:
       poiseDamage: 70
       angle: 150
   color: {r: 0.45, g: 0.4, b: 0.35, a: 1}
+  weaponModel: 0
+  shieldModel: 0

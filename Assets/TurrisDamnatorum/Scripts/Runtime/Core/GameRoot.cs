@@ -30,6 +30,10 @@ namespace Turris
         public List<RewardOption> Rewards { get; private set; } = new List<RewardOption>();
         public FloorDefinition CurrentFloor => Run != null && Run.floorIndex < config.tower.floors.Count ? config.tower.floors[Run.floorIndex] : null;
         public bool AtRestPoint { get; private set; }
+        /// <summary>Oferta sklepu dusz: losowa umiejętność na to podejście (null = brak/kupiona).</summary>
+        public SpellDefinition ShopOffer { get; private set; }
+        /// <summary>Nagrody można przerzucić raz na piętro.</summary>
+        public bool RerollUsed { get; private set; }
         public string LastFloorSummary { get; private set; }
         public int LastAsh { get; private set; }
         public string ProfilePath { get; private set; }
@@ -206,9 +210,13 @@ namespace Turris
             bool elite = Run.difficulty.elites && floor.isDuel && !floor.isBoss;
             for (int i = 0; i < floor.enemies.Count; i++)
             {
-                var e = WorldBuilder.CreateEnemy(floor.enemies[i], spawns[i], world);
+                // Wariant żywiołu (np. płonący ghul) zamiast zwykłego wroga – z szansą z definicji.
+                var def = floor.enemies[i];
+                if (def.variants != null && def.variants.Count > 0 && rng.NextDouble() < def.variantChance)
+                    def = def.variants[rng.Next(def.variants.Count)] ?? def;
+                var e = WorldBuilder.CreateEnemy(def, spawns[i], world);
                 e.transform.rotation = Quaternion.LookRotation(-spawns[i].normalized);
-                e.Setup(floor.enemies[i], Player, floor.statScale, Run.difficulty, elite, config.balance);
+                e.Setup(def, Player, floor.statScale, Run.difficulty, elite, config.balance);
                 enemies.Add(e);
             }
 
@@ -225,6 +233,9 @@ namespace Turris
             enemies.Clear();
             if (arena != null) Destroy(arena);
             foreach (var p in Projectile.Active.ToList()) Destroy(p.gameObject);
+            foreach (var z in DamageZone.Active.ToList()) Destroy(z.gameObject);
+            foreach (var d in DelayedStrike.Active.ToList()) Destroy(d.gameObject);
+            foreach (var st in StormEffect.Active.ToList()) Destroy(st.gameObject);
             foreach (var f in FxFade.Active.ToList()) Destroy(f.gameObject);
             arena = null;
         }
@@ -283,6 +294,8 @@ namespace Turris
 
             LastFloorSummary = $"{floor.name} ukończone. Popiół +{LastAsh}.";
             Rewards = RewardGenerator.Generate(Run, Player.Build, Meta.BuildRewardPools(), config, rng);
+            RerollUsed = false;
+            ShopOffer = SoulShop.PickOffer(Run, Player.Build, Meta.BuildRewardPools(), rng);
             SetScreen(GameScreen.Reward);
         }
 
@@ -348,6 +361,31 @@ namespace Turris
             Run.souls -= FlaskUpgradeCost;
             Run.bonusHealthFlasks++;
             Run.healthFlasks++;
+        }
+
+        // ------------------------------------------------------------------ Sklep dusz
+
+        public bool CanReroll => Screen == GameScreen.Reward && !RerollUsed && Rewards.Count > 0 && Run.souls >= SoulShop.RerollCost(Run, config.balance);
+
+        public void RerollRewards()
+        {
+            if (!CanReroll) return;
+            Run.souls -= SoulShop.RerollCost(Run, config.balance);
+            Rewards = RewardGenerator.Generate(Run, Player.Build, Meta.BuildRewardPools(), config, rng);
+            RerollUsed = true;
+        }
+
+        public void UpgradeSkill(SpellInstance s)
+        {
+            if (SoulShop.TryUpgrade(s, Run, config.balance)) Player.RefreshBuild();
+        }
+
+        public void BuyShopOffer()
+        {
+            if (!SoulShop.TryBuyOffer(ShopOffer, Run, config.balance)) return;
+            CombatEvents.RaiseMessage($"Nowa umiejętność: {ShopOffer.displayName}", ShopOffer.color);
+            ShopOffer = null;
+            Player.RefreshBuild();
         }
 
         // ------------------------------------------------------------------ Śmierć / pauza

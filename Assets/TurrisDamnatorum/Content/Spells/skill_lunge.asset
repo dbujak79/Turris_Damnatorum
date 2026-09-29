@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bfc9e3d0e146d4086347f0e38c03cf, type: 3}
+  m_Name: skill_lunge
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
+  id: skill_lunge
+  displayName: Wypad
+  description: "Kr\xF3tki, szybki wypad z pchni\u0119ciem; otwiera ran\u0119."
+  tags: 33
+  kind: 6
+  category: 1
+  manaCost: 0
+  castTime: 0.18
+  recovery: 0.3
+  cancelAfter: 0.2
+  staminaCost: 14
+  requirements: []
+  requiredTags: 0
+  intelligenceScaling: 0
+  attack:
+    name: Wypad
+    delivery: 0
+    damageType: 0
+    baseDamage: 0
+    windup: 0.18
+    active: 0.2
+    recovery: 0.3
+    cancelAfter: 0.2
+    reach: 3.2
+    radius: 0.8
+    lunge: 0
+    tracking: 360
+    blockable: 1
+    parryable: 1
+    dodgeable: 1
+    guardLoad: 20
+    poiseDamage: 25
+    heavy: 0
+    staminaCost: 0
+    projectileSpeed: 14
+    projectileCount: 1
+    spreadAngle: 0
+    explosionRadius: 0
+    element: 0
+    statuses:
+    - kind: 0
+      stacks: 1
+      chance: 1
+    animation: 0
+  amount: 60
+  duration: 0.2
+  cooldown: 4
+  charges: 1
+  extraChargeAtLevel: 2
+  cooldownReductionPerLevel: 0.06
+  weaponMultiplier: 1.1
+  arcAngle: 150
+  tickInterval: 0.35
+  moveMultiplier: 0.5
+  maxLevel: 4
+  powerPerLevel: 0.15
+  costReductionPerLevel: 0.06
+  color: {r: 1, g: 0.4, b: 0.35, a: 1}

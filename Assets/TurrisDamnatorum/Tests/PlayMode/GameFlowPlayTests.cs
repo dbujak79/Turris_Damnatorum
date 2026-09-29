@@ -195,6 +195,206 @@ namespace Turris.Tests
             Assert.AreEqual(1000f - expected, e.Health.Current, 0.5f, "Jedno uderzenie = jedno trafienie, mimo wielu klatek fazy aktywnej");
         }
 
+        EnemyBrain Dummy(Vector3 pos, PlayerCombat pc, BalanceConfig b)
+        {
+            var d = ScriptableObject.CreateInstance<EnemyDefinition>();
+            d.displayName = "Manekin"; d.maxHealth = 1000; d.maxPoise = 10000; d.scale = 1f; d.moveSpeed = 0f; d.strafeChance = 0f;
+            cleanup.Add(d);
+            return SpawnEnemy(d, pos, pc, b);
+        }
+
+        SpellInstance Equip(PlayerCombat pc, DefaultContent.Bundle bundle, string id, int slot)
+        {
+            var s = pc.Run.LearnSpell(bundle.Get<SpellDefinition>(id));
+            pc.Run.AssignSlot(s, slot);
+            pc.RefreshBuild();
+            pc.Mana.SetCurrent(pc.Mana.Max);
+            return s;
+        }
+
+        [UnityTest]
+        public IEnumerator Fireball_ExplodesOnImpact_AndBurns()
+        {
+            var bundle = DefaultContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "class_mage");
+            var a = Dummy(new Vector3(0, 0.05f, 6f), pc, bundle.config.balance);
+            var b = Dummy(new Vector3(1.4f, 0.05f, 6.6f), pc, bundle.config.balance);
+            yield return new WaitForSeconds(0.1f);
+            Equip(pc, bundle, "spell_fireball", 0);
+            pc.RequestSkill(0);
+            float t = 0;
+            while (t < 1.2f && a.Health.Current >= 1000f) { t += Time.deltaTime; yield return null; }
+            yield return null;
+            Assert.Less(a.Health.Current, 1000f, "Kula trafiła cel");
+            Assert.Less(b.Health.Current, 1000f, "Wybuch dosięgnął sąsiada");
+            Assert.Less(1000f - b.Health.Current, 1000f - a.Health.Current, "Sąsiad dostaje mniej niż trafiony bezpośrednio");
+            Assert.IsTrue(a.Status.Burning, "Kula ognia podpala");
+            float hp = a.Health.Current;
+            yield return new WaitForSeconds(1.0f);
+            Assert.Less(a.Health.Current, hp, "Podpalenie pali w czasie");
+        }
+
+        [UnityTest]
+        public IEnumerator ChainLightning_JumpsBetweenEnemies_AndShocks()
+        {
+            var bundle = DefaultContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "class_mage");
+            var e1 = Dummy(new Vector3(0, 0.05f, 4f), pc, bundle.config.balance);
+            var e2 = Dummy(new Vector3(3f, 0.05f, 6f), pc, bundle.config.balance);
+            var e3 = Dummy(new Vector3(6f, 0.05f, 7f), pc, bundle.config.balance);
+            var far = Dummy(new Vector3(-14f, 0.05f, -10f), pc, bundle.config.balance);
+            yield return new WaitForSeconds(0.1f);
+            Equip(pc, bundle, "spell_chain", 0);
+            pc.RequestSkill(0);
+            yield return new WaitForSeconds(0.8f);
+            foreach (var e in new[] { e1, e2, e3 })
+            {
+                Assert.Less(e.Health.Current, 1000f, "Błyskawica przeskoczyła na kolejnego wroga");
+                Assert.IsTrue(e.Status.Shocked);
+            }
+            Assert.AreEqual(1000f, far.Health.Current, "Daleki wróg poza zasięgiem skoku");
+            Assert.Greater(1000f - e1.Health.Current, 1000f - e3.Health.Current, "Każdy skok słabszy");
+        }
+
+        [UnityTest]
+        public IEnumerator Rend_AppliesBleed_ThatKeepsDamaging()
+        {
+            var bundle = DefaultContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "class_knight");
+            var e = Dummy(new Vector3(0, 0.05f, 1.8f), pc, bundle.config.balance);
+            yield return new WaitForSeconds(0.1f);
+            Equip(pc, bundle, "skill_rend", 2);
+            pc.RequestSkill(2);
+            yield return new WaitForSeconds(0.6f);
+            Assert.AreEqual(2, e.Status.BleedStacks, "Krwawe cięcie – dwie warstwy");
+            float hp = e.Health.Current;
+            yield return new WaitForSeconds(1.2f);
+            Assert.Less(e.Health.Current, hp, "Krwawienie zadaje obrażenia po ciosie");
+        }
+
+        [UnityTest]
+        public IEnumerator FrostNovaAndCone_FreezeEnemy()
+        {
+            var bundle = DefaultContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "class_mage");
+            var e = Dummy(new Vector3(0, 0.05f, 2.2f), pc, bundle.config.balance);
+            yield return new WaitForSeconds(0.1f);
+            Equip(pc, bundle, "spell_frostnova", 0);
+            Equip(pc, bundle, "spell_frostcone", 1);
+            pc.RequestSkill(0);
+            yield return new WaitForSeconds(1.0f);
+            Assert.AreEqual(2, e.Status.ChillStacks, "Mroźna fala – dwie warstwy chłodu");
+            pc.RequestSkill(1);
+            float t = 0;
+            while (t < 1.5f && !e.Status.Frozen) { t += Time.deltaTime; yield return null; }
+            Assert.IsTrue(e.Status.Frozen, "Trzecia warstwa zamraża");
+            Assert.AreEqual(EnemyBrain.State.Staggered, e.CurrentState, "Zamrożenie przerywa działanie wroga");
+        }
+
+        [UnityTest]
+        public IEnumerator LevelFeatures_FireballLeavesZone_ChainHitsSix()
+        {
+            var bundle = DefaultContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "class_mage");
+            var targets = new List<EnemyBrain>();
+            // Rząd od najbliższego celu – każdy skok (do 6 m) sięga następnego.
+            for (int i = 0; i < 6; i++) targets.Add(Dummy(new Vector3(i * 2.2f, 0.05f, 5f + (i % 2) * 1.2f), pc, bundle.config.balance));
+            yield return new WaitForSeconds(0.1f);
+
+            var chain = Equip(pc, bundle, "spell_chain", 0);
+            chain.level = 4;
+            pc.RefreshBuild();
+            pc.RequestSkill(0);
+            yield return new WaitForSeconds(0.8f);
+            Assert.AreEqual(6, targets.Count(t => t.Health.Current < 1000f), "Łańcuch +4 skacze po 6 celach");
+
+            foreach (var z in DamageZone.Active.ToArray()) Object.Destroy(z.gameObject);
+            yield return null;
+            var fireball = Equip(pc, bundle, "spell_fireball", 1);
+            fireball.level = 4;
+            pc.RefreshBuild();
+            pc.RequestSkill(1);
+            float t2 = 0;
+            while (t2 < 1.5f && DamageZone.Active.Count == 0) { t2 += Time.deltaTime; yield return null; }
+            Assert.Greater(DamageZone.Active.Count, 0, "Kula ognia +4 zostawia płonącą ziemię");
+        }
+
+        [UnityTest]
+        public IEnumerator Shatter_LightningOnFrozenEnemy_ExplodesOnNeighbour()
+        {
+            var bundle = DefaultContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "class_mage");
+            var frozen = Dummy(new Vector3(0, 0.05f, 5f), pc, bundle.config.balance);
+            var neighbour = Dummy(new Vector3(1.6f, 0.05f, 5.5f), pc, bundle.config.balance);
+            yield return new WaitForSeconds(0.1f);
+            frozen.ApplyStatus(StatusKind.Frozen, 0, 0);
+            Assert.IsTrue(frozen.Status.Frozen);
+            Equip(pc, bundle, "spell_spark", 0);
+            pc.RequestSkill(0);
+            float t = 0;
+            while (t < 1.2f && frozen.Status.Frozen) { t += Time.deltaTime; yield return null; }
+            yield return null;
+            Assert.IsFalse(frozen.Status.Frozen, "Iskra roztrzaskała lód");
+            Assert.Less(neighbour.Health.Current, 1000f, "Wybuch lodu zranił sąsiada");
+        }
+
+        [UnityTest]
+        public IEnumerator Counter_StopsEnemyBlow_AndStrikesBack()
+        {
+            var bundle = DefaultContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "class_knight");
+            var attacker = Dummy(new Vector3(0, 0.05f, 1.8f), pc, bundle.config.balance);
+            yield return new WaitForSeconds(0.1f);
+            Equip(pc, bundle, "skill_counter", 2);
+            pc.RequestSkill(2);
+            yield return new WaitForSeconds(0.2f);
+            Assert.AreEqual(ActionPhase.Active, pc.Actions.Phase, "Postawa kontry");
+            float hp = pc.Health.Current;
+            var blow = new HitData { physical = 60, poiseDamage = 20, guardLoad = 20, blockable = true, parryable = true, dodgeable = true,
+                sourcePosition = attacker.transform.position, attacker = attacker, mods = StatusModifiers.None };
+            var r = HitQuery.Apply(attacker, pc, blow, true);
+            Assert.AreEqual(HitOutcome.Parried, r.outcome);
+            Assert.AreEqual(hp, pc.Health.Current, "Cios zatrzymany");
+            Assert.Less(attacker.Health.Current, 1000f, "Kontra oddaje cios");
+        }
+
+        [UnityTest]
+        public IEnumerator Meteor_StrikesAfterDelay_AndLeavesBurningGround()
+        {
+            var bundle = DefaultContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "class_mage");
+            var e = Dummy(new Vector3(0, 0.05f, 7.2f), pc, bundle.config.balance);
+            yield return new WaitForSeconds(0.1f);
+            Equip(pc, bundle, "spell_meteor", 0);
+            pc.RequestSkill(0);
+            yield return new WaitForSeconds(1.0f);
+            Assert.AreEqual(1000f, e.Health.Current, "Przed upływem zapowiedzi – bez obrażeń");
+            yield return new WaitForSeconds(0.9f);
+            Assert.Less(e.Health.Current, 1000f - 50f, "Meteor uderzył");
+            Assert.IsTrue(e.Status.Burning);
+            Assert.Greater(DamageZone.Active.Count, 0, "Płonąca ziemia po meteorze");
+        }
+
+        [UnityTest]
+        public IEnumerator Storm_HitsEnemiesAround_Chains_PullEnemyIn()
+        {
+            var bundle = DefaultContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "class_mage");
+            var near = Dummy(new Vector3(3f, 0.05f, 3f), pc, bundle.config.balance);
+            yield return new WaitForSeconds(0.1f);
+            Equip(pc, bundle, "spell_storm", 0);
+            pc.RequestSkill(0);
+            yield return new WaitForSeconds(2.5f);
+            Assert.Less(near.Health.Current, 1000f, "Piorun trafił wroga w zasięgu");
+            Assert.IsTrue(near.Status.Shocked);
+
+            Equip(pc, bundle, "spell_chains", 1);
+            float before = Vector3.Distance(near.transform.position, pc.transform.position);
+            pc.RequestSkill(1);
+            yield return new WaitForSeconds(1.2f);
+            Assert.Less(Vector3.Distance(near.transform.position, pc.transform.position), before - 1f, "Łańcuchy przyciągnęły wroga");
+        }
+
         [UnityTest]
         public IEnumerator Techniques_ChargeMovesAndHits_CleaveScalesWithWeapon()
         {

@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bfc9e3d0e146d4086347f0e38c03cf, type: 3}
+  m_Name: spell_bloodpact
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
+  id: spell_bloodpact
+  displayName: Krwawy pakt
+  description: "Po\u015Bwi\u0119casz 15% \u017Cycia \u2013 trzy kolejne czary nie kosztuj\u0105 many."
+  tags: 2
+  kind: 17
+  category: 0
+  manaCost: 0
+  castTime: 0.4
+  recovery: 0.3
+  cancelAfter: 0.2
+  staminaCost: 5
+  requirements: []
+  requiredTags: 0
+  intelligenceScaling: 2.5
+  attack:
+    name: Atak
+    delivery: 0
+    damageType: 1
+    baseDamage: 30
+    windup: 0.35
+    active: 0.15
+    recovery: 0.45
+    cancelAfter: 0.2
+    reach: 2
+    radius: 0.9
+    lunge: 0.5
+    tracking: 360
+    blockable: 1
+    parryable: 1
+    dodgeable: 1
+    guardLoad: 20
+    poiseDamage: 15
+    heavy: 0
+    staminaCost: 15
+    projectileSpeed: 14
+    projectileCount: 3
+    spreadAngle: 0
+    explosionRadius: 0
+    element: 0
+    elementShare: 0
+    bonusVsFrozen: 0
+    bonusVsBleeding: 0
+    executeBonus: 0
+    statuses: []
+    animation: 0
+  amount: 15
+  duration: 3
+  cooldown: 20
+  charges: 1
+  extraChargeAtLevel: 0
+  cooldownReductionPerLevel: 0.06
+  weaponMultiplier: 1.5
+  arcAngle: 150
+  tickInterval: 0.35
+  moveMultiplier: 0.5
+  maxLevel: 4
+  powerPerLevel: 0.15
+  costReductionPerLevel: 0.06
+  color: {r: 0.85, g: 0.1, b: 0.15, a: 1}

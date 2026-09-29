@@ -110,7 +110,72 @@ Nagrody proponują też umiejętności jeszcze nieodblokowane (gdy gracz dotarł
 
 Sloty ustawia się na ekranie przygotowania (klasowe + odblokowane) i między piętrami w ekwipunku (cała kolekcja podejścia). Ponowne kliknięcie przypisanego przycisku zdejmuje umiejętność ze slotu. Ostatni układ zapisuje się w profilu i obowiązuje w kolejnych podejściach.
 
-Nowe umiejętności dodaje się w `DefaultContent` (sekcje „UMIEJĘTNOŚCI”), a do istniejących assetów trafiają przez **Turris → Dodaj nową treść (bez nadpisywania)** albo `-executeMethod Turris.EditorTools.TurrisSetup.SyncContentBatch`. Ta operacja tylko dodaje brakujące assety i referencje (pule nagród, odblokowania, umiejętności klas); niczego nie nadpisuje i nie rusza sceny.
+### Lista umiejętności
+
+| Czary (mana) | Działanie |
+|---|---|
+| Pocisk arkanów, Włócznia potępionych, Rozprysk arkanów | pociski magiczne |
+| Fala mocy | fala wokół postaci, łamie postawę |
+| **Kula ognia** | pocisk wybuchający przy trafieniu (sąsiedzi 60%), podpala |
+| **Lodowy podmuch** | stożek mrozu, chłód |
+| **Mroźna fala** | fala mrozu wokół postaci, dwie warstwy chłodu |
+| **Łańcuch błyskawic** | skacze do 4 wrogów (każdy skok −20%), poraża |
+| **Płonąca ziemia** | strefa ognia na namierzonym wrogu, pali co 0,5 s |
+| Zaklęte ostrze / **Płomienne ostrze** | broń zadaje dodatkowe obrażenia; płomienne – ogień i szansa podpalenia (także dla technik) |
+| Kojące światło, Kamienna osłona | leczenie w czasie; osłona pochłaniająca obrażenia (także tyknięcia efektów) |
+
+| Techniki (wytrzymałość, obrażenia z broni) | Działanie |
+|---|---|
+| Rozpłatanie, **Krwawe cięcie** | łuk przed sobą; krwawe – dwie warstwy krwawienia |
+| Uderzenie tarczą | wymaga tarczy, mocno łamie postawę |
+| Szarża, **Wypad** | zryw trafiający wszystko na drodze; wypad krótszy, otwiera ranę |
+| Młynek, **Seria cięć** | wirowanie wokół / cztery cięcia przed sobą (szansa krwawienia) |
+| Trzęsienie, **Uderzenie gromu** | krąg przed sobą; grom – połowa obrażeń to błyskawica, poraża |
+| **Rzut nożami** | trzy noże w wachlarzu, szansa krwawienia – atak z dystansu |
+
+### Nowe w zestawach (plan rozwoju, etapy A–D)
+
+- **Czary:** Iskra (tania błyskawica), Lodowa włócznia (×2 w zamrożonych), Meteor (zapowiedziany krąg, potem płonąca ziemia), Burza (pioruny w losowych wrogów), Krwawy pakt (życie za 3 czary bez many), Mroźna zbroja (osłona + chłód dla napastnika), Łańcuchy potępionych (przyciąga wrogów).
+- **Techniki:** Kontra (zatrzymuje cios i oddaje), Cięcie z wyskoku, Egzekucja (+100% w osłabionych), Okrzyk wojenny (+25% obrażeń), Rozdarcie ran (całe krwawienie od razu ×1,5).
+- **Poziomy umiejętności dodają cechy** od +2 i +4 (np. Kula ognia +4 zostawia płonącą ziemię, Łańcuch +4 skacze do 6 celów, Młynek +4 kończy się mocnym cięciem). Opis pokazuje cechy odblokowane (✓) i następne.
+- **Sklep dusz** między każdym piętrem: ulepszenie umiejętności, losowa nowa umiejętność na to podejście, przerzucenie nagród (raz na piętro). Ceny rosną o 15% za każde piętro.
+
+## Żywioły i efekty
+
+Żywioły: **ogień, mróz, błyskawica**. Obrażenia żywiołów są magiczne (redukuje je obrona magiczna). Sam żywioł niczego nie nakłada – efekt daje tylko źródło, które ma go wpisanego (broń, umiejętność, atak wroga). Efekty nakłada wyłącznie trafienie, które doszło do celu: zablokowane, sparowane, uniknięte albo w pełni pochłonięte przez osłonę nie nakłada nic.
+
+| Efekt | Czas | Warstwy | Działanie |
+|---|---|---|---|
+| Krwawienie | 3 s | do 5, każda osobno | 35% wylądowanych obrażeń fizycznych na warstwę; ×2, gdy cel się rusza |
+| Podpalenie | 2,5 s | 1 (silniejsze wygrywa) | 80% wylądowanych obrażeń ognia |
+| Chłód | 3 s | wspólny czas | −15% ruchu i szybkości akcji na warstwę; **trzecia warstwa = zamrożenie** |
+| Zamrożenie | 1,2 s | – | brak ruchu i akcji, przerywa atak wroga; potem 2,5 s odporności |
+| Porażenie | 4 s | 1 | cel otrzymuje +20% obrażeń |
+
+Reakcje (raz na trafienie, tyknięcia i obrażenia reakcji ich nie wywołują):
+
+- **Szok termiczny** – ogień w wychłodzony cel: +50% części ognia, chłód znika.
+- **Przewodzenie** – błyskawica w krwawiący cel: reszta krwawienia zadana od razu, warstwy znikają.
+- **Roztrzaskanie** – błyskawica w zamrożony cel: lód pęka, wybuch mrozu (80% obrażeń trafienia) rani innych wrogów w promieniu 3 m.
+
+**Bronie i przedmioty zestawów:** Płonący miecz, Mroźny topór, Młot burzy (część obrażeń to żywioł, ciężki cios nakłada efekt), Ząbkowany miecz (każde cięcie krwawi), Buława (+50% w zamrożonych, rozbija lód), kostury ognia/lodu/burzy (+25% obrażeń żywiołu); Pierścień rozżarzenia (dłuższe podpalenie), Pierścień szronu w żyłach (zamrożenie po 2 warstwach), Amulet przewodnika (przewodzenie przeskakuje), Rękawice rzeźnika (+1 warstwa, ×3 w ruchu), Buty burzy (po uniku cios poraża), Szata popiołu (płonąc zadajesz +25%), Amulet salamandry (nie płoniesz), Hełm z futrem i Uziemiona kolczuga (odporności). Bohater ma **odporności na żywioły** (limit 75%) i premie do obrażeń żywiołów – widoczne w statystykach ekwipunku.
+
+**Warianty wrogów** (piętro losuje z szansą 40% zamiast zwykłego wroga): Płonący ghul, Lodowy strażnik, Kultysta burzy – z aurą i poświatą broni w kolorze żywiołu.
+
+Bossowie dostają kontrolę (chłód, zamrożenie) na połowę czasu, elity na 0,7. Tyknięcia są liczone z obrażeń, które już przeszły przez pancerz, więc nic nie liczy się podwójnie; osłona pochłania także tyknięcia.
+
+Broń: topory i sztylet mogą wywołać krwawienie (wielki topór – dwie warstwy przy ciężkim ataku). Wrogowie:
+
+| Wróg | Nakłada | Słaby na | Odporny na |
+|---|---|---|---|
+| Ghul | krwawienie (pazury, 50%) | ogień | – |
+| Heretyk | chłód (pociski mrozu) | błyskawicę | mróz |
+| Strażnik | krwawienie (halabarda, 35%) | błyskawicę | krwawienie (½) |
+| Kasztelan | podpalenie (fala, salwa), krwawienie | mróz | ogień |
+
+Słabości i odporności widać przy pasku bossa, a trafienie w słabość pokazuje napis „SŁABOŚĆ”. Aktywne efekty są wypisane pod paskiem wroga i pod paskami bohatera; na postaci widać płomienie, szron, iskry i krople krwi. Parametry: `GameConfig → balance → Efekty i żywioły`, mnożniki wrogów: `EnemyDefinition → Żywioły`.
+
+Nowe umiejętności dodaje się w `DefaultContent` (sekcje „UMIEJĘTNOŚCI”), a do istniejących assetów trafiają przez **Turris → Dodaj nową treść (bez nadpisywania)** albo `-executeMethod Turris.EditorTools.TurrisSetup.SyncContentBatch`. Ta operacja tylko dodaje brakujące assety i referencje (pule nagród, odblokowania, umiejętności klas) oraz uzupełnia nowe pola (żywioł, efekty, wybuch, słabości wrogów) tam, gdzie mają jeszcze wartość domyślną; niczego ustawionego ręcznie nie nadpisuje i nie rusza sceny.
 
 ## Postacie i animacja
 
@@ -310,7 +375,7 @@ Kluczowe decyzje architektoniczne:
 
 Testy uruchamiałem w Unity 6000.6.3f1: EditMode w trybie wsadowym, PlayMode w oknie edytora (`tools/run_tests.py PlayMode window`).
 
-**EditMode: 75/75 zaliczonych.** Testy sprawdzają kryteria ukończenia na prawdziwym komponencie `PlayerCombat`:
+**EditMode: 105/105 zaliczonych.** Testy sprawdzają kryteria ukończenia na prawdziwym komponencie `PlayerCombat`:
 
 - mag zakłada topór i nim atakuje: ataki pochodzą z topora, zużywają wytrzymałość i można blokować toporem;
 - rycerz uczy się czaru i rzuca go, zużywając manę; bez many czar nie zostaje rzucony;

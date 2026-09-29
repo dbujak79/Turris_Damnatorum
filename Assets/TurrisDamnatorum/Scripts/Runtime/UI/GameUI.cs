@@ -48,13 +48,18 @@ namespace Turris
         {
             CombatEvents.HitResolved += OnHit;
             CombatEvents.Message += OnMessage;
+            CombatEvents.WorldText += OnWorldText;
         }
 
         void OnDisable()
         {
             CombatEvents.HitResolved -= OnHit;
             CombatEvents.Message -= OnMessage;
+            CombatEvents.WorldText -= OnWorldText;
         }
+
+        void OnWorldText(Vector3 pos, string text, Color c) =>
+            floating.Add(new Floating { pos = pos + UnityEngine.Random.insideUnitSphere * 0.3f, text = text, color = c, t = 0 });
 
         void OnHit(Vector3 pos, HitResult r, bool targetIsPlayer)
         {
@@ -616,6 +621,14 @@ namespace Turris
             Bar(new Rect(x, y + 50, 16 + pc.Stamina.Max * 2.5f, 16), pc.Stamina.Fraction, new Color(0.2f, 0.65f, 0.25f), null);
             if (pc.BarrierAmount > 0)
                 Bar(new Rect(x, y + 72, 16 + pc.BarrierAmount * 1.5f, 14), 1f, new Color(0.8f, 0.66f, 0.42f), $"Osłona {pc.BarrierAmount:0} ({pc.BarrierTime:0}s)");
+            StatusLabels(pc.Status, x, y + (pc.BarrierAmount > 0 ? 92 : 74), 18, false);
+            var buffs = new List<string>();
+            if (pc.DamageBuffTime > 0) buffs.Add($"<color=#ff7755>Okrzyk +{pc.DamageBuffPct:0}% ({pc.DamageBuffTime:0}s)</color>");
+            if (pc.FreeCasts > 0) buffs.Add($"<color=#ff5566>Pakt: {pc.FreeCasts} czary bez many</color>");
+            if (pc.FrostArmorTime > 0) buffs.Add($"<color=#99ddff>Mroźna zbroja ({pc.FrostArmorTime:0}s)</color>");
+            if (pc.ShockCharged) buffs.Add("<color=#eeee88>Ładunek burzy</color>");
+            if (pc.WeaponBuffTime > 0) buffs.Add($"<color=#{ColorUtility.ToHtmlStringRGB(pc.WeaponBuffColor)}>Zaklęta broń ({pc.WeaponBuffTime:0}s)</color>");
+            if (buffs.Count > 0) GUI.Label(new Rect(x, y + (pc.BarrierAmount > 0 ? 116 : 98), 900, 26), "<size=16><b>" + string.Join("   ", buffs) + "</b></size>", rich);
 
             // Flaszki i sloty umiejętności
             GUI.Label(new Rect(40, H - 200, 900, 30), $"<b>{Prompt("[1]", "(D-pad ↑)")}</b> Flaszka życia: {run.healthFlasks}/{run.MaxHealthFlasks}    <b>{Prompt("[2]", "(D-pad ↓)")}</b> Flaszka many: {run.manaFlasks}/{run.MaxManaFlasks}", rich);
@@ -642,6 +655,7 @@ namespace Turris
                 {
                     Bar(new Rect(sx - 60, sy, 120, 8), e.Health.Fraction, new Color(0.7f, 0.1f, 0.1f), null);
                     Bar(new Rect(sx - 60, sy + 10, 120, 4), e.Poise.Fraction, new Color(0.85f, 0.75f, 0.3f), null);
+                    StatusLabels(e.Status, sx - 60, sy + 16, 15, true);
                 }
                 if (e.IsTelegraphing)
                 {
@@ -682,6 +696,9 @@ namespace Turris
                 GUI.Label(new Rect(W / 2 - 400, 104, 800, 30), boss.DisplayName + (boss.PhaseIndex > 0 ? "  – faza II" : ""), center);
                 Bar(new Rect(W / 2 - 400, 134, 800, 18), boss.Health.Fraction, new Color(0.65f, 0.08f, 0.08f), null);
                 Bar(new Rect(W / 2 - 400, 156, 800, 5), boss.Poise.Fraction, new Color(0.85f, 0.75f, 0.3f), null);
+                StatusLabels(boss.Status, W / 2 - 400, 164, 17, false);
+                string aff = Affinities(boss.Def);
+                if (aff != null) GUI.Label(new Rect(W / 2 + 100, 104, 300, 30), $"<size=15>{aff}</size>", rich);
             }
 
             // Liczby obrażeń
@@ -716,6 +733,30 @@ namespace Turris
                 GUI.Label(new Rect(W - 470, H - 330, 450, 320),
                     "<size=15>" + controls + "\n\n<b>Sygnały ataków</b>\n<color=#e6e6e6>biały</color> zwykły · <color=#ff8c1a>pomarańczowy</color> ciężki\n<color=#bf59ff>fiolet</color> nie do sparowania · <color=#ff1a1a>czerwony</color> nie do zablokowania\n<color=#ff33cc>różowy</color> obszarowy – unik nie chroni, uciekaj lub blokuj</size>", rich);
             }
+        }
+
+        /// <summary>Kolorowe etykiety aktywnych efektów (krwawienie, płonie, chłód, porażony, zamrożony).</summary>
+        void StatusLabels(StatusEffects s, float x, float y, int size, bool compact)
+        {
+            if (s == null || !s.Any) return;
+            var parts = s.Describe().Select(d => $"<color=#{ColorUtility.ToHtmlStringRGB(Names.StatusColor(d.kind))}>{(compact ? d.text : d.text.ToUpperInvariant())}</color>");
+            GUI.Label(new Rect(x, y, 600, size + 10), $"<size={size}><b>{string.Join("  ", parts)}</b></size>", rich);
+        }
+
+        /// <summary>Słabości i odporności na żywioły, np. "słaby: ogień · odporny: mróz".</summary>
+        static string Affinities(EnemyDefinition d)
+        {
+            var weak = new List<string>(); var strong = new List<string>();
+            foreach (Element e in new[] { Element.Fire, Element.Frost, Element.Lightning })
+            {
+                float m = d.ElementMultiplier(e);
+                if (m > 1.01f) weak.Add(Names.Element(e)); else if (m < 0.99f) strong.Add(Names.Element(e));
+            }
+            if (d.bleedMultiplier < 0.99f) strong.Add("krwawienie");
+            if (weak.Count == 0 && strong.Count == 0) return null;
+            string t = weak.Count > 0 ? "<color=#ffb070>słaby: " + string.Join(", ", weak) + "</color>" : "";
+            if (strong.Count > 0) t += (t.Length > 0 ? " · " : "") + "<color=#a0c8ff>odporny: " + string.Join(", ", strong) + "</color>";
+            return t;
         }
 
         void Bar(Rect r, float fraction, Color c, string text)
@@ -796,13 +837,20 @@ namespace Turris
                 GUILayout.EndArea();
             }
             if (n == 0) BtnRect(new Rect(W / 2 - 150, 500, 300, 60), "Dalej", button, () => root.ChooseReward(-1));
+            else
+            {
+                int cost = SoulShop.RerollCost(run, root.config.balance);
+                GUI.enabled = root.CanReroll;
+                BtnRect(new Rect(W / 2 - 220, 830, 440, 54), root.RerollUsed ? "Nagrody już przerzucone" : $"Przerzuć nagrody ({cost} dusz, masz {run.souls})", button, root.RerollRewards);
+                GUI.enabled = true;
+            }
         }
 
         void DrawIntermission()
         {
             var run = root.Run;
             var pc = root.Player;
-            var r = new Rect(W / 2 - 380, 140, 760, 700);
+            var r = new Rect(W / 2 - 700, 140, 760, 700);
             GUILayout.BeginArea(r, box);
             GUILayout.Label(root.AtRestPoint ? "Kapliczka – punkt odpoczynku" : "Między piętrami", header);
             GUILayout.Label($"Życie {pc.Health.Current:0}/{pc.Health.Max:0} · Mana {pc.Mana.Current:0}/{pc.Mana.Max:0} · Flaszki: życia {run.healthFlasks}/{run.MaxHealthFlasks}, many {run.manaFlasks}/{run.MaxManaFlasks}", label);
@@ -829,6 +877,44 @@ namespace Turris
             var next = root.config.tower.floors[run.floorIndex + 1];
             GUILayout.Label($"Następne: {next.name}{(next.isBoss ? " – BOSS" : next.isDuel ? " – pojedynek" : " – grupa przeciwników")}", label);
             Btn("Wejdź wyżej", button, root.NextFloor, GUILayout.Height(60));
+            GUILayout.EndArea();
+            // Sklep po panelu głównym – pierwszy fokus padem zostaje na „Ekwipunek”.
+            DrawSoulShop(new Rect(W / 2 + 90, 140, 610, 700));
+        }
+
+        /// <summary>Sklep dusz między piętrami: ulepszenie umiejętności i losowa nowa umiejętność na to podejście.</summary>
+        void DrawSoulShop(Rect r)
+        {
+            var run = root.Run;
+            var b = root.config.balance;
+            GUILayout.BeginArea(r, box);
+            GUILayout.Label($"Sklep dusz – masz {run.souls}", header);
+            GUILayout.Label($"<size=15>Ceny rosną z każdym piętrem (teraz ×{SoulShop.Inflation(run, b):0.00}).</size>", label);
+            BeginScroll(scrollB, 560);
+            var offer = root.ShopOffer;
+            if (offer != null)
+            {
+                int oc = SoulShop.OfferCost(run, b);
+                GUILayout.Label($"<b>Oferta:</b> {offer.displayName} <size=14>({Names.SkillCategory(offer.category)}, na to podejście)</size>", label);
+                GUILayout.Label("<size=14>" + Describe.Spell(offer, 0, root.Player.Build.stats, b).Replace("\n", " · ") + "</size>", label);
+                GUI.enabled = run.souls >= oc;
+                Btn($"Kup ({oc} dusz)", button, root.BuyShopOffer, GUILayout.Height(44));
+                GUI.enabled = true;
+                GUILayout.Space(8);
+            }
+            GUILayout.Label("<b>Ulepszenie umiejętności</b>", label);
+            foreach (var s in run.knownSpells.OrderBy(x => run.SlotOf(x) < 0 ? 9 : run.SlotOf(x)))
+            {
+                var sk = s;
+                bool can = SoulShop.CanUpgrade(sk, run, b, out var why);
+                string next = "";
+                foreach (var f in sk.definition.levelFeatures) if (f.level == sk.level + 1) next = $" – nowa cecha: {Names.LevelFeature(f)}";
+                GUI.enabled = can;
+                Btn(sk.IsMaxLevel ? $"{sk.Name} – maks. poziom" : $"{sk.Name} → +{sk.level + 1} ({SoulShop.UpgradeCost(sk, run, b)} dusz){next}",
+                    button, () => root.UpgradeSkill(sk), GUILayout.Height(40));
+                GUI.enabled = true;
+            }
+            EndScroll();
             GUILayout.EndArea();
         }
 
@@ -917,6 +1003,12 @@ namespace Turris
             GUILayout.Label(snap.parry != null ? $"Parowanie: okno {snap.parry.activeWindow:0.00}s, koszt {snap.parry.staminaCost:0}" : "Parowanie: niedostępne", label);
             GUILayout.Label($"Obciążenie {run.equipment.TotalWeight:0.#}/{st[StatType.EquipLoad]:0} ({snap.loadRatio * 100:0}%) – unik {snap.dodge.distance:0.#} m, niewrażliwość {snap.dodge.invulnDuration:0.00}s, koszt {snap.dodge.staminaCost:0}", label);
             GUILayout.Label($"Premie: obrażenia broni +{st[StatType.PhysicalDamage]:0}%, moc czarów +{st[StatType.SpellPower]:0}%, flaszki +{st[StatType.FlaskPotency]:0}%, riposta +{st[StatType.RiposteDamage]:0}%", small);
+            GUILayout.Label($"Żywioły – obrażenia: ogień +{st[StatType.FireDamage]:0}%, mróz +{st[StatType.FrostDamage]:0}%, błyskawice +{st[StatType.LightningDamage]:0}%, krwawienie +{st[StatType.BleedDamage]:0}%", small);
+            GUILayout.Label($"Odporności: ogień {Mathf.Min(st[StatType.FireResist], b.maxElementResist):0}%, mróz {Mathf.Min(st[StatType.FrostResist], b.maxElementResist):0}%, błyskawice {Mathf.Min(st[StatType.LightningResist], b.maxElementResist):0}%", small);
+            var fxs = new List<string>();
+            foreach (PassiveEffectType t in Enum.GetValues(typeof(PassiveEffectType)))
+                if (t != PassiveEffectType.None && snap.effects[t] != 0) fxs.Add(Names.Effect(t, snap.effects[t]));
+            if (fxs.Count > 0) GUILayout.Label("Efekty: " + string.Join(" · ", fxs), small);
             GUILayout.Space(8);
             GUILayout.Label("Wzmocnienia", header);
             foreach (var bs in run.boons) GUILayout.Label($"{bs.definition.displayName} ×{bs.stacks}", small);

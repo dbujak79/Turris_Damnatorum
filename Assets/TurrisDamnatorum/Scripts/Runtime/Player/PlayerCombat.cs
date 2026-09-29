@@ -28,6 +28,21 @@ namespace Turris
         public float BarrierTime { get; private set; }
         /// <summary>Prędkość narzucana przez umiejętność (szarża). Zero = brak.</summary>
         public Vector3 SkillMotion { get; private set; }
+        /// <summary>Efekty trwające na bohaterze (krwawienie, podpalenie, chłód, porażenie, zamrożenie).</summary>
+        public readonly StatusEffects Status = new StatusEffects();
+        readonly StatusFx statusFx = new StatusFx();
+        /// <summary>Żywioł i efekty zaklętej broni (np. płomienne ostrze).</summary>
+        Element weaponBuffElement;
+        List<StatusApplication> weaponBuffStatuses;
+        /// <summary>Buty burzy: po uniku następny cios bronią poraża.</summary>
+        public bool ShockCharged { get; private set; }
+        /// <summary>Okrzyk wojenny: premia do obrażeń (%) i czas jej trwania.</summary>
+        public float DamageBuffPct { get; private set; }
+        public float DamageBuffTime { get; private set; }
+        /// <summary>Krwawy pakt: liczba kolejnych czarów bez kosztu many.</summary>
+        public int FreeCasts { get; private set; }
+        /// <summary>Mroźna zbroja: czas odwetu chłodem na atakujących wręcz.</summary>
+        public float FrostArmorTime { get; private set; }
         public Color WeaponBuffColor { get; private set; } = new Color(0.45f, 0.65f, 1f);
         /// <summary>Dłoń do efektów (z humanoida, a gdy go brak – sama postać).</summary>
         Transform Hand
@@ -58,7 +73,9 @@ namespace Turris
         SpellRuntime currentSpell;
         ParticleSystem gatherFx, barrierFx;
         int requestedSlot;
+        bool castWasFree;
         float skillActiveStart, skillHitTimer;
+        int flurryIndex;
         Vector3 chargeDir, lastChargePos;
         bool flaskIsMana;
         EnemyBrain riposteTarget;
@@ -98,6 +115,7 @@ namespace Turris
             Actions.PhaseChanged -= OnPhaseChanged;
             Actions.PhaseChanged += OnPhaseChanged;
             Build = BuildCalculator.Compute(run, cfg);
+            Status.BurnImmune = Build.effects[PassiveEffectType.BurnImmunity] > 0;
             Health = new ResourcePool(Build.MaxHealth);
             Stamina = new ResourcePool(Build.MaxStamina);
             Mana = new ResourcePool(Build.MaxMana);
@@ -105,6 +123,8 @@ namespace Turris
             Mana.SetCurrent(Build.MaxMana * run.manaFraction);
             restores.Clear();
             WeaponBuffTime = 0;
+            weaponBuffElement = Element.None;
+            weaponBuffStatuses = null;
             OnFloorStart();
         }
 
@@ -114,12 +134,16 @@ namespace Turris
             if (Run != null) foreach (var s in Run.knownSpells) s.ResetCooldown();
             EndBarrier(false);
             SkillMotion = Vector3.zero;
+            Status.Clear();
+            statusFx.Clear();
+            DamageBuffTime = 0; FreeCasts = 0; FrostArmorTime = 0; ShockCharged = false;
         }
 
         /// <summary>Przelicza build po zmianie wyposażenia/wzmocnień. Obecne wartości są przycinane do nowych maksimów.</summary>
         public void RefreshBuild()
         {
             Build = BuildCalculator.Compute(Run, Config);
+            Status.BurnImmune = Build.effects[PassiveEffectType.BurnImmunity] > 0;
             Health.SetMax(Build.MaxHealth, false);
             Stamina.SetMax(Build.MaxStamina, false);
             Mana.SetMax(Build.MaxMana, false);
@@ -208,6 +232,7 @@ namespace Turris
                     var interruptedPhase = Actions.Phase;
                     DodgeDirection = dir;
                     Actions.TryStart(ActionType.Dodge, d.invulnStart, d.invulnDuration, Mathf.Max(0.05f, d.totalDuration - d.invulnStart - d.invulnDuration), B.dodgeCancelAfter);
+                    if (Build.effects[PassiveEffectType.DodgeShockCharge] > 0) ShockCharged = true;
                     // Unik przerwał inkantację przed wypuszczeniem czaru – mana wraca.
                     if (interrupted == ActionType.Cast && interruptedPhase == ActionPhase.Startup) CancelCast();
                     FxLibrary.Dust(transform.position);
@@ -222,7 +247,8 @@ namespace Turris
                     if (!skill.equipmentMet) { CombatEvents.RaiseMessage($"{def.displayName}: {Names.Requirement(def.requiredTags)}", Color.gray); return true; }
                     if (!Actions.CanStart(ActionType.Cast)) return false;
                     if (!skill.instance.Ready) return false; // odnowienie – żądanie czeka w buforze
-                    if (def.IsSpell && Mana.Current + 0.01f < skill.manaCost) { CombatEvents.RaiseMessage("Za mało many", new Color(0.4f, 0.6f, 1f)); return true; }
+                    bool free = def.IsSpell && FreeCasts > 0 && def.kind != SpellKind.BloodPact;
+                    if (def.IsSpell && !free && Mana.Current + 0.01f < skill.manaCost) { CombatEvents.RaiseMessage("Za mało many", new Color(0.4f, 0.6f, 1f)); return true; }
                     if (Stamina.Current <= 0) return false;
                     currentSpell = skill;
                     float castTime = ScaleStartup(def.castTime);
@@ -230,7 +256,9 @@ namespace Turris
                     skill.instance.TryUse();
                     tracker.Reset();
                     gatherFx = def.IsSpell ? FxLibrary.Gather(Hand, def.color, castTime) : null;
-                    if (def.IsSpell) Mana.TrySpend(skill.manaCost);
+                    if (free) FreeCasts--;
+                    else if (def.IsSpell) Mana.TrySpend(skill.manaCost);
+                    castWasFree = free;
                     Stamina.Drain(skill.staminaCost, B.staminaRegenDelay);
                     return true;
                 }
@@ -263,7 +291,10 @@ namespace Turris
             switch (def.kind)
             {
                 case SpellKind.Charge:
-                case SpellKind.Whirlwind: return ScaleStartup(Mathf.Max(0.1f, def.duration));
+                case SpellKind.Flurry:
+                case SpellKind.Counter: return ScaleStartup(Mathf.Max(0.1f, def.duration));
+                case SpellKind.Whirlwind: return ScaleStartup(Mathf.Max(0.1f, def.duration + (currentSpell != null && currentSpell.Def == def ? F(currentSpell, LevelFeatureKind.DurationBonus) : 0f)));
+                case SpellKind.Rupture: return ScaleStartup(Mathf.Max(0.05f, def.attack.active));
                 case SpellKind.Cleave:
                 case SpellKind.Quake:
                 case SpellKind.ShieldBash: return ScaleStartup(Mathf.Max(0.05f, def.attack.active));
@@ -276,7 +307,8 @@ namespace Turris
         {
             if (currentSpell != null)
             {
-                if (currentSpell.Def.IsSpell) Mana.Restore(currentSpell.manaCost);
+                if (castWasFree) FreeCasts++;
+                else if (currentSpell.Def.IsSpell) Mana.Restore(currentSpell.manaCost);
                 currentSpell.instance.Refund();
             }
             currentSpell = null;
@@ -311,6 +343,20 @@ namespace Turris
                     break;
                 case ActionType.Cast:
                     if (phase == ActionPhase.Active) { skillActiveStart = clock; FireSpell(currentSpell); }
+                    else if (phase == ActionPhase.Recovery && currentSpell != null && currentSpell.Def.kind == SpellKind.Whirlwind && F(currentSpell, LevelFeatureKind.FinalSlash) > 0)
+                    {
+                        // Młynek na wysokim poziomie kończy się mocnym cięciem dookoła.
+                        var sk = currentSpell;
+                        float mult = F(sk, LevelFeatureKind.FinalSlash);
+                        tracker.Reset();
+                        HitQuery.Sphere(transform.position + Vector3.up, Radius(sk, sk.Def.attack.radius), Faction.Player, tracker, t =>
+                        {
+                            var h = SkillHitData(sk, transform.position);
+                            h.physical *= mult; h.magic *= mult; h.poiseDamage *= 3f;
+                            HitQuery.Apply(this, t, h, true);
+                        });
+                        FxLibrary.Shockwave(transform.position, sk.Def.color, Radius(sk, sk.Def.attack.radius), false);
+                    }
                     else if (phase == ActionPhase.Recovery || phase == ActionPhase.Finished)
                     {
                         if (SkillMotion != Vector3.zero) FxLibrary.Dust(transform.position, 1.3f);
@@ -371,24 +417,26 @@ namespace Turris
                     Vector3 origin = transform.position + Vector3.up * 1.3f + transform.forward * 0.8f;
                     Vector3 aim = LockTarget != null ? (LockTarget.AimPoint - origin) : transform.forward;
                     aim.y = LockTarget != null ? aim.y : 0f;
-                    int count = Mathf.Max(1, def.attack.projectileCount);
+                    int count = Mathf.Max(1, def.attack.projectileCount + Mathf.RoundToInt(F(spell, LevelFeatureKind.ExtraTargets)));
+                    float spread = def.attack.spreadAngle > 0 ? def.attack.spreadAngle : (count > 1 ? 8f : 0f);
                     for (int i = 0; i < count; i++)
                     {
-                        float angle = count == 1 ? 0 : Mathf.Lerp(-def.attack.spreadAngle, def.attack.spreadAngle, i / (float)(count - 1));
+                        float angle = count == 1 ? 0 : Mathf.Lerp(-spread, spread, i / (float)(count - 1));
                         Vector3 dir = Quaternion.Euler(0, angle, 0) * aim.normalized;
-                        var hit = HitData.FromAttack(def.attack, spell.power, origin, this);
-                        Projectile.Spawn(origin, dir, def.attack.projectileSpeed, hit, Faction.Player, this, def.color, 0.22f, 3f,
+                        var hit = SkillHitData(spell, origin);
+                        Projectile.Spawn(origin, dir, def.attack.projectileSpeed, hit, Faction.Player, this, def.color, def.IsSpell ? 0.22f : 0.12f, 3f,
                             LockTarget, LockTarget != null ? 90f : 0f);
                     }
                     break;
                 }
                 case SpellKind.Nova:
                 {
-                    var hit = HitData.FromAttack(def.attack, spell.power, transform.position, this);
+                    var hit = SkillHitData(spell, transform.position);
                     tracker.Reset();
-                    HitQuery.Sphere(transform.position + Vector3.up, def.attack.radius, Faction.Player, tracker,
+                    float novaR = Radius(spell, def.attack.radius);
+                    HitQuery.Sphere(transform.position + Vector3.up, novaR, Faction.Player, tracker,
                         r => HitQuery.Apply(this, r, hit, false));
-                    FxLibrary.Shockwave(transform.position, def.color, def.attack.radius);
+                    FxLibrary.Shockwave(transform.position, def.color, novaR);
                     break;
                 }
                 case SpellKind.Heal:
@@ -399,9 +447,103 @@ namespace Turris
                     WeaponBuffTime = def.duration;
                     weaponBuffDamage = spell.power;
                     WeaponBuffColor = def.color;
+                    weaponBuffElement = def.attack.element;
+                    weaponBuffStatuses = def.attack.statuses != null && def.attack.statuses.Count > 0 ? def.attack.statuses : null;
                     FxLibrary.Shockwave(transform.position, def.color, 1.2f, false);
-                    CombatEvents.RaiseMessage($"{def.displayName}: +{spell.power:0} obrażeń magicznych na cios", def.color);
+                    CombatEvents.RaiseMessage($"{def.displayName}: +{spell.power:0} obrażeń {(weaponBuffElement != Element.None ? "(" + Names.Element(weaponBuffElement) + ")" : "magicznych")} na cios", def.color);
                     break;
+                case SpellKind.Cone:
+                    ArcHit(spell, Radius(spell, def.attack.reach), def.arcAngle);
+                    FxLibrary.FrostCone(transform.position + Vector3.up * 1.2f + transform.forward * 0.5f, transform.forward, def.color, Radius(spell, def.attack.reach), def.arcAngle);
+                    break;
+                case SpellKind.Chain:
+                    ChainLightning(spell);
+                    break;
+                case SpellKind.Zone:
+                {
+                    Vector3 center = transform.position + transform.forward * def.attack.reach * 0.6f;
+                    if (LockTarget != null && Vector3.Distance(LockTarget.transform.position, transform.position) <= def.attack.reach)
+                        center = LockTarget.transform.position;
+                    center.y = transform.position.y;
+                    DamageZone.Spawn(center, Radius(spell, def.attack.radius), Duration(spell, def.duration), def.tickInterval, SkillHitData(spell, center), Faction.Player, this, def.color);
+                    break;
+                }
+                case SpellKind.Flurry:
+                    skillHitTimer = 0f;
+                    flurryIndex = -1;
+                    break;
+                case SpellKind.Warcry:
+                    DamageBuffPct = def.amount * (1f + def.powerPerLevel * spell.instance.level);
+                    DamageBuffTime = Duration(spell, def.duration);
+                    Stamina.Restore(Stamina.Max * 0.4f);
+                    FxLibrary.Shockwave(transform.position, def.color, 3f);
+                    CombatEvents.RaiseMessage($"{def.displayName}: +{DamageBuffPct:0}% obrażeń", def.color);
+                    break;
+                case SpellKind.Meteor:
+                {
+                    Vector3 c = TargetPoint(def.attack.reach);
+                    float mr = Radius(spell, def.attack.radius);
+                    DamageZone.Settings? zone = def.attack.radius > 0 && def.tickInterval > 0 && def.duration > 0
+                        ? new DamageZone.Settings { radius = mr * 0.7f, duration = Duration(spell, def.duration), interval = def.tickInterval, hit = ZoneHit(spell, c) }
+                        : (DamageZone.Settings?)null;
+                    DelayedStrike.Spawn(c, mr, 1.0f, SkillHitData(spell, c), Faction.Player, this, def.color, zone);
+                    break;
+                }
+                case SpellKind.Storm:
+                {
+                    var h = SkillHitData(spell, transform.position);
+                    StormEffect.Spawn(transform, Radius(spell, def.attack.radius), Duration(spell, def.duration), def.tickInterval, h, this, def.color);
+                    FxLibrary.Shockwave(transform.position, def.color, 2f, false);
+                    break;
+                }
+                case SpellKind.BloodPact:
+                {
+                    float cost = Mathf.Min(Health.Max * def.amount / 100f, Health.Current - 1f);
+                    if (cost > 0) Health.Drain(cost);
+                    FreeCasts = Mathf.Max(FreeCasts, Mathf.Max(1, def.attack.projectileCount));
+                    FxLibrary.Blood(AimPoint, Vector3.up, 2f);
+                    FxLibrary.Shockwave(transform.position, def.color, 1.5f, false);
+                    CombatEvents.RaiseMessage($"{def.displayName}: {FreeCasts} czary bez many", def.color);
+                    break;
+                }
+                case SpellKind.FrostArmor:
+                    EndBarrier(false);
+                    BarrierAmount = spell.power;
+                    BarrierTime = def.duration;
+                    FrostArmorTime = def.duration;
+                    barrierFx = FxLibrary.Aura(transform, Vector3.up, def.color, 55f, 0.9f, 0.14f);
+                    FxLibrary.Shockwave(transform.position, def.color, 1.6f, false);
+                    CombatEvents.RaiseMessage($"{def.displayName}: osłona {spell.power:0}, odwet chłodem", def.color);
+                    break;
+                case SpellKind.Pull:
+                {
+                    Vector3 c = transform.position + transform.forward * 1.5f;
+                    var h = SkillHitData(spell, transform.position);
+                    tracker.Reset();
+                    HitQuery.Sphere(transform.position + Vector3.up, def.attack.radius, Faction.Player, tracker, t =>
+                    {
+                        if (t is EnemyBrain e) { e.Pull(c, def.attack.reach); FxLibrary.Lightning(Hand.position, e.AimPoint, def.color); }
+                        HitQuery.Apply(this, t, h, false);
+                    });
+                    FxLibrary.Shockwave(transform.position, def.color, def.attack.radius, false);
+                    break;
+                }
+                case SpellKind.Counter:
+                    FxLibrary.Flash(transform.position + Vector3.up * 1.2f + transform.forward * 0.6f, def.color, 0.8f);
+                    break;
+                case SpellKind.Rupture:
+                {
+                    Vector3 fwd = transform.forward;
+                    var rt = Build.effects;
+                    HitQuery.Sphere(transform.position + Vector3.up, def.attack.reach, Faction.Player, tracker, t =>
+                    {
+                        Vector3 to = t.Transform.position - transform.position; to.y = 0;
+                        if (to.sqrMagnitude > 0.04f && Vector3.Angle(fwd, to) > def.arcAngle * 0.5f) return;
+                        TechniqueHit(t, spell);
+                        if (t is EnemyBrain e) e.RuptureBleed(def.amount * (1f + def.powerPerLevel * spell.instance.level));
+                    });
+                    break;
+                }
                 case SpellKind.Barrier:
                     EndBarrier(false);
                     BarrierAmount = spell.power;
@@ -414,15 +556,15 @@ namespace Turris
                 // ---- Techniki bronią
                 case SpellKind.Cleave:
                 case SpellKind.ShieldBash:
-                    ArcHit(spell, def.attack.reach, def.arcAngle);
+                    ArcHit(spell, Radius(spell, def.attack.reach), def.arcAngle);
                     if (def.kind == SpellKind.ShieldBash) FxLibrary.Flash(transform.position + Vector3.up + transform.forward * 1.1f, def.color, 1.2f);
                     else FxLibrary.Shockwave(transform.position + transform.forward * 0.8f, def.color, def.attack.reach * 0.8f, false);
                     break;
                 case SpellKind.Quake:
                 {
                     Vector3 center = transform.position + transform.forward * def.attack.reach;
-                    HitQuery.Sphere(center + Vector3.up * 0.5f, def.attack.radius, Faction.Player, tracker, t => TechniqueHit(t, spell));
-                    FxLibrary.Shockwave(center, def.color, def.attack.radius);
+                    HitQuery.Sphere(center + Vector3.up * 0.5f, Radius(spell, def.attack.radius), Faction.Player, tracker, t => TechniqueHit(t, spell));
+                    FxLibrary.Shockwave(center, def.color, Radius(spell, def.attack.radius));
                     FxLibrary.Dust(center, 2f);
                     break;
                 }
@@ -461,7 +603,18 @@ namespace Turris
                     if (skillHitTimer > 0) break;
                     skillHitTimer = Mathf.Max(0.1f, def.tickInterval);
                     tracker.Reset();
-                    HitQuery.Sphere(transform.position + Vector3.up, def.attack.radius, Faction.Player, tracker, t => TechniqueHit(t, sk));
+                    HitQuery.Sphere(transform.position + Vector3.up, Radius(sk, def.attack.radius), Faction.Player, tracker, t => TechniqueHit(t, sk));
+                    break;
+                }
+                case SpellKind.Flurry:
+                {
+                    // Seria cięć na przemian z prawej i lewej; każde cięcie może trafić ten sam cel ponownie.
+                    skillHitTimer -= dt;
+                    if (skillHitTimer > 0) break;
+                    skillHitTimer = Mathf.Max(0.08f, ScaleStartup(def.tickInterval));
+                    flurryIndex++;
+                    tracker.Reset();
+                    ArcHit(sk, def.attack.reach, def.arcAngle);
                     break;
                 }
             }
@@ -479,15 +632,155 @@ namespace Turris
             });
         }
 
+        /// <summary>
+        /// Łańcuch błyskawic: cel namierzony (albo najbliższy przed postacią), potem skoki do kolejnych wrogów
+        /// w zasięgu <c>attack.radius</c>; każdy skok słabszy o 20%. Liczba celów = <c>attack.projectileCount</c>.
+        /// </summary>
+        void ChainLightning(SpellRuntime sk)
+        {
+            var def = sk.Def;
+            Vector3 from = Hand.position;
+            IHitReceiver target = LockTarget != null && !LockTarget.IsDead && Vector3.Distance(LockTarget.transform.position, transform.position) <= def.attack.reach
+                ? LockTarget : NearestEnemy(transform.position, def.attack.reach, transform.forward, 80f, null);
+            if (target == null)
+            {
+                FxLibrary.Lightning(from, transform.position + Vector3.up + transform.forward * def.attack.reach, def.color);
+                return;
+            }
+            var visited = new List<IHitReceiver>();
+            float mult = 1f;
+            int count = Mathf.Max(1, def.attack.projectileCount + Mathf.RoundToInt(F(sk, LevelFeatureKind.ExtraTargets)));
+            for (int i = 0; i < count && target != null; i++)
+            {
+                FxLibrary.Lightning(from, target.AimPoint, def.color);
+                var hit = SkillHitData(sk, from);
+                hit.physical *= mult; hit.magic *= mult;
+                HitQuery.Apply(this, target, hit, false);
+                visited.Add(target);
+                from = target.AimPoint;
+                mult *= 0.8f;
+                target = NearestEnemy(target.Transform.position, def.attack.radius, Vector3.zero, 360f, visited);
+            }
+        }
+
+        static IHitReceiver NearestEnemy(Vector3 origin, float range, Vector3 forward, float maxAngle, List<IHitReceiver> exclude)
+        {
+            IHitReceiver best = null; float bestD = float.MaxValue;
+            foreach (var e in EnemyBrain.All)
+            {
+                if (e == null || e.IsDead || (exclude != null && exclude.Contains(e))) continue;
+                Vector3 to = e.transform.position - origin; to.y = 0;
+                float d = to.magnitude;
+                if (d > range || d >= bestD) continue;
+                if (forward != Vector3.zero && d > 0.3f && Vector3.Angle(forward, to) > maxAngle) continue;
+                best = e; bestD = d;
+            }
+            return best;
+        }
+
+        /// <summary>Wartość cechy poziomu umiejętności (0, gdy nieodblokowana).</summary>
+        static float F(SpellRuntime sk, LevelFeatureKind k) => sk == null ? 0f : sk.Def.Feature(k, sk.instance.level);
+        static float Radius(SpellRuntime sk, float r) => r * (1f + F(sk, LevelFeatureKind.RadiusBonus));
+        static float Duration(SpellRuntime sk, float d) => d + F(sk, LevelFeatureKind.DurationBonus);
+
+        /// <summary>Punkt celowania: namierzony wróg w zasięgu, inaczej przed postacią.</summary>
+        Vector3 TargetPoint(float reach)
+        {
+            Vector3 c = transform.position + transform.forward * reach * 0.6f;
+            if (LockTarget != null && Vector3.Distance(LockTarget.transform.position, transform.position) <= reach) c = LockTarget.transform.position;
+            c.y = transform.position.y;
+            return c;
+        }
+
+        /// <summary>Tyknięcie strefy po meteorze: 15% obrażeń meteoru na tyknięcie, bez wybuchu.</summary>
+        HitData ZoneHit(SpellRuntime sk, Vector3 c)
+        {
+            var h = SkillHitData(sk, c);
+            h.physical *= 0.15f; h.magic *= 0.15f; h.explosionRadius = 0; h.poiseDamage *= 0.1f;
+            return h;
+        }
+
+        /// <summary>Obrażenia umiejętności: czar – moc czaru; technika – lekki atak broni × mnożnik.</summary>
+        public float SkillDamage(SpellRuntime sk) => sk.Def.IsSpell ? sk.power : Build.WeaponDamage(Build.weapon.light) * sk.power;
+
+        /// <summary>
+        /// Dane trafienia umiejętności. Technika z żywiołem dzieli obrażenia pół na pół (fizyczne + żywioł),
+        /// a zaklęta broń dokłada swój żywioł i efekty do technik bronią.
+        /// </summary>
+        HitData SkillHitData(SpellRuntime sk, Vector3 source)
+        {
+            var def = sk.Def;
+            float dmg = SkillDamage(sk);
+            var hit = HitData.FromAttack(def.attack, dmg, source, this);
+            hit.attackName = def.displayName;
+            if (!def.IsSpell)
+            {
+                if (def.attack.element != Element.None && def.attack.elementShare <= 0f) { hit.physical = dmg * 0.5f; hit.magic = dmg * 0.5f; }
+                if (def.kind != SpellKind.Projectile) { hit.fromMeleeWeapon = true; ApplyWeaponBuff(ref hit); }
+            }
+            int extraStacks = Mathf.RoundToInt(F(sk, LevelFeatureKind.ExtraStatusStacks));
+            if (extraStacks > 0 && hit.statuses != null)
+            {
+                var more = new List<StatusApplication>();
+                foreach (var st in hit.statuses) more.Add(new StatusApplication(st.kind, st.stacks + extraStacks, st.chance));
+                hit.statuses = more;
+            }
+            if (hit.explosionRadius > 0) hit.explosionRadius = Radius(sk, hit.explosionRadius);
+            hit.leaveZoneDuration = F(sk, LevelFeatureKind.LeaveZone);
+            PrepareOutgoing(ref hit);
+            return hit;
+        }
+
+        /// <summary>
+        /// Wszystkie trafienia gracza przechodzą tędy: premie do żywiołu i krwawienia z wyposażenia, „płonąc zadajesz więcej”,
+        /// ładunek porażenia po uniku (buty burzy) i modyfikatory efektów przenoszone do celu.
+        /// </summary>
+        void PrepareOutgoing(ref HitData hit)
+        {
+            var st = Build.stats; var fx = Build.effects;
+            if (hit.element != Element.None && hit.magic > 0) hit.magic *= 1f + st[Names.ElementDamageStat(hit.element)] / 100f;
+            if (DamageBuffTime > 0) { float m = 1f + DamageBuffPct / 100f; hit.physical *= m; hit.magic *= m; }
+            if (Status.Burning && fx[PassiveEffectType.BurningDamageBonus] > 0)
+            {
+                float m = 1f + fx[PassiveEffectType.BurningDamageBonus] / 100f;
+                hit.physical *= m; hit.magic *= m;
+            }
+            hit.mods = new StatusModifiers
+            {
+                burnDurationBonus = fx[PassiveEffectType.BurnDurationBonus],
+                bleedStackBonus = Mathf.RoundToInt(fx[PassiveEffectType.BleedMaxStacksBonus]),
+                bleedMovingBonus = fx[PassiveEffectType.BleedMovingBonus],
+                bleedDamageMult = 1f + st[StatType.BleedDamage] / 100f,
+                freezeReduction = Mathf.RoundToInt(fx[PassiveEffectType.FreezeStacksReduction]),
+                conductionMult = 1f + fx[PassiveEffectType.ConductionBonus] / 100f,
+                conductionJump = fx[PassiveEffectType.ConductionJump] > 0,
+            };
+            if (ShockCharged && hit.fromMeleeWeapon)
+            {
+                ShockCharged = false;
+                var merged = hit.statuses != null ? new List<StatusApplication>(hit.statuses) : new List<StatusApplication>();
+                merged.Add(new StatusApplication(StatusKind.Shock));
+                hit.statuses = merged;
+            }
+        }
+
+        /// <summary>Zaklęta broń: dodatkowe obrażenia magiczne, a przy żywiole – także jego efekty.</summary>
+        void ApplyWeaponBuff(ref HitData hit)
+        {
+            if (WeaponBuffTime <= 0) return;
+            hit.magic += weaponBuffDamage;
+            if (weaponBuffElement == Element.None) return;
+            if (hit.element == Element.None) hit.element = weaponBuffElement;
+            if (weaponBuffStatuses == null) return;
+            var merged = hit.statuses != null ? new List<StatusApplication>(hit.statuses) : new List<StatusApplication>();
+            merged.AddRange(weaponBuffStatuses);
+            hit.statuses = merged;
+        }
+
         /// <summary>Obrażenia techniki = lekki atak broni × moc techniki (+ zaklęte ostrze). Liczy się jako cios bronią.</summary>
         void TechniqueHit(IHitReceiver target, SpellRuntime sk)
         {
-            float dmg = Build.WeaponDamage(Build.weapon.light) * sk.power;
-            var hit = HitData.FromAttack(sk.Def.attack, dmg, transform.position, this);
-            hit.fromMeleeWeapon = true;
-            hit.attackName = sk.Def.displayName;
-            if (WeaponBuffTime > 0) hit.magic += weaponBuffDamage;
-            HitQuery.Apply(this, target, hit, true);
+            HitQuery.Apply(this, target, SkillHitData(sk, transform.position), !sk.Def.IsSpell);
         }
 
         void EndBarrier(bool broken)
@@ -514,6 +807,11 @@ namespace Turris
             if (IsDead) { deathTime += dt; return; }
             clock += dt;
 
+            // Efekty trwające: tyknięcia (osłona też je pochłania), szron/ogień/iskry na postaci.
+            float statusDamage = Status.Tick(dt, MoveIntent.sqrMagnitude > 0.01f || Actions.Current == ActionType.Dodge, B);
+            if (statusDamage > 0f) { TakeStatusDamage(statusDamage); if (IsDead) return; }
+            statusFx.Update(Status, transform, 1f, dt);
+
             // Bufor wejścia – spróbuj ponownie wykonać zaległą akcję.
             if (buffered != ActionType.None)
             {
@@ -521,7 +819,8 @@ namespace Turris
                 else if (TryExecute(buffered)) buffered = ActionType.None;
             }
 
-            Actions.Tick(dt);
+            // Chłód spowalnia także akcje (zamach, unik); zamrożenie trwa jako wymuszone drgnięcie.
+            Actions.Tick(Status.Frozen ? dt : dt * Status.ActionSpeedMultiplier(B));
 
             // Aktywna faza ataku bronią: przeciągnij hitbox (każdy cel najwyżej raz na zamach).
             if ((Actions.Current == ActionType.LightAttack || Actions.Current == ActionType.HeavyAttack) && Actions.Phase == ActionPhase.Active)
@@ -532,6 +831,8 @@ namespace Turris
             // Odnowienia umiejętności (całej kolekcji – przełożenie do innego slotu niczego nie zeruje) i osłona.
             foreach (var s in Run.knownSpells) s.Tick(dt);
             if (BarrierTime > 0) { BarrierTime -= dt; if (BarrierTime <= 0) EndBarrier(false); }
+            if (DamageBuffTime > 0) DamageBuffTime -= dt;
+            if (FrostArmorTime > 0) FrostArmorTime -= dt;
 
             // Regeneracja
             var cur = Actions.Current;
@@ -579,7 +880,8 @@ namespace Turris
                 float dmg = Build.WeaponDamage(atk);
                 var hit = HitData.FromAttack(atk, dmg, transform.position, this);
                 hit.fromMeleeWeapon = true;
-                if (WeaponBuffTime > 0) hit.magic += weaponBuffDamage;
+                ApplyWeaponBuff(ref hit);
+                PrepareOutgoing(ref hit);
                 HitQuery.Apply(this, target, hit, true);
             });
         }
@@ -627,6 +929,23 @@ namespace Turris
 
         public HitResult ReceiveHit(HitData hit)
         {
+            // Kontra: w aktywnym oknie cios wroga (który da się sparować) jest zatrzymany, a wróg traci postawę i dostaje cios.
+            var counter = ActiveSkill;
+            if (counter != null && counter.Def.kind == SpellKind.Counter && Actions.Phase == ActionPhase.Active && hit.parryable && hit.attacker is EnemyBrain countered && !hit.isStatusTick)
+            {
+                TechniqueHit(countered, counter);
+                FxLibrary.Parry(AimPoint + transform.forward * 0.5f);
+                CombatEvents.RaiseMessage("KONTRA!", counter.Def.color);
+                // Utratę postawy napastnikowi zadaje HitQuery.Apply (jak przy parowaniu) – z tego wyniku.
+                var cr = new HitResult { outcome = HitOutcome.Parried, attackerPoiseDamage = counter.Def.attack.poiseDamage };
+                CombatEvents.RaiseHit(AimPoint, cr, true);
+                return cr;
+            }
+
+            // Odporność na żywioł redukuje część z żywiołem (limit maxElementResist).
+            if (hit.element != Element.None && hit.magic > 0)
+                hit.magic *= 1f - Mathf.Clamp(Build.stats[Names.ElementResistStat(hit.element)], -100f, B.maxElementResist) / 100f;
+            string reaction = Status.ModifyIncoming(ref hit, B);
             var r = DamageResolver.Resolve(hit, CurrentDefense(), B);
             if (r.outcome == HitOutcome.Ignored) return r;
 
@@ -670,14 +989,50 @@ namespace Turris
                     break;
             }
 
+            // Efekty trafienia (tylko gdy cios naprawdę doszedł – osłona w pełni pochłaniająca je zatrzymuje).
+            if (!absorbedAll)
+            {
+                float instant = Status.OnLanded(hit, r, B, out var landedReaction, out bool froze);
+                if (instant > 0) { Health.Drain(instant); r.healthDamage += instant; }
+                reaction = reaction ?? landedReaction;
+                if (froze)
+                {
+                    Actions.Force(ActionType.Flinch, Status.FrozenRemaining);
+                    CombatEvents.RaiseMessage("ZAMROŻENIE!", Names.StatusColor(StatusKind.Frozen));
+                }
+            }
+            if (reaction != null) CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.7f, reaction, Names.ElementColor(hit.element));
+
+            // Mroźna zbroja: napastnik z bliska dostaje chłód.
+            if (FrostArmorTime > 0 && hit.attacker is EnemyBrain striker && !hit.isStatusTick &&
+                Vector3.Distance(striker.transform.position, transform.position) < 4f)
+                striker.ApplyStatus(StatusKind.Chill, 0f, 10f);
+
             CombatEvents.RaiseHit(AimPoint, r, true);
             if (Health.Current <= 0 && !IsDead) Die();
             return r;
         }
 
+        /// <summary>Tyknięcie efektu: już po pancerzu; osłona je pochłania, drgnięcia nie ma.</summary>
+        void TakeStatusDamage(float dmg)
+        {
+            if (BarrierAmount > 0)
+            {
+                float absorbed = Mathf.Min(BarrierAmount, dmg);
+                BarrierAmount -= absorbed;
+                dmg -= absorbed;
+                if (BarrierAmount <= 0.01f) EndBarrier(true);
+            }
+            if (dmg <= 0) return;
+            Health.Drain(dmg);
+            CombatEvents.RaiseWorldText(AimPoint, $"{dmg:0}", Status.BleedStacks > 0 ? Names.StatusColor(StatusKind.Bleed) : Names.StatusColor(StatusKind.Burn));
+            if (Health.Current <= 0 && !IsDead) Die();
+        }
+
         void Die()
         {
             Actions.Force(ActionType.Dead, 0f);
+            statusFx.Clear();
             CombatEvents.RaiseMessage("POLEGŁEŚ", new Color(0.8f, 0.1f, 0.1f));
             Died?.Invoke();
         }
@@ -723,8 +1078,20 @@ namespace Turris
                     switch (def.kind)
                     {
                         case SpellKind.Charge: s.attack = AttackAnim.Thrust; break;
+                        case SpellKind.Projectile: s.attack = AttackAnim.Thrust; break; // rzut
+                        case SpellKind.Flurry:
+                            s.attack = flurryIndex % 2 == 0 ? AttackAnim.SlashRight : AttackAnim.SlashLeft;
+                            if (a.Phase == ActionPhase.Active)
+                            {
+                                float iv = Mathf.Max(0.08f, ScaleStartup(def.tickInterval));
+                                s.phaseProgress = Mathf.Clamp01(1f - skillHitTimer / iv); // każde cięcie od zamachu do wybrzmienia
+                            }
+                            break;
                         case SpellKind.Quake: s.attack = AttackAnim.Slam; break;
                         case SpellKind.ShieldBash: s.action = AnimAction.Parry; break;
+                        case SpellKind.Counter: s.action = a.Phase == ActionPhase.Active ? AnimAction.Block : AnimAction.Parry; break;
+                        case SpellKind.Warcry: s.attack = AttackAnim.Burst; break;
+                        case SpellKind.Rupture: s.attack = AttackAnim.SlashLeft; break;
                         case SpellKind.Whirlwind:
                             s.attack = AttackAnim.SlashRight;
                             if (a.Phase == ActionPhase.Active)
@@ -735,6 +1102,8 @@ namespace Turris
                             break;
                         default: s.attack = AttackAnim.SlashRight; break;
                     }
+                    // Animacja wskazana w danych umiejętności ma pierwszeństwo (np. Cięcie z wyskoku → skok).
+                    if (s.action == AnimAction.Attack && def.attack.animation != AttackAnim.Auto && def.kind != SpellKind.Flurry) s.attack = def.attack.animation;
                     break;
                 }
                 case ActionType.Flask: s.action = AnimAction.Drink; break;

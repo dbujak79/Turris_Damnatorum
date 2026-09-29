@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bfc9e3d0e146d4086347f0e38c03cf, type: 3}
+  m_Name: spell_chain
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
+  id: spell_chain
+  displayName: "\u0141a\u0144cuch b\u0142yskawic"
+  description: "B\u0142yskawica skacze mi\u0119dzy wrogami i pora\u017Ca (pora\u017Cony otrzymuje wi\u0119cej obra\u017Ce\u0144). W krwawi\u0105cy cel \u2013 przewodzenie."
+  tags: 2
+  kind: 11
+  category: 0
+  manaCost: 26
+  castTime: 0.35
+  recovery: 0.4
+  cancelAfter: 0.2
+  staminaCost: 5
+  requirements:
+  - attribute: 5
+    value: 13
+  requiredTags: 0
+  intelligenceScaling: 2.5
+  attack:
+    name: "\u0141a\u0144cuch b\u0142yskawic"
+    delivery: 0
+    damageType: 1
+    baseDamage: 40
+    windup: 0.35
+    active: 0.05
+    recovery: 0.4
+    cancelAfter: 0.2
+    reach: 12
+    radius: 6
+    lunge: 0
+    tracking: 360
+    blockable: 1
+    parryable: 0
+    dodgeable: 1
+    guardLoad: 20
+    poiseDamage: 12
+    heavy: 0
+    staminaCost: 0
+    projectileSpeed: 14
+    projectileCount: 4
+    spreadAngle: 0
+    explosionRadius: 0
+    element: 3
+    elementShare: 0
+    bonusVsFrozen: 0
+    bonusVsBleeding: 0
+    executeBonus: 0
+    statuses:
+    - kind: 3
+      stacks: 1
+      chance: 1
+    animation: 0
+  amount: 60
+  duration: 3
+  cooldown: 5
+  charges: 1
+  extraChargeAtLevel: 0
+  cooldownReductionPerLevel: 0.06
+  weaponMultiplier: 1.5
+  arcAngle: 150
+  tickInterval: 0.35
+  moveMultiplier: 0.5
+  levelFeatures:
+  - level: 2
+    kind: 0
+    value: 1
+  - level: 4
+    kind: 0
+    value: 1
+  maxLevel: 4
+  powerPerLevel: 0.15
+  costReductionPerLevel: 0.06
+  color: {r: 0.8, g: 0.85, b: 1, a: 1}

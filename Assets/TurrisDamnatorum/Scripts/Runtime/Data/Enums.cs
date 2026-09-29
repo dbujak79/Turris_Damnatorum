@@ -2,6 +2,16 @@ namespace Turris
 {
     public enum DamageType { Physical, Magic }
 
+    /// <summary>
+    /// Żywioł trafienia. Sam żywioł niczego nie nakłada – efekty pochodzą z jawnej listy w ataku.
+    /// Decyduje o słabościach/odpornościach wroga i o reakcjach (szok termiczny, przewodzenie).
+    /// Obrażenia żywiołów liczą się jako magiczne (obrona magiczna je redukuje).
+    /// </summary>
+    public enum Element { None, Fire, Frost, Lightning }
+
+    /// <summary>Efekty trwające na postaci. Zamrożenie powstaje z trzeciej warstwy chłodu.</summary>
+    public enum StatusKind { Bleed, Burn, Chill, Shock, Frozen }
+
     public enum ArenaStyle { Auto, Courtyard, Crypt, Summit }
 
     public enum Faction { Player, Enemy }
@@ -23,6 +33,13 @@ namespace Turris
         ParryWindow,      // dodatkowe sekundy aktywnego okna parowania
         EquipLoad,        // udźwig (limit ciężaru wyposażenia)
         MoveSpeed,        // % premii do szybkości ruchu
+        FireResist,       // % redukcji obrażeń od ognia (limit 75%)
+        FrostResist,
+        LightningResist,
+        FireDamage,       // % premii do obrażeń od ognia
+        FrostDamage,
+        LightningDamage,
+        BleedDamage,      // % premii do obrażeń krwawienia
     }
 
     public enum AttributeType { Vigor, Endurance, Mind, Strength, Dexterity, Intelligence }
@@ -39,7 +56,11 @@ namespace Turris
     /// Zachowanie umiejętności. Czary: Projectile, Nova, Heal, WeaponBuff, Barrier.
     /// Techniki bronią: Cleave (łuk przed sobą), Charge (szarża), Whirlwind (młynek), Quake (uderzenie w ziemię), ShieldBash (uderzenie tarczą).
     /// </summary>
-    public enum SpellKind { Projectile, Nova, Heal, WeaponBuff, Barrier, Cleave, Charge, Whirlwind, Quake, ShieldBash }
+    /// Cone (stożek czaru), Chain (łańcuch skaczący między wrogami), Zone (strefa na ziemi), Flurry (seria cięć przed sobą).
+    /// Warcry (okrzyk: premia do obrażeń), Meteor (zapowiedziany krąg), Storm (pioruny w losowych wrogów), BloodPact (życie za darmowe czary),
+    /// FrostArmor (osłona + odwet chłodem), Pull (przyciąganie), Counter (postawa kontry), Rupture (rozdarcie ran).
+    public enum SpellKind { Projectile, Nova, Heal, WeaponBuff, Barrier, Cleave, Charge, Whirlwind, Quake, ShieldBash, Cone, Chain, Zone, Flurry,
+        Warcry, Meteor, Storm, BloodPact, FrostArmor, Pull, Counter, Rupture }
 
     /// <summary>Czar kosztuje manę i skaluje z Inteligencją; technika kosztuje wytrzymałość i skaluje z obrażeniami broni.</summary>
     public enum SkillCategory { Spell, Technique }
@@ -56,6 +77,15 @@ namespace Turris
         RiposteHeal,          // X życia za ripostę
         BlockManaGain,        // X many za zablokowany cios
         SpellStaminaRefund,   // X wytrzymałości po rzuceniu czaru
+        BurnDurationBonus,    // +X s podpalenia zadawanego przez postać
+        BleedMaxStacksBonus,  // +X maks. warstw krwawienia na celach
+        BleedMovingBonus,     // +X do mnożnika krwawienia w ruchu
+        FreezeStacksReduction,// o X mniej warstw chłodu do zamrożenia (min. 1)
+        ConductionBonus,      // +X% obrażeń przewodzenia
+        ConductionJump,       // >0: przewodzenie przeskakuje na najbliższego wroga (połowa)
+        DodgeShockCharge,     // >0: po uniku następny cios bronią poraża
+        BurnImmunity,         // >0: postać nie płonie
+        BurningDamageBonus,   // +X% obrażeń, gdy postać płonie
     }
 
     public enum HitOutcome { Ignored, Hit, Dodged, Parried, Blocked, GuardBroken }

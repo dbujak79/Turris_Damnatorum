@@ -116,7 +116,10 @@ namespace Turris.Tests
             Shot(root, Path.Combine(dir, "2_floor1_telegraph.png"));
 
             root.DebugCompleteFloorNow();
+            yield return UiShot(Path.Combine(dir, "1f_reward_ui.png"));
             root.ChooseReward(0);
+            root.Run.souls = 420;
+            yield return UiShot(Path.Combine(dir, "2a_intermission_shop_ui.png"));
             root.OpenEquipment();
             yield return UiShot(Path.Combine(dir, "2b_equipment_ui.png"));
             root.CloseEquipment();
@@ -139,6 +142,8 @@ namespace Turris.Tests
         /// <summary>Zrzut całego ekranu gry razem z interfejsem IMGUI (działa tylko w oknie edytora).</summary>
         static IEnumerator UiShot(string path)
         {
+            // W -batchmode WaitForEndOfFrame nigdy nie nadchodzi (i OnGUI nie działa) – zrzut z UI tylko w oknie.
+            if (Application.isBatchMode) yield break;
             for (int i = 0; i < 3; i++) yield return null;
             yield return new WaitForEndOfFrame();
             var tex = ScreenCapture.CaptureScreenshotAsTexture();
