@@ -11,8 +11,8 @@ namespace Turris
         static Material additive, alpha, glyphAdd, ringAdd, portalAdd;
         static Texture2D soft, glyph, ring, smoke, portal;
 
-        public const string AdditiveShader = "Legacy Shaders/Particles/Additive";
-        public const string AlphaShader = "Legacy Shaders/Particles/Alpha Blended";
+        public const string AdditiveShader = "Turris/FxAdditive";
+        public const string AlphaShader = "Turris/FxAlphaBlended";
 
         public static Texture2D SoftTexture => soft != null ? soft : (soft = MakeSoft(64, 1.5f));
         public static Texture2D SmokeTexture => smoke != null ? smoke : (smoke = MakeSmoke(64));

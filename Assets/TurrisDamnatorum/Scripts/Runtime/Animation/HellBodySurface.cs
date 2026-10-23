@@ -21,7 +21,7 @@ namespace Turris
                 for (int i = 0; i < list.Length; i++)
                 {
                     var original = list[i];
-                    if (original == null || original.shader.name != "Standard" || shader == null) continue;
+                    if (original == null || original.shader.name != MaterialLibrary.LitShader || shader == null) continue;
                     if (!materials.TryGetValue(original, out var copy) || copy == null)
                     {
                         copy = new Material(original) { name = original.name + "_HellBody", shader = shader };

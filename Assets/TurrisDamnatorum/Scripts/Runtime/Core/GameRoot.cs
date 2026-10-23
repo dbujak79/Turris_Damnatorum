@@ -100,6 +100,7 @@ namespace Turris
             }
             sun.transform.rotation = Quaternion.Euler(50, -30, 0);
             sun.shadows = LightShadows.Soft;
+            sun.intensity = RenderingSetup.SunIntensity;
 
             var cam = Camera.main;
             if (cam == null)
@@ -110,6 +111,7 @@ namespace Turris
                 c.AddComponent<AudioListener>();
             }
             cam.nearClipPlane = 0.1f;
+            RenderingSetup.Prepare(cam);
             CameraRig = cam.GetComponent<CameraRig>();
             if (CameraRig == null) CameraRig = cam.gameObject.AddComponent<CameraRig>();
 
@@ -133,7 +135,7 @@ namespace Turris
             RenderSettings.fogStartDistance = 18f;
             RenderSettings.fogEndDistance = 60f;
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.32f, 0.3f, 0.33f);
+            RenderSettings.ambientLight = new Color(0.32f, 0.3f, 0.33f) * RenderingSetup.AmbientScale;
         }
 
         // ================================================================== Menu

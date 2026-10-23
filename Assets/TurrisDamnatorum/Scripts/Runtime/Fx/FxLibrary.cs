@@ -144,6 +144,7 @@ namespace Turris
             var l = go.AddComponent<Light>();
             l.type = LightType.Point;
             l.color = color;
+            intensity = RenderingSetup.PointIntensity(intensity, range);
             l.intensity = intensity;
             l.range = range;
             l.shadows = LightShadows.None;

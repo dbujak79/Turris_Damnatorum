@@ -10,6 +10,8 @@ namespace Turris
     /// <summary>Współdzielone materiały (po jednym na parę powierzchnia+kolor). Podświetlenia idą przez MaterialPropertyBlock.</summary>
     public static class MaterialLibrary
     {
+        /// <summary>Shader oświetlany URP (dawniej Built-in „Standard”).</summary>
+        public const string LitShader = "Universal Render Pipeline/Lit";
         static Material template;
         static readonly Dictionary<string, Material> Cache = new Dictionary<string, Material>();
 
@@ -45,7 +47,7 @@ namespace Turris
                 case Surface.Stone: gloss = 0.12f; break;
             }
             if (m.HasProperty("_Metallic")) m.SetFloat("_Metallic", metallic);
-            if (m.HasProperty("_Glossiness")) m.SetFloat("_Glossiness", gloss);
+            if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", gloss);
             if (m.HasProperty("_EmissionColor"))
             {
                 m.EnableKeyword("_EMISSION");
@@ -136,7 +138,8 @@ namespace Turris
         struct Slot { public Renderer r; public int index; public Color color; public Color emission; }
         readonly List<Slot> slots = new List<Slot>();
         static MaterialPropertyBlock block;
-        static readonly int ColorId = Shader.PropertyToID("_Color");
+        // URP Lit: kolor bazowy to _BaseColor (ukryte _Color z Built-in nie jest już czytane przez shader).
+        static readonly int ColorId = Shader.PropertyToID("_BaseColor");
         static readonly int EmissionId = Shader.PropertyToID("_EmissionColor");
         Color lastTint; float lastAmount = -1f; Color lastGlow; float lastGlowAmount = -1f;
 

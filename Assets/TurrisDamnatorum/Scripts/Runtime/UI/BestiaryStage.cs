@@ -42,6 +42,7 @@ namespace Turris
             camGo.transform.SetParent(transform, false);
             cam = camGo.AddComponent<Camera>();
             cam.enabled = false;
+            RenderingSetup.Prepare(cam);
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.02f, 0.015f, 0.02f, 1f);
             cam.fieldOfView = 28f;
@@ -62,7 +63,7 @@ namespace Turris
             go.transform.rotation = Quaternion.Euler(euler);
             var l = go.AddComponent<Light>();
             l.type = LightType.Point;
-            l.color = c; l.intensity = intensity * 3f; l.range = 12f;
+            l.color = c; l.range = 12f; l.intensity = RenderingSetup.PointIntensity(intensity * 3f, l.range);
             go.transform.position = at + Quaternion.Euler(euler) * Vector3.back * 4f + Vector3.up * 2f;
         }
 

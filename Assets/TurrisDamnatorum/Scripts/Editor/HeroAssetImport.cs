@@ -73,20 +73,20 @@ namespace Turris.EditorTools
             var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
             if (mat == null)
             {
-                mat = new Material(Shader.Find("Standard"));
+                mat = new Material(Shader.Find(MaterialLibrary.LitShader));
                 AssetDatabase.CreateAsset(mat, matPath);
             }
             var albedo = Tex(folder, name, "_albedo");
             var metallic = Tex(folder, name, "_metallic");
             var normal = Tex(folder, name, "_normal");
             var emission = Tex(folder, name, "_emission");
-            mat.SetTexture("_MainTex", albedo);
-            mat.SetColor("_Color", Color.white);
+            mat.SetTexture("_BaseMap", albedo);
+            mat.SetColor("_BaseColor", Color.white);
             if (metallic != null)
             {
                 mat.SetTexture("_MetallicGlossMap", metallic);
-                mat.EnableKeyword("_METALLICGLOSSMAP");
-                mat.SetFloat("_GlossMapScale", 1f);
+                mat.EnableKeyword("_METALLICSPECGLOSSMAP");
+                mat.SetFloat("_Smoothness", 1f);
                 mat.SetFloat("_SmoothnessTextureChannel", 0f);
             }
             if (normal != null)

@@ -102,7 +102,7 @@ namespace Turris.Tests
             cameraGo.transform.position=new Vector3(0,7,-11); cameraGo.transform.LookAt(new Vector3(0,0.8f,1));
             camera.clearFlags=CameraClearFlags.SolidColor; camera.backgroundColor=new Color(0.045f,0.04f,0.05f); camera.fieldOfView=50;
             var floor=GameObject.CreatePrimitive(PrimitiveType.Cube); floor.transform.position=new Vector3(0,-0.2f,0); floor.transform.localScale=new Vector3(30,0.2f,30);
-            var floorMaterial=new Material(Shader.Find("Standard")) { color=new Color(0.06f,0.055f,0.065f) };
+            var floorMaterial=new Material(Shader.Find(MaterialLibrary.LitShader)) { color=new Color(0.06f,0.055f,0.065f) };
             floor.GetComponent<Renderer>().sharedMaterial=floorMaterial;
             RenderSettings.fog=false; RenderSettings.ambientMode=UnityEngine.Rendering.AmbientMode.Flat;
             RenderSettings.ambientLight=new Color(0.16f,0.14f,0.18f);

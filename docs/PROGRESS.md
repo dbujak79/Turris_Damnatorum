@@ -1,8 +1,23 @@
 # Turris Damnatorum — stan prac i plan
 
-Aktualizacja: 2026-10-23 (korekta stopy i stalowego noska, testy przez Unity MCP). Opis gry, sterowania i architektury jest w [README.md](../README.md). Ten plik służy do przekazania pracy między sesjami.
+Aktualizacja: 2026-10-23 (migracja renderowania Built-in → URP 17.6 + Linear, gałąź `feature/urp-vfx-migration`). Opis gry, sterowania i architektury jest w [README.md](../README.md). Ten plik służy do przekazania pracy między sesjami.
 
-### Ostatnia sesja — 2026-10-23: ustawienie stopy
+### Ostatnia sesja — 2026-10-23: migracja Built-in → URP + Linear
+
+Pełny opis, inwentarz, wyniki i znane problemy: [MIGRACJA_URP.md](MIGRACJA_URP.md). Gałąź `feature/urp-vfx-migration`
+(niezacommitowana); migawka drzewa sprzed migracji: `refs/backup/pre-urp-worktree`.
+- URP 17.6.0 (Forward+, HDR, MSAA 2×, Depth Texture), Color Space **Linear**, domyślny Volume: Bloom (próg 1), ACES,
+  Color Adjustments (ekspozycja +1), winieta. Assety w `Settings/URP/`.
+- Konwerter Unity: 72 materiały Standard → URP Lit (GUID bez zmian). Ręcznie przepisane shadery: `HellBody` (Lit +
+  `_HellSurface`), `HellParticle`, `HellGround`, nowe `Turris/FxAdditive` i `Turris/FxAlphaBlended` zamiast Legacy Particles.
+- Kod tylko renderujący: `RenderingSetup` (post na kamerach, kompensacja świateł punktowych, kalibracja słońca 2,0 i otoczenia ×1,6),
+  `_BaseColor`/`_Smoothness` zamiast `_Color`/`_Glossiness` (w URP Lit te stare nazwy istnieją, ale są ignorowane).
+- Wyniki: kompilacja i konsola 0 błędów, EditMode 156/0/1, PlayMode 115/117 – dwa testy zależne od długości klatki
+  padają identycznie także w Built-in (edytor bez fokusu ~15 kl./s), do powtórzenia przy aktywnym oknie Unity.
+  0 klatek magenta w 94 zrzutach; scena gry ~75% jasności Built-in (celowo ciemniej); render 1080p 4,8 ms.
+- Nie rozpoczęto przebudowy efektów żywiołów ani VFX Graph – kolejny etap.
+
+### Poprzednia sesja — 2026-10-23: ustawienie stopy
 
 - Uaktualniono [plan migracji](PLAN_MIGRACJI_HELL_UNLEASHED.md) w projekcie Turris oraz raport P0/P1:
   stan etapów, korekty stopy/noska, wyniki testów z rozróżnieniem kolejności zmian, praca przez MCP i zadania do odbioru.
@@ -547,7 +562,7 @@ wrogowie zostali proceduralni (migracja objęła tylko bohaterów), więc ich re
    - granice faz `windupEnd` i `activeEnd`.
 5. **Treść:** podejście do docelowych 20–30 min (więcej pięter i aren), więcej wrogów i ataków, przeciwnicy parujący, NavMesh albo omijanie filarów.
 6. **Interfejs docelowy** (UI Toolkit), zmiana przypisań przycisków, wibracje pada.
-7. **Przed wydaniem:** usunąć deweloperskie F9 (+100 popiołu), sprawdzić build (materiały efektów z `Resources`, shadery „Legacy Shaders/Particles”).
+7. **Przed wydaniem:** usunąć deweloperskie F9 (+100 popiołu), sprawdzić build (materiały efektów z `Resources`, shadery `Turris/*` i URP Lit z `Shader.Find`).
 
 ## 6. Preferencje użytkownika
 

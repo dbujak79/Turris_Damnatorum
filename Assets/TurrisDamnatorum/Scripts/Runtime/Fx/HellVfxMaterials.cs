@@ -40,8 +40,8 @@ namespace Turris
                 const string key = "rock";
                 if (!materials.TryGetValue(key, out var material) || material == null)
                 {
-                    material = new Material(Shader.Find("Standard")) { name = "HU_Rock", color = new Color(0.16f, 0.13f, 0.1f), hideFlags = HideFlags.DontSave };
-                    material.SetFloat("_Glossiness", 0.05f);
+                    material = new Material(Shader.Find(MaterialLibrary.LitShader)) { name = "HU_Rock", color = new Color(0.16f, 0.13f, 0.1f), hideFlags = HideFlags.DontSave };
+                    material.SetFloat("_Smoothness", 0.05f);
                     material.EnableKeyword("_EMISSION"); material.SetColor("_EmissionColor", new Color(0.14f, 0.048f, 0.008f));
                     materials[key] = material;
                 }

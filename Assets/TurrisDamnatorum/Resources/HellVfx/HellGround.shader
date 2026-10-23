@@ -13,24 +13,29 @@ Shader "Turris/HellGround"
     }
     SubShader
     {
-        Tags { "Queue"="Transparent" "RenderType"="Transparent" "IgnoreProjector"="True" }
+        Tags { "Queue"="Transparent" "RenderType"="Transparent" "IgnoreProjector"="True" "RenderPipeline"="UniversalPipeline" }
         Blend SrcAlpha One
         Cull Off ZWrite Off Offset -1, -1
         Pass
         {
-            CGPROGRAM
+            Name "ForwardUnlit"
+            Tags { "LightMode"="UniversalForward" }
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #include "UnityCG.cginc"
-            sampler2D _NoiseTex;
-            float4 _TintColor, _Color;
-            float _Element, _Telegraph, _Fill, _Clock;
+            #include "Assets/TurrisDamnatorum/Shaders/TurrisCommon.hlsl"
+            TEXTURE2D(_NoiseTex); SAMPLER(sampler_NoiseTex);
+            #define tex2D(t, uv) SAMPLE_TEXTURE2D(t, sampler##t, uv)
+            CBUFFER_START(UnityPerMaterial)
+                float4 _TintColor, _Color;
+                float _Element, _Telegraph, _Fill, _Clock;
+            CBUFFER_END
             struct appdata { float4 vertex:POSITION; float2 uv:TEXCOORD0; };
             struct v2f { float4 vertex:SV_POSITION; float2 uv:TEXCOORD0; float3 world:TEXCOORD1; };
             v2f vert(appdata v)
             {
-                v2f o; o.vertex=UnityObjectToClipPos(v.vertex); o.uv=v.uv*2-1;
-                o.world=mul(unity_ObjectToWorld,v.vertex).xyz; return o;
+                v2f o; o.vertex=TransformObjectToHClip(v.vertex.xyz); o.uv=v.uv*2-1;
+                o.world=TransformObjectToWorld(v.vertex.xyz); return o;
             }
             float4 frag(v2f i):SV_Target
             {
@@ -41,7 +46,7 @@ Shader "Turris/HellGround"
                 float inside=1-smoothstep(0.96,1,d);
                 float rim=smoothstep(0.87,0.96,d)*inside;
                 float body=inside*lerp(0.35,1,smoothstep(0.2,0.95,d));
-                float3 color=_TintColor.rgb;
+                float3 color=TurrisGammaOf(_TintColor.rgb);
                 float pattern=0.3;
                 float3 a=tex2D(_NoiseTex,w*0.22+float2(t*0.05,-t*0.22)).rgb;
                 float3 b=tex2D(_NoiseTex,w*0.5+float2(-t*0.12,-t*0.4)).rgb;
@@ -87,9 +92,9 @@ Shader "Turris/HellGround"
                     float fill=1-smoothstep(max(0,_Fill-0.05),max(0.001,_Fill),d);
                     alpha=rim*0.8+fill*inside*(0.1+pattern*0.3);
                 }
-                return float4(color,saturate(alpha*_Color.a));
+                return float4(TurrisColor(color),saturate(alpha*_Color.a));
             }
-            ENDCG
+            ENDHLSL
         }
     }
 }

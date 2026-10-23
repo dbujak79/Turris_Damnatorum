@@ -150,7 +150,7 @@ namespace Turris
             // Wir: obrót wokół osi patrzenia (owal zostaje owalem – kręci się tekstura w przeskalowanej warstwie).
             if (swirl != null) swirl.GetChild(0).localRotation = Quaternion.AngleAxis(-age * 220f, Vector3.forward);
             if (core != null) core.GetChild(0).localRotation = Quaternion.AngleAxis(age * 140f, Vector3.forward);
-            if (glow != null) glow.intensity = 3.2f * open * (0.85f + 0.15f * Mathf.Sin(age * 13f));
+            if (glow != null) glow.intensity = RenderingSetup.PointIntensity(3.2f, glow.range) * open * (0.85f + 0.15f * Mathf.Sin(age * 13f));
         }
 
         void OnDestroy() => Active.Remove(this);

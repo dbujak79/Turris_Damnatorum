@@ -173,7 +173,7 @@ namespace Turris.Tests
             lightGo.transform.rotation = Quaternion.Euler(40, -30, 0);
             var ground = GameObject.CreatePrimitive(PrimitiveType.Cube); cleanup.Add(ground);
             ground.transform.position = Vector3.down * 0.52f; ground.transform.localScale = new Vector3(30, 1, 30);
-            var material = new Material(Shader.Find("Standard")) { color = new Color(0.2f, 0.2f, 0.22f) }; cleanup.Add(material);
+            var material = new Material(Shader.Find(MaterialLibrary.LitShader)) { color = new Color(0.2f, 0.2f, 0.22f) }; cleanup.Add(material);
             ground.GetComponent<Renderer>().sharedMaterial = material;
             RenderSettings.ambientLight = new Color(0.4f, 0.4f, 0.44f);
             var cameraGo = new GameObject("FootPose_Camera"); cleanup.Add(cameraGo);

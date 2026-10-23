@@ -50,6 +50,7 @@ namespace Turris
                 var go = new GameObject("HU_FlashLight"); go.transform.SetParent(transform, false);
                 lights[index] = go.AddComponent<Light>(); lights[index].type = LightType.Point; lights[index].shadows = LightShadows.None;
             }
+            intensity = RenderingSetup.PointIntensity(intensity, range);
             var light = lights[index]; light.enabled = true; light.transform.position = at;
             light.color = color; light.range = range; light.intensity = intensity;
             lightAge[index] = 0; lightLife[index] = Mathf.Max(0.01f, seconds); lightPower[index] = intensity;

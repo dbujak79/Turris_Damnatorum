@@ -109,7 +109,7 @@ namespace Turris.Tests
         public IEnumerator ThirtyDemons_RenderAndMeasureCameraCost()
         {
             var floor = GameObject.CreatePrimitive(PrimitiveType.Cube); cleanup.Add(floor); floor.transform.position = Vector3.down * 0.5f; floor.transform.localScale = new Vector3(45,1,45);
-            var floorMaterial = new Material(Shader.Find("Standard")) { color = new Color(0.12f, 0.11f, 0.1f) }; cleanup.Add(floorMaterial); floor.GetComponent<Renderer>().sharedMaterial = floorMaterial;
+            var floorMaterial = new Material(Shader.Find(MaterialLibrary.LitShader)) { color = new Color(0.12f, 0.11f, 0.1f) }; cleanup.Add(floorMaterial); floor.GetComponent<Renderer>().sharedMaterial = floorMaterial;
             var names = new[] { "hound", "brute", "legionary", "frostcaster", "cultist", "imp" };
             var config = AssetDatabase.LoadAssetAtPath<GameConfig>("Assets/TurrisDamnatorum/Content/GameConfig.asset");
             var playerObject = new GameObject("P0_Target"); cleanup.Add(playerObject); var playerCollider = playerObject.AddComponent<CharacterController>(); playerCollider.height = 1.8f; playerCollider.center = Vector3.up * 0.9f;

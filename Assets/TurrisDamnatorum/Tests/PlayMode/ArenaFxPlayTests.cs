@@ -71,11 +71,12 @@ namespace Turris.Tests
             var bundle = TestContent.Create();
             var camGo = new GameObject("Cam"); var cam = camGo.AddComponent<Camera>(); cleanup.Add(camGo);
             cam.clearFlags = CameraClearFlags.SolidColor; cam.fieldOfView = 55f; cam.farClipPlane = 300f;
-            var sunGo = new GameObject("Sun"); var sun = sunGo.AddComponent<Light>(); sun.type = LightType.Directional; sun.shadows = LightShadows.Soft; sun.intensity = 0.7f;
+            var sunGo = new GameObject("Sun"); var sun = sunGo.AddComponent<Light>(); sun.type = LightType.Directional; sun.shadows = LightShadows.Soft;
+            sun.intensity = 0.7f / 1.1f * RenderingSetup.SunIntensity; // ta sama kalibracja URP co w GameRoot (Built-in: 0,7 przy słońcu gry 1,1)
             sunGo.transform.rotation = Quaternion.Euler(50, -30, 0); cleanup.Add(sunGo);
             RenderSettings.fog = true; RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.28f, 0.26f, 0.3f);
+            RenderSettings.ambientLight = new Color(0.28f, 0.26f, 0.3f) * RenderingSetup.AmbientScale;
             QualitySettings.pixelLightCount = 8;
 
             void Shot(string name)
