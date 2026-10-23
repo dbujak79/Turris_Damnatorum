@@ -50,6 +50,14 @@ namespace Turris
         {
             string key = (look ?? name) + (additive ? "+" : "a");
             if (materials.TryGetValue(key, out var material) && material != null) return material;
+            if (look == "heat")
+            {
+                // Drganie powietrza: maska z tekstury, obraz z Opaque Texture (Turris/FxDistort).
+                material = new Material(Resources.Load<Shader>("HellVfx/FxDistort")) { name = "HU_" + key, hideFlags = HideFlags.DontSave };
+                material.mainTexture = Texture(name);
+                material.SetTexture("_NoiseTex", Texture("noise_tile"));
+                materials[key] = material; return material;
+            }
             // Shader w Resources pozostaje w buildzie także bez referencji z assetu sceny.
             var shader = Resources.Load<Shader>("HellVfx/HellParticle");
             material = new Material(shader) { name = "HU_" + key, hideFlags = HideFlags.DontSave };
@@ -69,6 +77,34 @@ namespace Turris
                 material.SetFloat("_FlipBlend", l.flipBlend ? 1f : 0f);
             }
             materials[key] = material; return material;
+        }
+
+        /// <summary>Pęknięcia gruntu po uderzeniu (Turris/FxCracks) – FxDecal.</summary>
+        public static Material Cracks
+        {
+            get
+            {
+                const string key = "cracks";
+                if (materials.TryGetValue(key, out var material) && material != null) return material;
+                material = new Material(Resources.Load<Shader>("HellVfx/FxCracks")) { name = "HU_Cracks", hideFlags = HideFlags.DontSave };
+                material.SetTexture("_NoiseTex", Texture("noise_tile"));
+                material.renderQueue = 2999;
+                materials[key] = material; return material;
+            }
+        }
+
+        /// <summary>Szron na ziemi (Turris/FxFrost) – FxDecal rosnący od środka.</summary>
+        public static Material Frost
+        {
+            get
+            {
+                const string key = "frost";
+                if (materials.TryGetValue(key, out var material) && material != null) return material;
+                material = new Material(Resources.Load<Shader>("HellVfx/FxFrost")) { name = "HU_Frost", hideFlags = HideFlags.DontSave };
+                material.SetTexture("_NoiseTex", Texture("noise_tile"));
+                material.renderQueue = 2999;
+                materials[key] = material; return material;
+            }
         }
 
         static Texture2D beamTexture;

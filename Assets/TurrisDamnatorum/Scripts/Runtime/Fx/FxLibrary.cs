@@ -174,6 +174,34 @@ namespace Turris
             return d;
         }
 
+        static readonly System.Collections.Generic.Stack<FxDecal> decalPool = new System.Collections.Generic.Stack<FxDecal>();
+
+        /// <summary>
+        /// Decal z puli: tylko dla śladów z określonym życiem, do których wywołujący nie trzyma referencji
+        /// (wypalenia, szron, pęknięcia). Po wygaśnięciu wraca do puli zamiast Destroy.
+        /// </summary>
+        public static FxDecal TimedDecal(Vector3 pos, Material mat, Color color, float fromSize, float toSize, float life, float fade = 0.35f)
+        {
+            if (!Enabled || life <= 0f) return null;
+            FxDecal d = null;
+            while (d == null && decalPool.Count > 0) d = decalPool.Pop();
+            if (d == null)
+            {
+                var go = new GameObject("FxDecalPooled");
+                go.AddComponent<MeshFilter>().sharedMesh = ProcMesh.GroundQuad();
+                var r = go.AddComponent<MeshRenderer>();
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; r.receiveShadows = false;
+                d = go.AddComponent<FxDecal>();
+                d.release = x => { x.gameObject.SetActive(false); decalPool.Push(x); };
+            }
+            d.transform.position = pos + Vector3.up * 0.03f;
+            d.transform.rotation = Quaternion.identity;
+            d.GetComponent<MeshRenderer>().sharedMaterial = mat;
+            d.gameObject.SetActive(true);
+            d.Init(color, fromSize, toSize, life, 0f, fade);
+            return d;
+        }
+
         // ------------------------------------------------------------------ Efekty złożone
 
         /// <summary>Rozbłysk: jądro + iskry + krótkie światło.</summary>
@@ -374,8 +402,8 @@ namespace Turris
             // Uderzenie z nieba w ziemię zostawia biało-niebieski, szybko stygnący ślad.
             if (from.y - to.y > 4f && Physics.Raycast(to + Vector3.up * 0.3f, Vector3.down, out var hit, 1.5f, ~0, QueryTriggerInteraction.Ignore))
             {
-                Decal(hit.point, HellVfxMaterials.Scorch(false), Color.white, 0.9f, 1.1f, 3f, 0, 0.5f);
-                Decal(hit.point + Vector3.up * 0.002f, HellVfxMaterials.Scorch(true, bolt: true), Color.white, 0.8f, 0.8f, 0.7f, 0, 0.9f);
+                TimedDecal(hit.point, HellVfxMaterials.Scorch(false), Color.white, 0.9f, 1.1f, 3f, 0.5f);
+                TimedDecal(hit.point + Vector3.up * 0.002f, HellVfxMaterials.Scorch(true, bolt: true), Color.white, 0.8f, 0.8f, 0.7f, 0.9f);
             }
         }
 
@@ -387,6 +415,13 @@ namespace Turris
             Particles(origin, new Emit { burst = 90, life = new Vector2(0.35f, 0.6f), speed = new Vector2(range * 1.4f, range * 2.2f), size = new Vector2(0.15f, 0.35f), colorA = c, colorB = Color.white, shape = ParticleSystemShapeType.Cone, angle = angle * 0.45f, radius = 0.15f, rotation = rot, drag = 1.5f, sizeGrow = 2f });
             Particles(origin, new Emit { burst = 40, life = new Vector2(0.6f, 1f), speed = new Vector2(range * 0.8f, range * 1.4f), size = new Vector2(0.4f, 0.7f), colorA = new Color(0.8f, 0.9f, 1f, 0.35f), alpha = true, shape = ParticleSystemShapeType.Cone, angle = angle * 0.45f, radius = 0.2f, rotation = rot, drag = 2f, sizeGrow = 2.5f });
             PointLight(origin + forward * range * 0.5f, c, 3f, range * 1.5f, 0.3f);
+            // Lód zostaje po podmuchu: kryształy rosnące z odległością i szron w stożku.
+            if (HellFx.GroundBelow(origin, out var ground))
+            {
+                Vector3 flat = new Vector3(forward.x, 0, forward.z).normalized;
+                IceCrystals.Arc(ground, flat, range, angle, Mathf.Clamp(Mathf.RoundToInt(range * 1.2f), 3, 8), 0.55f);
+                HellFx.FrostGround(ground + flat * range * 0.55f, range * 1.1f, 2.5f);
+            }
         }
 
         /// <summary>Płonąca ziemia: krąg i kilka ognisk na czas trwania strefy.</summary>

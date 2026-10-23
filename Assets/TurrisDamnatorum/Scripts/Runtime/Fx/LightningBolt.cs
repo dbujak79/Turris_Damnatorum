@@ -22,15 +22,21 @@ namespace Turris
         readonly List<Vector3> points = new List<Vector3>(64);
         readonly List<Vector3> branch = new List<Vector3>(32);
         static readonly Vector3[] buffer = new Vector3[64];
+        static readonly Stack<LightningBolt> pool = new Stack<LightningBolt>();
 
         public static LightningBolt Strike(Vector3 from, Vector3 to, Color color)
         {
-            var go = new GameObject("Lightning");
-            var bolt = go.AddComponent<LightningBolt>();
-            bolt.from = from; bolt.to = to; bolt.color = color;
-            bolt.glow = bolt.Line("Glow");
-            bolt.core = bolt.Line("Core");
-            for (int i = 0; i < MaxBranches; i++) { bolt.branchGlow[i] = bolt.Line("BranchGlow"); bolt.branchCore[i] = bolt.Line("BranchCore"); }
+            LightningBolt bolt = null;
+            while (bolt == null && pool.Count > 0) bolt = pool.Pop();
+            if (bolt == null)
+            {
+                bolt = new GameObject("Lightning").AddComponent<LightningBolt>();
+                bolt.glow = bolt.Line("Glow");
+                bolt.core = bolt.Line("Core");
+                for (int i = 0; i < MaxBranches; i++) { bolt.branchGlow[i] = bolt.Line("BranchGlow"); bolt.branchCore[i] = bolt.Line("BranchCore"); }
+            }
+            bolt.from = from; bolt.to = to; bolt.color = color; bolt.age = 0f; bolt.nextStrike = 0f;
+            bolt.gameObject.SetActive(true);
             bolt.Shape();
             bolt.Apply(0f);
             return bolt;
@@ -51,7 +57,7 @@ namespace Turris
         void Update()
         {
             age += Time.deltaTime;
-            if (age >= Life) { Destroy(gameObject); return; }
+            if (age >= Life) { gameObject.SetActive(false); pool.Push(this); return; }
             if (age >= nextStrike && age < Life * 0.6f) Shape();
             Apply(age / Life);
         }

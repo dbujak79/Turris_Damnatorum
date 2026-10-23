@@ -2,7 +2,21 @@
 
 Aktualizacja: 2026-10-23 (migracja renderowania Built-in → URP 17.6 + Linear, gałąź `feature/urp-vfx-migration`). Opis gry, sterowania i architektury jest w [README.md](../README.md). Ten plik służy do przekazania pracy między sesjami.
 
-### Ostatnia sesja — 2026-10-23: efekty AAA, krok 1 (uber-shader, ogień, błyskawica)
+### Ostatnia sesja — 2026-10-23: efekty AAA, krok 2 (lód, ziemia, pule, drganie powietrza)
+
+Szczegóły i pomiary: [EFEKTY_AAA.md](EFEKTY_AAA.md).
+- Lód: kryształy z siatek (`IceCrystals`, `Turris/FxIce`), szron na ziemi (`Turris/FxFrost`), mgła przy ziemi, zimny błysk;
+  podmuch mrozu zostawia kryształy i szron w stożku.
+- Ziemia: ściana pyłu (`ShockRing`, `Turris/FxShockRing`), pęknięcia z żarem (`Turris/FxCracks`), kurz.
+- Pule: błyski (`HellFxPool.OneShot`), ślady (`FxLibrary.TimedDecal`), `LightningBolt`, `ShockRing`, `IceCrystals` –
+  potwierdzone ponowne użycie po drugiej fali.
+- Drganie powietrza: Opaque Texture w URP, `Turris/FxDistort` nad ogniem i płonącą ziemią.
+- Testy: EditMode 156/0/1; PlayMode 98 zaliczonych, 17 galerii pominiętych, 3 niezaliczone – dwa znane (tempo klatek)
+  i `AudioPlayTests.Sounds_FollowCombatAndFlow…`, który pada tylko przy stanie statycznym `AudioService` z poprzedniego
+  przebiegu (bez przeładowania domeny); po przeładowaniu przechodzi zarówno na kodzie kroku 1, jak i 2.
+  Receptury HU: `import_hu_vfx.py --verify` OK. Koszt najgorszego przypadku (18 wybuchów + 6 błyskawic): +2,3 ms przy 1080p.
+
+### Poprzednia sesja — 2026-10-23: efekty AAA, krok 1 (uber-shader, ogień, błyskawica)
 
 Dziennik etapu: [EFEKTY_AAA.md](EFEKTY_AAA.md). Niezacommitowane (na `feature/urp-vfx-migration` po commicie migracji).
 - `Turris/HellParticle` jako uber-shader: jądro HDR, erozja z Custom Data, falowanie UV, płynny flipbook, miękkie

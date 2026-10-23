@@ -25,6 +25,27 @@ namespace Turris
             }
         }
 
+        readonly Dictionary<string, HellParticles[]> oneShots = new Dictionary<string, HellParticles[]>();
+        readonly Dictionary<string, int> nextOneShot = new Dictionary<string, int>();
+
+        /// <summary>Jednorazowy efekt Turris (błysk uderzenia) z tej samej puli cyklicznej co wybuchy, po kluczu.</summary>
+        internal HellParticles OneShot(string key, HellParticleLayer[] layers, Vector3 at, float scale)
+        {
+            if (!oneShots.TryGetValue(key, out var pool))
+            {
+                oneShots[key] = pool = new HellParticles[BurstsPerElement]; nextOneShot[key] = 0;
+            }
+            int index = nextOneShot[key]; nextOneShot[key] = (index + 1) % pool.Length;
+            var fx = pool[index];
+            if (fx == null)
+            {
+                fx = HellParticles.Create("HU_" + key, layers, true, transform);
+                fx.pooled = true; pool[index] = fx;
+            }
+            fx.transform.position = at; fx.SetScale(scale); fx.Play();
+            return fx;
+        }
+
         public HellParticles Burst(HellFxElement element, Vector3 at, float radius)
         {
             if (!bursts.TryGetValue(element, out var pool))

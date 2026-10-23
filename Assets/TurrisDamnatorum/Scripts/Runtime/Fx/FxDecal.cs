@@ -14,10 +14,13 @@ namespace Turris
         Transform follow;
         Renderer rend;
         public float Progress { get; set; } = -1f; // opcjonalne „wypełnienie” (telegraf): pulsowanie rośnie z postępem
+        /// <summary>Zwrot do puli zamiast zniszczenia po upływie życia (tylko FxLibrary.TimedDecal).</summary>
+        internal System.Action<FxDecal> release;
 
         public void Init(Color c, float fromSize, float toSize, float lifeTime, float spinSpeed, float fadeFraction)
         {
             color = c; from = fromSize; to = toSize; life = lifeTime; spin = spinSpeed; fade = Mathf.Clamp(fadeFraction, 0.01f, 1f);
+            t = 0f;
             rend = GetComponent<Renderer>();
             Apply(0f);
         }
@@ -36,7 +39,11 @@ namespace Turris
             t += Time.deltaTime;
             if (follow != null) transform.position = new Vector3(follow.position.x, follow.GetComponent<FxDecal>() != null ? follow.position.y + 0.005f : 0.03f, follow.position.z);
             transform.Rotate(0f, spin * Time.deltaTime, 0f, Space.World);
-            if (life > 0f && t >= life) { Destroy(gameObject); return; }
+            if (life > 0f && t >= life)
+            {
+                if (release != null) release(this); else Destroy(gameObject);
+                return;
+            }
             Apply(life > 0f ? t / life : 0f);
         }
 

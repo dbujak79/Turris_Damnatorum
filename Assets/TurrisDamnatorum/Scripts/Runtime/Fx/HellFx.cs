@@ -27,10 +27,74 @@ namespace Turris
             if (!FxLibrary.Enabled) return null;
             var fx = HellFxPool.Instance.Burst(element, at, Mathf.Max(0.1f, radius));
             if (element == HellFxElement.Fire) FireAccent(at, radius);
+            else if (element == HellFxElement.Ice) IceAccent(at, radius);
+            else if (element == HellFxElement.Earth) EarthAccent(at, radius);
             return fx;
         }
 
-        static HellParticleLayer[] fireFlash;
+        static HellParticleLayer[] fireFlash, iceFlash, fireHeat, groundHeat;
+
+        /// <summary>Drganie gorącego powietrza unoszące się nad ogniem (maska dymu, Turris/FxDistort).</summary>
+        static HellParticleLayer HeatLayer(float size, float lifetime, int amount, float speed) =>
+            new HellParticleLayer("smoke", new[] { new Color(1, 1, 1, 0), new Color(1, 1, 1, 0.9f), new Color(1, 1, 1, 0.6f), new Color(1, 1, 1, 0) },
+                false, size, size * 1.6f, speed * 0.5f, speed, 25, new Vector3(0, 0.6f, 0), lifetime, amount, Grow: true, EmitRadius: 0.4f, Look: "heat");
+
+        /// <summary>Podłoże pod punktem: najniższe trafienie w dół (wyżej mogą być kolidery postaci w miejscu wybuchu).</summary>
+        public static bool GroundBelow(Vector3 at, out Vector3 ground, float depth = 3f)
+        {
+            ground = at;
+            int count = Physics.RaycastNonAlloc(at + Vector3.up * 0.2f, Vector3.down, groundHits, depth, ~0, QueryTriggerInteraction.Ignore);
+            if (count == 0) return false;
+            ground = groundHits[0].point;
+            for (int i = 1; i < count; i++) if (groundHits[i].point.y < ground.y) ground = groundHits[i].point;
+            return true;
+        }
+
+        /// <summary>
+        /// Warstwy Turris nad wybuchem lodu HU: zimny błysk, wieniec kryształów z siatek (wyrastają, stoją, rozpadają się),
+        /// szron rozrastający się po ziemi (~2 promienie) i mgła płożąca się na boki.
+        /// </summary>
+        static void IceAccent(Vector3 at, float radius)
+        {
+            iceFlash ??= new[]
+            {
+                new HellParticleLayer("glow", new[] { new Color(0.85f, 0.95f, 1, 1), new Color(0.45f, 0.7f, 1, 0.6f), new Color(0.3f, 0.5f, 1, 0) },
+                    true, 1.4f, 1.8f, 0, 0, 0, Vector3.zero, 0.14f, 1, EmitRadius: 0.01f, Look: "glow_hot"),
+            };
+            HellFxPool.Instance.OneShot("IceFlash", iceFlash, at, Mathf.Clamp(radius, 0.4f, 2.5f));
+            if (radius < 0.6f || !GroundBelow(at, out var ground)) return;
+            IceCrystals.Ring(ground, radius, Mathf.Clamp(Mathf.RoundToInt(radius * 4f), 4, 12), Mathf.Clamp(radius * 0.45f, 0.35f, 1.2f));
+            FrostGround(ground, radius * 2.2f, 3.5f);
+            FrostMist(ground, radius);
+        }
+
+        /// <summary>
+        /// Warstwy Turris nad uderzeniem ziemi HU (od promienia 1): ściana pyłu rozchodząca się z wyhamowaniem,
+        /// promieniste pęknięcia ze stygnącym żarem i kurz przy ziemi.
+        /// </summary>
+        static void EarthAccent(Vector3 at, float radius)
+        {
+            if (radius < 1f || !GroundBelow(at, out var ground)) return;
+            ShockRing.Spawn(ground, radius * 1.15f, Mathf.Clamp(radius * 0.6f, 0.6f, 1.8f));
+            FxLibrary.TimedDecal(ground, HellVfxMaterials.Cracks, Color.white, radius * 1.4f, radius * 2.1f, 5f, 0.5f);
+            SlamDust(ground, radius);
+        }
+
+        /// <summary>Szron na ziemi: rośnie od środka do pełnej średnicy i blednie pod koniec.</summary>
+        public static FxDecal FrostGround(Vector3 ground, float diameter, float life)
+            => FxLibrary.TimedDecal(ground, HellVfxMaterials.Frost, Color.white, diameter * 0.25f, diameter, life, 0.45f);
+
+        /// <summary>Mgła płożąca się po ziemi na boki od miejsca uderzenia.</summary>
+        public static void FrostMist(Vector3 ground, float radius)
+        {
+            FxLibrary.Particles(ground + Vector3.up * 0.15f, new FxLibrary.Emit
+            {
+                burst = Mathf.Clamp(Mathf.RoundToInt(radius * 7f), 6, 22), life = new Vector2(1.0f, 1.6f), speed = new Vector2(0.1f, 0.3f),
+                size = new Vector2(0.9f, 1.5f) * Mathf.Clamp(radius * 0.5f, 0.6f, 1.6f), colorA = new Color(0.75f, 0.88f, 1f, 0.32f), colorB = new Color(0.6f, 0.8f, 1f, 0.22f),
+                shape = ParticleSystemShapeType.Circle, radius = radius * 0.3f, rotation = new Vector3(90, 0, 0),
+                radial = radius * 1.6f, drag = 2.2f, sizeGrow = 2.4f, alpha = true, sprite = "frost_mist", atlas = new Vector2Int(4, 2),
+            });
+        }
         static readonly RaycastHit[] groundHits = new RaycastHit[8];
 
         /// <summary>
@@ -44,17 +108,13 @@ namespace Turris
                 new HellParticleLayer("glow", new[] { new Color(1, 0.75f, 0.4f, 1), new Color(1, 0.5f, 0.15f, 0.7f), new Color(1, 0.25f, 0.04f, 0) },
                     true, 1.6f, 2.0f, 0, 0, 0, Vector3.zero, 0.16f, 1, EmitRadius: 0.01f, Look: "glow_hot"),
             };
-            var flash = HellParticles.Create("HU_FireFlash", fireFlash, true);
-            flash.transform.position = at; flash.SetScale(Mathf.Clamp(radius, 0.4f, 2.5f)); flash.Play();
-            if (radius < 0.6f) return;
-            // Najniższe trafienie w dół to podłoże (wyżej mogą być kolidery postaci w miejscu wybuchu).
-            int count = Physics.RaycastNonAlloc(at + Vector3.up * 0.2f, Vector3.down, groundHits, 3f, ~0, QueryTriggerInteraction.Ignore);
-            if (count == 0) return;
-            Vector3 ground = groundHits[0].point;
-            for (int i = 1; i < count; i++) if (groundHits[i].point.y < ground.y) ground = groundHits[i].point;
+            HellFxPool.Instance.OneShot("FireFlash", fireFlash, at, Mathf.Clamp(radius, 0.4f, 2.5f));
+            fireHeat ??= new[] { HeatLayer(1.4f, 1.1f, 6, 1.4f) };
+            HellFxPool.Instance.OneShot("FireHeat", fireHeat, at, Mathf.Clamp(radius * 0.7f, 0.5f, 2f));
+            if (radius < 0.6f || !GroundBelow(at, out var ground)) return;
             float scorch = radius * 2f;
-            FxLibrary.Decal(ground, HellVfxMaterials.Scorch(false), Color.white, scorch * 0.85f, scorch, 6f, 0, 0.45f);
-            FxLibrary.Decal(ground + Vector3.up * 0.002f, HellVfxMaterials.Scorch(true), Color.white, scorch * 0.6f, scorch * 0.6f, 1.6f, 0, 0.9f);
+            FxLibrary.TimedDecal(ground, HellVfxMaterials.Scorch(false), Color.white, scorch * 0.85f, scorch, 6f, 0.45f);
+            FxLibrary.TimedDecal(ground + Vector3.up * 0.002f, HellVfxMaterials.Scorch(true), Color.white, scorch * 0.6f, scorch * 0.6f, 1.6f, 0.9f);
         }
 
         public static HellParticles Ambient(Transform parent, Vector3 offset, HellFxElement element, float radius, float duration = 0)
@@ -95,7 +155,8 @@ namespace Turris
             Burst(at + Vector3.up * 0.1f, family, radius);
             FxLibrary.Decal(at, HellVfxMaterials.Ground(family), color, radius * 2, radius * 2, 0.55f, 0, 0.6f);
             FxLibrary.Decal(at, FxMaterials.Ring, color, 0.3f, radius * 2, 0.4f);
-            if (dust) SlamDust(at, radius);
+            // Uderzenie ziemi od promienia 1 ma już własny kurz (EarthAccent).
+            if (dust && !(family == HellFxElement.Earth && radius >= 1f)) SlamDust(at, radius);
             HellFxPool.Instance.FlashLight(at + Vector3.up, color, 3.5f, radius * 2, 0.3f);
         }
 
@@ -118,6 +179,13 @@ namespace Turris
             if (!FxLibrary.Enabled) return null;
             var go = new GameObject("HU_Ground_" + element); go.transform.position = center;
             var fx = Ambient(go.transform, Vector3.up * 0.08f, element, radius, life);
+            if (element == HellFxElement.Fire)
+            {
+                // Płonąca ziemia: nad płomieniami stale drga powietrze.
+                groundHeat ??= new[] { HeatLayer(1.2f, 1.3f, 8, 0.9f) };
+                var heat = HellParticles.Create("HU_GroundHeat", groundHeat, false, go.transform);
+                heat.transform.localPosition = Vector3.up * 0.5f; heat.SetDisc(radius * 0.8f); heat.Play(life);
+            }
             var decal = FxLibrary.Decal(center, HellVfxMaterials.Ground(element), color, radius * 2, radius * 2, life, 0, 0.15f);
             if (decal != null) decal.transform.SetParent(go.transform, true);
             // Cząsteczki odczepiają się i dogasają; krąg znika wraz z końcem obrażeń.

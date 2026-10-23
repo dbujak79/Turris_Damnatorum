@@ -176,6 +176,14 @@ namespace Turris.Tests
                     while(Time.time-boltStart<t) yield return null;
                     Shot(camera,Path.Combine(dir,$"seq_Bolt_{Mathf.RoundToInt(t*1000):0000}.png"),640,400);
                 }
+                // Podmuch mrozu (stożek) z wysokości dłoni.
+                FxLibrary.FrostCone(new Vector3(-3f,1.2f,-0.8f),new Vector3(1,0,0.25f).normalized,new Color(0.55f,0.85f,1f),5.5f,60f);
+                float coneStart=Time.time;
+                foreach(var t in times)
+                {
+                    while(Time.time-coneStart<t) yield return null;
+                    Shot(camera,Path.Combine(dir,$"seq_Cone_{Mathf.RoundToInt(t*1000):0000}.png"),640,400);
+                }
             }
             finally { Object.Destroy(cameraGo); Object.Destroy(floor); Object.Destroy(lightGo); Object.Destroy(floorMaterial); }
         }
