@@ -512,6 +512,7 @@ namespace Turris
             ApplyFootYaw();
             ApplyIdleLegPose();
             ApplyLegTwist();
+            ApplyLegIK(dt);
             Body?.Apply(s, worldVelocity, dt);
             AnchorFeet(s, pendingAdvance - advanceBefore);
             lastAdvance = pendingAdvance - advanceBefore;
@@ -605,6 +606,26 @@ namespace Turris
         /// <summary>Najszybsze odtwarzanie klipu chodu w gardzie (cofanie z tarczą ~2,9 m/s przy chodzie w tył nagranym 1,1 m/s).</summary>
         const float GuardMaxStepRate = 2.7f;
 
+        /// <summary>
+        /// Najszybsze odtwarzanie klipu biegu. Bieg nagrany przy ~3,2 m/s grany 1,6× dla 5,2 m/s dawał cykl 0,4 s
+        /// (~300 kroków/min): noga w powietrzu przeskakiwała 18–24 cm na klatkę i wyglądała jak kilka klatek na cykl.
+        /// Ponad ten limit krok się wydłuża (ApplyStrideWarp) zamiast przyspieszać.
+        /// </summary>
+        const float RunCadenceMax = 1.2f;
+        /// <summary>Największe wydłużenie kroku przez IK nóg (dalej noga prostuje się i zaczyna ślizgać).</summary>
+        const float MaxStrideScale = 1.4f;
+
+        float strideScale = 1f, strideTarget = 1f, locoMoving;
+        /// <summary>Blokada stopy: miejsce na świecie, w którym stopa stanęła, i udział blokady (0–1).</summary>
+        struct FootLock { public bool locked; public Vector3 pos; public float weight; }
+        FootLock lockL, lockR;
+        /// <summary>Stopa (kostka) uznana za postawioną / oderwaną – wysokość nad podłożem postaci [m].</summary>
+        const float PlantHeight = 0.13f, LiftHeight = 0.17f;
+        /// <summary>Dalej od pozy z klipu blokada puszcza (noga nie rozciąga się w nieskończoność przy ostrym zwrocie).</summary>
+        const float MaxLockReach = 0.35f;
+        Vector3 strideDir = Vector3.forward; // kierunek ruchu w układzie postaci
+        Transform upperLegL, lowerLegL, upperLegR, lowerLegR, strideFootL, strideFootR;
+
         void UpdateLocomotion(Vector3 worldVelocity, float dt, bool guard)
         {
             Vector3 local = character != null ? Quaternion.Inverse(character.rotation) * worldVelocity : worldVelocity;
@@ -654,7 +675,8 @@ namespace Turris
                 }
             }
             // Faza kroków: tempo cykli to średnia ważona klipów, każdy z tempem dopasowanym do prędkości postaci.
-            float cycles = 0f, moving = 0f;
+            float cycles = 0f, moving = 0f, stride = 0f;
+            if (speed > 0.08f) strideDir = local / speed;
             for (int i = 0; i < LocoSlots; i++)
             {
                 float prev = i == Idle ? loco.GetInputWeight(Idle) + loco.GetInputWeight(LocoSlots) : loco.GetInputWeight(i);
@@ -664,10 +686,19 @@ namespace Turris
                 float len = locoClips[i].GetAnimationClip().length;
                 if (len <= 0.01f) continue;
                 float rate = speed > 0.08f ? Mathf.Clamp(speed / Mathf.Max(0.1f, locoSpeeds[i]), 0.5f, guard ? GuardMaxStepRate : 2f) / (1f - shorten) : 1f;
+                // Bieg: kadencja do RunCadenceMax, resztę drogi pokrywa dłuższy krok.
+                float extra = 1f;
+                if (i >= Run && !guard && rate > RunCadenceMax) { extra = rate / RunCadenceMax; rate = RunCadenceMax; }
                 cycles += cur * rate / len;
+                stride += cur * extra;
                 moving += cur;
             }
             if (moving > 0f) stepPhase = Mathf.Repeat(stepPhase + dt * cycles / moving, 1f);
+            locoMoving = moving;
+            // Wydłużenie z wagą ruchu (spoczynek w mieszance go osłabia), wygładzone jak przejścia klipów.
+            float strideWanted = moving > 0f ? Mathf.Lerp(1f, Mathf.Min(MaxStrideScale, stride / moving), Mathf.Clamp01(moving)) : 1f;
+            strideTarget = strideWanted;
+            strideScale = Mathf.MoveTowards(strideScale, strideTarget, dt * 4f);
             // Spoczynek dzieli się na zwykły i bojowy (po ciosie).
             float idleNow = loco.GetInputWeight(Idle); // w pętli wyżej: łączny udział spoczynku
             loco.SetInputWeight(Idle, idleNow * (1f - combatMix));
@@ -757,6 +788,76 @@ namespace Turris
                 chestBone.rotation = Quaternion.AngleAxis(-twist * 0.4f, up) * chestBone.rotation;
             }
             else spineBone.rotation = Quaternion.AngleAxis(-twist, up) * spineBone.rotation;
+        }
+
+        /// <summary>
+        /// IK nóg w ruchu, dwa etapy na stopę:
+        /// 1) wydłużenie kroku (stride warping) – stopa z nagrania przesuwa się wzdłuż kierunku ruchu o (skala − 1) swojej
+        ///    odległości od biodra, wysokość zostaje z klipu (szybki bieg przy umiarkowanej kadencji);
+        /// 2) blokada stopy – stopa, która stanęła na ziemi, zostaje w tym miejscu świata do oderwania (zwroty, hamowanie,
+        ///    różnice prędkości), a przy oderwaniu płynnie wraca do pozy z klipu.
+        /// Dwukościowe IK udo–goleń zachowuje płaszczyznę kolana; stopa na ziemi zostaje płasko, w powietrzu idzie za goleniem.
+        /// </summary>
+        void ApplyLegIK(float dt)
+        {
+            if (!humanoid || character == null) return;
+            float action = actionLayers[1] != null ? Smooth(actionLayers[1].weight) : 0f;
+            float k = 1f + (strideScale - 1f) * (1f - action);
+            bool lockOn = locoMoving > 0.3f && action < 0.5f;
+            if (k < 1.005f && !lockOn && lockL.weight <= 0f && lockR.weight <= 0f) { lockL.locked = lockR.locked = false; return; }
+            if (upperLegL == null)
+            {
+                upperLegL = animator.GetBoneTransform(HumanBodyBones.LeftUpperLeg); lowerLegL = animator.GetBoneTransform(HumanBodyBones.LeftLowerLeg);
+                upperLegR = animator.GetBoneTransform(HumanBodyBones.RightUpperLeg); lowerLegR = animator.GetBoneTransform(HumanBodyBones.RightLowerLeg);
+                strideFootL = animator.GetBoneTransform(HumanBodyBones.LeftFoot); strideFootR = animator.GetBoneTransform(HumanBodyBones.RightFoot);
+                if (upperLegL == null || lowerLegL == null || upperLegR == null || lowerLegR == null || strideFootL == null || strideFootR == null) { upperLegL = null; return; }
+            }
+            Vector3 dir = character.TransformDirection(strideDir); dir.y = 0f;
+            dir = dir.sqrMagnitude < 1e-4f ? Vector3.zero : dir.normalized;
+            float ground = character.position.y;
+            Leg(upperLegL, lowerLegL, strideFootL, ref lockL, dir, k, ground, lockOn, dt);
+            Leg(upperLegR, lowerLegR, strideFootR, ref lockR, dir, k, ground, lockOn, dt);
+        }
+
+        static void Leg(Transform upper, Transform lower, Transform foot, ref FootLock fl, Vector3 dir, float k, float ground, bool lockOn, float dt)
+        {
+            Vector3 hip = upper.position, ankle = foot.position;
+            Vector3 anim = ankle + dir * (Vector3.Dot(ankle - hip, dir) * (k - 1f));
+            float h = anim.y - ground;
+            if (!lockOn) fl.locked = false;
+            else if (!fl.locked && h < PlantHeight) { fl.locked = true; fl.pos = anim; }
+            else if (fl.locked)
+            {
+                Vector3 off = fl.pos - anim; off.y = 0f;
+                if (h > LiftHeight || off.sqrMagnitude > MaxLockReach * MaxLockReach) fl.locked = false;
+            }
+            fl.weight = Mathf.MoveTowards(fl.weight, fl.locked ? 1f : 0f, dt * (fl.locked ? 24f : 10f));
+            Vector3 target = Vector3.Lerp(anim, new Vector3(fl.pos.x, anim.y, fl.pos.z), Smooth(fl.weight));
+            if ((target - ankle).sqrMagnitude < 1e-8f) return;
+            float planted = Mathf.Max(1f - Mathf.InverseLerp(0.15f, 0.3f, h), fl.weight);
+            Reach(upper, lower, foot, target, dir, planted);
+        }
+
+        /// <summary>Dwukościowe IK: kolano w płaszczyźnie z bieżącej pozy; planted – udział obrotu stopy na świecie (reszta lokalnie).</summary>
+        static void Reach(Transform upper, Transform lower, Transform foot, Vector3 target, Vector3 dir, float planted)
+        {
+            Vector3 hip = upper.position, knee = lower.position, ankle = foot.position;
+            float a = Vector3.Distance(hip, knee), b = Vector3.Distance(knee, ankle);
+            Vector3 toTarget = target - hip;
+            if (toTarget.sqrMagnitude < 1e-6f) return;
+            float d = Mathf.Clamp(toTarget.magnitude, Mathf.Abs(a - b) + 1e-3f, (a + b) * 0.999f);
+            Quaternion footWorld = foot.rotation, footLocal = foot.localRotation;
+            Vector3 hint = knee - hip;
+            Vector3 normal = Vector3.Cross(toTarget, hint);
+            if (normal.sqrMagnitude < 1e-8f) normal = Vector3.Cross(toTarget, dir.sqrMagnitude > 0f ? dir : Vector3.forward);
+            if (normal.sqrMagnitude < 1e-8f) return;
+            float cosHip = Mathf.Clamp((a * a + d * d - b * b) / (2f * a * d), -1f, 1f);
+            Vector3 thigh = Quaternion.AngleAxis(Mathf.Acos(cosHip) * Mathf.Rad2Deg, normal.normalized) * toTarget.normalized;
+            upper.rotation = Quaternion.FromToRotation(knee - hip, thigh) * upper.rotation;
+            knee = lower.position;
+            lower.rotation = Quaternion.FromToRotation(foot.position - knee, target - knee) * lower.rotation;
+            foot.localRotation = footLocal;
+            foot.rotation = Quaternion.Slerp(foot.rotation, footWorld, planted);
         }
 
         /// <summary>Bieg w kierunku k (0 przód, 1 tył, 2 lewo, 3 prawo): własny klip, inaczej chód w tym kierunku, inaczej bieg w przód.</summary>

@@ -20,22 +20,22 @@ namespace Turris
             // Podpalenie: ogień przy piersi + wyraźne języki płomieni na całej sylwetce.
             if (s.Burning && fire == null)
             {
-                fire = HellFx.Flame(owner, Vector3.up * 0.9f * scale, 0.65f * scale);
+                fire = HellFx.Flame(owner, Vector3.up * 0.9f * scale, 0.65f * scale)?.Follow();
             }
             else if (!s.Burning) Stop(ref fire);
 
             bool cold = s.ChillStacks > 0 || s.Frozen;
-            if (cold && frost == null) frost = HellFx.Ambient(owner, Vector3.up * 0.7f * scale, HellFxElement.Ice, 0.5f * scale);
+            if (cold && frost == null) frost = HellFx.Ambient(owner, Vector3.up * 0.7f * scale, HellFxElement.Ice, 0.5f * scale)?.Follow();
             else if (!cold) Stop(ref frost);
 
-            if (s.Shocked && shock == null) shock = HellFx.ElectricAura(owner, Vector3.up * scale);
+            if (s.Shocked && shock == null) shock = HellFx.ElectricAura(owner, Vector3.up * scale)?.Follow();
             else if (!s.Shocked) Stop(ref shock);
 
             // Ogłuszenie: wirujące iskry nad głową; zachwianie i pęknięty pancerz – drobny pył kamienny.
             if (s.Stunned && stun == null) stun = FxLibrary.Aura(owner, Vector3.up * 2.0f * scale, Names.StatusColor(StatusKind.Stun), 30f, 0.35f * scale, 0.05f);
             else if (!s.Stunned) Stop(ref stun);
             bool cracked = s.StaggerStacks > 0 || s.SunderStacks > 0;
-            if (cracked && sunder == null) { sunder = HellFx.Ambient(owner, Vector3.up * 0.9f * scale, HellFxElement.Earth, 0.4f * scale); sunder.SetAmount(0.3f); sunder.SetScale(0.4f); }
+            if (cracked && sunder == null) { sunder = HellFx.Ambient(owner, Vector3.up * 0.9f * scale, HellFxElement.Earth, 0.4f * scale)?.Follow(); sunder?.SetAmount(0.3f); sunder?.SetScale(0.4f); }
             else if (!cracked) Stop(ref sunder);
 
             bleedTimer -= dt;

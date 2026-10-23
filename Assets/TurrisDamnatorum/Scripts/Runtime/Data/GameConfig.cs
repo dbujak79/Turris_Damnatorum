@@ -111,7 +111,7 @@ namespace Turris
         [Tooltip("Hamowanie ruchu gracza (m/s²).")]
         public float moveDeceleration = 60f;
         [Tooltip("Szybkość obrotu bohatera przy swobodnym ruchu (stopnie/s).")]
-        public float playerTurnSpeed = 1080f;
+        public float playerTurnSpeed = 540f;
 
         [Header("Odczucie trafień (bez wstrząsów kamery)")]
         [Tooltip("Hitstop: trafiona postać (i atakujący bronią) zatrzymuje się na chwilę – lekki cios.")]

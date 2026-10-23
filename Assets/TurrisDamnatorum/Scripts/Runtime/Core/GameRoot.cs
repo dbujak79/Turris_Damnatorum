@@ -142,6 +142,8 @@ namespace Turris
 
         public void ShowMainMenu()
         {
+            Range?.End();
+            Range = null;
             trialFloor = null;
             ClearWorld();
             Run = null;
@@ -201,7 +203,7 @@ namespace Turris
         public void StartRun(LoadoutPlan plan)
         {
             Plan = plan;
-            trialFloor = plan.trialEnemy != null ? new FloorDefinition { name = "Próba: " + plan.trialEnemy.displayName, arena = config.tower.floors[1].arena, enemies = new List<EnemyDefinition> { plan.trialEnemy }, isDuel = true } : null;
+            trialFloor = plan.trialEnemy != null ? new FloorDefinition { name = "Próba: " + plan.trialEnemy.displayName, arena = config.tower.floors[1].arena, enemies = new List<EnemyDefinition> { plan.trialEnemy }, isDuel = true } : pendingRangeFloor;
             if (!IsEnemyTrial) { Meta.RecordRunStart(plan); Meta.RememberSkillSlots(plan.skillSlots); }
             int seed = System.Environment.TickCount;
             rng = new System.Random(seed);
@@ -304,6 +306,7 @@ namespace Turris
         void OnSomethingDied(IHitReceiver who)
         {
             if (Run == null || !(who is EnemyBrain e) || !enemies.Contains(e)) return;
+            if (Range != null) { Range.OnDummyDied(e); return; }
             Run.kills++;
             if (!IsEnemyTrial) Meta.RecordKill(e.Def);
             Run.souls += Mathf.RoundToInt(e.Def.soulReward * Run.difficulty.soulMultiplier * (e.IsElite ? 1.5f : 1f));
@@ -324,6 +327,7 @@ namespace Turris
         void Update()
         {
             if (Screen == GameScreen.Playing && Run != null) TickPortals(Time.deltaTime);
+            if (Screen == GameScreen.Playing && Range != null) Range.Tick(Time.deltaTime);
             if (Screen == GameScreen.Playing && nextWaveTimer > 0)
             {
                 nextWaveTimer -= Time.deltaTime;

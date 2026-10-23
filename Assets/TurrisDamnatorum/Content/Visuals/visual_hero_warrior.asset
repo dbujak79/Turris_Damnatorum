@@ -16,6 +16,7 @@ MonoBehaviour:
   scale: 0.9729729
   demon: 0
   rigidBootToes: 1
+  footLength: 0.85
   positionOffset: {x: 0, y: 0, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   attachGear: 1

@@ -130,6 +130,43 @@ namespace Turris.Tests
         }
 
         /// <summary>
+        /// Płomień podpalenia na biegnącym celu (4 m/s) nie zostawia długiej smugi: cząsteczki przejmują prędkość celu.
+        /// Mierzy, jak daleko za celem sięgają żywe cząsteczki – bez Follow() i z nim.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator StatusFlame_OnMovingTarget_KeepsShortTail()
+        {
+            var results = new float[2];
+            for (int pass = 0; pass < 2; pass++)
+            {
+                var target = new GameObject("BurningTarget").transform;
+                var fx = HellFx.Flame(target, Vector3.up * 0.9f, 0.65f);
+                if (pass == 1) fx.Follow();
+                Time.captureFramerate = 60;
+                for (int i = 0; i < 90; i++) { target.position += Vector3.forward * 4f / 60f; yield return null; }
+                Time.captureFramerate = 0;
+                float tail = 0f;
+                var buffer = new ParticleSystem.Particle[256];
+                foreach (var ps in fx.GetComponentsInChildren<ParticleSystem>())
+                {
+                    int n = ps.GetParticles(buffer);
+                    bool local = ps.main.simulationSpace == ParticleSystemSimulationSpace.Local;
+                    for (int k = 0; k < n; k++)
+                    {
+                        Vector3 p = local ? ps.transform.TransformPoint(buffer[k].position) : buffer[k].position;
+                        tail = Mathf.Max(tail, target.position.z - p.z);
+                    }
+                }
+                results[pass] = tail;
+                Object.Destroy(target.gameObject);
+                yield return null;
+            }
+            Debug.Log($"DETAIL ogon płomienia za celem 4 m/s: bez Follow {results[0]:F2} m, z Follow {results[1]:F2} m");
+            Assert.Less(results[1], 1.2f, "Płomień podpalenia ciągnie się za celem jak smuga");
+            Assert.Less(results[1], results[0] * 0.6f, "Follow nie skraca smugi");
+        }
+
+        /// <summary>
         /// Sekwencja życia wybuchu każdego żywiołu z kamery zbliżonej do rozgrywki (z góry, pod kątem):
         /// seq_{żywioł}_{ms}.png. Do oceny warstw, jąder HDR, erozji, śladów na ziemi i dogasania.
         /// </summary>

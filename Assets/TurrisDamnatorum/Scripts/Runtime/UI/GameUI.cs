@@ -406,8 +406,8 @@ namespace Turris
                 case GameScreen.MainMenu: DrawMainMenu(); break;
                 case GameScreen.Unlocks: DrawUnlocks(); break;
                 case GameScreen.Loadout: DrawLoadout(); break;
-                case GameScreen.Playing: DrawHud(); break;
-                case GameScreen.Paused: DrawHud(); DrawPause(); break;
+                case GameScreen.Playing: DrawHud(); DrawRangePanel(); break;
+                case GameScreen.Paused: DrawHud(); DrawRangePanel(); DrawPause(); break;
                 case GameScreen.Reward: DrawReward(); break;
                 case GameScreen.Intermission: DrawIntermission(); break;
                 case GameScreen.Equipment: DrawEquipment(); break;
@@ -427,7 +427,7 @@ namespace Turris
             GUI.Label(new Rect(0, 90, W, 90), "TURRIS DAMNATORUM", title);
             GUI.Label(new Rect(0, 175, W, 40), "Wieża Potępionych – prototyp souls-like / rogue-lite", center);
 
-            var r = new Rect(W / 2 - 300, 260, 600, 560);
+            var r = new Rect(W / 2 - 300, 250, 600, 610);
             GUILayout.BeginArea(r, box);
             GUILayout.Label($"Popiół (waluta trwała): <b>{p.ash}</b>", label);
             GUILayout.Label($"Najwyższe piętro: {p.bestFloor}/{root.config.tower.floors.Count}   Podejścia: {p.totalRuns}   Zwycięstwa: {p.totalVictories}", small);
@@ -440,6 +440,7 @@ namespace Turris
                     if (!root.TryStartRun(root.Meta.LastPlan(), out var reason)) status = reason;
                 }, GUILayout.Height(48));
             Btn("Odblokowania", button, root.ShowUnlocks, GUILayout.Height(48));
+            Btn("Poligon umiejętności", button, () => root.StartSkillRange(root.Meta.LastPlan().classDef), GUILayout.Height(44));
             Btn("Bestiariusz", button, OpenBestiary, GUILayout.Height(44));
             Btn("Ustawienia", button, root.ShowControls, GUILayout.Height(44));
             Btn("Wyjdź", button, Application.Quit, GUILayout.Height(40));
@@ -869,7 +870,7 @@ namespace Turris
 
             // Piętro, dusze
             var floor = root.CurrentFloor;
-            GUI.Label(new Rect(W - 520, 30, 480, 30), $"{floor?.name}  ({run.floorIndex + 1}/{root.config.tower.floors.Count})", header);
+            GUI.Label(new Rect(W - 520, 30, 480, 30), root.InSkillRange ? floor?.name : $"{floor?.name}  ({run.floorIndex + 1}/{root.config.tower.floors.Count})", header);
             if (floor != null && root.PortalFloor && root.PortalsRunning)
                 GUI.Label(new Rect(W - 520, 96, 480, 30), root.PortalTimeLeft > 0f
                     ? $"<b>Portale: {Mathf.CeilToInt(root.PortalTimeLeft)} s</b> · demony: {root.Enemies.Count(e => e != null && !e.IsDead)}"
@@ -1017,7 +1018,8 @@ namespace Turris
             GUILayout.Label("Pauza", header);
             Btn("Wznów", button, root.TogglePause, GUILayout.Height(50));
             Btn("Ustawienia", button, root.ShowControls, GUILayout.Height(50));
-            Btn("Porzuć podejście (liczy się jak śmierć)", button, root.AbandonRun, GUILayout.Height(50));
+            if (root.InSkillRange) Btn("Wyjdź z poligonu", button, root.ShowMainMenu, GUILayout.Height(50));
+            else Btn("Porzuć podejście (liczy się jak śmierć)", button, root.AbandonRun, GUILayout.Height(50));
             GUILayout.EndArea();
         }
 

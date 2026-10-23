@@ -185,6 +185,23 @@ namespace Turris
             }
         }
 
+        /// <summary>
+        /// Efekt na poruszającej się postaci (status): cząsteczki w przestrzeni świata przejmują bieżącą prędkość emitera,
+        /// więc lecą razem z celem – zostaje krótki ogon zamiast smugi długiej na cały czas życia cząsteczek.
+        /// </summary>
+        public HellParticles Follow(float inherit = 0.95f)
+        {
+            for (int i = 0; i < systems.Length; i++)
+            {
+                var main = systems[i].main;
+                if (main.simulationSpace != ParticleSystemSimulationSpace.World) continue;
+                main.emitterVelocityMode = ParticleSystemEmitterVelocityMode.Transform;
+                var iv = systems[i].inheritVelocity;
+                iv.enabled = true; iv.mode = ParticleSystemInheritVelocityMode.Current; iv.curve = new ParticleSystem.MinMaxCurve(inherit);
+            }
+            return this;
+        }
+
         public void SetScale(float value)
         {
             scale = Mathf.Max(0.05f, value);

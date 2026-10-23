@@ -75,7 +75,7 @@ MonoBehaviour:
     playerRecoveryScale: 0.8
     moveAcceleration: 45
     moveDeceleration: 60
-    playerTurnSpeed: 1080
+    playerTurnSpeed: 540
     hitstopLight: 0.05
     hitstopHeavy: 0.1
     hitstopRiposte: 0.15

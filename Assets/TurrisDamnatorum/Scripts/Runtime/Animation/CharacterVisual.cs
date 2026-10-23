@@ -90,6 +90,7 @@ namespace Turris
             var animator = Model.GetComponentInChildren<Animator>();
             if (animator == null) animator = Model.AddComponent<Animator>();
             animator.runtimeAnimatorController = null;
+            FootMesh.Shorten(Model, animator, def.footLength);
             if (def.demon)
             {
                 // Demon z Hell Unleashed: własne klipy, pazury i czary w animacji – bez broni w dłoni i smugi ostrza.

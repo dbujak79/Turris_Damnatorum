@@ -19,7 +19,9 @@ namespace Turris
             }
         }
 
-        public float turnSpeed = 1080f;
+        public float turnSpeed = 540f;
+        /// <summary>Wygaszanie końcówki swobodnego obrotu (1/s).</summary>
+        const float TurnEase = 12f;
         public float lockOnRange = 25f;
         public float flickThreshold = 6f;
 
@@ -106,6 +108,8 @@ namespace Turris
                 if (cur == ActionType.None && intent.sqrMagnitude < 0.01f && dt > 0f) settle = adv / dt;
             }
             float faceSpeed = b.playerTurnSpeed > 0 ? b.playerTurnSpeed : turnSpeed;
+            // Swobodny obrót domyka się łagodnie (TurnEase); garda i śledzenie celu w ciosie zostają stałym tempem mechaniki.
+            bool smoothTurn = true;
             // true: prędkość wynika z ruchu swobodnego i jest wygładzana; false: narzuca ją akcja (unik, wypad).
             bool steered = true;
 
@@ -124,7 +128,7 @@ namespace Turris
                     face = LockTarget != null ? DirTo(LockTarget.transform.position) : (intent.sqrMagnitude > 0.01f ? intent : (Vector3?)null);
                     // Garda zasłania kierunek ataku: najpierw cios, który właśnie przyjęto z boku, potem wróg, który się zamachuje.
                     var guardDir = combat.GuardFace ?? IncomingThreat();
-                    if (guardDir.HasValue) { face = guardDir; faceSpeed = Mathf.Max(faceSpeed, b.guardTurnSpeed); }
+                    if (guardDir.HasValue) { face = guardDir; faceSpeed = Mathf.Max(faceSpeed, b.guardTurnSpeed); smoothTurn = false; }
                     break;
                 }
                 case ActionType.Flask:
@@ -155,6 +159,7 @@ namespace Turris
                     {
                         face = LockTarget != null ? DirTo(LockTarget.transform.position) : (intent.sqrMagnitude > 0.01f ? intent : (Vector3?)null);
                         faceSpeed = atk.tracking * Mathf.Max(0.1f, b.playerActionSpeed);
+                        smoothTurn = false;
                     }
                     break;
                 }
@@ -194,7 +199,10 @@ namespace Turris
             if (face.HasValue && face.Value.sqrMagnitude > 0.001f)
             {
                 var target = Quaternion.LookRotation(face.Value, Vector3.up);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, target, faceSpeed * dt);
+                float step = faceSpeed * dt;
+                // Duży zwrot – z limitem szybkości; końcówka zwalnia wykładniczo zamiast urwać się w miejscu.
+                if (smoothTurn) step = Mathf.Min(step, Quaternion.Angle(transform.rotation, target) * (1f - Mathf.Exp(-TurnEase * dt)) + 20f * dt);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, target, step);
             }
 
             if (cc.isGrounded && verticalVelocity < 0) verticalVelocity = -2f;

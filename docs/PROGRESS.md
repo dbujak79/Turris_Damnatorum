@@ -2,7 +2,49 @@
 
 Aktualizacja: 2026-10-23 (migracja renderowania Built-in → URP 17.6 + Linear, gałąź `feature/urp-vfx-migration`). Opis gry, sterowania i architektury jest w [README.md](../README.md). Ten plik służy do przekazania pracy między sesjami.
 
-### Ostatnia sesja — 2026-10-23: efekty AAA, krok 2 (lód, ziemia, pule, drganie powietrza)
+### Ostatnia sesja — 2026-10-23: poligon umiejętności, smuga ognia, krótsze stopy wojownika
+
+- **Poligon umiejętności** (wzorem `SkillRange.cs` z Hell Unleashed): przycisk w menu głównym pod „Odblokowania”
+  (nie wyżej – `GamepadPlayTests.Unlocks…` liczy pozycje menu). Arena bez fal, manekiny bez AI
+  (`EnemyBrain.TrainingDummy`), panel po prawej (`GameUI.Range.cs`, do wysokości 740 – niżej lista sterowania HUD):
+  rodzina klasy → specjalizacje → „Wspólne”, poziom, cele Gromada/Ciężcy/Kolos/Pusto, Rań/Wychłódź, Pokaz.
+  Wybrana umiejętność pod Q, poprzednia pod E; bez odnowień, bohater nieśmiertelny (`PlayerCombat.Immortal`), cele wstają po 1,6 s.
+  Klawisze `[ ] - = T B V P`, Alt – kursor do panelu, Esc → „Wyjdź z poligonu”. Kod: `Core/SkillRange.cs`, `Core/GameRoot.Range.cs`.
+  Pad w poligonie: tylko zwykła nawigacja menu (panel obsługiwany klawiaturą/myszą). Test `SkillRangePlayTests`.
+- **Smuga ognia za ruchomym celem:** `HellParticles.Follow()` (dziedziczenie prędkości emitera) w `StatusFx` – ogon płomienia
+  na biegnącym wrogu 3,31 m → 0,18 m (`HellFxPlayTests.StatusFlame_OnMovingTarget_KeepsShortTail`).
+- **Stopy wojownika −15%** (uwaga użytkownika): `CharacterVisualDefinition.footLength` (0,85 dla `visual_hero_warrior`),
+  `FootMesh.Shorten` ściska wierzchołki stopy/palców w poziomie wzdłuż kostka→palce (kości stopy mają skośne osie, skala kości
+  przechyliłaby podeszwę). Nosek 21,2 → 18,0 cm przed kostką, podeszwa bez zmian. Wymaga Read/Write na `hero_warrior.fbx`
+  (ustawione; `HeroAssetImport` też to ustawia); bez Read/Write ostrzeżenie i oryginalna stopa. Zrzuty: `TestResults/feet85`.
+- Testy (edytor bez fokusu): EditMode 156/0/1; PlayMode 105 zaliczonych, 18 galerii pominiętych, 1 błąd – znany
+  `Impact_Hitstop…` (dławienie bez fokusu). Po zmianie stóp: `Run_FeetInStancePointLikeRestPose`, `PlayerRun_PlantedFootDoesNotJump`
+  i galerie przechodzą. `import_hu_vfx.py --verify` OK.
+
+### Poprzednia sesja — 2026-10-23: płynność biegu i obrotów
+
+Uwaga użytkownika: nogi w biegu „teleportują się”, jakby cykl miał kilka klatek; obroty za szybkie.
+- **Diagnoza pomiarem** (nie klatkaż: praca klatki w walce 3,5 ms mediana, 6,8 ms p95 przy 2560×1248 –
+  `FrameCostPlayTests`). Klip biegu nagrany przy 3,25 m/s był grany 1,6× dla 5,2 m/s: cykl 0,4 s (~300 kroków/min),
+  noga w wymachu przeskakiwała 18–24 cm na klatkę przy 60 kl./s; stopa podporowa ślizgała się 2–4 cm/kl., przy zwrocie do 15 cm.
+- **`ClipAnimationDriver`:** kadencja biegu ograniczona do 1,2× (`RunCadenceMax`, cykl 0,53 s), resztę drogi daje dłuższy
+  krok (`ApplyLegIK`: stride warping do 1,4× przez dwukościowe IK, kolano w swojej płaszczyźnie) i **blokada stopy** –
+  stopa, która stanęła, zostaje w miejscu świata do oderwania (puszcza powyżej 17 cm lub 35 cm od pozy klipu).
+  Stopa w powietrzu idzie za goleniem, na ziemi zostaje płasko (bez skrętu względem kolana).
+- **Obrót gracza:** `playerTurnSpeed` 1080 → 540°/s (GameConfig i domyślna wartość), końcówka swobodnego obrotu
+  wygaszana wykładniczo (`TurnEase`); garda i śledzenie celu w ciosach bez zmian.
+- Wynik (bieg prawdziwego gracza na wirtualnym padzie, `RunFeelPlayTests`): stopa na ziemi w biegu na wprost
+  mediana 0,0 cm/kl., p95 3,9 cm (moment lądowania); przy zwrocie max 9 cm. Noga w wymachu nadal ~18 cm/kl. przy 60 kl./s –
+  to fizyka biegu 5,2 m/s (stopa ~2× szybciej niż ciało), przy 144 Hz ~7 cm.
+- Nowe testy: `RunFeelPlayTests`, `FrameCostPlayTests`, `HeroModelPlayTests.Run_FootMovesEveryFrame_NoHeldPoses`,
+  galeria `RunFrames_WhenRequested` (32 kolejne klatki: sterownik vs nagranie).
+- Testy (edytor z fokusem): **EditMode 156/0/1, PlayMode 104 zaliczone, 0 błędów, 18 galerii pominiętych**.
+  Przy fokusie przechodzą też `Impact_Hitstop…`, `Demon_Walks…` i test muzyki – wcześniejsze błędy wynikały z dławienia
+  edytora bez fokusu (~15 kl./s). Nowe testy ładujące `Main` sprzątają scenę (`UnityTearDown`) – bez tego jej GameUI
+  rysował HUD zniszczoną kamerą i wywracał 40+ kolejnych testów.
+- **Do oceny w grze:** tempo biegu, długość kroku, szybkość obrotu.
+
+### Poprzednia sesja — 2026-10-23: efekty AAA, krok 2 (lód, ziemia, pule, drganie powietrza)
 
 Szczegóły i pomiary: [EFEKTY_AAA.md](EFEKTY_AAA.md).
 - Lód: kryształy z siatek (`IceCrystals`, `Turris/FxIce`), szron na ziemi (`Turris/FxFrost`), mgła przy ziemi, zimny błysk;

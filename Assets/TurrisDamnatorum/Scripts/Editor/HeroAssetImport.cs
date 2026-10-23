@@ -342,6 +342,9 @@ namespace Turris.EditorTools
         static void HeroVisual(string hero, WeaponAnimSet oneHand, WeaponAnimSet twoHand, WeaponAnimSet bow)
         {
             string fbx = Heroes + hero + "/" + hero + ".fbx";
+            // Skracanie stóp (FootMesh) czyta wierzchołki w grze – siatka modelu musi mieć Read/Write.
+            bool readable = hero == "hero_warrior";
+            if (AssetImporter.GetAtPath(fbx) is ModelImporter mi && mi.isReadable != readable) { mi.isReadable = readable; mi.SaveAndReimport(); }
             var model = AssetDatabase.LoadAssetAtPath<GameObject>(fbx);
             if (model == null) { Debug.LogWarning("Brak modelu " + fbx); return; }
             // Klipy w osobnym pliku, z awatarem modelu (T-pose).
@@ -367,6 +370,8 @@ namespace Turris.EditorTools
             def.modelPrefab = model;
             def.scale = HeroScale;
             def.rigidBootToes = hero == "paladin" || hero == "hero_warrior";
+            // Model wojownika ma za długie buty względem sylwetki (ocena użytkownika: o ~15%).
+            def.footLength = hero == "hero_warrior" ? 0.85f : 1f;
             def.attachGear = true;
             def.rightSlot = "HandSlot.R";
             def.leftSlot = "HandSlot.L";

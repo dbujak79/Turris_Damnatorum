@@ -683,6 +683,113 @@ namespace Turris.Tests
             Object.Destroy(rt); Object.Destroy(sheet);
         }
 
+        /// <summary>
+        /// Płynność biegu: przy stałych 60 kl./s stopa (względem postaci) przesuwa się w każdej klatce, bez „zamrożonych”
+        /// póz i skoków. Wypisuje przesunięcia klatka po klatce (DETAIL) – „3–4 klatki na cykl” dałyby serie zer i skoki.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Run_FootMovesEveryFrame_NoHeldPoses()
+        {
+            var (v, src) = Hero("hero_warrior", Sword(), Vector3.zero, yaw: 0f);
+            var animator = v.GetComponentInChildren<Animator>();
+            Assert.IsNotNull(animator, "Model z Animatorem");
+            var foot = animator.GetBoneTransform(HumanBodyBones.LeftFoot);
+            Assert.IsNotNull(foot, "Kość lewej stopy");
+            Time.captureFramerate = 60;
+            try
+            {
+                for (int i = 0; i < 90; i++) { v.transform.position += Vector3.forward * 5.2f / 60f; yield return null; }
+                var steps = new List<float>();
+                Vector3 last = v.transform.InverseTransformPoint(foot.position);
+                for (int i = 0; i < 60; i++)
+                {
+                    v.transform.position += Vector3.forward * 5.2f / 60f;
+                    yield return null;
+                    Vector3 now = v.transform.InverseTransformPoint(foot.position);
+                    steps.Add((now - last).magnitude); last = now;
+                }
+                var sorted = steps.OrderBy(x => x).ToList();
+                float median = sorted[sorted.Count / 2], max = sorted[sorted.Count - 1];
+                int held = steps.Count(x => x < median * 0.15f);
+                Debug.Log("DETAIL run foot steps [mm]: " + string.Join(" ", steps.Select(x => (x * 1000f).ToString("F0"))));
+                Debug.Log($"DETAIL run foot: median {median * 1000f:F1} mm, max {max * 1000f:F1} mm, held {held}/{steps.Count}");
+                Assert.Less(held, 6, "Stopa stoi w miejscu (ta sama poza) przez wiele klatek – animacja skokowa");
+                Assert.Less(max, median * 4.5f, "Pojedyncze skoki pozy między klatkami");
+            }
+            finally { Time.captureFramerate = 0; }
+        }
+
+        /// <summary>
+        /// 32 kolejne klatki biegu z boku przy 60 kl./s: górny rząd – sterownik gry, dolny – samo nagranie biegu
+        /// odtworzone wprost w tym samym tempie co w grze. Plus przebieg stopy (DETAIL) w obu wariantach.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator RunFrames_WhenRequested()
+        {
+            string dir = System.Environment.GetEnvironmentVariable("TURRIS_SHOT_DIR");
+            if (string.IsNullOrEmpty(dir)) { Assert.Ignore("Ustaw TURRIS_SHOT_DIR, aby zapisać klatki biegu."); yield break; }
+            var ground = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            ground.transform.position = new Vector3(0, -0.5f, 0); ground.transform.localScale = new Vector3(400, 1, 400);
+            cleanup.Add(ground);
+            var lightGo = new GameObject("L"); var l = lightGo.AddComponent<Light>(); l.type = LightType.Directional; l.intensity = 1.2f;
+            lightGo.transform.rotation = Quaternion.Euler(40, 200, 0); cleanup.Add(lightGo);
+            var camGo = new GameObject("Cam"); var cam = camGo.AddComponent<Camera>(); cleanup.Add(camGo);
+            cam.backgroundColor = new Color(0.15f, 0.15f, 0.18f); cam.clearFlags = CameraClearFlags.SolidColor; cam.fieldOfView = 30;
+            const int W = 160, H = 230, N = 32;
+            const float speed = 5.2f;
+            var sheet = new Texture2D(W * 16, H * 4, TextureFormat.RGB24, false);
+            var rt = new RenderTexture(W, H, 24);
+            void Grab(Vector3 at, int index, int row)
+            {
+                cam.transform.position = at + new Vector3(3.2f, 0.9f, 0f);
+                cam.transform.LookAt(at + Vector3.up * 0.8f);
+                cam.targetTexture = rt; cam.Render(); RenderTexture.active = rt;
+                sheet.ReadPixels(new Rect(0, 0, W, H), (index % 16) * W, (3 - row - index / 16 * 2) * H);
+                RenderTexture.active = null; cam.targetTexture = null;
+            }
+            var (v, _) = Hero("hero_warrior", Sword(), Vector3.zero, yaw: 0f);
+            var animator = v.GetComponentInChildren<Animator>();
+            var foot = animator.GetBoneTransform(HumanBodyBones.LeftFoot);
+            Time.captureFramerate = 60;
+            var driverY = new List<float>();
+            for (int i = 0; i < 100 + N; i++)
+            {
+                v.transform.position += Vector3.forward * speed / 60f;
+                yield return null;
+                if (i < 100) continue;
+                driverY.Add(foot.position.y);
+                Grab(v.transform.position, i - 100, 0);
+            }
+            v.gameObject.SetActive(false);
+            // To samo nagranie wprost: tempo jak w sterowniku (prędkość / naturalna prędkość klipu).
+            var raw = Object.Instantiate(Def("hero_warrior").modelPrefab); cleanup.Add(raw);
+            raw.transform.localScale = Vector3.one * Def("hero_warrior").scale;
+            var clip = AssetDatabase.LoadAssetAtPath<WeaponAnimSet>(Visuals + "anim_sword_shield.asset").run;
+            var drv = v.Driver as ClipAnimationDriver;
+            float natural = 3.25f;
+            var f = typeof(ClipAnimationDriver).GetField("locoSpeeds", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            if (drv != null && f != null) { var sp = (float[])f.GetValue(drv); if (sp != null && sp.Length > 5 && sp[5] > 0.1f) natural = sp[5]; }
+            float rate = Mathf.Clamp(speed / natural, 0.5f, 2f);
+            var rawFoot = raw.GetComponentInChildren<Animator>().GetBoneTransform(HumanBodyBones.LeftFoot);
+            var rawY = new List<float>();
+            for (int i = 0; i < N; i++)
+            {
+                Vector3 at = Vector3.forward * (i * speed / 60f) + Vector3.right * 20f;
+                clip.SampleAnimation(raw, Mathf.Repeat(i / 60f * rate, clip.length));
+                raw.transform.position = at; raw.transform.rotation = Quaternion.identity;
+                yield return null;
+                rawY.Add(rawFoot != null ? rawFoot.position.y : 0f);
+                Grab(at, i, 1);
+            }
+            Time.captureFramerate = 0;
+            sheet.Apply();
+            File.WriteAllBytes(Path.Combine(dir, "hero_run_frames.png"), sheet.EncodeToPNG());
+            Debug.Log($"DETAIL run rate {rate:F2} (natural {natural:F2} m/s, clip {clip.length:F2} s)");
+            Debug.Log("DETAIL driver foot y [cm]: " + string.Join(" ", driverY.Select(y => (y * 100f).ToString("F0"))));
+            Debug.Log("DETAIL raw    foot y [cm]: " + string.Join(" ", rawY.Select(y => (y * 100f).ToString("F0"))));
+            Object.Destroy(rt); Object.Destroy(sheet);
+        }
+
         /// <summary>Galeria biegu Wojownika z mieczem i tarczą: klatki cyklu z boku, z przodu i z góry (kamera gry).</summary>
         [UnityTest]
         public IEnumerator RunGallery_WhenRequested()

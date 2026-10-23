@@ -40,6 +40,8 @@ namespace Turris
         public bool demon;
         [Tooltip("Sztywny stalowy nosek: palce zachowują pozę modelu względem stopy, także podczas biegu i ataków.")]
         public bool rigidBootToes;
+        [Tooltip("Długość stóp względem modelu (1 = bez zmian); skracana na siatce, podeszwa zostaje na ziemi.")]
+        [Range(0.6f, 1.2f)] public float footLength = 1f;
         public Vector3 positionOffset;
         public Vector3 rotationOffset;
 

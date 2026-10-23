@@ -210,6 +210,7 @@ namespace Turris
             if (CurrentState != State.Guarding) Stamina.Tick(dt, 25f);
             for (int i = 0; i < cooldowns.Length; i++) cooldowns[i] -= dt;
 
+            if (TrainingDummy) { TickDummy(dt); return; }
             CheckPhase();
             TickHell(dt);
             if (IsDead) return;
@@ -263,6 +264,32 @@ namespace Turris
                     break;
             }
 
+            if (displacementTime > 0) { move += displacement; displacementTime -= dt; }
+            ApplyMove(move, dt);
+            UpdateVisuals();
+        }
+
+        /// <summary>Manekin poligonu umiejętności: nie myśli i nie atakuje, przyjmuje trafienia, statusy i odrzut.</summary>
+        public bool TrainingDummy;
+        /// <summary>Miejsce manekina – po odrzucie wraca tu, gdy stoi na nogach.</summary>
+        public Vector3 DummySpot;
+
+        void TickDummy(float dt)
+        {
+            if (CurrentState == State.Staggered || CurrentState == State.Recoil || CurrentState == State.PoiseBroken)
+            {
+                stateTimer -= dt;
+                if (stateTimer <= 0) { if (CurrentState == State.PoiseBroken) Poise.SetCurrent(Poise.Max); EnterMoving(); }
+            }
+            else if (CurrentState != State.Moving) EnterMoving();
+            Vector3 move = Vector3.zero;
+            if (CurrentState == State.Moving)
+            {
+                FacePlayer(Def.turnSpeed * 0.5f, dt);
+                Vector3 back = DummySpot - transform.position; back.y = 0;
+                float off = back.magnitude;
+                if (off > 0.3f) move = back / off * Mathf.Min(off * 4f, 3f);
+            }
             if (displacementTime > 0) { move += displacement; displacementTime -= dt; }
             ApplyMove(move, dt);
             UpdateVisuals();

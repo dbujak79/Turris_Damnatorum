@@ -1312,8 +1312,12 @@ namespace Turris
             if (Health.Current <= 0 && !IsDead) Die();
         }
 
+        /// <summary>Poligon umiejętności: bohater nie ginie (zdrowie wraca do pełna zamiast śmierci).</summary>
+        public bool Immortal { get; set; }
+
         void Die()
         {
+            if (Immortal) { Health.SetCurrent(Health.Max); return; }
             Actions.Force(ActionType.Dead, 0f);
             statusFx.Clear();
             CombatEvents.RaiseMessage("POLEGŁEŚ", new Color(0.8f, 0.1f, 0.1f));
