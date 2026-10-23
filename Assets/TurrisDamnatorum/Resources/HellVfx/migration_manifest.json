@@ -1,0 +1,159 @@
+{
+  "source": "Hell Unleashed/src/Game/Assets/Textures/Vfx",
+  "date": "2026-10-22",
+  "recipe_sha256": "145ba0f61782aec66c6324b02b0ca0e8c5416698239583a3df55fbe43d610d02",
+  "textures": [
+    {
+      "file": "blood_decal.png",
+      "sha256": "4a6f75b367bbc2a2d4d353d5f18b274ead801f726aa4028c91903d1034acb0e5"
+    },
+    {
+      "file": "blood_droplets.png",
+      "sha256": "2cd1e6db4abea1d13f872926378f78fca32b35654166ec45f43e2df6d472476d"
+    },
+    {
+      "file": "blood_splash.png",
+      "sha256": "eb09443664613d016f1750430d0fcf2a1940cd3b0f8ce51642679d9937f29d1e"
+    },
+    {
+      "file": "blood_trails.png",
+      "sha256": "805e45eb6ca0cf52e1c6bcb01dc382ed3069d038db73444dd90d559263e13420"
+    },
+    {
+      "file": "droplet.png",
+      "sha256": "4a8d2b975082c5b94976054e21b4c8aa4bb718a5ea14735b0cce582e55e197c9"
+    },
+    {
+      "file": "earth_decal.png",
+      "sha256": "52b0bba25061b0481305986953d73a64b9ba3cf985f16fa617ca03d0061591f1"
+    },
+    {
+      "file": "earth_dust.png",
+      "sha256": "3c1461987f4b88154e9b30d4d694f2f96ec92833489741ffc03dbf342f92d636"
+    },
+    {
+      "file": "earth_shards.png",
+      "sha256": "99da780b08bc463a73c61c5540dc24a84798a00fcf4563fcd33fdbdc77ac9ca4"
+    },
+    {
+      "file": "earth_spikes.png",
+      "sha256": "63bc0db1f60b1a8de10745eb98ba80fdb8650f2c268ab2a9ac496a48ffc95aa9"
+    },
+    {
+      "file": "electric_sparks.png",
+      "sha256": "d55b1d251a5319a057461adc8934e7f235e5176346692aff115e750370dde285"
+    },
+    {
+      "file": "embers_atlas.png",
+      "sha256": "8850dbb771106cff0be897e3b042571d4fb3bb2692e7b735031f90442279a015"
+    },
+    {
+      "file": "fire_puffs_atlas.png",
+      "sha256": "f1f7b53921c79bc2eb77dba1b6845c32fc39277259c645559e3dc0b62a6c2b79"
+    },
+    {
+      "file": "fireball_sheet.png",
+      "sha256": "afecc3083c1e6be3118c8f7bd76e11903ef9348b375d1cf4c52bb70614fb41bc"
+    },
+    {
+      "file": "flame.png",
+      "sha256": "c200f3f407e1a0814a389718cb002c884efbf49bfeccec0b5a5d448bb34a37e2"
+    },
+    {
+      "file": "flame_sheet.png",
+      "sha256": "2f708f00ef5412ece4b4f6ebab516a4996ec8e5cc9df8291ba2d2c01fa690c28"
+    },
+    {
+      "file": "frost_decal.png",
+      "sha256": "3ad694871f55ae6c1b7b71c080466bb3203bc15bba25f3361744a29bc9ac757f"
+    },
+    {
+      "file": "frost_mist.png",
+      "sha256": "22fcdcd0f7ca7465b96d678c2274d11b7253ca29f98c24f69e525122512633b7"
+    },
+    {
+      "file": "frost_rime.png",
+      "sha256": "922aa43ccd88c02d0abdae954399fe3c3cba7e150caf5cd000ae61361f3c0ff6"
+    },
+    {
+      "file": "glow.png",
+      "sha256": "f360122b806f42c54f3b9677c22b2db3f484f27543cd30f332f0494bd3d9611a"
+    },
+    {
+      "file": "ice_shards.png",
+      "sha256": "0d8d41ea9f84958d7d54c79c860eddb767f22be961fb2685831edfe357fd1086"
+    },
+    {
+      "file": "lightning_arcs.png",
+      "sha256": "6c372cc9b157e620141ecd83e2d3f770034485d8e20ba69a19df75ca105cebed"
+    },
+    {
+      "file": "noise_tile.png",
+      "sha256": "9da6dbf56ad823eb211f4a856fd21a43fdc5c01f725bd8cd37d857394f186319"
+    },
+    {
+      "file": "plasma_orb.png",
+      "sha256": "b4c6771addc3e281febe9509e7a3f4affb51468174c52b95455049450ac73167"
+    },
+    {
+      "file": "shock.png",
+      "sha256": "0b010c000e1cee2ba2f38f8dcfe57c1942671583bdeacdba682c29849b07c842"
+    },
+    {
+      "file": "smoke.png",
+      "sha256": "f430bdd856142d5342274d444558b36350066034cbd771e09510ec9b703aa0db"
+    },
+    {
+      "file": "soul_loop.png",
+      "sha256": "d5bf4ea755e3a072896a80f524f2cde0e2310a732bffcfd1f8ef7af51bcbe891"
+    },
+    {
+      "file": "soul_trails.png",
+      "sha256": "7110a6f4882d3a7ef5fb9e24ed157037a7d6cecebe43b4b77b413aa10a5d33d1"
+    },
+    {
+      "file": "soul_wisps.png",
+      "sha256": "3e6c896ba5d8b7501f7186185cc01f01a04a11baae015e258381986823bb700c"
+    },
+    {
+      "file": "spark.png",
+      "sha256": "0776e38e442c86a3ee7465f288cc1b321e5eddf6f7a99f55f43c93b3f17c0080"
+    },
+    {
+      "file": "water_bubbles.png",
+      "sha256": "1461a7623de11c6ae0405e6aaeec4efd3f4b3f2c93b9d46eb377aeec1d89c8ef"
+    },
+    {
+      "file": "water_foam.png",
+      "sha256": "88f226cab224b1b2ce3cc3c5540afefcd5aaf262d26c566b14c04716866c5f13"
+    },
+    {
+      "file": "water_ring.png",
+      "sha256": "f5e9bde22168b6de1a47ed28ae72e10529205bb4dcffe83d6f27494e47bbd4e8"
+    },
+    {
+      "file": "water_ripples.png",
+      "sha256": "8eba622aa830d19d75a7689e546cbfade13b5695a2b6d6b3f1c09753a2c8da45"
+    },
+    {
+      "file": "water_splash.png",
+      "sha256": "1c75548ed686e6a36d9491b04cbe1db93a935d6c53e7538d1f6687917c960c8a"
+    },
+    {
+      "file": "wind_streaks.png",
+      "sha256": "f4d8bf35f53d39a0c210534252d59ed536f631b63ec649a61b4b58c9a6356dc2"
+    },
+    {
+      "file": "wind_vortex_loop.png",
+      "sha256": "c08681749696e436c01b41abe64a3e278620379bbd7133a3adfd9971746b2b71"
+    },
+    {
+      "file": "wind_vortices.png",
+      "sha256": "060f395996ab7c4ac56b497b79a6e22bfe8924320c31cfe588a159c794c42a7d"
+    },
+    {
+      "file": "wisp.png",
+      "sha256": "20fb787892b48ab3ec9ffee2e65daa7e051102329fccc7839ed6ac76b6bbb82b"
+    }
+  ]
+}

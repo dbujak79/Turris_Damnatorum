@@ -7,6 +7,13 @@ namespace Turris
     [CreateAssetMenu(menuName = "Turris/Enemy", fileName = "Enemy")]
     public class EnemyDefinition : ContentDefinition
     {
+        [Header("Migracja HU P1")]
+        public string huSourceId, huSourceHash, huModel;
+        public int huMigrationVersion;
+        public int huArchetype = -1, huSplitCount, huSummonCount;
+        public float huWakeRadius, huHatchSeconds, huEnrageHealth, huEnrageTempo = 1f;
+        public bool huCanBeElite = true;
+        public EnemyDefinition huSummon;
         public string archetype = "Wojownik";
         public float maxHealth = 300f;
         public float maxPoise = 40f;
@@ -23,6 +30,7 @@ namespace Turris
         public float lightningMultiplier = 1f;
         [Tooltip("Mnożnik obrażeń krwawienia (0 = odporny).")]
         public float bleedMultiplier = 1f;
+        public float earthMultiplier = 1f;
 
         [Tooltip("Żywioł wroga (wariant): stała aura i poświata broni w jego kolorze – od razu widać, z kim walczysz.")]
         public Element element = Element.None;
@@ -31,7 +39,7 @@ namespace Turris
         public List<EnemyDefinition> variants = new List<EnemyDefinition>();
         [Range(0, 1)] public float variantChance = 0.4f;
 
-        public float ElementMultiplier(Element e) => e == Element.Fire ? fireMultiplier : e == Element.Frost ? frostMultiplier : e == Element.Lightning ? lightningMultiplier : 1f;
+        public float ElementMultiplier(Element e) => e == Element.Fire ? fireMultiplier : e == Element.Frost ? frostMultiplier : e == Element.Lightning ? lightningMultiplier : e == Element.Earth ? earthMultiplier : 1f;
         public float preferredRange = 2.2f;
         [Tooltip("Poniżej tej odległości przeciwnik próbuje się wycofać (przeciwnik dystansowy).")]
         public float retreatRange;
@@ -54,5 +62,16 @@ namespace Turris
         public WeaponModel weaponModel = WeaponModel.Auto;
         [Tooltip("Opcjonalny model FBX z animacjami. Puste = proceduralny humanoid.")]
         public CharacterVisualDefinition visual;
+
+        [Header("Portale (Hell Unleashed)")]
+        [Tooltip("Koszt w budżecie piętra z portalami (silniejszy demon kosztuje więcej).")]
+        public float spawnCost = 1f;
+        [Tooltip("Ile sztuk wychodzi z portalu za jeden koszt (stado czerwi – 4). Elitą może być tylko pierwsza.")]
+        public int packSize = 1;
+        [Tooltip("Mnożniki elity (Turris: ×1,3 zdrowia i ×1,1 obrażeń; złote elity Hell Unleashed: ×7 i ×1,6).")]
+        public float eliteHealthMultiplier = 1.3f;
+        public float eliteDamageMultiplier = 1.1f;
+        [Tooltip("Sługa (np. nietoperz Władcy Bramy): nie może być elitą i ginie razem z przyzywającym.")]
+        public bool isMinion;
     }
 }

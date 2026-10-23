@@ -35,6 +35,14 @@ namespace Turris
                 case StatType.FrostDamage: return "Obrażenia od mrozu";
                 case StatType.LightningDamage: return "Obrażenia od błyskawic";
                 case StatType.BleedDamage: return "Obrażenia krwawienia";
+                case StatType.EarthResist: return "Odporność na ziemię (%)";
+                case StatType.EarthDamage: return "Obrażenia od ziemi";
+                case StatType.GlobalDamage: return "Wszystkie obrażenia";
+                case StatType.DamageReduction: return "Redukcja obrażeń (%)";
+                case StatType.AttackSpeed: return "Szybkość ataku";
+                case StatType.CooldownReduction: return "Skrócenie odnowień";
+                case StatType.LifeLeech: return "Kradzież życia (%)";
+                case StatType.ExecuteDamage: return "Obrażenia egzekucji";
             }
             return s.ToString();
         }
@@ -82,6 +90,61 @@ namespace Turris
             }
         }
 
+        public static string Servant(ServantKind k)
+        {
+            switch (k)
+            {
+                case ServantKind.Imp: return "chochlik ognia";
+                case ServantKind.Hound: return "widmowy ogar";
+                default: return "kościany golem";
+            }
+        }
+
+        public static string Trait(ClassTrait t)
+        {
+            switch (t)
+            {
+                case ClassTrait.Fury: return "Furia";
+                case ClassTrait.ArcaneWard: return "Arkanowa osłona";
+                case ClassTrait.Ambush: return "Zasadzka";
+                case ClassTrait.Bloodlust: return "Żądza krwi";
+                case ClassTrait.Devotion: return "Pobożność";
+                case ClassTrait.TwinBlades: return "Dwie klingi";
+                case ClassTrait.Spellblade: return "Klinga zaklęć";
+                case ClassTrait.Hawkeye: return "Sokole oko";
+                case ClassTrait.SoulBond: return "Więź dusz";
+                default: return "—";
+            }
+        }
+
+        public static string TraitHelp(ClassTrait t)
+        {
+            switch (t)
+            {
+                case ClassTrait.Fury: return "Ciosy i otrzymane trafienia ładują furię; pełna – szał na 6 s: +35% szybkości ataku, +15% redukcji obrażeń, bez drgnięć.";
+                case ClassTrait.ArcaneWard: return "Osłona za 20% maks. życia pochłania ciosy przed życiem; odrasta po 4 s bez trafień.";
+                case ClassTrait.Ambush: return "Cios w plecy +60%; pierwszy cios do 1,5 s po uniku +35%.";
+                case ClassTrait.Bloodlust: return "Furia i szał jak u wojownika; im mniej życia, tym mocniejsze ciosy (do +60%).";
+                case ClassTrait.Devotion: return "Dwie aury naraz: pierwsza o 20% silniejsza, druga na 75% siły.";
+                case ClassTrait.TwinBlades: return "Broń w każdej ręce: ciosy na zmianę, +20% szybkości ataku.";
+                case ClassTrait.Spellblade: return "Moc czarów działa na ciosy bronią; każdy trafiony wróg oddaje 2 many.";
+                case ClassTrait.Hawkeye: return "Im dalej cel, tym mocniejszy pocisk (do +45% od 11 m).";
+                case ClassTrait.SoulBond: return "Każdy żywy sługa: +3% redukcji obrażeń (do 15%).";
+                default: return "";
+            }
+        }
+
+        public static string Dodge(DodgeStyle d)
+        {
+            switch (d)
+            {
+                case DodgeStyle.ShoulderCharge: return "szarża barkiem (rani i zachwiewa)";
+                case DodgeStyle.Blink: return "odskok widma (niewrażliwość, wybuch w miejscu startu)";
+                case DodgeStyle.Vanish: return "przewrót w cień (ciosy chybiają, okno zasadzki)";
+                default: return "przewrót";
+            }
+        }
+
         public static string Element(Element e)
         {
             switch (e)
@@ -89,6 +152,7 @@ namespace Turris
                 case Turris.Element.Fire: return "ogień";
                 case Turris.Element.Frost: return "mróz";
                 case Turris.Element.Lightning: return "błyskawica";
+                case Turris.Element.Earth: return "ziemia";
                 default: return "";
             }
         }
@@ -101,12 +165,17 @@ namespace Turris
                 case StatusKind.Burn: return "podpalenie";
                 case StatusKind.Chill: return "chłód";
                 case StatusKind.Shock: return "porażenie";
+                case StatusKind.Stagger: return "zachwianie";
+                case StatusKind.Stun: return "ogłuszenie";
+                case StatusKind.Sunder: return "pęknięcie pancerza";
                 default: return "zamrożenie";
             }
         }
 
-        public static StatType ElementDamageStat(Element e) => e == Turris.Element.Fire ? StatType.FireDamage : e == Turris.Element.Frost ? StatType.FrostDamage : StatType.LightningDamage;
-        public static StatType ElementResistStat(Element e) => e == Turris.Element.Fire ? StatType.FireResist : e == Turris.Element.Frost ? StatType.FrostResist : StatType.LightningResist;
+        public static StatType ElementDamageStat(Element e) => e == Turris.Element.Fire ? StatType.FireDamage : e == Turris.Element.Frost ? StatType.FrostDamage
+            : e == Turris.Element.Earth ? StatType.EarthDamage : StatType.LightningDamage;
+        public static StatType ElementResistStat(Element e) => e == Turris.Element.Fire ? StatType.FireResist : e == Turris.Element.Frost ? StatType.FrostResist
+            : e == Turris.Element.Earth ? StatType.EarthResist : StatType.LightningResist;
 
         public static UnityEngine.Color ElementColor(Element e)
         {
@@ -115,6 +184,7 @@ namespace Turris
                 case Turris.Element.Fire: return new UnityEngine.Color(1f, 0.5f, 0.15f);
                 case Turris.Element.Frost: return new UnityEngine.Color(0.55f, 0.85f, 1f);
                 case Turris.Element.Lightning: return new UnityEngine.Color(0.85f, 0.85f, 1f);
+                case Turris.Element.Earth: return new UnityEngine.Color(0.75f, 0.58f, 0.32f);
                 default: return UnityEngine.Color.white;
             }
         }
@@ -127,6 +197,9 @@ namespace Turris
                 case StatusKind.Burn: return ElementColor(Turris.Element.Fire);
                 case StatusKind.Chill: return ElementColor(Turris.Element.Frost);
                 case StatusKind.Shock: return new UnityEngine.Color(0.95f, 0.95f, 0.45f);
+                case StatusKind.Stagger: return new UnityEngine.Color(0.85f, 0.68f, 0.38f);
+                case StatusKind.Stun: return new UnityEngine.Color(1f, 0.85f, 0.3f);
+                case StatusKind.Sunder: return new UnityEngine.Color(0.7f, 0.7f, 0.75f);
                 default: return new UnityEngine.Color(0.7f, 0.95f, 1f);
             }
         }

@@ -13,10 +13,15 @@ namespace Turris
     /// | Chłód       | wspólny czas                     | spowolnienie ruchu i akcji; trzecia warstwa → zamrożenie |
     /// | Zamrożenie  | –                                | brak ruchu i akcji; potem odporność na kolejne |
     /// | Porażenie   | 1, odświeżane                    | cel otrzymuje więcej obrażeń |
+    /// | Zachwianie  | wspólny czas                     | spowolnienie ruchu; trzecia warstwa → ogłuszenie |
+    /// | Ogłuszenie  | –                                | brak ruchu i akcji; potem odporność na kolejne |
+    /// | Pęknięcie pancerza | do sunderMaxStacks, wspólny czas | więcej obrażeń fizycznych |
     ///
     /// Reakcje: ogień w wychłodzony cel = szok termiczny (premia do ognia, chłód znika);
     /// błyskawica w krwawiący cel = przewodzenie (reszta krwawienia od razu);
-    /// błyskawica w zamrożony cel = roztrzaskanie (wybuch wokół celu, lód pęka). Tyknięcia i obrażenia reakcji nie wywołują reakcji
+    /// błyskawica w zamrożony cel = roztrzaskanie (wybuch wokół celu, lód pęka);
+    /// ziemia w płonący cel = wybuch żaru (dodatkowy ogień); ziemia w wychłodzony cel = błoto (ogłuszenie, chłód znika).
+    /// Tyknięcia i obrażenia reakcji nie wywołują reakcji
     /// i przechodzą przez pancerz tylko raz – liczone są z obrażeń, które już wylądowały.
     /// </summary>
     public class StatusEffects
@@ -28,7 +33,23 @@ namespace Turris
         int chill; float chillTime;
         float frozenTime, freezeImmunity;
         float shockTime;
+        int stagger; float staggerTime;
+        float stunTime, stunImmunity;
+        int sunder; float sunderTime;
         float tickTimer, pending;
+        float rootClock, rootUntil = float.NegativeInfinity, webTime;
+        public bool Rooted => rootClock < rootUntil;
+        public bool Webbed => webTime > 0;
+        public float RootRemaining => Mathf.Max(0, rootUntil - rootClock);
+        /// <summary>Kokon HU: ruch i unik stoją, akcje pozostają dostępne; 2 s odporności i pół czasu przy powtórce do 6 s.</summary>
+        public float TryRoot(float seconds)
+        {
+            if (seconds <= 0 || Rooted || rootClock < rootUntil + 2) return 0;
+            float held = Mathf.Min(3, seconds) * (rootClock < rootUntil + 6 ? 0.5f : 1);
+            rootUntil = rootClock + held;
+            return held;
+        }
+        public void TouchWeb() => webTime = Mathf.Max(webTime, 0.15f);
 
         /// <summary>Mnożnik czasu kontroli (chłód, zamrożenie): bossy i elity krócej.</summary>
         public float ControlMultiplier = 1f;
@@ -47,7 +68,13 @@ namespace Turris
         public bool Frozen => frozenTime > 0;
         public float FrozenRemaining => frozenTime;
         public bool Shocked => shockTime > 0;
-        public bool Any => bleeds.Count > 0 || Burning || ChillStacks > 0 || Frozen || Shocked;
+        public int StaggerStacks => staggerTime > 0 ? stagger : 0;
+        public bool Stunned => stunTime > 0;
+        public float StunRemaining => stunTime;
+        public int SunderStacks => sunderTime > 0 ? sunder : 0;
+        /// <summary>Cel nie może się ruszać ani działać (zamrożenie albo ogłuszenie).</summary>
+        public bool Incapacitated => Frozen || Stunned;
+        public bool Any => bleeds.Count > 0 || Burning || ChillStacks > 0 || Frozen || Shocked || StaggerStacks > 0 || Stunned || SunderStacks > 0 || Rooted || Webbed;
 
         /// <summary>Łączne obrażenia, które zostały jeszcze w warstwach krwawienia.</summary>
         public float BleedRemainingDamage
@@ -55,8 +82,10 @@ namespace Turris
             get { float s = 0; foreach (var b in bleeds) s += b.dps * b.remaining; return s; }
         }
 
-        public float MoveMultiplier(BalanceConfig b) => Frozen ? 0f : Mathf.Max(0.25f, 1f - ChillStacks * b.chillSlowPerStack);
-        public float ActionSpeedMultiplier(BalanceConfig b) => Frozen ? 0f : Mathf.Max(0.25f, 1f - ChillStacks * b.chillSlowPerStack);
+        /// <summary>Spowolnienie spoza efektów (np. uczepione czerwie z Hell Unleashed) – część prędkości, sumowana.</summary>
+        public float ExternalSlow;
+        public float MoveMultiplier(BalanceConfig b) => Incapacitated || Rooted ? 0f : (Webbed ? 0.5f : 1f) * Mathf.Max(0.25f, 1f - ChillStacks * b.chillSlowPerStack - StaggerStacks * b.staggerSlow - ExternalSlow);
+        public float ActionSpeedMultiplier(BalanceConfig b) => Incapacitated ? 0f : Mathf.Max(0.25f, 1f - ChillStacks * b.chillSlowPerStack);
         public float DamageTakenMultiplier(BalanceConfig b) => Shocked ? 1f + b.shockDamageBonus : 1f;
 
         /// <summary>Przed rozstrzygnięciem trafienia: porażenie i szok termiczny zwiększają obrażenia. Zwraca nazwę reakcji albo null.</summary>
@@ -67,7 +96,7 @@ namespace Turris
             // Premie sytuacyjne ataku: przeciw zamrożonym (rozbija lód) i krwawiącym.
             if (Frozen && hit.bonusVsFrozen > 0) m *= 1f + hit.bonusVsFrozen;
             if (bleeds.Count > 0 && hit.bonusVsBleeding > 0) m *= 1f + hit.bonusVsBleeding;
-            hit.physical *= m;
+            hit.physical *= m * (1f + SunderStacks * b.sunderPerStack);
             hit.magic *= m;
             if (hit.isReaction) return null;
             if (hit.element == Element.Fire && hit.magic > 0 && ChillStacks > 0)
@@ -112,6 +141,22 @@ namespace Turris
                 reaction = "ROZTRZASKANIE";
             }
             else if (Frozen && hit.bonusVsFrozen > 0) frozenTime = 0f; // broń obuchowa rozbija lód
+            if (!hit.isReaction && hit.element == Element.Earth && hit.magic > 0 && reaction == null)
+            {
+                if (Burning)
+                {
+                    // Wybuch żaru: ziemia wzbija płonące odłamki – dodatkowy ogień od razu.
+                    instant += landedMagic * b.emberBurstShare;
+                    reaction = "WYBUCH ŻARU";
+                }
+                else if (ChillStacks > 0 && !Frozen)
+                {
+                    // Błoto: ziemia w wychłodzony cel ogłusza.
+                    chill = 0; chillTime = 0;
+                    if (Stun(b)) froze = true;
+                    reaction = "BŁOTO";
+                }
+            }
             if (hit.statuses != null)
                 foreach (var s in hit.statuses)
                 {
@@ -173,8 +218,32 @@ namespace Turris
                 case StatusKind.Shock:
                     shockTime = b.shockDuration;
                     return false;
+                case StatusKind.Stagger:
+                {
+                    if (Stunned) return false;
+                    int needed = Mathf.Max(1, b.staggerStacksToStun);
+                    stagger = Mathf.Min(StaggerStacks + 1, needed);
+                    staggerTime = b.staggerDuration;
+                    if (stagger >= needed) { stagger = 0; staggerTime = 0; return Stun(b); }
+                    return false;
+                }
+                case StatusKind.Stun:
+                    return Stun(b);
+                case StatusKind.Sunder:
+                    sunder = Mathf.Min(SunderStacks + 1, Mathf.Max(1, b.sunderMaxStacks));
+                    sunderTime = b.sunderDuration;
+                    return false;
             }
             return false;
+        }
+
+        /// <summary>Ogłuszenie (jak zamrożenie bez lodu). Zwraca true, jeśli cel właśnie został ogłuszony.</summary>
+        bool Stun(BalanceConfig b)
+        {
+            if (Stunned || stunImmunity > 0) return false;
+            stunTime = b.stunDuration * ControlMultiplier;
+            stunImmunity = stunTime + b.stunImmunity;
+            return true;
         }
 
         void Freeze(BalanceConfig b)
@@ -188,6 +257,7 @@ namespace Turris
         public float Tick(float dt, bool moving, BalanceConfig b)
         {
             if (dt <= 0) return 0f;
+            rootClock += dt; webTime = Mathf.Max(0, webTime - dt);
             for (int i = bleeds.Count - 1; i >= 0; i--)
             {
                 var st = bleeds[i];
@@ -201,6 +271,10 @@ namespace Turris
             if (frozenTime > 0) frozenTime -= dt;
             if (freezeImmunity > 0) freezeImmunity -= dt;
             if (shockTime > 0) shockTime -= dt;
+            if (staggerTime > 0) { staggerTime -= dt; if (staggerTime <= 0) stagger = 0; }
+            if (stunTime > 0) stunTime -= dt;
+            if (stunImmunity > 0) stunImmunity -= dt;
+            if (sunderTime > 0) { sunderTime -= dt; if (sunderTime <= 0) sunder = 0; }
 
             tickTimer -= dt;
             bool flush = tickTimer <= 0 || (bleeds.Count == 0 && !Burning);
@@ -223,6 +297,9 @@ namespace Turris
         {
             bleeds.Clear();
             burnTime = 0; chill = 0; chillTime = 0; frozenTime = 0; freezeImmunity = 0; shockTime = 0; pending = 0;
+            stagger = 0; staggerTime = 0; stunTime = 0; stunImmunity = 0; sunder = 0; sunderTime = 0;
+            ExternalSlow = 0;
+            rootClock = webTime = 0; rootUntil = float.NegativeInfinity;
         }
 
         /// <summary>Opis aktywnych efektów do HUD.</summary>
@@ -234,6 +311,9 @@ namespace Turris
             if (Burning) l.Add((StatusKind.Burn, "płonie"));
             if (ChillStacks > 0) l.Add((StatusKind.Chill, ChillStacks > 1 ? $"chłód ×{ChillStacks}" : "chłód"));
             if (Shocked) l.Add((StatusKind.Shock, "porażony"));
+            if (Stunned) l.Add((StatusKind.Stun, "OGŁUSZONY"));
+            if (StaggerStacks > 0) l.Add((StatusKind.Stagger, StaggerStacks > 1 ? $"zachwianie ×{StaggerStacks}" : "zachwianie"));
+            if (SunderStacks > 0) l.Add((StatusKind.Sunder, SunderStacks > 1 ? $"pęknięty pancerz ×{SunderStacks}" : "pęknięty pancerz"));
             return l;
         }
     }

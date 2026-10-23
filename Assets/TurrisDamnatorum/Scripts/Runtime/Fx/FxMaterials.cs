@@ -8,8 +8,8 @@ namespace Turris
     /// </summary>
     public static class FxMaterials
     {
-        static Material additive, alpha, glyphAdd, ringAdd;
-        static Texture2D soft, glyph, ring, smoke;
+        static Material additive, alpha, glyphAdd, ringAdd, portalAdd;
+        static Texture2D soft, glyph, ring, smoke, portal;
 
         public const string AdditiveShader = "Legacy Shaders/Particles/Additive";
         public const string AlphaShader = "Legacy Shaders/Particles/Alpha Blended";
@@ -18,6 +18,7 @@ namespace Turris
         public static Texture2D SmokeTexture => smoke != null ? smoke : (smoke = MakeSmoke(64));
         public static Texture2D RingTexture => ring != null ? ring : (ring = MakeRing(128));
         public static Texture2D GlyphTexture => glyph != null ? glyph : (glyph = MakeGlyph(256));
+        public static Texture2D PortalTexture => portal != null ? portal : (portal = MakePortal(256));
 
         /// <summary>Świecenie addytywne (cząsteczki, poświaty).</summary>
         public static Material Additive => additive != null ? additive : (additive = Make("TurrisFxAdditive", AdditiveShader, SoftTexture));
@@ -27,6 +28,8 @@ namespace Turris
         public static Material Glyph => glyphAdd != null ? glyphAdd : (glyphAdd = Make("TurrisFxGlyph", AdditiveShader, GlyphTexture));
         /// <summary>Pierścień fali uderzeniowej.</summary>
         public static Material Ring => ringAdd != null ? ringAdd : (ringAdd = Make("TurrisFxRing", AdditiveShader, RingTexture));
+        /// <summary>Wir portalu: spiralne ramiona ognia zbiegające się do jasnego środka.</summary>
+        public static Material Portal => portalAdd != null ? portalAdd : (portalAdd = Make("TurrisFxPortal", AdditiveShader, PortalTexture));
 
         static Material Make(string resourceName, string shaderName, Texture2D tex)
         {
@@ -81,6 +84,31 @@ namespace Turris
                     float n = Mathf.PerlinNoise(x * 0.12f, y * 0.12f) * 0.6f + Mathf.PerlinNoise(x * 0.3f + 7f, y * 0.3f) * 0.4f;
                     float a = Mathf.Clamp01((1f - d) * 1.4f) * Mathf.Lerp(0.4f, 1f, n);
                     px[y * size + x] = new Color(1, 1, 1, a * a);
+                }
+            t.SetPixels(px);
+            t.Apply();
+            return t;
+        }
+
+        /// <summary>Tarcza wiru: spiralne smugi (szum zawinięty po kącie), jaśniejsze ku środkowi, miękka krawędź.</summary>
+        static Texture2D MakePortal(int size)
+        {
+            var t = NewTex(size);
+            var px = new Color[size * size];
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = (x + 0.5f) / size * 2f - 1f, dy = (y + 0.5f) / size * 2f - 1f;
+                    float d = Mathf.Sqrt(dx * dx + dy * dy);
+                    if (d >= 1f) { px[y * size + x] = Color.clear; continue; }
+                    float ang = Mathf.Atan2(dy, dx);
+                    // Spirala: kąt przesunięty o promień – smugi zawijają się do środka.
+                    float s = ang * 3f + d * 9f;
+                    float arms = 0.55f + 0.45f * Mathf.Sin(s);
+                    float n = Mathf.PerlinNoise(Mathf.Cos(s) * 2.5f + 5f, d * 6f + Mathf.Sin(s) * 2.5f);
+                    float edge = Mathf.SmoothStep(1f, 0.82f, d);
+                    float a = Mathf.Clamp01(edge * (0.35f + 0.65f * arms * Mathf.Lerp(0.6f, 1.2f, n)) + Mathf.Pow(1f - d, 3f) * 0.8f);
+                    px[y * size + x] = new Color(a, a, a, a);
                 }
             t.SetPixels(px);
             t.Apply();

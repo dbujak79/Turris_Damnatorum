@@ -22,7 +22,7 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator Arenas_BuildWithSimpleCollidersAndBakedVisuals()
         {
-            var bundle = DefaultContent.Create();
+            var bundle = TestContent.Create();
             foreach (var id in new[] { "arena_courtyard", "arena_crypt", "arena_summit" })
             {
                 var def = bundle.Get<ArenaDefinition>(id);
@@ -68,7 +68,7 @@ namespace Turris.Tests
         {
             string dir = System.Environment.GetEnvironmentVariable("TURRIS_SHOT_DIR");
             if (string.IsNullOrEmpty(dir)) { Assert.Ignore("Ustaw TURRIS_SHOT_DIR, aby zapisać galerię aren i efektów."); yield break; }
-            var bundle = DefaultContent.Create();
+            var bundle = TestContent.Create();
             var camGo = new GameObject("Cam"); var cam = camGo.AddComponent<Camera>(); cleanup.Add(camGo);
             cam.clearFlags = CameraClearFlags.SolidColor; cam.fieldOfView = 55f; cam.farClipPlane = 300f;
             var sunGo = new GameObject("Sun"); var sun = sunGo.AddComponent<Light>(); sun.type = LightType.Directional; sun.shadows = LightShadows.Soft; sun.intensity = 0.7f;
@@ -139,7 +139,7 @@ namespace Turris.Tests
                     // Żywioły i efekty: płonący, wychłodzony, zamrożony i porażony ghul, błyskawica, mróz, płonąca ziemia.
                     Object.Destroy(groundMarker);
                     yield return new WaitForSeconds(1f);
-                    var content = DefaultContent.Create();
+                    var content = TestContent.Create();
                     var ghoulDef = content.Get<EnemyDefinition>("enemy_ghoul");
                     var bal = content.config.balance;
                     Vector3[] at = { new Vector3(-2.6f, 0, 1.2f), new Vector3(-0.9f, 0, 1.8f), new Vector3(0.9f, 0, 1.8f), new Vector3(2.6f, 0, 1.2f) };

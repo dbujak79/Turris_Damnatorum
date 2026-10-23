@@ -32,6 +32,7 @@ namespace Turris
         readonly HashSet<IHitReceiver> hit = new HashSet<IHitReceiver>();
         public void Reset() => hit.Clear();
         public bool TryRegister(IHitReceiver r) => hit.Add(r);
+        public bool Contains(IHitReceiver r) => hit.Contains(r);
         public int Count => hit.Count;
     }
 
@@ -71,6 +72,7 @@ namespace Turris
         public static HitResult Apply(IHitReceiver attacker, IHitReceiver target, HitData hit, bool melee)
         {
             var result = target.ReceiveHit(hit);
+            if (result.outcome != HitOutcome.Ignored) CombatEvents.RaiseImpact(target, hit, result);
             if (result.outcome == HitOutcome.Parried && melee && attacker != null && !attacker.IsDead)
                 attacker.OnAttackParried(result.attackerPoiseDamage);
             attacker?.OnHitResolved(target, hit, result);
@@ -86,15 +88,18 @@ namespace Turris
         public static event Action<IHitReceiver> Died;
         /// <summary>Napis w świecie (tyknięcia efektów, reakcje, słabości) – bez efektów trafienia.</summary>
         public static event Action<Vector3, string, Color> WorldText;
+        /// <summary>Rozstrzygnięte bezpośrednie trafienie (bez tyknięć efektów): cel, dane ciosu, wynik – dla reakcji ciała, hitstopu i warstw dźwięku.</summary>
+        public static event Action<IHitReceiver, HitData, HitResult> Impact;
 
         public static void RaiseHit(Vector3 pos, HitResult r, bool targetIsPlayer) => HitResolved?.Invoke(pos, r, targetIsPlayer);
         public static void RaiseMessage(string msg, Color c) => Message?.Invoke(msg, c);
         public static void RaiseDied(IHitReceiver r) => Died?.Invoke(r);
         public static void RaiseWorldText(Vector3 pos, string text, Color c) => WorldText?.Invoke(pos, text, c);
+        public static void RaiseImpact(IHitReceiver target, in HitData hit, in HitResult r) => Impact?.Invoke(target, hit, r);
 
         public static void ClearAll()
         {
-            HitResolved = null; Message = null; Died = null; WorldText = null;
+            HitResolved = null; Message = null; Died = null; WorldText = null; Impact = null;
         }
     }
 }

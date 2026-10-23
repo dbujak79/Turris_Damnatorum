@@ -1,0 +1,10 @@
+{
+  "Attack": {
+    "top": 0.3,
+    "strike": 0.4333
+  },
+  "Tether": {
+    "top": 0.4,
+    "strike": 0.5333
+  }
+}

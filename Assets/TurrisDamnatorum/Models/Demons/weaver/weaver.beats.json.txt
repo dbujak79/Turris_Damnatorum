@@ -1,0 +1,14 @@
+{
+  "Attack": {
+    "top": 0.2667,
+    "strike": 0.4
+  },
+  "Cocoon": {
+    "top": 0.4,
+    "strike": 0.5333
+  },
+  "EggSac": {
+    "top": 0.4667,
+    "strike": 0.6667
+  }
+}

@@ -5,13 +5,13 @@ using UnityEngine;
 
 namespace Turris
 {
-    public enum GameScreen { MainMenu, Unlocks, Loadout, Playing, Reward, Intermission, Equipment, Paused, Death, Victory, Controls }
+    public enum GameScreen { MainMenu, Unlocks, Loadout, Playing, Reward, Intermission, Equipment, Paused, Death, Victory, Controls, Bestiary }
 
     /// <summary>
     /// Punkt wejścia i przepływ gry: menu → przygotowanie → piętra → nagrody/kapliczka → śmierć lub zwycięstwo.
     /// Scena zawiera tylko ten komponent, kamerę i światło; arena i postacie powstają w czasie działania.
     /// </summary>
-    public class GameRoot : MonoBehaviour
+    public partial class GameRoot : MonoBehaviour
     {
         public GameConfig config;
         [Tooltip("Nazwa pliku profilu w Application.persistentDataPath.")]
@@ -28,7 +28,9 @@ namespace Turris
         public PlayerController Controller { get; private set; }
         public CameraRig CameraRig { get; private set; }
         public List<RewardOption> Rewards { get; private set; } = new List<RewardOption>();
-        public FloorDefinition CurrentFloor => Run != null && Run.floorIndex < config.tower.floors.Count ? config.tower.floors[Run.floorIndex] : null;
+        FloorDefinition trialFloor;
+        public bool IsEnemyTrial => trialFloor != null;
+        public FloorDefinition CurrentFloor => Run != null ? trialFloor ?? (Run.floorIndex < config.tower.floors.Count ? config.tower.floors[Run.floorIndex] : null) : null;
         public bool AtRestPoint { get; private set; }
         /// <summary>Oferta sklepu dusz: losowa umiejętność na to podejście (null = brak/kupiona).</summary>
         public SpellDefinition ShopOffer { get; private set; }
@@ -37,6 +39,9 @@ namespace Turris
         public string LastFloorSummary { get; private set; }
         public int LastAsh { get; private set; }
         public string ProfilePath { get; private set; }
+        public AudioService Audio { get; private set; }
+        /// <summary>Między falami: kolejna fala zaraz wejdzie (muzyka walki gra dalej).</summary>
+        public bool WaveIncoming => nextWaveTimer > 0;
 
         readonly List<EnemyBrain> enemies = new List<EnemyBrain>();
         Transform world;
@@ -58,19 +63,27 @@ namespace Turris
             }
             if (GetComponent<GameUI>() == null) gameObject.AddComponent<GameUI>();
             if (GetComponent<CombatFxDirector>() == null) gameObject.AddComponent<CombatFxDirector>();
+            if (GetComponent<ImpactDirector>() == null) gameObject.AddComponent<ImpactDirector>();
             ProfilePath = Path.Combine(Application.persistentDataPath, ProfileFileOverride ?? profileFileName);
             Meta = new MetaService(config, new FileProfileStorage(ProfilePath));
             if (Meta.Warning != null) Debug.LogWarning("[Turris] " + Meta.Warning);
+            Audio = GetComponent<AudioService>();
+            if (Audio == null) Audio = gameObject.AddComponent<AudioService>();
+            Audio.Bind(this);
+            Audio.SetVolumes(Meta.Profile.masterVolume, Meta.Profile.musicVolume, Meta.Profile.sfxVolume);
+            Rumble.Strength = Meta.Profile.rumbleStrength;
 
             world = new GameObject("World").transform;
             SetupSceneObjects();
             CombatEvents.Died += OnSomethingDied;
+            EnemyBrain.SummonRequested += OnSummonRequested;
             ShowMainMenu();
         }
 
         void OnDestroy()
         {
             CombatEvents.Died -= OnSomethingDied;
+            EnemyBrain.SummonRequested -= OnSummonRequested;
             Time.timeScale = 1f;
         }
 
@@ -127,6 +140,7 @@ namespace Turris
 
         public void ShowMainMenu()
         {
+            trialFloor = null;
             ClearWorld();
             Run = null;
             Player.gameObject.SetActive(false);
@@ -136,7 +150,9 @@ namespace Turris
 
         void BuildMenuBackdrop()
         {
-            arena = WorldBuilder.BuildArena(config.tower.floors[config.tower.floors.Count - 1].arena, world);
+            var backdrop = config.tower.floors[config.tower.floors.Count - 1].arena;
+            arena = WorldBuilder.BuildArena(backdrop, world);
+            Audio.SetArena(ArenaBuilder.StyleOf(backdrop));
             var cam = CameraRig.transform;
             CameraRig.enabled = false;
             cam.position = new Vector3(0, 6, -14);
@@ -144,6 +160,14 @@ namespace Turris
         }
 
         public void ShowUnlocks() => SetScreen(GameScreen.Unlocks);
+        public void ShowBestiary() => SetScreen(GameScreen.Bestiary);
+        public void StartEnemyTrial(EnemyDefinition enemy)
+        {
+            if (enemy == null) return;
+            var plan = Meta.LastPlan();
+            plan.trialEnemy = enemy;
+            StartRun(plan);
+        }
 
         public void ShowLoadout()
         {
@@ -175,11 +199,12 @@ namespace Turris
         public void StartRun(LoadoutPlan plan)
         {
             Plan = plan;
-            Meta.RecordRunStart(plan);
-            Meta.RememberSkillSlots(plan.skillSlots);
+            trialFloor = plan.trialEnemy != null ? new FloorDefinition { name = "Próba: " + plan.trialEnemy.displayName, arena = config.tower.floors[1].arena, enemies = new List<EnemyDefinition> { plan.trialEnemy }, isDuel = true } : null;
+            if (!IsEnemyTrial) { Meta.RecordRunStart(plan); Meta.RememberSkillSlots(plan.skillSlots); }
             int seed = System.Environment.TickCount;
             rng = new System.Random(seed);
             Run = RunFactory.Create(plan, config, seed);
+            eliteCountdown = -1;
             Player.gameObject.SetActive(true);
             Player.Init(Run, config);
             var vis = Player.GetComponent<PlayerVisuals>();
@@ -201,8 +226,10 @@ namespace Turris
         {
             ClearWorld();
             Run.floorIndex = index;
-            var floor = config.tower.floors[index];
+            var floor = CurrentFloor;
             arena = WorldBuilder.BuildArena(floor.arena, world);
+            Audio.SetArena(ArenaBuilder.StyleOf(floor.arena));
+            Sfx.Ui(floor.isBoss ? SoundId.BossIntro : SoundId.FloorStart);
             sun.color = floor.arena.lightColor;
             RenderSettings.fogColor = floor.arena.fogColor;
             if (CameraRig.Camera != null) { CameraRig.Camera.backgroundColor = floor.arena.fogColor; CameraRig.Camera.clearFlags = CameraClearFlags.SolidColor; }
@@ -215,8 +242,9 @@ namespace Turris
             WaveIndex = 0;
             nextWaveTimer = -1f;
             SpawnWave(floor, floor.enemies, Run.difficulty.elites && floor.isDuel && !floor.isBoss, false);
+            StartPortals(floor);
 
-            Meta.RecordReachedFloor(index);
+            if (!IsEnemyTrial) Meta.RecordReachedFloor(index);
             clearTimer = -1f;
             deathTimer = -1f;
             SetScreen(GameScreen.Playing);
@@ -229,6 +257,8 @@ namespace Turris
         /// </summary>
         void SpawnWave(FloorDefinition floor, List<EnemyDefinition> defs, bool elite, bool oppositePlayer)
         {
+            // Fala bez bossa: wrogowie wychodzą z portali po kolei, w różnych miejscach (GameRoot.Portals).
+            if (!defs.Any(d => d != null && d.isBoss)) { QueueWave(defs, elite); return; }
             var spawns = WorldBuilder.EnemySpawns(floor.arena, defs.Count);
             if (oppositePlayer && Player != null)
             {
@@ -244,6 +274,7 @@ namespace Turris
                 if (def == null) continue;
                 if (def.variants != null && def.variants.Count > 0 && rng.NextDouble() < def.variantChance)
                     def = def.variants[rng.Next(def.variants.Count)] ?? def;
+                if (!IsEnemyTrial) Meta.RecordSeen(def);
                 var e = WorldBuilder.CreateEnemy(def, spawns[i], world);
                 e.transform.rotation = Quaternion.LookRotation(-new Vector3(spawns[i].x, 0, spawns[i].z).normalized);
                 e.Setup(def, Player, floor.statScale, Run.difficulty, elite, config.balance);
@@ -256,9 +287,11 @@ namespace Turris
         {
             foreach (var e in enemies) if (e != null) Destroy(e.gameObject);
             enemies.Clear();
+            StopPortals();
             if (arena != null) Destroy(arena);
             foreach (var p in Projectile.Active.ToList()) Destroy(p.gameObject);
             foreach (var z in DamageZone.Active.ToList()) Destroy(z.gameObject);
+            foreach (var wave in WaveEffect.Active.ToArray()) Destroy(wave.gameObject);
             foreach (var d in DelayedStrike.Active.ToList()) Destroy(d.gameObject);
             foreach (var st in StormEffect.Active.ToList()) Destroy(st.gameObject);
             foreach (var tw in ThrownWeapon.Active.ToList()) Destroy(tw.gameObject);
@@ -270,13 +303,16 @@ namespace Turris
         {
             if (Run == null || !(who is EnemyBrain e) || !enemies.Contains(e)) return;
             Run.kills++;
+            if (!IsEnemyTrial) Meta.RecordKill(e.Def);
             Run.souls += Mathf.RoundToInt(e.Def.soulReward * Run.difficulty.soulMultiplier * (e.IsElite ? 1.5f : 1f));
-            if (enemies.All(x => x == null || x.IsDead) && !Player.IsDead)
+            Sfx.Ui(SoundId.SoulGain);
+            if (enemies.All(x => x == null || x.IsDead) && !Player.IsDead && !PortalsRunning)
             {
                 var floor = CurrentFloor;
                 if (floor != null && WaveIndex + 1 < floor.WaveCount)
                 {
                     nextWaveTimer = 2f;
+                    Sfx.Ui(SoundId.WaveHorn);
                     CombatEvents.RaiseMessage($"Fala {WaveIndex + 2}/{floor.WaveCount} nadchodzi…", new Color(1f, 0.75f, 0.4f));
                 }
                 else clearTimer = 1.5f;
@@ -285,6 +321,7 @@ namespace Turris
 
         void Update()
         {
+            if (Screen == GameScreen.Playing && Run != null) TickPortals(Time.deltaTime);
             if (Screen == GameScreen.Playing && nextWaveTimer > 0)
             {
                 nextWaveTimer -= Time.deltaTime;
@@ -319,6 +356,7 @@ namespace Turris
 
         void CompleteFloor()
         {
+            if (IsEnemyTrial) { Sfx.Ui(SoundId.Victory); ShowMainMenu(); ShowBestiary(); return; }
             clearTimer = -1f;
             nextWaveTimer = -1f;
             var floor = CurrentFloor;
@@ -333,6 +371,7 @@ namespace Turris
                 LastAsh += Meta.AwardVictory(Run);
                 Run.IsFinished = true;
                 Run.Victory = true;
+                Sfx.Ui(SoundId.Victory);
                 SetScreen(GameScreen.Victory);
                 return;
             }
@@ -345,6 +384,7 @@ namespace Turris
                 Player.RestoreAll();
             }
 
+            Sfx.Ui(SoundId.FloorCleared);
             LastFloorSummary = $"{floor.name} ukończone. Popiół +{LastAsh}.";
             Rewards = RewardGenerator.Generate(Run, Player.Build, Meta.BuildRewardPools(), config, rng);
             RerollUsed = false;
@@ -359,6 +399,7 @@ namespace Turris
             {
                 if (index < 0 || index >= Rewards.Count) return;
                 Rewards[index].Apply(Run);
+                Sfx.Ui(SoundId.UiReward);
             }
             Player.RefreshBuild();
             Rewards.Clear();
@@ -405,6 +446,7 @@ namespace Turris
             if (!AtRestPoint || !CanUpgradeWeapon(out _)) return;
             Run.souls -= WeaponUpgradeCost;
             Run.equipment.Get(EquipSlot.MainHand).level++;
+            Sfx.Ui(SoundId.UiBuy);
             Player.RefreshBuild();
         }
 
@@ -414,6 +456,7 @@ namespace Turris
             Run.souls -= FlaskUpgradeCost;
             Run.bonusHealthFlasks++;
             Run.healthFlasks++;
+            Sfx.Ui(SoundId.UiBuy);
         }
 
         // ------------------------------------------------------------------ Sklep dusz
@@ -426,21 +469,23 @@ namespace Turris
             Run.souls -= SoulShop.RerollCost(Run, config.balance);
             Rewards = RewardGenerator.Generate(Run, Player.Build, Meta.BuildRewardPools(), config, rng);
             RerollUsed = true;
+            Sfx.Ui(SoundId.UiBuy);
         }
 
         public void SpendAttributePoint(AttributeType a)
         {
-            if (Run.SpendAttributePoint(a)) Player.RefreshBuild();
+            if (Run.SpendAttributePoint(a)) { Player.RefreshBuild(); Sfx.Ui(SoundId.UiLevelUp); }
         }
 
         public void UpgradeSkill(SpellInstance s)
         {
-            if (SoulShop.TryUpgrade(s, Run, config.balance)) Player.RefreshBuild();
+            if (SoulShop.TryUpgrade(s, Run, config.balance)) { Player.RefreshBuild(); Sfx.Ui(SoundId.UiBuy); }
         }
 
         public void BuyShopOffer()
         {
             if (!SoulShop.TryBuyOffer(ShopOffer, Run, config.balance)) return;
+            Sfx.Ui(SoundId.UiBuy);
             CombatEvents.RaiseMessage($"Nowa umiejętność: {ShopOffer.displayName}", ShopOffer.color);
             ShopOffer = null;
             Player.RefreshBuild();
@@ -452,7 +497,8 @@ namespace Turris
         {
             if (Run == null || Run.IsFinished) return;
             Run.IsFinished = true;
-            Meta.RecordDeath();
+            if (!IsEnemyTrial) Meta.RecordDeath();
+            Sfx.Ui(SoundId.PlayerDeath);
             deathTimer = 1.8f;
         }
 
@@ -479,6 +525,19 @@ namespace Turris
             Meta.Save();
         }
 
+        /// <summary>Zmienia głośność (0 – ogólna, 1 – muzyka, 2 – efekty) o krok i zapisuje w profilu.</summary>
+        public void ChangeVolume(int channel, float delta)
+        {
+            var p = Meta.Profile;
+            float Step(float v) => Mathf.Clamp01(Mathf.Round((v + delta) * 10f) / 10f);
+            if (channel == 0) p.masterVolume = Step(p.masterVolume);
+            else if (channel == 1) p.musicVolume = Step(p.musicVolume);
+            else if (channel == 3) { p.rumbleStrength = Step(p.rumbleStrength); Rumble.Strength = p.rumbleStrength; if (p.rumbleStrength > 0) Rumble.Play(0.5f, 0.5f, 0.2f); }
+            else p.sfxVolume = Step(p.sfxVolume);
+            Audio.SetVolumes(p.masterVolume, p.musicVolume, p.sfxVolume);
+            Meta.Save();
+        }
+
         public void TogglePause()
         {
             if (Screen == GameScreen.Playing && !Player.IsDead) SetScreen(GameScreen.Paused);
@@ -490,7 +549,7 @@ namespace Turris
             if (Run != null && !Run.IsFinished)
             {
                 Run.IsFinished = true;
-                Meta.RecordDeath();
+                if (!IsEnemyTrial) Meta.RecordDeath();
             }
             ShowMainMenu();
         }
@@ -507,6 +566,7 @@ namespace Turris
 
         public void DebugCompleteFloorNow()
         {
+            StopPortals();
             DebugKillAllEnemies();
             CompleteFloor();
         }

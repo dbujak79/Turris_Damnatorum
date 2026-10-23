@@ -1,0 +1,134 @@
+{
+  "name": "KarnelLabs.MCP.Editor",
+  "rootNamespace": "KarnelLabs.MCP",
+  "references": [
+    "Newtonsoft.Json",
+    "Unity.ProBuilder",
+    "Unity.ProBuilder.Editor",
+    "Unity.Cinemachine",
+    "Unity.Cinemachine.Editor",
+    "Unity.InputSystem",
+    "Unity.AI.Navigation",
+    "Unity.AI.Navigation.Editor",
+    "Unity.Timeline",
+    "Unity.Timeline.Editor",
+    "Unity.TextMeshPro",
+    "Unity.Splines",
+    "Unity.Mathematics",
+    "Unity.RenderPipelines.Core.Runtime",
+    "Unity.VisualEffectGraph.Runtime",
+    "Unity.Addressables",
+    "Unity.Addressables.Editor",
+    "Unity.ResourceManager",
+    "Unity.XR.Management",
+    "Unity.XR.Management.Editor",
+    "Unity.XR.CoreUtils",
+    "Unity.Localization",
+    "Unity.Localization.Editor",
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Unity.2D.SpriteShape.Runtime",
+    "Unity.2D.Animation.Runtime",
+    "Unity.2D.IK.Runtime",
+    "Unity.2D.Tilemap.Extras"
+  ],
+  "includePlatforms": ["Editor"],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [
+    {
+      "name": "com.unity.probuilder",
+      "expression": "4.0.0",
+      "define": "PROBUILDER"
+    },
+    {
+      "name": "com.unity.probuilder",
+      "expression": "4.0.0",
+      "define": "UNITY_PROBUILDER"
+    },
+    {
+      "name": "com.unity.cinemachine",
+      "expression": "2.0.0",
+      "define": "UNITY_CINEMACHINE"
+    },
+    {
+      "name": "com.unity.cinemachine",
+      "expression": "2.0.0",
+      "define": "PACKAGE_CINEMACHINE"
+    },
+    {
+      "name": "com.unity.cinemachine",
+      "expression": "3.0.0",
+      "define": "CINEMACHINE_V3"
+    },
+    {
+      "name": "com.unity.inputsystem",
+      "expression": "1.0.0",
+      "define": "UNITY_INPUT_SYSTEM"
+    },
+    {
+      "name": "com.unity.render-pipelines.core",
+      "expression": "7.0.0",
+      "define": "UNITY_RENDER_PIPELINES_CORE"
+    },
+    {
+      "name": "com.unity.visualeffectgraph",
+      "expression": "10.0.0",
+      "define": "UNITY_VFX_GRAPH"
+    },
+    {
+      "name": "com.unity.splines",
+      "expression": "2.0.0",
+      "define": "UNITY_SPLINES"
+    },
+    {
+      "name": "com.unity.addressables",
+      "expression": "1.0.0",
+      "define": "UNITY_ADDRESSABLES"
+    },
+    {
+      "name": "com.unity.xr.management",
+      "expression": "4.0.0",
+      "define": "XR_MANAGEMENT"
+    },
+    {
+      "name": "com.unity.localization",
+      "expression": "1.0.0",
+      "define": "UNITY_LOCALIZATION"
+    },
+    {
+      "name": "com.unity.textmeshpro",
+      "expression": "3.0.0",
+      "define": "UNITY_TEXTMESHPRO"
+    },
+    {
+      "name": "com.unity.ugui",
+      "expression": "2.0.0",
+      "define": "UNITY_TEXTMESHPRO"
+    },
+    {
+      "name": "com.unity.render-pipelines.universal",
+      "expression": "12.0.0",
+      "define": "UNITY_RENDER_PIPELINES_UNIVERSAL"
+    },
+    {
+      "name": "com.unity.2d.spriteshape",
+      "expression": "7.0.0",
+      "define": "UNITY_2D_SPRITESHAPE"
+    },
+    {
+      "name": "com.unity.2d.animation",
+      "expression": "9.0.0",
+      "define": "UNITY_2D_ANIMATION"
+    },
+    {
+      "name": "com.unity.2d.tilemap.extras",
+      "expression": "3.0.0",
+      "define": "UNITY_2D_TILEMAP_EXTRAS"
+    }
+  ],
+  "noEngineReferences": false
+}

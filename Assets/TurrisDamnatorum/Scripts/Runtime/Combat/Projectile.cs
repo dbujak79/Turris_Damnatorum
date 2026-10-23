@@ -2,7 +2,25 @@ using UnityEngine;
 
 namespace Turris
 {
-    /// <summary>Pocisk: porusza się, trafia jeden cel (lub ścianę) i znika.</summary>
+    /// <summary>
+    /// Dodatkowe zachowania pocisku (skille z Hell Unleashed): przebijanie kolejnych wrogów, rozszczep na drzazgi przy pierwszym
+    /// trafieniu, wybuch zadający całe obrażenia (także na końcu lotu) i strefa po wybuchu.
+    /// </summary>
+    public struct ProjectileOptions
+    {
+        /// <summary>Ilu kolejnych wrogów pocisk przebija (0 = zatrzymuje się na pierwszym).</summary>
+        public int pierce;
+        /// <summary>Przy pierwszym trafieniu pęka na dwie drzazgi (±25°, 40% obrażeń, 1,5 s lotu).</summary>
+        public bool split;
+        /// <summary>Całe obrażenia w wybuchu o promieniu hit.explosionRadius – przy trafieniu albo na końcu lotu.</summary>
+        public bool fullExplosion;
+        /// <summary>Strefa po wybuchu: promień, czas, odstęp tyknięć i część obrażeń na tyknięcie.</summary>
+        public float zoneRadius, zoneDuration, zoneInterval, zoneShare;
+        /// <summary>Odrzut trafionego (m, ujemny = przyciąganie).</summary>
+        public float knockback;
+    }
+
+    /// <summary>Pocisk: porusza się, trafia cel (lub ścianę) i znika – albo przebija kolejnych wrogów.</summary>
     public class Projectile : MonoBehaviour
     {
         public static readonly System.Collections.Generic.List<Projectile> Active = new System.Collections.Generic.List<Projectile>();
@@ -21,6 +39,9 @@ namespace Turris
         IHitReceiver homingTarget;
         float homing;
         Transform arrowModel;
+        ProjectileOptions opts;
+        int pierceLeft;
+        float speedValue;
 
         /// <summary>Smuga za lecącym obiektem (strzała, rzucona broń).</summary>
         public static TrailRenderer AddTrail(GameObject go, Color c, float width, float time)
@@ -39,12 +60,23 @@ namespace Turris
         readonly HitTracker tracker = new HitTracker();
 
         public static Projectile Spawn(Vector3 pos, Vector3 dir, float speed, HitData hit, Faction faction, IHitReceiver owner,
+                                       Color color, float radius, float lifetime, IHitReceiver homingTarget, float homing, bool arrow, ProjectileOptions options)
+        {
+            var p = Spawn(pos, dir, speed, hit, faction, owner, color, radius, lifetime, homingTarget, homing, arrow);
+            if (p == null) return null;
+            p.opts = options;
+            p.pierceLeft = options.pierce;
+            return p;
+        }
+
+        public static Projectile Spawn(Vector3 pos, Vector3 dir, float speed, HitData hit, Faction faction, IHitReceiver owner,
                                        Color color, float radius = 0.25f, float lifetime = 4f, IHitReceiver homingTarget = null, float homing = 0f, bool arrow = false)
         {
             if (!Application.isPlaying) return null;
             var go = new GameObject("Projectile");
             go.transform.position = pos;
             var p = go.AddComponent<Projectile>();
+            if (owner is EnemyBrain enemy) enemy.TrackOwnedEffect(p);
             if (arrow)
             {
                 // Strzała: drzewce, grot i lotki, zwrócona w kierunku lotu; cienka smuga zamiast świecącego jądra.
@@ -58,19 +90,18 @@ namespace Turris
                 PartBuilder.BakeAll(a);
                 AddTrail(go, Color.Lerp(color, Color.white, 0.6f), 0.05f, 0.15f);
                 a.rotation = Quaternion.LookRotation(dir);
+                if (hit.element != Element.None)
+                    p.fx = HellFx.Trail(go.transform, hit.visualElement ?? HellFx.For(hit.element), radius * 0.65f).gameObject;
             }
             else
             {
-                // Jądro pocisku + oprawa (halo, smuga, krążące iskry, światło).
-                var core = PartBuilder.Add(go.transform, ProcMesh.Sphere(), Surface.Glow, Color.Lerp(color, Color.white, 0.5f), Vector3.zero, Vector3.one * radius * 1.1f);
-                core.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                p.fx = FxLibrary.ProjectileVisual(go.transform, color, radius);
+                p.fx = FxLibrary.ProjectileVisual(go.transform, color, radius, hit.element, faction == Faction.Enemy, hit.visualElement);
             }
             p.color = color;
             p.radiusVisual = radius;
             FxLibrary.Flash(pos, color, 0.5f);
-            p.hit = hit; p.faction = faction; p.owner = owner;
-            p.velocity = dir.normalized * speed; p.radius = radius; p.life = lifetime;
+            p.hit = hit; p.hit.isProjectile = true; p.faction = faction; p.owner = owner;
+            p.velocity = dir.normalized * speed; p.radius = radius; p.life = lifetime; p.speedValue = speed;
             p.homingTarget = homingTarget; p.homing = homing;
             return p;
         }
@@ -79,7 +110,29 @@ namespace Turris
         {
             FxLibrary.DetachProjectileVisual(fx);
             fx = null;
-            if (impact) FxLibrary.Impact(transform.position, color, arrowModel != null ? 0.5f : Mathf.Clamp(radiusVisual * 4f, 0.7f, 1.6f));
+            if (opts.fullExplosion && hit.explosionRadius > 0f)
+            {
+                // Wybuch z całymi obrażeniami (przy trafieniu i na końcu lotu), potem ewentualna strefa.
+                var boom = hit;
+                boom.sourcePosition = transform.position;
+                var t = new HitTracker();
+                HitQuery.Sphere(transform.position, hit.explosionRadius, faction, t, r => { HitQuery.Apply(owner, r, boom, false); Push(r); });
+                HellFx.Shockwave(transform.position, hit.visualElement ?? HellFx.For(hit.element), color, hit.explosionRadius);
+                Sfx.Play(Sfx.ImpactFor(hit.element), transform.position);
+                if (opts.zoneDuration > 0f && opts.zoneRadius > 0f)
+                {
+                    Vector3 ground = transform.position;
+                    if (Physics.Raycast(transform.position + Vector3.up * 0.2f, Vector3.down, out var gh, 6f, ~0, QueryTriggerInteraction.Ignore)) ground = gh.point;
+                    var zh = hit; zh.physical *= opts.zoneShare; zh.magic *= opts.zoneShare; zh.explosionRadius = 0; zh.leaveZoneDuration = 0; zh.poiseDamage *= 0.1f;
+                    DamageZone.Spawn(ground, opts.zoneRadius, opts.zoneDuration, opts.zoneInterval > 0 ? opts.zoneInterval : 0.5f, zh, faction, owner, color);
+                }
+                Destroy(gameObject);
+                return;
+            }
+            if (impact && hit.explosionRadius <= 0) HellFx.Impact(transform.position, hit.visualElement ?? (hit.element != Element.None ? HellFx.For(hit.element) : faction == Faction.Enemy ? HellFxElement.Enemy : HellFxElement.Physical),
+                color, arrowModel != null ? 0.5f : Mathf.Clamp(radiusVisual * 4f, 0.7f, 1.6f));
+            if (impact) Sfx.Play(arrowModel != null && hit.element == Element.None ? SoundId.ArrowHit : Sfx.ImpactFor(hit.element), transform.position,
+                arrowModel != null ? 1f : 0.8f);
             if (impact && hit.explosionRadius > 0f)
             {
                 // Wybuch: pozostali w promieniu dostają część obrażeń (trafiony bezpośrednio – nie drugi raz).
@@ -87,8 +140,8 @@ namespace Turris
                 splash.physical *= SplashShare; splash.magic *= SplashShare;
                 splash.sourcePosition = transform.position;
                 HitQuery.Sphere(transform.position, hit.explosionRadius, faction, tracker, r => HitQuery.Apply(owner, r, splash, false));
-                FxLibrary.Shockwave(transform.position, color, hit.explosionRadius, false);
-                FxLibrary.Impact(transform.position, color, 1.6f);
+                HellFx.Shockwave(transform.position, hit.visualElement ?? HellFx.For(hit.element), color, hit.explosionRadius);
+                Sfx.Play(hit.element == Element.Fire ? SoundId.FireExplosion : SoundId.Shockwave, transform.position);
                 if (hit.leaveZoneDuration > 0f)
                 {
                     // Płonąca ziemia pod wybuchem: 15% obrażeń na tyknięcie, bez kolejnego wybuchu.
@@ -104,14 +157,52 @@ namespace Turris
         /// <summary>Część obrażeń pocisku, jaką dostają cele w promieniu wybuchu.</summary>
         public const float SplashShare = 0.6f;
 
+        /// <summary>Trafienie celu: obrażenia, odrzut i rozszczep. Zwraca true, gdy pocisk leci dalej (przebicie).</summary>
+        bool Strike(IHitReceiver r)
+        {
+            if (opts.fullExplosion) return false; // całe obrażenia w wybuchu
+            hit.sourcePosition = transform.position - velocity.normalized * 0.5f;
+            HitQuery.Apply(owner, r, hit, false);
+            Push(r);
+            if (opts.split)
+            {
+                // Drzazgi lecą dalej pod kątem ±25°, każda za 40% obrażeń; trafionego już nie ranią.
+                opts.split = false;
+                foreach (float a in new[] { -25f, 25f })
+                {
+                    var h = hit; h.physical *= 0.4f; h.magic *= 0.4f;
+                    var child = Spawn(transform.position, Quaternion.Euler(0, a, 0) * velocity, speedValue, h, faction, owner, color, radiusVisual * 0.8f, 1.5f, null, 0f, arrowModel != null);
+                    if (child != null) child.tracker.TryRegister(r);
+                }
+            }
+            if (pierceLeft > 0) { pierceLeft--; HellFx.Impact(transform.position, hit.visualElement ?? HellFx.For(hit.element), color, 0.5f); return true; }
+            return false;
+        }
+
+        void Push(IHitReceiver r)
+        {
+            if (opts.knockback == 0f || !(r is EnemyBrain e) || e.IsDead) return;
+            Vector3 d = velocity; d.y = 0;
+            if (d.sqrMagnitude < 1e-4f) return;
+            e.Pull(e.transform.position + d.normalized * (opts.knockback + Mathf.Sign(opts.knockback)), Mathf.Abs(opts.knockback), 0.2f);
+        }
+
         static readonly RaycastHit[] Hits = new RaycastHit[16];
         static readonly Collider[] Overlaps = new Collider[8];
 
-        void Update()
+        void OnDestroy()
         {
-            float dt = Time.deltaTime;
+            if (fx != null) FxLibrary.DetachProjectileVisual(fx);
+        }
+
+        void Update() => Step(Time.deltaTime);
+
+        /// <summary>Jeden krok lotu. Przebicie przetwarza wszystkie trafienia odcinka, również w długiej klatce.</summary>
+        public void Step(float dt)
+        {
+            if (dt <= 0f) return;
             life -= dt;
-            if (life <= 0) { Explode(false); return; }
+            if (life <= 0) { Explode(opts.fullExplosion); return; }
 
             if (homingTarget != null && !homingTarget.IsDead && homing > 0)
             {
@@ -125,37 +216,37 @@ namespace Turris
             {
                 var r = Overlaps[i].GetComponentInParent<IHitReceiver>();
                 if (r == null || r.Faction == faction || r.IsDead) continue;
-                if (tracker.TryRegister(r))
-                {
-                    hit.sourcePosition = transform.position - velocity.normalized * 0.5f;
-                    HitQuery.Apply(owner, r, hit, false);
-                }
+                if (!tracker.TryRegister(r)) continue; // przebity wcześniej – leci dalej
+                if (Strike(r)) continue;
                 Explode(true);
                 return;
             }
 
             Vector3 step = velocity * dt;
+            Vector3 start = transform.position;
             int n = Physics.SphereCastNonAlloc(transform.position, radius, step.normalized, Hits, step.magnitude, ~0, QueryTriggerInteraction.Ignore);
-            float best = float.MaxValue; int bestIdx = -1;
-            for (int i = 0; i < n; i++)
+            // SphereCastNonAlloc nie sortuje wyników. Po przebiciu pierwszego celu wybieramy następny
+            // z tego samego odcinka, zamiast przeskakiwać przez niego do końca klatki.
+            for (int remaining = n; remaining > 0; remaining--)
             {
-                var r = Hits[i].collider.GetComponentInParent<IHitReceiver>();
-                if (r != null && (r.Faction == faction || r.IsDead)) continue;
-                if (Hits[i].distance < best) { best = Hits[i].distance; bestIdx = i; }
-            }
-            if (bestIdx >= 0)
-            {
-                var r = Hits[bestIdx].collider.GetComponentInParent<IHitReceiver>();
-                if (r != null && tracker.TryRegister(r))
+                float best = float.MaxValue; int bestIdx = -1;
+                for (int i = 0; i < n; i++)
                 {
-                    hit.sourcePosition = transform.position - velocity.normalized * 0.5f;
-                    HitQuery.Apply(owner, r, hit, false);
+                    if (Hits[i].collider == null) continue;
+                    var receiver = Hits[i].collider.GetComponentInParent<IHitReceiver>();
+                    if (receiver != null && (receiver.Faction == faction || receiver.IsDead || tracker.Contains(receiver))) continue;
+                    if (Hits[i].distance < best) { best = Hits[i].distance; bestIdx = i; }
                 }
-                transform.position += step.normalized * best;
+                if (bestIdx < 0) break;
+                var r = Hits[bestIdx].collider.GetComponentInParent<IHitReceiver>();
+                transform.position = start + step.normalized * best;
+                Hits[bestIdx] = default;
+                if (r != null && tracker.TryRegister(r) && Strike(r))
+                    continue;
                 Explode(true);
                 return;
             }
-            transform.position += step;
+            transform.position = start + step;
             if (arrowModel != null && velocity.sqrMagnitude > 0.01f) arrowModel.rotation = Quaternion.LookRotation(velocity);
         }
     }

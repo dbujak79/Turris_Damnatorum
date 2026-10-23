@@ -1,0 +1,105 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bfc9e3d0e146d4086347f0e38c03cf, type: 3}
+  m_Name: hu_maelstrom
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
+  id: hu_maelstrom
+  displayName: "Wir g\u0142\u0119bin"
+  description: "Trzy fale wody wok\xF3\u0142 maga: wci\u0105gaj\u0105 demony, wych\u0142adzaj\u0105 je i spowalniaj\u0105."
+  tags: 2
+  kind: 1
+  category: 0
+  manaCost: 20
+  castTime: 0.25
+  recovery: 0.35
+  cancelAfter: 0.2
+  staminaCost: 0
+  requirements: []
+  requiredTags: 0
+  intelligenceScaling: 1
+  attack:
+    name: "Wir g\u0142\u0119bin"
+    delivery: 2
+    damageType: 1
+    baseDamage: 75
+    windup: 0.25
+    active: 0.1
+    recovery: 0.35
+    cancelAfter: 0.2
+    reach: 0
+    radius: 4.5
+    lunge: 0
+    tracking: 360
+    blockable: 1
+    parryable: 0
+    dodgeable: 1
+    guardLoad: 20
+    poiseDamage: 25
+    heavy: 0
+    staminaCost: 0
+    projectileSpeed: 14
+    projectileCount: 1
+    spreadAngle: 0
+    explosionRadius: 0
+    element: 2
+    elementShare: 0
+    bonusVsFrozen: 0
+    bonusVsBleeding: 0
+    executeBonus: 0
+    statuses:
+    - kind: 2
+      stacks: 1
+      chance: 1
+    animation: 0
+  amount: 75
+  duration: 3
+  cooldown: 11
+  charges: 1
+  extraChargeAtLevel: 0
+  cooldownReductionPerLevel: 0.06
+  weaponMultiplier: 1.5
+  arcAngle: 150
+  tickInterval: 0.35
+  moveMultiplier: 0.5
+  flatDamage: 1
+  pulses: 3
+  pulseInterval: 0.45
+  telegraph: 0.2
+  followCaster: 1
+  knockback: -0.8
+  pierce: 0
+  split: 0
+  projectileLifetime: 0
+  fullExplosion: 0
+  zoneRadius: 0
+  zoneDuration: 0
+  zoneInterval: 0.5
+  zoneShare: 0
+  healPercent: 0
+  damageReductionBuff: 0
+  furyGain: 0
+  servant: 0
+  servantCount: 1
+  servantAttackInterval: 1
+  auraModifiers: []
+  finalSlashShare: 0
+  finalRadius: 0
+  waveWidth: 1.6
+  waveSpeed: 16
+  extraWaveShare: 0
+  extraWaveDelay: 0.25
+  dashTime: 0.16
+  levelFeatures: []
+  maxLevel: 2
+  powerPerLevel: 0.12
+  costReductionPerLevel: 0.06
+  color: {r: 0.55, g: 0.85, b: 1, a: 1}

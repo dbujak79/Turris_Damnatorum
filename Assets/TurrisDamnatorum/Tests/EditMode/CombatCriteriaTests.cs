@@ -15,7 +15,7 @@ namespace Turris.Tests
         [Test]
         public void Mage_CanEquipAxe_AndFightWithIt()
         {
-            var run = fx.NewRun("class_mage");
+            var run = fx.NewRun("legacy_mage");
             var axeDef = fx.Get<ItemDefinition>("weapon_axe");
             var axe = new ItemInstance(axeDef);
             run.inventory.Add(axe);
@@ -42,7 +42,7 @@ namespace Turris.Tests
         [Test]
         public void Knight_CanLearnSpell_AndCastingConsumesMana()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var pc = fx.NewCombatant(run);
             Assert.IsFalse(run.knownSpells.Exists(s => s.definition.IsSpell), "Rycerz startuje bez czarów (ma tylko techniki klasy)");
             Assert.IsNull(pc.Skill(2), "Trzeci slot rycerza jest wolny");
@@ -70,7 +70,7 @@ namespace Turris.Tests
         [Test]
         public void ShieldBlock_ReducesDamage_AndConsumesStamina()
         {
-            var pc = fx.NewCombatant(fx.NewRun("class_knight"));
+            var pc = fx.NewCombatant(fx.NewRun("legacy_knight"));
             Assert.IsTrue(pc.Build.guardIsShield);
             pc.SetBlockHeld(true);
             Assert.AreEqual(ActionType.Block, pc.Actions.Current);
@@ -89,7 +89,7 @@ namespace Turris.Tests
         [Test]
         public void WeaponBlock_LetsPartOfDamageThrough()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             run.UnequipToInventory(EquipSlot.OffHand);
             var pc = fx.NewCombatant(run);
             Assert.IsTrue(pc.Build.CanBlock);
@@ -109,7 +109,7 @@ namespace Turris.Tests
         [Test]
         public void Parry_InActiveWindow_StopsParryableAttack()
         {
-            var pc = fx.NewCombatant(fx.NewRun("class_knight"));
+            var pc = fx.NewCombatant(fx.NewRun("legacy_knight"));
             pc.Request(ActionType.Parry);
             Fixture.Advance(pc, pc.ScaleStartup(pc.Build.parry.startup) + 0.02f);
             Assert.AreEqual(ActionPhase.Active, pc.Actions.Phase);
@@ -121,16 +121,38 @@ namespace Turris.Tests
             Assert.AreEqual(pc.Build.parry.poiseDamage, r.attackerPoiseDamage);
 
             // Atak oznaczony jako niemożliwy do sparowania trafia mimo aktywnego okna.
-            var pc2 = fx.NewCombatant(fx.NewRun("class_knight"));
+            var pc2 = fx.NewCombatant(fx.NewRun("legacy_knight"));
             pc2.Request(ActionType.Parry);
             Fixture.Advance(pc2, pc2.ScaleStartup(pc2.Build.parry.startup) + 0.02f);
             Assert.AreEqual(HitOutcome.Hit, pc2.ReceiveHit(Fixture.FrontHit(80, parryable: false)).outcome);
         }
 
+        /// <summary>
+        /// Cios w blok z boku: bohater obraca się do napastnika i blokuje (tarcza 140° sama by go nie zasłoniła).
+        /// Cios w plecy dalej przechodzi.
+        /// </summary>
+        [Test]
+        public void Block_SideHit_TurnsToAttackerAndBlocks_BackHitStillLands()
+        {
+            var pc = fx.NewCombatant(fx.NewRun("legacy_knight"));
+            pc.SetBlockHeld(true);
+            Assert.AreEqual(ActionType.Block, pc.Actions.Current);
+            var side = Fixture.FrontHit(physical: 50, guardLoad: 20);
+            side.sourcePosition = new UnityEngine.Vector3(2f, 0f, 0f); // 90° w prawo
+            Assert.AreEqual(HitOutcome.Blocked, pc.ReceiveHit(side).outcome, "Cios z boku zablokowany");
+            Assert.IsTrue(pc.GuardFace.HasValue, "Zlecony obrót do napastnika");
+            Assert.Greater(UnityEngine.Vector3.Dot(pc.GuardFace.Value, UnityEngine.Vector3.right), 0.99f);
+
+            var back = fx.NewCombatant(fx.NewRun("legacy_knight"));
+            back.SetBlockHeld(true);
+            Assert.AreEqual(HitOutcome.Hit, back.ReceiveHit(Fixture.BackHit(50)).outcome, "Cios w plecy przechodzi przez blok");
+            Assert.IsFalse(back.GuardFace.HasValue);
+        }
+
         [Test]
         public void Parry_MistimedLeavesPlayerExposed_AndDoesNotTurnIntoBlock()
         {
-            var pc = fx.NewCombatant(fx.NewRun("class_knight"));
+            var pc = fx.NewCombatant(fx.NewRun("legacy_knight"));
             pc.Request(ActionType.Parry);
             var p = pc.Build.parry;
             Fixture.Advance(pc, pc.ScaleStartup(p.startup) + p.activeWindow + 0.05f);
@@ -151,13 +173,13 @@ namespace Turris.Tests
         public void Dodge_ProtectsOnlyDuringInvulnerabilityWindow()
         {
             // Początek uniku (przed oknem) – trafienie przechodzi.
-            var early = fx.NewCombatant(fx.NewRun("class_knight"));
+            var early = fx.NewCombatant(fx.NewRun("legacy_knight"));
             early.Request(ActionType.Dodge);
             Assert.AreEqual(ActionPhase.Startup, early.Actions.Phase);
             Assert.AreEqual(HitOutcome.Hit, early.ReceiveHit(Fixture.FrontHit()).outcome);
 
             // W oknie – unik.
-            var pc = fx.NewCombatant(fx.NewRun("class_knight"));
+            var pc = fx.NewCombatant(fx.NewRun("legacy_knight"));
             pc.Request(ActionType.Dodge);
             var d = pc.Build.dodge;
             Fixture.Advance(pc, d.invulnStart + 0.05f);
@@ -168,7 +190,7 @@ namespace Turris.Tests
             Assert.AreEqual(HitOutcome.Hit, pc.ReceiveHit(Fixture.FrontHit(10, dodgeable: false)).outcome, "Atak obszarowy bez 'dodgeable' trafia mimo niewrażliwości");
 
             // Po oknie (faza zakończenia) – trafienie przechodzi, a kolejny unik jest zablokowany do końca animacji.
-            var late = fx.NewCombatant(fx.NewRun("class_knight"));
+            var late = fx.NewCombatant(fx.NewRun("legacy_knight"));
             late.Request(ActionType.Dodge);
             Fixture.Advance(late, d.invulnStart + d.invulnDuration + 0.05f);
             Assert.AreEqual(ActionPhase.Recovery, late.Actions.Phase);
@@ -179,7 +201,7 @@ namespace Turris.Tests
         [Test]
         public void StaminaExhaustion_WhileBlocking_BreaksGuard()
         {
-            var pc = fx.NewCombatant(fx.NewRun("class_knight"));
+            var pc = fx.NewCombatant(fx.NewRun("legacy_knight"));
             pc.SetBlockHeld(true);
             pc.Stamina.Drain(pc.Stamina.Current - 5f);
             var r = pc.ReceiveHit(Fixture.FrontHit(physical: 60, guardLoad: 40));
@@ -192,7 +214,7 @@ namespace Turris.Tests
         [Test]
         public void Flasks_RestoreHealthAndMana_AndDrinkingIsInterruptible()
         {
-            var run = fx.NewRun("class_mage");
+            var run = fx.NewRun("legacy_mage");
             var pc = fx.NewCombatant(run);
             pc.Health.Drain(200);
             float hp = pc.Health.Current;
@@ -222,7 +244,7 @@ namespace Turris.Tests
         [Test]
         public void Regeneration_ComesFromEquipment()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var pc = fx.NewCombatant(run);
             pc.Health.Drain(100);
             float hp = pc.Health.Current;
@@ -234,7 +256,7 @@ namespace Turris.Tests
             Fixture.Advance(pc, 5f);
             Assert.AreEqual(hp + 5f * 1.2f, pc.Health.Current, 0.2f);
 
-            var mage = fx.NewCombatant(fx.NewRun("class_mage"));
+            var mage = fx.NewCombatant(fx.NewRun("legacy_mage"));
             mage.Mana.Drain(50);
             float mana = mage.Mana.Current;
             Fixture.Advance(mage, 10f);
@@ -244,7 +266,7 @@ namespace Turris.Tests
         [Test]
         public void ActionsAreExclusive_NoFlaskOrParryDuringAttack()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var pc = fx.NewCombatant(run);
             int flasks = run.healthFlasks;
             pc.Request(ActionType.LightAttack);
@@ -267,7 +289,7 @@ namespace Turris.Tests
         {
             foreach (var type in new[] { ActionType.LightAttack, ActionType.HeavyAttack })
             {
-                var pc = fx.NewCombatant(fx.NewRun("class_knight"));
+                var pc = fx.NewCombatant(fx.NewRun("legacy_knight"));
                 var atk = type == ActionType.LightAttack ? pc.Build.weapon.light : pc.Build.weapon.heavy;
                 pc.Request(type);
                 Fixture.Advance(pc, pc.ScaleStartup(atk.windup) * 0.5f);
@@ -284,7 +306,7 @@ namespace Turris.Tests
         [Test]
         public void Dodge_InterruptsCast_RefundsManaBeforeRelease()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var bolt = run.LearnSpell(fx.Get<SpellDefinition>("spell_bolt"));
             var pc = fx.NewCombatant(run);
             float mana = pc.Mana.Current;
@@ -301,7 +323,7 @@ namespace Turris.Tests
         [Test]
         public void Dodge_CanChainIntoAttack_AfterCancelPoint()
         {
-            var pc = fx.NewCombatant(fx.NewRun("class_knight"));
+            var pc = fx.NewCombatant(fx.NewRun("legacy_knight"));
             var d = pc.Build.dodge;
             pc.Request(ActionType.Dodge);
             Fixture.Advance(pc, d.invulnStart + d.invulnDuration + fx.Cfg.balance.dodgeCancelAfter + 0.02f);
@@ -314,7 +336,7 @@ namespace Turris.Tests
         public void ClassDoesNotGateActions()
         {
             // Rycerz z kosturem i czarami maga ma te same możliwości co mag.
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var staff = new ItemInstance(fx.Get<ItemDefinition>("weapon_staff"));
             run.inventory.Add(staff);
             run.EquipFromInventory(staff, EquipSlot.MainHand);

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04a8fe60f9299784cac74fcbd7b0d11b, type: 3}
+  m_Name: unlock_bladefan
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.UnlockDefinition
+  id: unlock_bladefan
+  displayName: Wachlarz ostrzy
+  description: "Obr\xF3t z rzutem dziesi\u0119ciu no\u017Cy dooko\u0142a \u2013 ka\u017Cdy mo\u017Ce otworzy\u0107 ran\u0119."
+  tags: 0
+  kind: 1
+  target: {fileID: 11400000, guid: 7446a6392c7eb444f9c7f8b78eb6b131, type: 2}
+  ashCost: 0
+  loadoutCost: 0
+  unlockedByDefault: 1
+  requiredBestFloor: 0
+  requiredVictoryTier: -1
+  classes:
+  - {fileID: 11400000, guid: 732b37bdf25d91e489b61471fb1ebc3e, type: 2}

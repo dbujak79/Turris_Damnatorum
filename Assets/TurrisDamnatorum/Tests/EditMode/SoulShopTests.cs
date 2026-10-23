@@ -14,7 +14,7 @@ namespace Turris.Tests
         [Test]
         public void Prices_GrowWithFloors_AndSkillLevel()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var skill = run.skillSlots[0];
             run.floorsCleared = 1;
             int first = SoulShop.UpgradeCost(skill, run, B);
@@ -28,7 +28,7 @@ namespace Turris.Tests
         [Test]
         public void Upgrade_IsAtomic()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             run.floorsCleared = 1;
             var skill = run.skillSlots[0];
             run.souls = SoulShop.UpgradeCost(skill, run, B) - 1;
@@ -47,7 +47,7 @@ namespace Turris.Tests
         [Test]
         public void Offer_NeverSellsSpellThatCannotBeCast()
         {
-            var run = fx.NewRun("class_knight"); // Inteligencja 8
+            var run = fx.NewRun("legacy_knight"); // Inteligencja 8
             var pools = new MetaService(fx.Cfg, new MemoryProfileStorage()).BuildRewardPools();
             var snap = BuildCalculator.Compute(run, fx.Cfg);
             for (int seed = 0; seed < 80; seed++)
@@ -60,7 +60,7 @@ namespace Turris.Tests
         [Test]
         public void Offer_IsUnknownAndUsable_PurchaseIsTemporary()
         {
-            var run = fx.NewRun("class_mage");
+            var run = fx.NewRun("legacy_mage");
             var pools = new MetaService(fx.Cfg, new MemoryProfileStorage()).BuildRewardPools();
             var snap = BuildCalculator.Compute(run, fx.Cfg);
             for (int seed = 0; seed < 50; seed++)

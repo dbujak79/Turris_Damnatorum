@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 364e1a8d61b62a543b912077a454451b, type: 3}
+  m_Name: class_hu_assassin
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ClassDefinition
+  id: class_hu_assassin
+  displayName: "Zab\xF3jca"
+  description: "No\u017Cownik: sztylet i n\xF3\u017C do rzucania albo dwa sztylety. Zasadzka (+60% w plecy, +35% po uniku), krwawienie i egzekucje mocniejsze. Skill klasy: Znak \u015Bmierci."
+  tags: 0
+  parent: {fileID: 11400000, guid: 732b37bdf25d91e489b61471fb1ebc3e, type: 2}
+  tagline: Sztylety i krwawienie
+  trait: 3
+  dodgeStyle: 3
+  signatureSkill: {fileID: 11400000, guid: 46621404e5dab764aa99c1729f449f8a, type: 2}
+  startingSkillChoices:
+  - {fileID: 11400000, guid: f777df34630b31646ae35e41ce2d175c, type: 2}
+  - {fileID: 11400000, guid: 33082840b09061d41bc309824d88824a, type: 2}
+  loadouts:
+  - label: "Sztylet i no\u017Ce"
+    element: 0
+    weapon: {fileID: 11400000, guid: a188e54fb0a32a34aa6088bbbb485ebd, type: 2}
+    offHand: {fileID: 11400000, guid: ece2f7893541079409873f53b3e8589d, type: 2}
+  - label: Dwa sztylety
+    element: 0
+    weapon: {fileID: 11400000, guid: a188e54fb0a32a34aa6088bbbb485ebd, type: 2}
+    offHand: {fileID: 11400000, guid: f122dec146448f84d888221d6f6f04e3, type: 2}
+  classModifiers:
+  - stat: 6
+    mode: 0
+    value: -10
+  - stat: 12
+    mode: 0
+    value: 6
+  - stat: 30
+    mode: 0
+    value: -5
+  - stat: 23
+    mode: 0
+    value: 10
+  - stat: 28
+    mode: 0
+    value: -10
+  - stat: 20
+    mode: 0
+    value: 17.857143
+  - stat: 27
+    mode: 0
+    value: 30
+  - stat: 35
+    mode: 0
+    value: 30
+  lookOverride: {fileID: 0}
+  toughness: 12
+  strength: 8
+  dexterity: 16
+  intelligence: 8
+  endurance: 10
+  mind: 10
+  startingItems:
+  - {fileID: 11400000, guid: 9ae482a8e59b1594982f88a35bd5e4e4, type: 2}
+  - {fileID: 11400000, guid: 8bedcc70c079ec04689419018eecf68b, type: 2}
+  alternativeWeapons: []
+  startingSpells: []
+  startingTalents: []
+  healthFlasks: 3
+  manaFlasks: 1
+  color: {r: 0.85, g: 0.2, b: 0.2, a: 1}
+  visual: {fileID: 11400000, guid: c40a4f12586675946942546b827b537c, type: 2}

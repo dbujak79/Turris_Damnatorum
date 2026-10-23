@@ -29,15 +29,15 @@ namespace Turris
             if (combat.Build == null || combat.Run == null || visual == null) return;
             var run = combat.Run;
             var look = RigLook.ForPlayer(run, combat.Config);
-            var classVisual = run.startingClass != null ? run.startingClass.visual : null;
-            string key = $"{(classVisual != null ? classVisual.name : "proc")}|{look.body}|{look.head}|{look.weapon}|{look.shield}|{look.weaponColor}|{look.shieldColor}|{look.cloth}";
+            var classVisual = run.appearance != null ? run.appearance.Visual : run.startingClass != null ? run.startingClass.Visual : null;
+            string key = $"{(classVisual != null ? classVisual.name : "proc")}|{look.body}|{look.head}|{look.weapon}|{look.shield}|{look.weaponColor}|{look.shieldColor}|{look.cloth}|{look.weaponItem?.id}|{look.offhandItem?.id}";
             if (key == lastLookKey) return;
             bool onlyGearChanged = lastLookKey != null && visual.Rig != null && classVisual == null &&
                                    key.Split('|')[1] == lastLookKey.Split('|')[1] && key.Split('|')[2] == lastLookKey.Split('|')[2] && key.Split('|')[7] == lastLookKey.Split('|')[7];
             lastLookKey = key;
 
             if (classVisual != null && classVisual.modelPrefab != null)
-                visual.BuildModel(classVisual, 1f, look.weapon, look.weaponColor, look.shield, look.shieldColor);
+                visual.BuildModel(classVisual, 1f, look);
             else if (onlyGearChanged)
                 visual.SetGear(look.weapon, look.weaponColor, look.shield, look.shieldColor);
             else

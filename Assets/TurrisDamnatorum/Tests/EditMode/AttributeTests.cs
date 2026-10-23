@@ -16,8 +16,8 @@ namespace Turris.Tests
         [Test]
         public void Classes_HaveStartingAttributes()
         {
-            var knight = fx.NewRun("class_knight").attributes;
-            var mage = fx.NewRun("class_mage").attributes;
+            var knight = fx.NewRun("legacy_knight").attributes;
+            var mage = fx.NewRun("legacy_mage").attributes;
             Assert.Greater(knight.strength, mage.strength);
             Assert.Greater(knight.toughness, mage.toughness);
             Assert.Greater(mage.intelligence, knight.intelligence);
@@ -26,7 +26,7 @@ namespace Turris.Tests
         [Test]
         public void Toughness_GivesHealthStaminaAndLoad_IntelligenceGivesMana()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var before = Snap(run);
             run.attributes.Add(AttributeType.Toughness, 2);
             var after = Snap(run);
@@ -50,7 +50,7 @@ namespace Turris.Tests
         [Test]
         public void Dexterity_Evasion_Dodge_AttackSpeed_WithinLimits()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             run.attributes.dexterity = 12;
             var s12 = Snap(run);
             Assert.AreEqual(0f, s12.evasionChance, "Uchylenie dopiero powyżej progu");
@@ -70,7 +70,7 @@ namespace Turris.Tests
         [Test]
         public void Evasion_MakesSomeDirectHitsMiss_NeverStatusTicks()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             run.attributes.dexterity = 80; // limit: 25%
             var pc = fx.NewCombatant(run);
             int misses = 0;
@@ -90,7 +90,7 @@ namespace Turris.Tests
         [Test]
         public void Strength_UnmetWeaponRequirement_IsWeakerAndSlower()
         {
-            var run = fx.NewRun("class_mage");
+            var run = fx.NewRun("legacy_mage");
             var greataxe = new ItemInstance(fx.Get<ItemDefinition>("weapon_greataxe"));
             run.inventory.Add(greataxe);
             run.EquipFromInventory(greataxe, EquipSlot.MainHand);
@@ -106,7 +106,7 @@ namespace Turris.Tests
         [Test]
         public void Intelligence_GatesStrongerSpells()
         {
-            var run = fx.NewRun("class_knight"); // Inteligencja 8
+            var run = fx.NewRun("legacy_knight"); // Inteligencja 8
             var nova = run.LearnSpell(fx.Get<SpellDefinition>("spell_nova")); // wymaga 12
             var pc = fx.NewCombatant(run);
             pc.RequestSkill(run.SlotOf(nova));
@@ -122,7 +122,7 @@ namespace Turris.Tests
         [Test]
         public void AttributePoint_PerFloor_IsSpentOnce()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             int str = run.attributes.strength;
             Assert.IsFalse(run.SpendAttributePoint(AttributeType.Strength), "Brak punktów");
             run.attributePoints = B.attributePointsPerFloor;

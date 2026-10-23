@@ -38,6 +38,29 @@ namespace Turris
                 armsOverride = Mathf.Lerp(a.armsOverride, b.armsOverride, t),
             };
         }
+
+        /// <summary>Jak <see cref="Lerp"/>, ale t może wyjść poza 0..1 (przestrzał za pozą docelową).</summary>
+        public static Pose LerpUnclamped(in Pose a, in Pose b, float t)
+        {
+            return new Pose
+            {
+                handR = Vector3.LerpUnclamped(a.handR, b.handR, t),
+                handL = Vector3.LerpUnclamped(a.handL, b.handL, t),
+                hintR = Vector3.LerpUnclamped(a.hintR, b.hintR, t),
+                hintL = Vector3.LerpUnclamped(a.hintL, b.hintL, t),
+                weaponDir = Vector3.SlerpUnclamped(a.weaponDir, b.weaponDir, t),
+                weaponUp = Vector3.SlerpUnclamped(a.weaponUp, b.weaponUp, t),
+                shieldNormal = Vector3.SlerpUnclamped(a.shieldNormal, b.shieldNormal, t),
+                shieldUp = Vector3.SlerpUnclamped(a.shieldUp, b.shieldUp, t),
+                chestYaw = Mathf.LerpUnclamped(a.chestYaw, b.chestYaw, t),
+                chestPitch = Mathf.LerpUnclamped(a.chestPitch, b.chestPitch, t),
+                spinePitch = Mathf.LerpUnclamped(a.spinePitch, b.spinePitch, t),
+                headPitch = Mathf.LerpUnclamped(a.headPitch, b.headPitch, t),
+                crouch = Mathf.LerpUnclamped(a.crouch, b.crouch, t),
+                stance = Mathf.Clamp01(Mathf.LerpUnclamped(a.stance, b.stance, t)),
+                armsOverride = Mathf.Clamp01(Mathf.LerpUnclamped(a.armsOverride, b.armsOverride, t)),
+            };
+        }
     }
 
     /// <summary>Trzy kluczowe pozy ataku: szczyt zamachu, moment trafienia, wybrzmienie.</summary>
@@ -203,6 +226,55 @@ namespace Turris
             return p;
         }
 
+        /// <summary>
+        /// Zachwianie po ciosie, zależne od kierunku i siły. <paramref name="pushDir"/> – kierunek pchnięcia w przestrzeni
+        /// postaci (od napastnika), <paramref name="weight"/> – ciężar ciosu (0,3 lekki … 1,2 riposta).
+        /// Przebieg jak u człowieka: szybkie ugięcie (~0,1 s), krótkie łapanie równowagi z ramionami odrzuconymi na boki,
+        /// powolny powrót do gardy. Tułów zgina się w stronę pchnięcia, boczny cios skręca i przechyla go,
+        /// kolana miękną, a przy ciężkim ciosie postawa się poszerza (krok dla złapania równowagi).
+        /// </summary>
+        public static Pose Stagger(RigLook look, float t, Vector3 pushDir, float weight)
+        {
+            var p = Ready(look);
+            t = Mathf.Clamp01(t);
+            pushDir.y = 0f;
+            pushDir = pushDir.sqrMagnitude > 1e-4f ? pushDir.normalized : Vector3.back;
+            float a = Mathf.Lerp(0.7f, 1.35f, Mathf.InverseLerp(0.3f, 1.2f, weight));
+            float e = StaggerEnvelope(t);
+            // Głowa i ręce mają bezwładność – szczyt chwilę po tułowiu.
+            float eh = StaggerEnvelope(Mathf.Max(0f, t - 0.06f));
+            float back = -pushDir.z;   // > 0: pchnięty do tyłu (cios z przodu)
+            float side = pushDir.x;    // > 0: pchnięty w prawo
+            // Odcinek piersiowy i lędźwiowy razem najwyżej ~30° (ciężki cios) – dalej człowiek już się przewraca.
+            p.chestPitch = -16f * back * a * e;
+            p.spinePitch = -7f * back * a * e;
+            p.chestYaw = -22f * side * a * e;
+            // Głowa z bezwładnością zostaje w tyle: względem tułowia lekko pochyla się (broda do piersi), wzrok zostaje poziomy.
+            p.headPitch = 8f * back * a * eh;
+            p.crouch += (0.05f + 0.06f * Mathf.Clamp01(weight)) * a * e;
+            p.stance = Mathf.Clamp01((weight - 0.5f) * 1.4f) * e;
+            // Ramiona: zostają w tyle za tułowiem (odlatują w przeciwną stronę) i lekko rozchodzą się dla równowagi –
+            // łokcie zgięte, dłonie najwyżej na wysokości pasa/piersi, bez rozkładania rąk w poziomie.
+            float spread = (0.04f + 0.06f * Mathf.Clamp01(weight)) * a * eh;
+            Vector3 lagArms = -pushDir * 0.13f * a * eh + Vector3.up * 0.06f * a * eh;
+            p.handR += lagArms + new Vector3(spread, 0f, 0f);
+            p.handL += lagArms + new Vector3(-spread, 0f, 0f);
+            p.weaponDir = Vector3.Slerp(p.weaponDir, new Vector3(0.45f, 0.6f, -0.3f * back), 0.3f * eh);
+            p.armsOverride = 1f;
+            return p;
+        }
+
+        /// <summary>Szybkie narastanie (wygaszone – bez szarpnięcia na szczycie), utrzymanie z drganiem, gładki powrót.</summary>
+        public static float StaggerEnvelope(float t)
+        {
+            const float rise = 0.14f, hold = 0.28f;
+            if (t <= 0f) return 0f;
+            if (t < rise) { float u = t / rise; return 1f - (1f - u) * (1f - u) * (1f - u); }
+            if (t < hold) { float u = (t - rise) / (hold - rise); return 1f - 0.12f * Mathf.Sin(u * Mathf.PI); }
+            float r = Mathf.Clamp01((t - hold) / (1f - hold));
+            return 1f - r * r * r * (r * (r * 6f - 15f) + 10f);
+        }
+
         public static Pose GuardBroken(RigLook look, float time)
         {
             var p = Ready(look);
@@ -344,24 +416,41 @@ namespace Turris
         }
 
         /// <summary>Poza ataku w danej fazie. Zamach kończy się krótkim zawieszeniem (czytelny telegraf), trafienie jest szybkie.</summary>
-        public static Pose SampleAttack(in AttackKeys k, in Pose ready, ActionPhase phase, float p)
+        public static Pose SampleAttack(in AttackKeys k, in Pose ready, ActionPhase phase, float p) => SampleAttack(k, ready, ready, phase, p);
+
+        /// <summary>
+        /// Pięć etapów ciosu: przygotowanie (przysiad i odwiedzenie), zamach z lekkim przestrzałem, przyspieszające cięcie do
+        /// momentu trafienia, wybrzmienie z przestrzałem i powrót do gardy. <paramref name="from"/> – poza, z której zaczyna się
+        /// zamach (gotowość albo koniec poprzedniego ciosu w serii – kolejne cięcie płynie z wybrzmienia poprzedniego).
+        /// </summary>
+        public static Pose SampleAttack(in AttackKeys k, in Pose ready, in Pose from, ActionPhase phase, float p)
         {
             switch (phase)
             {
                 case ActionPhase.Startup:
                 {
-                    float e = 1f - Mathf.Pow(1f - Mathf.Clamp01(p / 0.75f), 3f); // dojście do szczytu w 75% zamachu, potem zawieszenie
+                    // Dojście do szczytu w 75% zamachu (z przestrzałem ~7%), potem zawieszenie.
+                    float e = EaseOutBack(Mathf.Clamp01(p / 0.75f), 1.2f);
                     var wind = k.wind;
                     // Lekkie „dociąganie” w końcówce zamachu – wzmacnia sygnał, że cios zaraz padnie.
                     float pull = Mathf.Clamp01((p - 0.75f) / 0.25f);
                     wind.chestYaw *= 1f + 0.12f * pull;
-                    return Pose.Lerp(ready, wind, e);
+                    var pose = Pose.LerpUnclamped(from, wind, e);
+                    // Przygotowanie: ugięcie kolan i obniżenie bioder na początku zamachu, puszczane przy cięciu.
+                    pose.crouch += Mathf.Sin(Mathf.Clamp01(p) * Mathf.PI * 0.5f) * 0.035f;
+                    return pose;
                 }
                 case ActionPhase.Active:
                 {
                     float q = Mathf.Clamp01(p);
-                    if (q < 0.5f) return Pose.Lerp(k.wind, k.hit, EaseIn(q * 2f));
-                    return Pose.Lerp(k.hit, k.follow, EaseOut((q - 0.5f) * 2f));
+                    if (q < 0.5f)
+                    {
+                        var cut = Pose.Lerp(k.wind, k.hit, EaseIn(q * 2f));
+                        cut.crouch += (1f - q * 2f) * 0.035f;
+                        return cut;
+                    }
+                    // Wybrzmienie z przestrzałem – broń „przelatuje” za pozę końcową i wraca.
+                    return Pose.LerpUnclamped(k.hit, k.follow, EaseOutBack((q - 0.5f) * 2f, 1.5f));
                 }
                 case ActionPhase.Recovery:
                 {
@@ -374,6 +463,12 @@ namespace Turris
         }
 
         static float EaseIn(float t) => t * t;
+        /// <summary>Wyjście z przestrzałem: przekracza 1 (o ~7% dla s = 1,2) i wraca do 1 w t = 1.</summary>
+        static float EaseOutBack(float t, float s)
+        {
+            float u = t - 1f;
+            return 1f + (s + 1f) * u * u * u + s * u * u;
+        }
         static float EaseOut(float t) => 1f - (1f - t) * (1f - t);
         static float SmoothStep(float t) => t * t * (3f - 2f * t);
     }

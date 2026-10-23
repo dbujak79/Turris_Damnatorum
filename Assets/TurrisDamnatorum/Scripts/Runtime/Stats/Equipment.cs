@@ -137,6 +137,8 @@ namespace Turris
         public int level;
         /// <summary>Odblokowana na stałe (wraca w każdym podejściu); w przeciwnym razie zdobyta tylko na to podejście.</summary>
         public bool permanent;
+        /// <summary>Umiejętność z założonego przedmiotu – znika, gdy przedmiot zostanie zdjęty.</summary>
+        public bool fromItem;
         int chargesSpent;
         float rechargeTimer;
 

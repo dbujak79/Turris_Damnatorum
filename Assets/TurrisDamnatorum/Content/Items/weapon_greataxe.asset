@@ -50,6 +50,10 @@ MonoBehaviour:
       spreadAngle: 0
       explosionRadius: 0
       element: 0
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
       statuses: []
       animation: 0
     heavy:
@@ -77,6 +81,10 @@ MonoBehaviour:
       spreadAngle: 0
       explosionRadius: 0
       element: 0
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
       statuses:
       - kind: 0
         stacks: 2
@@ -120,3 +128,7 @@ MonoBehaviour:
   color: {r: 0.45, g: 0.4, b: 0.35, a: 1}
   weaponModel: 0
   shieldModel: 0
+  model: {fileID: 919132149155446097, guid: 4fba84b94cb458743a5a4f4cf5c2b159, type: 3}
+  modelScale: 1
+  modelGripShift: 0
+  grantedSkill: {fileID: 0}

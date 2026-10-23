@@ -1,0 +1,269 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 180b36b7263f32b49b05445d75c51ead, type: 3}
+  m_Name: enemy_hu_weaver
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.EnemyDefinition
+  id: enemy_hu_weaver
+  displayName: Tkaczka
+  description: 'Demon z Hell Unleashed: enemy.weaver'
+  tags: 0
+  huSourceId: enemy.weaver
+  huSourceHash: 50936767765e7c7319c01956ab37b6e3f37157f91de6ca309d8fd57937e54985
+  huModel: weaver
+  huMigrationVersion: 4
+  huArchetype: 1
+  huSplitCount: 0
+  huSummonCount: 2
+  huWakeRadius: 0
+  huHatchSeconds: 0
+  huEnrageHealth: 0
+  huEnrageTempo: 1
+  huCanBeElite: 1
+  huSummon: {fileID: 0}
+  archetype: Strzelec
+  maxHealth: 155
+  maxPoise: 35
+  poiseRegenDelay: 2
+  poiseRegen: 20
+  maxStamina: 80
+  physicalResist: 0.1
+  magicResist: 0
+  moveSpeed: 2.6666667
+  turnSpeed: 360
+  fireMultiplier: 1.35
+  frostMultiplier: 1
+  lightningMultiplier: 0.9
+  bleedMultiplier: 1
+  earthMultiplier: 0.65
+  element: 0
+  variants: []
+  variantChance: 0.4
+  preferredRange: 7.0833335
+  retreatRange: 4.2500005
+  attackInterval: {x: 2.2, y: 2.2}
+  strafeChance: 0.35
+  evadeChance: 0
+  guardChance: 0
+  guard:
+    physicalReduction: 1
+    magicReduction: 0.7
+    stabilityMultiplier: 1
+    blockAngle: 0
+    staminaRegenMultiplier: 0.3
+  riposteWindow: 1.8
+  attacks:
+  - attack:
+      name: Tkaczka
+      delivery: 1
+      damageType: 0
+      baseDamage: 22.5
+      windup: 0.5
+      active: 0.12
+      recovery: 0.4
+      cancelAfter: 0.2
+      reach: 9.166667
+      radius: 1.75
+      lunge: 0.5
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 24
+      poiseDamage: 20
+      heavy: 0
+      staminaCost: 15
+      projectileSpeed: 7.0833335
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 4
+      elementShare: 1
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses: []
+      animation: 0
+    minRange: 0
+    maxRange: 9.083334
+    weight: 1
+    cooldown: 0
+    minPhase: 0
+    eliteOnly: 0
+    bossExtraOnly: 0
+    followUp: -1
+    followUpChance: 0.5
+    hyperArmor: 0
+    retreatAfter: 0
+    special: 0
+    specialCount: 0
+    specialRadius: 0
+    specialDuration: 0
+    specialShare: 0
+    summon: {fileID: 0}
+    summonMax: 0
+    huAbility:
+      name: 
+      argument: 
+      parameters: []
+    huOnPhase: 0
+    huEnragedOnly: 0
+  - attack:
+      name: 'Tkaczka: Cocoon'
+      delivery: 0
+      damageType: 0
+      baseDamage: 12.5
+      windup: 0.7
+      active: 0.12
+      recovery: 0.6
+      cancelAfter: 0.2
+      reach: 12.5
+      radius: 1.6666666
+      lunge: 0.5
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 35
+      poiseDamage: 25
+      heavy: 0
+      staminaCost: 15
+      projectileSpeed: 10.833333
+      projectileCount: 1
+      spreadAngle: 60
+      explosionRadius: 0
+      element: 4
+      elementShare: 1
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses: []
+      animation: 11
+    minRange: 2.0833333
+    maxRange: 11.666667
+    weight: 1
+    cooldown: 7
+    minPhase: 0
+    eliteOnly: 0
+    bossExtraOnly: 0
+    followUp: -1
+    followUpChance: 0.5
+    hyperArmor: 0
+    retreatAfter: 0
+    special: 0
+    specialCount: 0
+    specialRadius: 0
+    specialDuration: 0
+    specialShare: 0
+    summon: {fileID: 0}
+    summonMax: 0
+    huAbility:
+      name: Cocoon
+      argument: 
+      parameters:
+      - key: damage.earth
+        value: 5
+      - key: root
+        value: 1.2
+      - key: speed
+        value: 260
+      - key: range
+        value: 300
+      - key: radius
+        value: 40
+      - key: duration
+        value: 5
+      - key: telegraph
+        value: 0.7
+      - key: every
+        value: 7
+      - key: wave
+        value: 13
+      - key: reach
+        value: 280
+      - key: near
+        value: 50
+    huOnPhase: 0
+    huEnragedOnly: 0
+  - attack:
+      name: 'Tkaczka: EggSac'
+      delivery: 0
+      damageType: 0
+      baseDamage: 0
+      windup: 0.9
+      active: 0.12
+      recovery: 0.6
+      cancelAfter: 0.2
+      reach: 2.9166667
+      radius: 1.875
+      lunge: 0.5
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 35
+      poiseDamage: 25
+      heavy: 0
+      staminaCost: 15
+      projectileSpeed: 7.9166665
+      projectileCount: 1
+      spreadAngle: 60
+      explosionRadius: 0
+      element: 0
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses: []
+      animation: 11
+    minRange: 0
+    maxRange: 25
+    weight: 1
+    cooldown: 22
+    minPhase: 0
+    eliteOnly: 0
+    bossExtraOnly: 0
+    followUp: -1
+    followUpChance: 0.5
+    hyperArmor: 0
+    retreatAfter: 0
+    special: 0
+    specialCount: 0
+    specialRadius: 0
+    specialDuration: 0
+    specialShare: 0
+    summon: {fileID: 11400000, guid: 26191062fcd36ce4cb92c52fb68094c0, type: 2}
+    summonMax: 0
+    huAbility:
+      name: EggSac
+      argument: enemy.eggsac
+      parameters:
+      - key: telegraph
+        value: 0.9
+      - key: every
+        value: 22
+      - key: wave
+        value: 13
+    huOnPhase: 0
+    huEnragedOnly: 0
+  phases: []
+  isBoss: 0
+  soulReward: 4
+  color: {r: 1, g: 0, b: 0, a: 1}
+  scale: 1.0555556
+  rigStyle: 3
+  weaponModel: 9
+  visual: {fileID: 11400000, guid: ca14529306dce8e488f04a101f3c2e98, type: 2}
+  spawnCost: 4.5
+  packSize: 1
+  eliteHealthMultiplier: 7
+  eliteDamageMultiplier: 1.6
+  isMinion: 0

@@ -83,7 +83,8 @@ namespace Turris.Tests
             Assert.AreEqual(GameScreen.MainMenu, root.Screen);
             yield return Press(GamepadButton.South);
             Assert.AreEqual(GameScreen.Loadout, root.Screen);
-            yield return PressTimes(GamepadButton.DpadDown, 4);
+            // Kolumna bohatera: typy, specjalizacje, broń i skill startowy – w dół aż do „Wróć” (nadmiarowe naciśnięcia zostają na dole).
+            yield return PressTimes(GamepadButton.DpadDown, 14);
             yield return Press(GamepadButton.DpadRight);
             yield return Press(GamepadButton.South);
             Assert.AreEqual(GameScreen.Playing, root.Screen, "Start podejścia padem");
@@ -128,7 +129,8 @@ namespace Turris.Tests
             Assert.AreEqual(0, root.Run.attributePoints);
 
             // W dół do "Wejdź wyżej".
-            yield return PressTimes(GamepadButton.DpadDown, 4);
+            // Kolumna bohatera: typy, specjalizacje, broń i skill startowy – w dół aż do „Wróć” (nadmiarowe naciśnięcia zostają na dole).
+            yield return PressTimes(GamepadButton.DpadDown, 14);
             yield return Press(GamepadButton.South);
             Assert.AreEqual(GameScreen.Playing, root.Screen);
             Assert.AreEqual(1, root.Run.floorIndex);

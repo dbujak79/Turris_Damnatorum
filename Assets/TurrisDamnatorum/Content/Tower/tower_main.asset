@@ -17,76 +17,123 @@ MonoBehaviour:
   description: 
   tags: 0
   floors:
-  - name: I. Przedsionek
+  - name: "I. Wrota Otch\u0142ani"
     arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
-    enemies:
-    - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
-    extraWaves:
-    - enemies:
-      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
-      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
-    - enemies:
-      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
-      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
+    enemies: []
+    extraWaves: []
     statScale: 1
-    isDuel: 1
+    isDuel: 0
     isBoss: 0
     restAfter: 0
     ashReward: 3
-  - name: II. Skryptorium herezji
+    portals:
+      enabled: 1
+      duration: 75
+      budget: 30
+      groupInterval: 3.18
+      minGroup: 1
+      maxGroup: 2
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 3.85
+  - name: II. Kult Bramy
     arena: {fileID: 11400000, guid: 4154374c7a45b5d4a804c84f8b75c3c0, type: 2}
-    enemies:
-    - {fileID: 11400000, guid: d319f454e72c6b542a30bb9cec6a4157, type: 2}
-    extraWaves:
-    - enemies:
-      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
-      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
-      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
-    - enemies:
-      - {fileID: 11400000, guid: d319f454e72c6b542a30bb9cec6a4157, type: 2}
-      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
+    enemies: []
+    extraWaves: []
     statScale: 1.05
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 6
+    portals:
+      enabled: 1
+      duration: 78
+      budget: 44
+      groupInterval: 2.91
+      minGroup: 1
+      maxGroup: 2
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 3.7
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 4.5
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1.4
+  - name: "III. W\u0142adca Bramy"
+    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
+    enemies:
+    - {fileID: 11400000, guid: d87b74f1e7ce2d44ebf2993a7b2df8fe, type: 2}
+    extraWaves: []
+    statScale: 1
     isDuel: 1
     isBoss: 0
     restAfter: 1
-    ashReward: 6
-  - name: III. Zbrojownia
+    ashReward: 10
+    portals:
+      enabled: 0
+      duration: 75
+      budget: 30
+      groupInterval: 3
+      minGroup: 1
+      maxGroup: 2
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition: []
+  - name: IV. Zbrojownia
     arena: {fileID: 11400000, guid: 4154374c7a45b5d4a804c84f8b75c3c0, type: 2}
     enemies:
-    - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
-    - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
+    - {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+    - {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
     - {fileID: 11400000, guid: d319f454e72c6b542a30bb9cec6a4157, type: 2}
     extraWaves:
     - enemies:
       - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
       - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
-      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
+      - {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
     - enemies:
       - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
-      - {fileID: 11400000, guid: d319f454e72c6b542a30bb9cec6a4157, type: 2}
+      - {fileID: 11400000, guid: 885fc90c41534d1408fdb3a251354b9a, type: 2}
       - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
       - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
     - enemies:
       - {fileID: 11400000, guid: 0f03c0977312be74c92e3e218d770a73, type: 2}
-    statScale: 0.9
+    statScale: 0.95
     isDuel: 0
     isBoss: 0
     restAfter: 0
-    ashReward: 10
-  - name: "IV. Brama Stra\u017Cnika"
+    ashReward: 12
+    portals:
+      enabled: 0
+      duration: 75
+      budget: 30
+      groupInterval: 3
+      minGroup: 1
+      maxGroup: 2
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition: []
+  - name: "V. Brama Stra\u017Cnika"
     arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
     enemies:
     - {fileID: 11400000, guid: 0f03c0977312be74c92e3e218d770a73, type: 2}
     extraWaves:
     - enemies:
-      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
-      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
+      - {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+      - {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
       - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
     - enemies:
-      - {fileID: 11400000, guid: d319f454e72c6b542a30bb9cec6a4157, type: 2}
+      - {fileID: 11400000, guid: b1fb0ab47c167f24ab28710512197ba7, type: 2}
       - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
       - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
-      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
+      - {fileID: 11400000, guid: de179eaf2380ada4f8b19d12c19009f4, type: 2}
     - enemies:
       - {fileID: 11400000, guid: 0f03c0977312be74c92e3e218d770a73, type: 2}
       - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
@@ -95,7 +142,18 @@ MonoBehaviour:
     isBoss: 0
     restAfter: 1
     ashReward: 15
-  - name: "V. Szczyt Wie\u017Cy"
+    portals:
+      enabled: 0
+      duration: 75
+      budget: 30
+      groupInterval: 3
+      minGroup: 1
+      maxGroup: 2
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition: []
+  - name: "VI. Szczyt Wie\u017Cy"
     arena: {fileID: 11400000, guid: d0a20cbccaa75fb47804f5f8af05e300, type: 2}
     enemies:
     - {fileID: 11400000, guid: 683e4e057c00765458c223ee2667f1a4, type: 2}
@@ -105,4 +163,15 @@ MonoBehaviour:
     isBoss: 1
     restAfter: 0
     ashReward: 30
+    portals:
+      enabled: 0
+      duration: 75
+      budget: 30
+      groupInterval: 3
+      minGroup: 1
+      maxGroup: 2
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition: []
   victoryAshBonus: 40

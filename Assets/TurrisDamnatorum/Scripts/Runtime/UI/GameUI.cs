@@ -12,7 +12,7 @@ namespace Turris
     /// (fokus przestrzenny – patrz <see cref="UINavigator"/>).
     /// </summary>
     [RequireComponent(typeof(GameRoot))]
-    public class GameUI : MonoBehaviour
+    public partial class GameUI : MonoBehaviour
     {
         GameRoot root;
         const float RefHeight = 1080f;
@@ -20,6 +20,7 @@ namespace Turris
         const float H = RefHeight;
 
         GUIStyle title, header, label, small, box, button, center, bigCenter, rich;
+        GUIStyle unlockLocked, unlockCard, unlockCardAlt, unlockName, unlockShort, unlockHint, unlockDetails, unlockOwned;
         Texture2D white;
         readonly ScrollState scrollA = new ScrollState(), scrollB = new ScrollState(), scrollC = new ScrollState();
         string status;
@@ -91,6 +92,7 @@ namespace Turris
                 nav.Reset();
                 nav.NavMode = UsingPad; // grając padem od razu widać fokus na nowym ekranie
                 heldDir = Vector2.zero;
+                unlocksFocusPending = root.Screen == GameScreen.Unlocks;
             }
             TickPendingRebind();
             bool listening = root.Input != null && (root.Input.IsRebinding || pendingRebind != null);
@@ -109,7 +111,8 @@ namespace Turris
             var kb = Keyboard.current;
             if (listening) return;
             if (kb != null && kb.f1Key.wasPressedThisFrame) showHelp = !showHelp;
-            if (Gamepad.current != null && Gamepad.current.selectButton.wasPressedThisFrame) showHelp = !showHelp;
+            // Na padzie Select w czasie gry to skill klasy – pomoc przełącza się nim poza rozgrywką (menu, pauza).
+            if (Gamepad.current != null && Gamepad.current.selectButton.wasPressedThisFrame && root.Screen != GameScreen.Playing) showHelp = !showHelp;
             if (kb != null && root.Screen == GameScreen.Reward)
             {
                 if (kb.digit1Key.wasPressedThisFrame) root.ChooseReward(0);
@@ -183,7 +186,12 @@ namespace Turris
                 {
                     if (!fresh) repeatTimer = RepeatRate;
                     if (!nav.NavMode) nav.NavMode = true; // pierwsze wychylenie tylko pokazuje fokus
-                    else nav.Move(dir);
+                    else
+                    {
+                        int before = nav.Focus;
+                        nav.Move(dir);
+                        if (nav.Focus != before) Sfx.Ui(SoundId.UiMove);
+                    }
                 }
             }
             heldDir = dir;
@@ -217,6 +225,9 @@ namespace Turris
         /// <summary>Przycisk "wstecz" (B / Backspace) zależnie od ekranu.</summary>
         public void Back()
         {
+            var s = root.Screen;
+            if (s == GameScreen.Unlocks || s == GameScreen.Loadout || s == GameScreen.Victory || s == GameScreen.Equipment || s == GameScreen.Controls || s == GameScreen.Paused || s == GameScreen.Bestiary)
+                Sfx.Ui(SoundId.UiBack);
             switch (root.Screen)
             {
                 case GameScreen.Unlocks:
@@ -233,6 +244,9 @@ namespace Turris
                 case GameScreen.Paused:
                     root.TogglePause();
                     break;
+                case GameScreen.Bestiary:
+                    CloseBestiary();
+                    break;
             }
         }
 
@@ -240,13 +254,14 @@ namespace Turris
 
         // ================================================================== Kontrolki z obsługą fokusu
 
-        void Btn(string text, GUIStyle st, Action onClick, params GUILayoutOption[] opts)
+        int Btn(string text, GUIStyle st, Action onClick, params GUILayoutOption[] opts)
         {
             bool clicked = GUILayout.Button(text, st, opts);
             Rect r = GUILayoutUtility.GetLastRect();
             int id = nav.Register(r);
             DrawFocus(id, r);
-            if (clicked || nav.ConsumeActivation(id)) nav.Enqueue(onClick);
+            if (clicked || nav.ConsumeActivation(id)) { nav.Enqueue(onClick); Sfx.Ui(SoundId.UiConfirm); }
+            return id;
         }
 
         void BtnRect(Rect r, string text, GUIStyle st, Action onClick)
@@ -254,17 +269,33 @@ namespace Turris
             bool clicked = GUI.Button(r, text, st);
             int id = nav.Register(r);
             DrawFocus(id, r);
-            if (clicked || nav.ConsumeActivation(id)) nav.Enqueue(onClick);
+            if (clicked || nav.ConsumeActivation(id)) { nav.Enqueue(onClick); Sfx.Ui(SoundId.UiConfirm); }
         }
 
         void Tog(bool value, string text, GUIStyle st, Action<bool> onChange, params GUILayoutOption[] opts)
         {
-            bool now = GUILayout.Toggle(value, text, st, opts);
+            // Zaznaczony przełącznik wyraźnie złoty – domyślna skórka ledwo odróżnia stan „wł.”.
+            var prevBg = GUI.backgroundColor;
+            if (value) GUI.backgroundColor = new Color(1f, 0.72f, 0.25f);
+            bool now = GUILayout.Toggle(value, text, value ? SelectedStyle(st) : st, opts);
+            GUI.backgroundColor = prevBg;
             Rect r = GUILayoutUtility.GetLastRect();
             int id = nav.Register(r);
             DrawFocus(id, r);
-            if (now != value) nav.Enqueue(() => onChange(now));
-            else if (nav.ConsumeActivation(id)) nav.Enqueue(() => onChange(!value));
+            if (now != value) { nav.Enqueue(() => onChange(now)); Sfx.Ui(SoundId.UiConfirm); }
+            else if (nav.ConsumeActivation(id)) { nav.Enqueue(() => onChange(!value)); Sfx.Ui(SoundId.UiConfirm); }
+        }
+
+        readonly Dictionary<GUIStyle, GUIStyle> selectedStyles = new Dictionary<GUIStyle, GUIStyle>();
+
+        GUIStyle SelectedStyle(GUIStyle st)
+        {
+            if (selectedStyles.TryGetValue(st, out var s)) return s;
+            s = new GUIStyle(st) { fontStyle = FontStyle.Bold };
+            var gold = new Color(1f, 0.93f, 0.7f);
+            s.normal.textColor = s.onNormal.textColor = s.hover.textColor = s.onHover.textColor = s.active.textColor = s.onActive.textColor = gold;
+            selectedStyles[st] = s;
+            return s;
         }
 
         void DrawFocus(int id, Rect r)
@@ -297,7 +328,7 @@ namespace Turris
         {
             if (!UsingPad && !nav.NavMode) return;
             var s = root.Screen;
-            bool hasBack = s == GameScreen.Unlocks || s == GameScreen.Loadout || s == GameScreen.Victory || s == GameScreen.Equipment || s == GameScreen.Paused || s == GameScreen.Controls;
+            bool hasBack = s == GameScreen.Unlocks || s == GameScreen.Loadout || s == GameScreen.Victory || s == GameScreen.Equipment || s == GameScreen.Paused || s == GameScreen.Controls || s == GameScreen.Bestiary;
             string text;
             if (UsingPad)
             {
@@ -328,6 +359,21 @@ namespace Turris
             button = new GUIStyle(GUI.skin.button) { fontSize = 20, wordWrap = true, padding = new RectOffset(10, 10, 8, 8) };
             center = new GUIStyle(label) { alignment = TextAnchor.MiddleCenter };
             bigCenter = new GUIStyle(label) { alignment = TextAnchor.MiddleCenter, fontSize = 40, fontStyle = FontStyle.Bold };
+            unlockCard = new GUIStyle(GUI.skin.box) { padding = new RectOffset(14, 14, 8, 8), margin = new RectOffset(0, 0, 0, 0) };
+            unlockCard.normal.background = MakeTex(new Color(0.16f, 0.14f, 0.17f, 0.85f));
+            unlockCardAlt = new GUIStyle(unlockCard);
+            unlockCardAlt.normal.background = MakeTex(new Color(0.12f, 0.11f, 0.13f, 0.85f));
+            unlockName = new GUIStyle(label) { fontSize = 23 };
+            unlockName.normal.textColor = new Color(0.97f, 0.92f, 0.8f);
+            unlockShort = new GUIStyle(label) { fontSize = 18 };
+            unlockShort.normal.textColor = new Color(0.78f, 0.78f, 0.78f);
+            unlockHint = new GUIStyle(label) { fontSize = 16, fontStyle = FontStyle.Italic };
+            unlockHint.normal.textColor = new Color(0.65f, 0.65f, 0.65f);
+            unlockDetails = new GUIStyle(label) { fontSize = 17, padding = new RectOffset(16, 12, 8, 8) };
+            unlockDetails.normal.textColor = new Color(0.85f, 0.85f, 0.85f);
+            unlockDetails.normal.background = MakeTex(new Color(0.05f, 0.04f, 0.06f, 0.8f));
+            unlockOwned = new GUIStyle(label) { alignment = TextAnchor.MiddleCenter };
+            unlockLocked = new GUIStyle(button) { fontSize = 16, wordWrap = false, clipping = TextClipping.Overflow };
         }
 
         static Texture2D MakeTex(Color c)
@@ -368,6 +414,7 @@ namespace Turris
                 case GameScreen.Controls: DrawControls(); break;
                 case GameScreen.Death: DrawHud(); DrawDeath(); break;
                 case GameScreen.Victory: DrawVictory(); break;
+                case GameScreen.Bestiary: DrawBestiary(); break;
             }
             if (root.Screen != GameScreen.Playing) DrawNavHints();
         }
@@ -393,7 +440,8 @@ namespace Turris
                     if (!root.TryStartRun(root.Meta.LastPlan(), out var reason)) status = reason;
                 }, GUILayout.Height(48));
             Btn("Odblokowania", button, root.ShowUnlocks, GUILayout.Height(48));
-            Btn("Sterowanie", button, root.ShowControls, GUILayout.Height(44));
+            Btn("Bestiariusz", button, OpenBestiary, GUILayout.Height(44));
+            Btn("Ustawienia", button, root.ShowControls, GUILayout.Height(44));
             Btn("Wyjdź", button, Application.Quit, GUILayout.Height(40));
             GUILayout.Space(10);
             if (status != null) GUILayout.Label(status, small);
@@ -405,47 +453,133 @@ namespace Turris
 
         // ================================================================== Odblokowania
 
+        readonly HashSet<UnlockDefinition> expandedUnlocks = new HashSet<UnlockDefinition>();
+        bool expandAllUnlocks;
+        bool unlocksFocusPending;
+
         void DrawUnlocks()
         {
             var meta = root.Meta;
             GUI.Label(new Rect(40, 30, W - 80, 50), $"Odblokowania – popiół: {meta.Profile.ash}", header);
             GUILayout.BeginArea(new Rect(40, 90, W - 80, H - 200), box);
             BeginScroll(scrollA, H - 230);
+            // Kolumny: opis (elastyczny) | Szczegóły | Odblokuj.
+            const float detailsW = 170f, buyW = 260f;
+            float textW = W - 80 - 28 - 24 - 28 - detailsW - buyW - 30;
+            int row = 0;
             foreach (var group in root.config.unlocks.GroupBy(u => u.kind))
             {
+                if (row > 0) GUILayout.Space(14);
                 GUILayout.Label(KindTitle(group.Key), header);
+                GUILayout.Label(KindSubtitle(group.Key), unlockHint);
+                GUILayout.Space(4);
                 foreach (var u in group)
                 {
-                    GUILayout.BeginHorizontal();
                     bool unlocked = meta.IsUnlocked(u);
-                    string costText = u.kind == UnlockKind.Difficulty ? "" : u.kind == UnlockKind.Spell ? "  (na stałe – w kolekcji każdego podejścia)" : $"  (koszt w budżecie: {u.loadoutCost})";
-                    GUILayout.Label($"<b>{u.displayName}</b>{costText}\n<size=15>{UnlockDetails(u)}</size>", label, GUILayout.Width(W - 420));
-                    if (unlocked) GUILayout.Label("<color=#88dd88>Odblokowane</color>", label, GUILayout.Width(250));
+                    bool open = expandAllUnlocks || expandedUnlocks.Contains(u);
+                    GUILayout.BeginVertical(row++ % 2 == 0 ? unlockCard : unlockCardAlt);
+                    GUILayout.BeginHorizontal();
+
+                    GUILayout.BeginVertical(GUILayout.Width(textW));
+                    GUILayout.Label($"<b>{u.displayName}</b>{UnlockTags(u)}", unlockName, GUILayout.Width(textW));
+                    GUILayout.Label(UnlockSummary(u), unlockShort, GUILayout.Width(textW));
+                    GUILayout.EndVertical();
+                    GUILayout.FlexibleSpace();
+
+                    GUILayout.BeginVertical(GUILayout.Width(detailsW));
+                    GUILayout.Space(4);
+                    Btn(open ? "Zwiń ▲" : "Szczegóły ▼", button, () =>
+                    {
+                        if (expandAllUnlocks) { expandAllUnlocks = false; foreach (var x in root.config.unlocks) expandedUnlocks.Add(x); }
+                        if (!expandedUnlocks.Remove(u)) expandedUnlocks.Add(u);
+                    }, GUILayout.Width(detailsW), GUILayout.Height(44));
+                    GUILayout.EndVertical();
+                    GUILayout.Space(10);
+
+                    GUILayout.BeginVertical(GUILayout.Width(buyW));
+                    GUILayout.Space(4);
+                    if (unlocked) GUILayout.Label("<color=#88dd88><b>Odblokowane</b></color>", unlockOwned, GUILayout.Width(buyW), GUILayout.Height(44));
                     else
                     {
                         bool can = meta.CanPurchase(u, out var reason);
                         GUI.enabled = can;
-                        Btn(can ? $"Odblokuj ({u.ashCost})" : reason, button, () => meta.Purchase(u), GUILayout.Width(250));
+                        int id = Btn(can ? $"Odblokuj – {u.ashCost} popiołu" : reason, can ? button : unlockLocked, () => meta.Purchase(u), GUILayout.Width(buyW), GUILayout.MinHeight(44));
                         GUI.enabled = true;
+                        // Po wejściu na ekran fokus od razu na pierwszym możliwym zakupie.
+                        if (can && unlocksFocusPending && Event.current.type == EventType.Repaint) { nav.FocusOn(id); unlocksFocusPending = false; }
                     }
+                    GUILayout.EndVertical();
+
                     GUILayout.EndHorizontal();
-                    GUILayout.Space(6);
+                    if (open)
+                    {
+                        GUILayout.Space(6);
+                        GUILayout.Label(UnlockDetails(u), unlockDetails);
+                    }
+                    GUILayout.EndVertical();
+                    GUILayout.Space(4);
                 }
             }
             EndScroll();
             GUILayout.EndArea();
+            if (Event.current.type == EventType.Repaint) unlocksFocusPending = false; // nic do kupienia – zostaje domyślny fokus
             BtnRect(new Rect(40, H - 100, 240, 50), "Wróć", button, root.ShowMainMenu);
+            BtnRect(new Rect(300, H - 100, 320, 50), expandAllUnlocks ? "Zwiń wszystkie szczegóły" : "Rozwiń wszystkie szczegóły", button, () =>
+            {
+                expandAllUnlocks = !expandAllUnlocks;
+                expandedUnlocks.Clear();
+            });
         }
 
         static string KindTitle(UnlockKind k)
         {
             switch (k)
             {
-                case UnlockKind.StartingItem: return "Przedmioty startowe (trafiają też do puli nagród)";
-                case UnlockKind.Spell: return "Umiejętności – czary i techniki (na stałe, dla każdej postaci; przed odblokowaniem można je zdobyć tylko na jedno podejście)";
+                case UnlockKind.StartingItem: return "Przedmioty startowe";
+                case UnlockKind.Spell: return "Umiejętności";
                 case UnlockKind.Boon: return "Talenty i wzmocnienia";
                 default: return "Poziomy trudności";
             }
+        }
+
+        static string KindSubtitle(UnlockKind k)
+        {
+            switch (k)
+            {
+                case UnlockKind.StartingItem: return "Do wzięcia na start podejścia za punkty budżetu; trafiają też do puli nagród.";
+                case UnlockKind.Spell: return "Czary i techniki – na stałe, na start każdego podejścia danej klasy. Bez odblokowania można je zdobyć tylko na jedno podejście.";
+                case UnlockKind.Boon: return "Do wybrania na start podejścia za punkty budżetu.";
+                default: return "Trudniejsza wieża, większe nagrody.";
+            }
+        }
+
+        /// <summary>Znaczniki za nazwą: dla kogo i ile kosztuje w budżecie przygotowania.</summary>
+        static string UnlockTags(UnlockDefinition u)
+        {
+            if (u.kind == UnlockKind.Difficulty) return "";
+            string who = u.IsGeneral
+                ? "<color=#b0b0b0>każda klasa</color>"
+                : $"<color=#e8c070>{string.Join(", ", u.classes.Where(c => c != null).Select(c => c.displayName))}</color>";
+            string cost = u.kind == UnlockKind.Spell ? "na stałe" : $"budżet {u.loadoutCost}";
+            return $"<size=18>     {who}     <color=#9ab8d8>{cost}</color></size>";
+        }
+
+        /// <summary>Jedna linijka: rodzaj + krótki opis. Pełne parametry są pod „Szczegóły”.</summary>
+        string UnlockSummary(UnlockDefinition u)
+        {
+            string kind = "";
+            switch (u.target)
+            {
+                case ItemDefinition i: kind = Describe.KindName(i) + (i.twoHanded ? " dwuręczna" : ""); break;
+                case SpellDefinition s: kind = s.IsSpell ? "Czar" : "Technika"; break;
+                case BoonDefinition _: kind = "Talent"; break;
+            }
+            string text = !string.IsNullOrWhiteSpace(u.description) ? u.description
+                : u.target != null && !string.IsNullOrWhiteSpace(u.target.description) ? u.target.description
+                : UnlockDetails(u).Split('\n').Skip(u.target is ItemDefinition ? 1 : 0).FirstOrDefault() ?? "";
+            // „Broń dwuręczna · Broń dwuręczna. …” – rodzaju nie powtarzamy, jeśli opis od niego się zaczyna.
+            if (kind.Length == 0 || text.StartsWith(kind, StringComparison.OrdinalIgnoreCase)) return text;
+            return $"<color=#d8c8a8>{kind}</color>  ·  {text}";
         }
 
         string UnlockDetails(UnlockDefinition u)
@@ -453,10 +587,10 @@ namespace Turris
             var b = root.config.balance;
             switch (u.target)
             {
-                case ItemDefinition i: return Describe.Item(new ItemInstance(i), null, b).Replace("\n", " · ");
-                case SpellDefinition s: return Describe.Spell(s, 0, null, b).Replace("\n", " · ");
-                case BoonDefinition bo: return Describe.Boon(bo, 0).Replace("\n", " · ");
-                case DifficultyDefinition d: return string.Join(" · ", d.DescribeModifiers()) + " | Nagrody: " + string.Join(", ", d.DescribeRewards());
+                case ItemDefinition i: return Describe.Item(new ItemInstance(i), null, b);
+                case SpellDefinition s: return Describe.Spell(s, 0, null, b);
+                case BoonDefinition bo: return Describe.Boon(bo, 0);
+                case DifficultyDefinition d: return string.Join("\n", d.DescribeModifiers()) + "\nNagrody: " + string.Join(", ", d.DescribeRewards());
             }
             return u.description;
         }
@@ -471,22 +605,95 @@ namespace Turris
             GUI.Label(new Rect(40, 20, W - 80, 50), "Przygotowanie podejścia", header);
 
             float colW = (W - 120) / 3f;
-            // --- Klasa
+            // --- Bohater: typ, specjalizacja, broń na start, skill startowy
             GUILayout.BeginArea(new Rect(40, 80, colW, H - 200), box);
-            GUILayout.Label("Klasa startowa", header);
-            GUILayout.Label("<size=15>Klasa określa tylko atrybuty, wyposażenie i umiejętności na start. Później każda postać może używać dowolnej broni, pancerza i umiejętności.</size>", label);
-            foreach (var c in cfg.classes)
-                Tog(plan.classDef == c, $"  {c.displayName}", button, on => { if (on) plan.classDef = c; }, GUILayout.Height(44));
+            GUILayout.Label("Bohater", header);
+            BeginScroll(scrollA, H - 290);
+            var families = cfg.classes.Where(c => c != null && c.parent == null).ToList();
+            var family = plan.classDef != null ? plan.classDef.Family : null;
+            GUILayout.BeginHorizontal();
+            foreach (var f in families)
+            {
+                var fam = f;
+                Tog(family == fam, fam.displayName, button, on => { if (on && family != fam) meta.SelectClass(plan, fam); }, GUILayout.Height(44));
+            }
+            GUILayout.EndHorizontal();
+            if (family != null)
+            {
+                var specs = cfg.classes.Where(c => c != null && c.parent == family).ToList();
+                if (specs.Count > 0)
+                {
+                    GUILayout.Label("Specjalizacja:", small);
+                    Tog(plan.classDef == family, "  Bez specjalizacji", button, on => { if (on && plan.classDef != family) meta.SelectClass(plan, family); }, GUILayout.Height(36));
+                    foreach (var sp in specs)
+                    {
+                        var spec = sp;
+                        Tog(plan.classDef == spec, $"  {spec.displayName} <size=14><color=#bbbbbb>– {spec.tagline}</color></size>", button,
+                            on => { if (on && plan.classDef != spec) meta.SelectClass(plan, spec); }, GUILayout.Height(36));
+                    }
+                }
+            }
             if (plan.classDef != null)
             {
                 var c = plan.classDef;
+                Btn("Wygląd: " + (plan.appearance != null ? plan.appearance.displayName : "zgodny z klasą") + "  ›", button, () =>
+                {
+                    int next = plan.appearance == null ? 0 : cfg.classes.IndexOf(plan.appearance) + 1;
+                    plan.appearance = next < cfg.classes.Count ? cfg.classes[next] : null;
+                }, GUILayout.Height(36));
                 GUILayout.Space(8);
+                GUILayout.Label($"<b>{c.displayName}</b>" + (string.IsNullOrEmpty(c.tagline) ? "" : $" – {c.tagline}"), label);
                 GUILayout.Label(c.description, small);
+                if (c.trait != ClassTrait.None) GUILayout.Label($"<color=#e8c070>Cecha: {Names.Trait(c.trait)}</color> <size=14>– {Names.TraitHelp(c.trait)}</size>", small);
+                GUILayout.Label($"Unik: {Names.Dodge(c.dodgeStyle)}", small);
+                if (c.signatureSkill != null) GUILayout.Label($"<color=#ffcc66>Skill klasy {K("Signature")}: {c.signatureSkill.displayName}</color> <size=14>– {c.signatureSkill.description}</size>", small);
                 GUILayout.Label($"Siła {c.strength} · Zręczność {c.dexterity} · Inteligencja {c.intelligence} · Wytrzymałość {c.toughness}\n<size=14>Po każdym piętrze: +1 do wybranej cechy.</size>", small);
-                GUILayout.Label("Wyposażenie: " + string.Join(", ", c.startingItems.Select(i => i.displayName)), small);
+                if (c.classModifiers.Count > 0)
+                    GUILayout.Label("<size=14>Mistrzostwo: " + string.Join(", ", c.classModifiers.Select(m => $"{Names.Stat(m.stat)} {(m.value >= 0 ? "+" : "")}{m.value:0.#}{(m.mode == ModifierMode.Percent ? "%" : "")}")) + "</size>", small);
+                if (c.loadouts.Count > 0)
+                {
+                    GUILayout.Label("Broń na start:", small);
+                    for (int li = 0; li < c.loadouts.Count; li++)
+                    {
+                        int idx = li;
+                        var l = c.loadouts[li];
+                        string text = (string.IsNullOrEmpty(l.label) ? "" : l.label + ": ") + (l.weapon != null ? l.weapon.displayName : "–") + (l.offHand != null ? " + " + l.offHand.displayName : "");
+                        Tog(plan.loadoutIndex == idx, "  " + text, button, on => { if (on) meta.SelectLoadout(plan, idx); }, GUILayout.Height(36));
+                    }
+                }
+                else
+                {
+                    var choices = c.WeaponChoices;
+                    if (choices.Count > 1)
+                    {
+                        GUILayout.Label("Broń startowa (bez kosztu):", small);
+                        GUILayout.BeginHorizontal();
+                        foreach (var w in choices)
+                        {
+                            var weapon = w;
+                            Tog(plan.Weapon == weapon, weapon.displayName, button, on => { if (on) plan.startingWeapon = weapon; }, GUILayout.Height(40));
+                        }
+                        GUILayout.EndHorizontal();
+                    }
+                }
+                // Skill startowy: z broni (grymuar, sztylet do rzucania) albo jeden z dwóch do wyboru.
+                if (plan.GearSkill != null) GUILayout.Label($"Skill startowy (z broni): <b>{plan.GearSkill.displayName}</b>", small);
+                else if (c.startingSkillChoices.Count > 0)
+                {
+                    GUILayout.Label("Skill startowy:", small);
+                    GUILayout.BeginHorizontal();
+                    foreach (var sk in c.startingSkillChoices)
+                    {
+                        var skill = sk;
+                        Tog(plan.OpeningSkill == skill, skill.displayName, button, on => { if (on) meta.SelectStartingSkill(plan, skill); }, GUILayout.Height(40));
+                    }
+                    GUILayout.EndHorizontal();
+                }
+                if (c.startingItems.Count > 0) GUILayout.Label("Wyposażenie: " + string.Join(", ", c.startingItems.Select(i => i == c.DefaultWeapon && plan.Weapon != null ? plan.Weapon.displayName : i.displayName)), small);
                 if (c.startingSpells.Count > 0) GUILayout.Label("Umiejętności klasy: " + string.Join(", ", c.startingSpells.Select(s => s.displayName)), small);
                 GUILayout.Label($"Flaszki: życia {c.healthFlasks}, many {c.manaFlasks}", small);
             }
+            EndScroll();
             GUILayout.EndArea();
 
             // --- Trudność
@@ -512,16 +719,16 @@ namespace Turris
             GUILayout.BeginArea(new Rect(80 + colW * 2, 80, colW, H - 200), box);
             int budget = cfg.balance.loadoutBudget;
             GUILayout.Label($"Budżet przygotowania: {plan.Cost}/{budget}", header);
-            GUILayout.Label("<size=15>Wybierz odblokowane przedmioty i talenty. Budżet nie pozwala zabrać wszystkiego naraz.</size>", label);
+            GUILayout.Label("<size=15>Odblokowane przedmioty i talenty: ogólne albo przeznaczone dla wybranej klasy. Budżet nie pozwala zabrać wszystkiego naraz. Wybrany przedmiot zakładasz od razu – to, co wypiera (np. miecz klasy), trafia do plecaka.</size>", label);
             BeginScroll(scrollC, H - 340);
             DrawLoadoutSkills(plan);
             GUILayout.Label("Dodatki", header);
-            foreach (var u in meta.LoadoutOptions)
+            foreach (var u in meta.LoadoutOptionsFor(plan.classDef))
             {
                 bool on = plan.extras.Contains(u);
                 bool affordable = on || plan.Cost + u.loadoutCost <= budget;
                 GUI.enabled = affordable;
-                Tog(on, $"  [{u.loadoutCost}] {u.displayName} – {KindShort(u.kind)}", button, now =>
+                Tog(on, $"  [{u.loadoutCost}] {u.displayName} – {KindShort(u.kind)}{(u.IsGeneral ? "" : " klasy")}", button, now =>
                 {
                     if (now && !plan.extras.Contains(u) && plan.Cost + u.loadoutCost <= budget) plan.extras.Add(u);
                     else if (!now) plan.extras.Remove(u);
@@ -553,7 +760,7 @@ namespace Turris
             var skills = plan.StartingSkills.ToList();
             GUILayout.Label("Umiejętności – 3 sloty", header);
             if (skills.Count == 0) { GUILayout.Label("Brak – odblokuj umiejętności za popiół.", small); return; }
-            GUILayout.Label("<size=15>Klasowe i odblokowane na stałe. Przypisz do przycisku (ponownie – zdejmij); puste sloty wypełnią się same.</size>", label);
+            GUILayout.Label("<size=15>Klasowe i odblokowane na stałe dla tej klasy (inne można zdobyć w trakcie podejścia). Przypisz do przycisku (ponownie – zdejmij); puste sloty wypełnią się same.</size>", label);
             for (int i = 0; i < RunState.SkillSlotCount; i++)
             {
                 var s = plan.skillSlots[i];
@@ -579,14 +786,17 @@ namespace Turris
         void DrawSkillSlots(PlayerCombat pc, float x, float y)
         {
             const float w = 300, h = 66;
-            for (int i = 0; i < RunState.SkillSlotCount; i++)
+            // Trzy sloty i – jeśli klasa go ma – skill klasy pod osobnym przyciskiem.
+            int count = RunState.SkillSlotCount + (pc.Skill(PlayerCombat.SignatureSlot) != null ? 1 : 0);
+            for (int i = 0; i < count; i++)
             {
                 var r = new Rect(x + i * (w + 10), y, w, h);
                 var sk = pc.Skill(i);
+                string key = i == PlayerCombat.SignatureSlot ? K("Signature") : K("Skill" + (i + 1));
                 GUI.color = new Color(0, 0, 0, 0.65f);
                 GUI.DrawTexture(r, white);
                 string head, sub = "";
-                if (sk == null) head = $"<b>{K("Skill" + (i + 1))}</b> <color=#888888>pusty slot</color>";
+                if (sk == null) head = $"<b>{key}</b> <color=#888888>pusty slot</color>";
                 else
                 {
                     var inst = sk.instance;
@@ -600,8 +810,9 @@ namespace Turris
                     var c = sk.Def.color; if (!usable) c *= 0.45f; c.a = 1f;
                     GUI.color = c;
                     GUI.DrawTexture(new Rect(r.x, r.y, 6, r.height), white);
-                    head = $"<b>{K("Skill" + (i + 1))}</b> <b>{inst.Name}</b>";
-                    string cost = sk.Def.IsSpell ? $"{sk.manaCost:0} many" : $"{sk.staminaCost:0} wytrz.";
+                    head = $"<b>{key}</b> <b>{inst.Name}</b>" + (i == PlayerCombat.SignatureSlot ? " <color=#ffcc66>(klasa)</color>" : "");
+                    string cost = sk.Def.IsAura ? (pc.Auras.Exists(a => a != null && a.Skill == sk.Def) ? "<color=#ffdd77>aktywna</color>" : "wyłączona")
+                        : sk.Def.IsSpell ? $"{sk.manaCost:0} many" : $"{sk.staminaCost:0} wytrz.";
                     string charges = inst.MaxCharges > 1 ? $" · ładunki {inst.Charges}/{inst.MaxCharges}" : "";
                     string state = !sk.equipmentMet ? $"<color=#ff9966>{Names.Requirement(sk.Def.requiredTags)}</color>"
                         : inst.Ready ? "<color=#99dd99>gotowa</color>" : $"{inst.RechargeRemaining:0.0}s";
@@ -636,6 +847,16 @@ namespace Turris
             if (pc.FrostArmorTime > 0) buffs.Add($"<color=#99ddff>Mroźna zbroja ({pc.FrostArmorTime:0}s)</color>");
             if (pc.ShockCharged) buffs.Add("<color=#eeee88>Ładunek burzy</color>");
             if (pc.WeaponBuffTime > 0) buffs.Add($"<color=#{ColorUtility.ToHtmlStringRGB(pc.WeaponBuffColor)}>Zaklęta broń ({pc.WeaponBuffTime:0}s)</color>");
+            // Cechy klasy (Hell Unleashed): furia/szał, arkanowa osłona, nieśmiertelność, przeciążenie, aury.
+            var cls = run.startingClass;
+            if (cls != null && (cls.trait == ClassTrait.Fury || cls.trait == ClassTrait.Bloodlust))
+                buffs.Add(pc.Raging ? $"<color=#ff4422>SZAŁ ({pc.RageTime:0}s)</color>" : $"<color=#dd7755>Furia {pc.Fury:0}%</color>");
+            if (pc.WardMax > 0) buffs.Add($"<color=#aa99ff>Osłona arkanów {pc.Ward:0}/{pc.WardMax:0}</color>");
+            if (pc.ImmortalTime > 0) buffs.Add($"<color=#ff3322>Nieśmiertelny ({pc.ImmortalTime:0.0}s)</color>");
+            if (pc.OverloadReady) buffs.Add("<color=#cc88ff>Przeciążenie gotowe</color>");
+            if (pc.OverheatTime > 0) buffs.Add($"<color=#aa66cc>Sloty przegrzane ({pc.OverheatTime:0.0}s)</color>");
+            foreach (var a in pc.Auras) if (a != null && a.Skill != null) buffs.Add($"<color=#{ColorUtility.ToHtmlStringRGB(a.Skill.color)}>{a.Skill.displayName}</color>");
+            if (Servant.Active.Count > 0) buffs.Add($"<color=#77ffaa>Sługi: {Servant.Active.Count}</color>");
             if (buffs.Count > 0) GUI.Label(new Rect(x, y + (pc.BarrierAmount > 0 ? 116 : 98), 900, 26), "<size=16><b>" + string.Join("   ", buffs) + "</b></size>", rich);
 
             // Flaszki i sloty umiejętności
@@ -649,7 +870,11 @@ namespace Turris
             // Piętro, dusze
             var floor = root.CurrentFloor;
             GUI.Label(new Rect(W - 520, 30, 480, 30), $"{floor?.name}  ({run.floorIndex + 1}/{root.config.tower.floors.Count})", header);
-            if (floor != null && floor.WaveCount > 1)
+            if (floor != null && root.PortalFloor && root.PortalsRunning)
+                GUI.Label(new Rect(W - 520, 96, 480, 30), root.PortalTimeLeft > 0f
+                    ? $"<b>Portale: {Mathf.CeilToInt(root.PortalTimeLeft)} s</b> · demony: {root.Enemies.Count(e => e != null && !e.IsDead)}"
+                    : $"<b>Dobij pozostałe demony</b> · {root.Enemies.Count(e => e != null && !e.IsDead)}", rich);
+            else if (floor != null && floor.WaveCount > 1)
                 GUI.Label(new Rect(W - 520, 96, 480, 30), $"<b>Fala {root.WaveIndex + 1}/{floor.WaveCount}</b> · wrogowie: {root.Enemies.Count(e => e != null && !e.IsDead)}", rich);
             GUI.Label(new Rect(W - 520, 70, 480, 30), $"Dusze: {run.souls}   Popiół w podejściu: {run.ashEarned}   Trudność: {run.difficulty.displayName}", small);
 
@@ -737,11 +962,11 @@ namespace Turris
 
             if (showHelp)
             {
-                string controls = $"<b>Sterowanie{(UsingPad ? " – pad" : "")}</b> [{(UsingPad ? "Select" : "F1")} ukryj · zmiana: menu → Sterowanie]\n" +
+                string controls = $"<b>Sterowanie{(UsingPad ? " – pad" : "")}</b> [{(UsingPad ? "Select w pauzie" : "F1")} ukryj · zmiana: menu → Ustawienia]\n" +
                     (UsingPad ? "Lewa gałka ruch · Prawa gałka kamera\n" : "WASD ruch · Mysz kamera\n") +
                     $"{K("Sprint")} bieg · {K("Light")} szybki atak / riposta · {K("Heavy")} mocny atak\n" +
                     $"{K("Block")} blok · {K("Parry")} parowanie · {K("Dodge")} unik (przerywa atak)\n" +
-                    $"{K("Skill1")} {K("Skill2")} {K("Skill3")} umiejętności 1–3\n" +
+                    $"{K("Skill1")} {K("Skill2")} {K("Skill3")} umiejętności 1–3 · {K("Signature")} skill klasy\n" +
                     $"{K("FlaskHealth")} flaszka życia · {K("FlaskMana")} flaszka many\n" +
                     $"{K("LockOn")} namierzanie · {K("SwitchLeft")} / {K("SwitchRight")} zmiana celu\n" +
                     (UsingPad ? "(Start) pauza" : "[Esc] pauza");
@@ -791,7 +1016,7 @@ namespace Turris
             GUILayout.BeginArea(new Rect(W / 2 - 220, H / 2 - 170, 440, 340), box);
             GUILayout.Label("Pauza", header);
             Btn("Wznów", button, root.TogglePause, GUILayout.Height(50));
-            Btn("Sterowanie", button, root.ShowControls, GUILayout.Height(50));
+            Btn("Ustawienia", button, root.ShowControls, GUILayout.Height(50));
             Btn("Porzuć podejście (liczy się jak śmierć)", button, root.AbandonRun, GUILayout.Height(50));
             GUILayout.EndArea();
         }
@@ -954,15 +1179,27 @@ namespace Turris
         void DrawControls()
         {
             var inp = root.Input;
-            GUI.Label(new Rect(40, 30, W - 80, 50), "Sterowanie – przypisanie przycisków", header);
+            GUI.Label(new Rect(40, 30, W - 80, 50), "Ustawienia – dźwięk i sterowanie", header);
             GUILayout.BeginArea(new Rect(W / 2 - 560, 90, 1120, H - 210), box);
+            var prof = root.Meta.Profile;
+            GUILayout.BeginHorizontal();
+            VolumeControl("Głośność", 0, prof.masterVolume);
+            GUILayout.Space(24);
+            VolumeControl("Muzyka", 1, prof.musicVolume);
+            GUILayout.Space(24);
+            VolumeControl("Efekty", 2, prof.sfxVolume);
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            VolumeControl("Wibracje", 3, prof.rumbleStrength);
+            GUILayout.EndHorizontal();
+            GUILayout.Space(8);
             GUILayout.Label("<size=15>Wybierz przycisk i naciśnij nowy klawisz, przycisk myszy lub pada (Esc – anuluj). Jeśli inna akcja miała ten przycisk, zamienią się miejscami. Zapis w profilu.</size>", label);
             GUILayout.BeginHorizontal();
             GUILayout.Label("<b>Akcja</b>", label, GUILayout.Width(440));
             GUILayout.Label("<b>Klawiatura / mysz</b>", label, GUILayout.Width(320));
             GUILayout.Label("<b>Pad</b>", label, GUILayout.Width(320));
             GUILayout.EndHorizontal();
-            BeginScroll(scrollA, H - 360);
+            BeginScroll(scrollA, H - 455);
             foreach (var (action, lbl) in PlayerInputReader.Rebindable)
             {
                 string act = action, name = lbl;
@@ -987,6 +1224,15 @@ namespace Turris
         }
 
         bool? pendingOrActivePad;
+
+        /// <summary>Głośność: [−] 80% [+] (krok 10%, zapis w profilu). Po zmianie efektów słychać próbkę.</summary>
+        void VolumeControl(string name, int channel, float value)
+        {
+            GUILayout.Label(name, label, GUILayout.Width(130), GUILayout.Height(40));
+            Btn("−", button, () => { root.ChangeVolume(channel, -0.1f); if (channel == 2) Sfx.Ui(SoundId.Block, 0.8f); }, GUILayout.Width(48), GUILayout.Height(40));
+            GUILayout.Label($"{value * 100f:0}%", center, GUILayout.Width(70), GUILayout.Height(40));
+            Btn("+", button, () => { root.ChangeVolume(channel, 0.1f); if (channel == 2) Sfx.Ui(SoundId.Block, 0.8f); }, GUILayout.Width(48), GUILayout.Height(40));
+        }
 
         /// <summary>Nasłuch zaczyna się po puszczeniu przycisku, którym go wywołano – inaczej ten sam przycisk zostałby przypisany.</summary>
         void BeginListen(string action, bool pad, string label)

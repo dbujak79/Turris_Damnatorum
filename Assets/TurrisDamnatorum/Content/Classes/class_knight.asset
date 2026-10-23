@@ -13,24 +13,64 @@ MonoBehaviour:
   m_Name: class_knight
   m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ClassDefinition
   id: class_knight
-  displayName: Rycerz
-  description: "Miecz, tarcza i solidny pancerz. Techniki: Rozp\u0142atanie i Uderzenie tarcz\u0105. Mo\u017Ce p\xF3\u017Aniej uczy\u0107 si\u0119 czar\xF3w."
+  displayName: Wojownik
+  description: "Miecz z tarcz\u0105 albo miecz dwur\u0119czny. Wi\u0119cej zdrowia, pancerz, walka w zwarciu. Furia: ciosy i trafienia \u0142aduj\u0105 sza\u0142."
   tags: 0
-  vigor: 12
-  endurance: 12
-  mind: 6
+  parent: {fileID: 0}
+  tagline: Miecz i pancerz
+  trait: 1
+  dodgeStyle: 1
+  signatureSkill: {fileID: 11400000, guid: b074138034fe36f498d5f20ffbfaca29, type: 2}
+  startingSkillChoices:
+  - {fileID: 11400000, guid: 92a150761796f7948aee0ad14c2433a3, type: 2}
+  - {fileID: 11400000, guid: d9b28305965ac2a49b7a7951e82942d0, type: 2}
+  loadouts:
+  - label: Miecz i tarcza
+    element: 0
+    weapon: {fileID: 11400000, guid: 116b6db2435d0b445b199590de7acef8, type: 2}
+    offHand: {fileID: 11400000, guid: bb1daaceee69c23418c53bb96d50a835, type: 2}
+  - label: "Dwur\u0119czny"
+    element: 0
+    weapon: {fileID: 11400000, guid: 75f599bbebf8d444ca8e568712150ef8, type: 2}
+    offHand: {fileID: 0}
+  classModifiers:
+  - stat: 6
+    mode: 0
+    value: 30
+  - stat: 12
+    mode: 0
+    value: 33
+  - stat: 31
+    mode: 0
+    value: 10
+  - stat: 30
+    mode: 0
+    value: 10
+  - stat: 21
+    mode: 0
+    value: -10
+  - stat: 22
+    mode: 0
+    value: -10
+  - stat: 23
+    mode: 0
+    value: -10
+  - stat: 28
+    mode: 0
+    value: -10
+  lookOverride: {fileID: 0}
+  toughness: 12
   strength: 14
-  dexterity: 12
-  intelligence: 8
+  dexterity: 10
+  intelligence: 7
+  endurance: 10
+  mind: 10
   startingItems:
-  - {fileID: 11400000, guid: 1e8d157ae3063cc47bddd2143e676dfe, type: 2}
-  - {fileID: 11400000, guid: 94dd009415e0d5b45ab55fb3280fbdb3, type: 2}
   - {fileID: 11400000, guid: 8386e7fa5789f05439ca843032b39bf3, type: 2}
-  startingSpells:
-  - {fileID: 11400000, guid: d8b4d27e3d1552d49a554cf62f5d4772, type: 2}
-  - {fileID: 11400000, guid: 00ed47512d8e79642a7fa495669f4fde, type: 2}
+  alternativeWeapons: []
+  startingSpells: []
   startingTalents: []
   healthFlasks: 4
   manaFlasks: 1
   color: {r: 0.7, g: 0.72, b: 0.8, a: 1}
-  visual: {fileID: 0}
+  visual: {fileID: 11400000, guid: e52b85d5a4c76ad4c969957e475610df, type: 2}

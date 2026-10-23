@@ -35,7 +35,7 @@ namespace Turris.Tests
 
         GameRoot CreateGame(out DefaultContent.Bundle bundle)
         {
-            bundle = DefaultContent.Create();
+            bundle = TestContent.Create();
             var go = new GameObject("TestGame");
             go.SetActive(false);
             var root = go.AddComponent<GameRoot>();
@@ -52,22 +52,24 @@ namespace Turris.Tests
         }
 
         [UnityTest]
-        public IEnumerator FullRun_FiveFloors_Victory_AshPersistsAfterRestart()
+        public IEnumerator FullRun_AllFloors_Victory_AshPersistsAfterRestart()
         {
             var root = CreateGame(out var bundle);
-            var plan = new LoadoutPlan { classDef = bundle.Get<ClassDefinition>("class_knight"), difficulty = bundle.config.difficulties[0] };
+            var plan = new LoadoutPlan { classDef = bundle.Get<ClassDefinition>("legacy_knight"), difficulty = bundle.config.difficulties[0] };
             Assert.IsTrue(root.TryStartRun(plan, out var reason), reason);
             yield return null;
+            int last = bundle.config.tower.floors.Count - 1;
 
-            for (int floor = 0; floor < 5; floor++)
+            for (int floor = 0; floor <= last; floor++)
             {
                 Assert.AreEqual(GameScreen.Playing, root.Screen);
                 Assert.AreEqual(floor, root.Run.floorIndex);
-                Assert.AreEqual(bundle.config.tower.floors[floor].enemies.Count, root.Enemies.Count);
+                // Wrogowie fali wychodzą z portali po kolei – liczą się ci na arenie i ci, którzy jeszcze nadchodzą.
+                Assert.AreEqual(bundle.config.tower.floors[floor].enemies.Count, root.Enemies.Count + root.IncomingEnemies);
                 yield return new WaitForSeconds(0.3f); // chwila prawdziwej symulacji
                 root.DebugCompleteFloorNow();
                 yield return null;
-                if (floor == 4) break;
+                if (floor == last) break;
                 Assert.AreEqual(GameScreen.Reward, root.Screen);
                 Assert.AreEqual(3, root.Rewards.Count);
                 root.ChooseReward(0);
@@ -84,7 +86,7 @@ namespace Turris.Tests
             // "Ponowne uruchomienie gry": nowy serwis czyta ten sam plik z dysku.
             var reloaded = new MetaService(bundle.config, new FileProfileStorage(root.ProfilePath));
             Assert.AreEqual(ash, reloaded.Profile.ash);
-            Assert.AreEqual(5, reloaded.Profile.bestFloor);
+            Assert.AreEqual(last + 1, reloaded.Profile.bestFloor);
             Assert.Contains(0, reloaded.Profile.victoryTiers);
         }
 
@@ -97,16 +99,15 @@ namespace Turris.Tests
             Assert.IsTrue(root.Meta.Purchase(bundle.Get<UnlockDefinition>("unlock_diff1")));
             int startAsh = root.Meta.Profile.ash;
 
-            var p0 = new LoadoutPlan { classDef = bundle.Get<ClassDefinition>("class_mage"), difficulty = bundle.config.difficulties[0] };
+            var p0 = new LoadoutPlan { classDef = bundle.Get<ClassDefinition>("legacy_mage"), difficulty = bundle.config.difficulties[0] };
             root.StartRun(p0);
             yield return null;
             root.DebugCompleteFloorNow();
             int ash0 = root.Run.ashEarned;
 
-            var p1 = new LoadoutPlan { classDef = bundle.Get<ClassDefinition>("class_mage"), difficulty = bundle.config.difficulties[1] };
+            var p1 = new LoadoutPlan { classDef = bundle.Get<ClassDefinition>("legacy_mage"), difficulty = bundle.config.difficulties[1] };
             root.StartRun(p1);
             yield return null;
-            Assert.IsTrue(root.Enemies[0].IsElite, "Trudność 1 dodaje elity w pojedynkach");
             root.DebugCompleteFloorNow();
             int ash1 = root.Run.ashEarned;
             Assert.Greater(ash1, ash0);
@@ -114,12 +115,34 @@ namespace Turris.Tests
         }
 
         [UnityTest]
+        public IEnumerator Difficulty1_AddsElitesInDuels()
+        {
+            var root = CreateGame(out var bundle);
+            root.Meta.DebugAddAsh(500);
+            root.Meta.RecordReachedFloor(4);
+            Assert.IsTrue(root.Meta.Purchase(bundle.Get<UnlockDefinition>("unlock_diff1")));
+            var floors = bundle.config.tower.floors;
+            int duel = floors.FindIndex(f => f.isDuel && !f.isBoss && f.enemies.Count > 0 && !f.enemies[0].isBoss);
+            Assert.GreaterOrEqual(duel, 0, "brak pojedynku bez bossa");
+            root.StartRun(new LoadoutPlan { classDef = bundle.Get<ClassDefinition>("legacy_mage"), difficulty = bundle.config.difficulties[1] });
+            yield return null;
+            for (int i = 0; i < duel; i++) { root.DebugCompleteFloorNow(); root.ChooseReward(0); root.NextFloor(); yield return null; }
+            Assert.AreEqual(duel, root.Run.floorIndex);
+            float wait = 0f;
+            while (root.Enemies.Count == 0 && wait < 5f) { wait += Time.deltaTime; yield return null; }
+            Assert.IsTrue(root.Enemies[0].IsElite, "Trudność 1 dodaje elity w pojedynkach");
+        }
+
+        [UnityTest]
         public IEnumerator Death_LosesRunState_QuickRetryStartsFresh()
         {
             var root = CreateGame(out var bundle);
-            var plan = new LoadoutPlan { classDef = bundle.Get<ClassDefinition>("class_mage"), difficulty = bundle.config.difficulties[0] };
+            var plan = new LoadoutPlan { classDef = bundle.Get<ClassDefinition>("legacy_mage"), difficulty = bundle.config.difficulties[0] };
             root.StartRun(plan);
             yield return null;
+            // Piętro I z portalami: pierwsza grupa wychodzi po chwili – jej zabicie daje dusze.
+            yield return new WaitForSeconds(2.4f);
+            Assert.Greater(root.Enemies.Count, 0, "z portalu nie wyszedł żaden demon");
             root.DebugCompleteFloorNow();
             root.ChooseReward(0);
             root.NextFloor();
@@ -182,8 +205,8 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator MeleeSwing_HitsEachTargetOnlyOnce()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_knight");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_knight");
             var dummy = ScriptableObject.CreateInstance<EnemyDefinition>();
             dummy.displayName = "Manekin"; dummy.maxHealth = 1000; dummy.maxPoise = 10000; dummy.scale = 1f; dummy.moveSpeed = 0f; dummy.strafeChance = 0f;
             var e = SpawnEnemy(dummy, new Vector3(0, 0.05f, 1.6f), pc, bundle.config.balance);
@@ -195,12 +218,114 @@ namespace Turris.Tests
             Assert.AreEqual(1000f - expected, e.Health.Current, 0.5f, "Jedno uderzenie = jedno trafienie, mimo wielu klatek fazy aktywnej");
         }
 
+        [UnityTest]
+        public IEnumerator Impact_HitstopBothSides_KnockbackAndBodyReaction()
+        {
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_knight");
+            var director = new GameObject("Impact").AddComponent<ImpactDirector>();
+            cleanup.Add(director.gameObject);
+            var e = Dummy(new Vector3(0, 0.05f, 1.6f), pc, bundle.config.balance);
+            yield return new WaitForSeconds(0.1f);
+            Vector3 start = e.transform.position;
+            var visual = e.GetComponent<CharacterVisual>();
+            var anim = (ProceduralHumanoidAnimator)visual.Driver;
+            // Krótki szczyt reakcji może cały wypaść między dwiema klatkami edytora (np. podczas kompilacji shadera).
+            // Trafienie nadal pochodzi z normalnej walki; odpowiedź ciała próbkujemy stałym krokiem bez LateUpdate.
+            visual.enabled = false;
+
+            pc.Request(ActionType.LightAttack);
+            float t = 0f;
+            while (e.Health.Current >= e.Health.Max && t < 1.5f) { t += Time.deltaTime; yield return null; }
+            Assert.Less(e.Health.Current, e.Health.Max, "Cios doszedł");
+            Assert.IsTrue(e.InHitStop, "Trafiony wróg zastyga (hitstop)");
+            Assert.IsTrue(pc.InHitStop, "Atakujący bronią też na chwilę zastyga");
+            Assert.AreEqual(ActionType.LightAttack, pc.Actions.Current, "Hitstop nie przerywa ataku");
+
+            float maxReact = 0f;
+            e.enabled = false;
+            for (int frame = 0; frame < 60; frame++)
+            {
+                e.Step(1f / 120); visual.Tick(1f / 120);
+                maxReact = Mathf.Max(maxReact, anim.ReactOffset.magnitude);
+                yield return null;
+            }
+            Assert.IsFalse(e.InHitStop);
+            Assert.Greater(maxReact, 0.2f, "Ciało wroga ustępuje pod ciosem");
+            Assert.Greater(e.transform.position.z - start.z, 0.08f, "Wróg odrzucony od gracza");
+            Assert.Greater(pc.GetComponent<CharacterVisual>().WeaponBlood, 0.05f, "Ostrze brudzi się krwią");
+        }
+
         EnemyBrain Dummy(Vector3 pos, PlayerCombat pc, BalanceConfig b)
         {
             var d = ScriptableObject.CreateInstance<EnemyDefinition>();
             d.displayName = "Manekin"; d.maxHealth = 1000; d.maxPoise = 10000; d.scale = 1f; d.moveSpeed = 0f; d.strafeChance = 0f;
             cleanup.Add(d);
             return SpawnEnemy(d, pos, pc, b);
+        }
+
+        /// <summary>
+        /// Blok a wróg z boku: bohater w bloku sam, szybko obraca się do zamachującego się wroga, zanim cios doleci,
+        /// i cios jest zablokowany (wcześniej tarcza 140° zasłaniała tylko przód i cios z boku przechodził).
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Block_TurnsQuicklyToAttackerFromSide_AndBlocks()
+        {
+            var bundle = TestContent.Create();
+            var b = bundle.config.balance;
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_knight");
+            pc.transform.rotation = Quaternion.identity;
+            var e = SpawnEnemy(bundle.Get<EnemyDefinition>("enemy_ghoul"), new Vector3(1.7f, 0.05f, 0f), pc, b); // 90° w prawo
+            float hp = pc.Health.Current;
+            float angleAtStrike = 180f;
+            bool attacked = false;
+            int blocked = 0;
+            System.Action<Vector3, HitResult, bool> onHit = (p, r, toPlayer) => { if (toPlayer && r.outcome == HitOutcome.Blocked) blocked++; };
+            CombatEvents.HitResolved += onHit;
+            try
+            {
+                for (float t = 0f; t < 8f && blocked == 0; t += Time.deltaTime)
+                {
+                    pc.SetBlockHeld(true);
+                    if (e.CurrentState == EnemyBrain.State.Attacking)
+                    {
+                        attacked = true;
+                        if (e.AttackPhase == ActionPhase.Active)
+                        {
+                            Vector3 to = e.transform.position - pc.transform.position; to.y = 0f;
+                            angleAtStrike = Mathf.Min(angleAtStrike, Vector3.Angle(pc.transform.forward, to));
+                        }
+                    }
+                    yield return null;
+                }
+            }
+            finally { CombatEvents.HitResolved -= onHit; }
+            Assert.IsTrue(attacked, "Wróg zaatakował");
+            Assert.Greater(blocked, 0, "Cios z boku zablokowany");
+            Assert.Less(angleAtStrike, 30f, "W chwili ciosu bohater stoi już przodem do napastnika");
+            Assert.AreEqual(hp, pc.Health.Current, 1f, "Tarcza zatrzymała obrażenia");
+        }
+
+        [UnityTest]
+        public IEnumerator Enemy_TurnsSlower_DuringPlayerDodge_AndWhenPlayerIsBehind()
+        {
+            var bundle = TestContent.Create();
+            var b = bundle.config.balance;
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_rogue");
+            var e = Dummy(new Vector3(0, 0.05f, 2.5f), pc, b);
+            yield return null;
+            Vector3 front = pc.transform.position - e.transform.position;
+            Assert.AreEqual(1f, e.TurnMultiplier(front), 0.001f, "Gracz z przodu, bez uniku – pełna szybkość obrotu");
+            Assert.AreEqual(b.enemyTurnBehind, e.TurnMultiplier(-front), 0.001f, "Gracz za plecami – wolniej");
+
+            pc.Request(ActionType.Dodge);
+            yield return null;
+            Assert.AreEqual(ActionType.Dodge, pc.Actions.Current);
+            Assert.AreEqual(b.enemyTurnDuringDodge, e.TurnMultiplier(front), 0.001f, "W czasie uniku wróg gubi gracza");
+            Assert.AreEqual(b.enemyTurnDuringDodge * b.enemyTurnBehind, e.TurnMultiplier(-front), 0.001f, "Unik za plecy – najwolniej");
+
+            yield return new WaitForSeconds(2f);
+            Assert.AreEqual(1f, e.TurnMultiplier(front), 0.001f, "Po chwili od uniku – znowu normalnie");
         }
 
         SpellInstance Equip(PlayerCombat pc, DefaultContent.Bundle bundle, string id, int slot)
@@ -215,8 +340,8 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator Fireball_ExplodesOnImpact_AndBurns()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_mage");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_mage");
             var a = Dummy(new Vector3(0, 0.05f, 6f), pc, bundle.config.balance);
             var b = Dummy(new Vector3(1.4f, 0.05f, 6.6f), pc, bundle.config.balance);
             yield return new WaitForSeconds(0.1f);
@@ -237,8 +362,8 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator ChainLightning_JumpsBetweenEnemies_AndShocks()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_mage");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_mage");
             var e1 = Dummy(new Vector3(0, 0.05f, 4f), pc, bundle.config.balance);
             var e2 = Dummy(new Vector3(3f, 0.05f, 6f), pc, bundle.config.balance);
             var e3 = Dummy(new Vector3(6f, 0.05f, 7f), pc, bundle.config.balance);
@@ -259,8 +384,8 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator Rend_AppliesBleed_ThatKeepsDamaging()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_knight");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_knight");
             var e = Dummy(new Vector3(0, 0.05f, 1.8f), pc, bundle.config.balance);
             yield return new WaitForSeconds(0.1f);
             Equip(pc, bundle, "skill_rend", 2);
@@ -275,8 +400,8 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator FrostNovaAndCone_FreezeEnemy()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_mage");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_mage");
             var e = Dummy(new Vector3(0, 0.05f, 2.2f), pc, bundle.config.balance);
             yield return new WaitForSeconds(0.1f);
             Equip(pc, bundle, "spell_frostnova", 0);
@@ -294,8 +419,8 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator LevelFeatures_FireballLeavesZone_ChainHitsSix()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_mage");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_mage");
             var targets = new List<EnemyBrain>();
             // Rząd od najbliższego celu – każdy skok (do 6 m) sięga następnego.
             for (int i = 0; i < 6; i++) targets.Add(Dummy(new Vector3(i * 2.2f, 0.05f, 5f + (i % 2) * 1.2f), pc, bundle.config.balance));
@@ -323,17 +448,27 @@ namespace Turris.Tests
         public IEnumerator Floor_WavesComeOneAfterAnother_ThenReward()
         {
             var root = CreateGame(out var bundle);
-            var plan = new LoadoutPlan { classDef = bundle.Get<ClassDefinition>("class_knight"), difficulty = bundle.config.difficulties[0] };
+            var plan = new LoadoutPlan { classDef = bundle.Get<ClassDefinition>("legacy_knight"), difficulty = bundle.config.difficulties[0] };
             Assert.IsTrue(root.TryStartRun(plan, out var reason), reason);
             yield return null;
+            // Piętra I–III to areny Hell Unleashed (portale, boss) – fale po kolei są od Zbrojowni.
+            while (root.CurrentFloor.WaveCount < 3) { root.DebugCompleteFloorNow(); root.ChooseReward(0); root.NextFloor(); yield return null; }
             var floor = root.CurrentFloor;
             Assert.GreaterOrEqual(floor.WaveCount, 3);
             for (int wave = 0; wave < floor.WaveCount; wave++)
             {
                 Assert.AreEqual(wave, root.WaveIndex);
                 Assert.AreEqual(GameScreen.Playing, root.Screen, $"Fala {wave + 1}: nadal walka");
+                // Wrogowie fali wychodzą z portali po kolei (co StreamInterval s) – czekamy na całą falę i ją zabijamy.
+                float w = 0f, nearest = float.MaxValue;
+                while (root.IncomingEnemies > 0 && w < 15f)
+                {
+                    foreach (var pp in root.OpenPortals) nearest = Mathf.Min(nearest, Vector3.Distance(new Vector3(pp.x, 0, pp.z), new Vector3(root.Player.transform.position.x, 0, root.Player.transform.position.z)));
+                    w += Time.deltaTime; yield return null;
+                }
                 var alive = root.Enemies.Where(e => e != null && !e.IsDead).ToList();
                 Assert.Greater(alive.Count, 0, $"Fala {wave + 1} ma wrogów");
+                if (nearest < float.MaxValue) Assert.Greater(nearest, 5f, "portale otwierają się z dala od bohatera");
                 foreach (var e in alive) e.DebugKill();
                 float t = 0;
                 while (t < 4f && root.Screen == GameScreen.Playing && root.WaveIndex == wave) { t += Time.deltaTime; yield return null; }
@@ -344,8 +479,8 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator Archer_ShootsArrowsAtPlayer_FromDistance()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_knight");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_knight");
             var archer = SpawnEnemy(bundle.Get<EnemyDefinition>("enemy_archer"), new Vector3(0, 0.05f, 11f), pc, bundle.config.balance);
             float hp = pc.Health.Current;
             float t = 0;
@@ -360,8 +495,8 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator FireArrow_Explodes_AndBurns()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_rogue");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_rogue");
             var bow = new ItemInstance(bundle.Get<ItemDefinition>("weapon_bow"));
             pc.Run.inventory.Add(bow);
             pc.Run.EquipFromInventory(bow, EquipSlot.MainHand);
@@ -379,8 +514,8 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator Bow_ArrowHitsDistantEnemy()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_rogue");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_rogue");
             var bow = new ItemInstance(bundle.Get<ItemDefinition>("weapon_bow"));
             pc.Run.inventory.Add(bow);
             pc.Run.EquipFromInventory(bow, EquipSlot.MainHand);
@@ -399,20 +534,24 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator Rogue_HoldsKnifeInEachHand()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_rogue");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_rogue");
             yield return null;
-            var rig = pc.GetComponent<CharacterVisual>().Rig;
-            Assert.IsNotNull(rig.WeaponSocket.GetComponentInChildren<MeshRenderer>(), "Nóż w prawej dłoni");
-            Assert.IsNotNull(rig.OffhandSocket.GetComponentInChildren<MeshRenderer>(), "Nóż w lewej dłoni");
-            Assert.Less(Vector3.Distance(rig.OffhandSocket.position, rig[Bone.HandL].position), 0.2f, "Drugi nóż trzymany lewą dłonią");
+            var v = pc.GetComponent<CharacterVisual>();
+            Assert.IsTrue(v.UsesModel, "Łotrzyk z modelem FBX");
+            var right = Util.FindDeep(v.Model.transform, "WeaponSocket");
+            var left = Util.FindDeep(v.Model.transform, "OffhandSocket");
+            Assert.IsNotNull(right.GetComponentInChildren<MeshRenderer>(), "Nóż w prawej dłoni");
+            Assert.IsNotNull(left.GetComponentInChildren<MeshRenderer>(), "Nóż w lewej dłoni");
+            var handL = v.Model.GetComponentInChildren<Animator>().GetBoneTransform(HumanBodyBones.LeftHand);
+            Assert.Less(Vector3.Distance(left.position, handL.position), 0.2f, "Drugi nóż trzymany lewą dłonią");
         }
 
         [UnityTest]
         public IEnumerator HeavyThrow_HitsOutAndBack_FistsMeanwhile()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_knight");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_knight");
             var e = Dummy(new Vector3(0, 0.05f, 5f), pc, bundle.config.balance);
             yield return new WaitForSeconds(0.1f);
             Equip(pc, bundle, "skill_throw", 2);
@@ -438,8 +577,8 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator Shatter_LightningOnFrozenEnemy_ExplodesOnNeighbour()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_mage");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_mage");
             var frozen = Dummy(new Vector3(0, 0.05f, 5f), pc, bundle.config.balance);
             var neighbour = Dummy(new Vector3(1.6f, 0.05f, 5.5f), pc, bundle.config.balance);
             yield return new WaitForSeconds(0.1f);
@@ -457,8 +596,8 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator Counter_StopsEnemyBlow_AndStrikesBack()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_knight");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_knight");
             var attacker = Dummy(new Vector3(0, 0.05f, 1.8f), pc, bundle.config.balance);
             yield return new WaitForSeconds(0.1f);
             Equip(pc, bundle, "skill_counter", 2);
@@ -477,8 +616,8 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator Meteor_StrikesAfterDelay_AndLeavesBurningGround()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_mage");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_mage");
             var e = Dummy(new Vector3(0, 0.05f, 7.2f), pc, bundle.config.balance);
             yield return new WaitForSeconds(0.1f);
             Equip(pc, bundle, "spell_meteor", 0);
@@ -494,8 +633,8 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator Storm_HitsEnemiesAround_Chains_PullEnemyIn()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_mage");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_mage");
             var near = Dummy(new Vector3(3f, 0.05f, 3f), pc, bundle.config.balance);
             yield return new WaitForSeconds(0.1f);
             Equip(pc, bundle, "spell_storm", 0);
@@ -514,8 +653,8 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator Techniques_ChargeMovesAndHits_CleaveScalesWithWeapon()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_knight");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_knight");
             var dummy = ScriptableObject.CreateInstance<EnemyDefinition>();
             dummy.displayName = "Manekin"; dummy.maxHealth = 1000; dummy.maxPoise = 10000; dummy.scale = 1f; dummy.moveSpeed = 0f; dummy.strafeChance = 0f;
             var e = SpawnEnemy(dummy, new Vector3(0, 0.05f, 3.6f), pc, bundle.config.balance);
@@ -544,8 +683,8 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator EnemyAI_AttacksBlockingKnight_ShieldAbsorbsPhysical()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_knight");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_knight");
             var ghoul = bundle.Get<EnemyDefinition>("enemy_ghoul");
             SpawnEnemy(ghoul, new Vector3(0, 0.05f, 3f), pc, bundle.config.balance);
 
@@ -569,8 +708,8 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator TimedParry_AgainstRealEnemy_OpensRiposte()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_knight");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_knight");
             var ghoul = bundle.Get<EnemyDefinition>("enemy_ghoul");
             ghoul.attacks[2].weight = 0; // bez skoku z dystansu – test ciosu wręcz
             ghoul.evadeChance = 0;
@@ -614,8 +753,8 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator Boss_ChangesPhase_BelowHalfHealth()
         {
-            var bundle = DefaultContent.Create();
-            var (pc, _) = CreateArenaWithPlayer(bundle, "class_knight");
+            var bundle = TestContent.Create();
+            var (pc, _) = CreateArenaWithPlayer(bundle, "legacy_knight");
             var boss = SpawnEnemy(bundle.Get<EnemyDefinition>("enemy_castellan"), new Vector3(0, 0.05f, 8f), pc, bundle.config.balance);
             yield return null;
             Assert.AreEqual(0, boss.PhaseIndex);

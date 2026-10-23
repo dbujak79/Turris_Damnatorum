@@ -20,10 +20,10 @@ namespace Turris
         }
 
         /// <summary>Trwały krąg runiczny na ziemi (telegraf ataku obszarowego) – do zniszczenia przez wywołującego.</summary>
-        public static GameObject GroundMarker(Vector3 pos, float radius, Color color)
+        public static GameObject GroundMarker(Vector3 pos, float radius, Color color, HellFxElement? visualFamily = null)
         {
             if (!Application.isPlaying) return null;
-            var d = FxLibrary.Decal(pos, FxMaterials.Glyph, color, radius * 2f, radius * 2f, 0f, 35f);
+            var d = FxLibrary.Decal(pos, HellVfxMaterials.Ground(visualFamily ?? HellFx.FromColor(color), true), color, radius * 2f, radius * 2f, 0f);
             d.Progress = 0f;
             var inner = FxLibrary.Decal(pos, FxMaterials.Ring, color, radius * 2f, radius * 2f, 0f, 0f);
             inner.Follow(d.transform);

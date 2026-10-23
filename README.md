@@ -1,20 +1,23 @@
 # Turris Damnatorum — prototyp
 
-Gra 3D dla jednego gracza, w której walka w stylu souls-like łączy się ze strukturą rogue-lite. Gracz wspina się na wieżę: pięć pięter, na końcu boss. Po śmierci traci wszystko, co zdobył w danym podejściu, ale zachowuje odblokowania i popiół.
+Gra 3D dla jednego gracza, w której walka w stylu souls-like łączy się ze strukturą rogue-lite. Gracz wspina się na wieżę: sześć pięter, na końcu boss. Po śmierci traci wszystko, co zdobył w danym podejściu, ale zachowuje odblokowania i popiół.
 
 - **Silnik:** Unity **6000.6.3f1**, jedyna wersja zainstalowana na tej maszynie. Kod nie używa API specyficznego dla 6.6, więc powinien działać także na Unity 6 LTS (6000.3), ale tej wersji nie sprawdzałem.
 - **Pakiety:** `com.unity.inputsystem` 1.20.0 i `com.unity.test-framework` 1.8.0, do tego moduły wbudowane. Nie ma zależności płatnych ani zewnętrznych.
-- **Grafika:** wbudowany pipeline renderowania. Wszystko jest generowane w kodzie, bez zewnętrznych assetów:
-  - postacie to proceduralne humanoidy z animacją;
-  - areny są zbudowane z tysięcy części;
-  - efekty to systemy cząsteczek z teksturami tworzonymi w kodzie.
-
-  Opcjonalnie można podpiąć modele FBX (np. z Mixamo).
+- **Grafika:** wbudowany pipeline renderowania.
+  - **Bohaterowie** to modele 3D z gry *Hell Unleashed* tego samego autora: 15 postaci, ich bronie oraz animacje Mixamo. Szczegóły w sekcji [Bohaterowie](#bohaterowie-z-hell-unleashed).
+  - Wrogowie korzystają z kompletu 34 modeli/definicji demonów Hell Unleashed, ich wariantów i klipów oraz z wcześniejszych proceduralnych przeciwników Turris.
+  - Areny są zbudowane w kodzie z tysięcy części.
+  - Efekty korzystają z natywnych systemów cząsteczek Unity oraz tekstur i warstw przeniesionych z Hell Unleashed.
 - **Stan prac i plan na kolejną sesję:** [`docs/PROGRESS.md`](docs/PROGRESS.md).
+- **Migracja Hell Unleashed:** [plan pozostałych elementów](docs/PLAN_MIGRACJI_HELL_UNLEASHED.md),
+  [cząsteczki i audyt 29 przeniesionych skilli](docs/MIGRACJA_EFEKTOW_HU.md),
+  [wykonanie P0/P1 — etapy 1–3](docs/RAPORT_MIGRACJI_P0_P1.md).
+  Przygotowanie runu pozwala wybrać wygląd niezależnie od klasy. Bestiariusz udostępnia próbę walki z każdym demonem bez nagród i zmian profilu.
 
 ## Uruchomienie
 
-1. Otwórz folder `C:\GIT\Turris_Damnatorum` w Unity Hub (Add → wskaż folder) w wersji 6000.6.3f1.
+1. Otwórz folder `C:\GIT\Gry\Turris_Damnatorum` w Unity Hub (Add → wskaż folder) w wersji 6000.6.3f1.
 2. Otwórz scenę `Assets/TurrisDamnatorum/Scenes/Main.unity` i naciśnij **Play**.
 3. Assety treści i scena są już wygenerowane. Gdyby ich brakowało, użyj menu **Turris → Setup (utwórz brakujące assety i scenę)**. Pełne przywrócenie wartości domyślnych daje **Turris → Odtwórz domyślną treść**, ale ta opcja nadpisuje wprowadzone zmiany.
 4. Profil gracza zapisuje się w `%USERPROFILE%\AppData\LocalLow\DefaultCompany\Turris Damnatorum\turris_profile.json`. Pełna ścieżka jest też widoczna w menu głównym. Usuwa go opcja **Turris → Usuń profil gracza**.
@@ -26,6 +29,14 @@ Budowanie pliku wykonywalnego: *File → Build Profiles*. Scena `Main` jest już
 
 W edytorze: *Window → General → Test Runner*, zakładki EditMode i PlayMode.
 
+Przez Unity MCP można uruchamiać testy i rendery w **już otwartym edytorze**. Pomocniczy klient
+`tools/unity_mcp.py` wymaga pakietu Python `mcp` i działającego serwera Unity MCP (domyślnie
+`http://127.0.0.1:8080/mcp`). `--list` pokazuje narzędzia, `--request <plik.json>` wykonuje listę
+wywołań MCP, a `--wait --result <wynik.json>` czeka na zakończenie zleconych testów i zapisuje wynik.
+Przykładowa lista wywołań: `[{"name":"run_tests","arguments":{"mode":"PlayMode","include_details":true}}]`.
+Opcjonalne `--instance <identyfikator>` wskazuje konkretny edytor. Zamykanie Unity dotyczy wyłącznie
+poniższego skryptu, który otwiera osobny proces edytora.
+
 Z wiersza poleceń najwygodniej uruchomić skrypt z repozytorium. Wymaga Pythona 3, a projekt **nie może być otwarty w edytorze**:
 
 ```
@@ -35,7 +46,7 @@ python tools/run_tests.py PlayMode window    # okno edytora – jedyny tryb, w k
 python tools/run_tests.py PlayMode window Turris.Tests.GamepadPlayTests   # filtr
 ```
 
-Wyniki i log trafiają do `TestResults/`. Zmienna środowiskowa `TURRIS_SHOT_DIR=<katalog>` włącza galerie zrzutów (pozy postaci, areny, efekty, gra).
+Wyniki i log trafiają do `TestResults/`. Zmienna środowiskowa `TURRIS_SHOT_DIR=<katalog>` włącza galerie zrzutów (pozy postaci, areny, efekty, gra), a `TURRIS_SOUND_DIR=<katalog>` przy testach EditMode zapisuje wszystkie dźwięki i utwory jako pliki WAV do odsłuchu.
 
 Bezpośrednio przez Unity:
 
@@ -59,17 +70,18 @@ W trybie `-batchmode` Unity nie wywołuje `OnGUI`, więc testy obsługi menu pad
 | Parowanie | Lewy Ctrl lub boczny przycisk myszy („wstecz”) | LT |
 | Unik (przerywa atak i umiejętność) | Spacja | B |
 | Umiejętność 1 / 2 / 3 | Q / E / R | A / X / Y |
+| Skill klasy (aura: włącz/wyłącz) | G | Select (View) |
 | Flaszka życia / many | 1 / 2 | D-pad ↑ / D-pad ↓ |
 | Namierzanie | Tab lub środkowy przycisk myszy | R3 |
 | Zmiana celu | Z / C lub szybki ruch myszą | D-pad ← / → lub ruch prawej gałki |
 | Pauza | Esc | Start |
-| Pomoc w HUD | F1 | Select |
+| Pomoc w HUD | F1 | Select (poza rozgrywką: menu, pauza) |
 | Wybór nagrody | 1 / 2 / 3 | D-pad / gałka + A |
 | Szybki restart po śmierci | R | Y |
-| Zmiana przypisań | menu główne lub pauza → **Sterowanie** | to samo |
+| Zmiana przypisań i głośność | menu główne lub pauza → **Ustawienia** | to samo |
 | (dev) +100 popiołu w menu głównym | F9 | — |
 
-**Przypisania przycisków** można zmienić w menu **Sterowanie** (z menu głównego i z pauzy), osobno dla klawiatury z myszą i dla pada. Wybierz przycisk akcji i naciśnij nowy klawisz (Esc – anuluj); jeśli inna akcja miała ten przycisk, zamienią się miejscami. Układ zapisuje się w profilu, a podpowiedzi w HUD i pomocy pokazują bieżące przypisania.
+**Przypisania przycisków** można zmienić w menu **Ustawienia** (z menu głównego i z pauzy), osobno dla klawiatury z myszą i dla pada. Wybierz przycisk akcji i naciśnij nowy klawisz (Esc – anuluj); jeśli inna akcja miała ten przycisk, zamienią się miejscami. Układ zapisuje się w profilu, a podpowiedzi w HUD i pomocy pokazują bieżące przypisania.
 
 **Menu i ekrany między piętrami** obsługuje się myszą, padem albo strzałkami:
 
@@ -90,6 +102,67 @@ Kolory sygnalizacji ataków przeciwników (przeciwnik świeci podczas zamachu, n
 - **czerwony** — atak nie do zablokowania. Trzeba zrobić unik; niektóre z tych ataków da się też sparować, np. pchnięcie bossa;
 - **różowy z kręgiem na ziemi** — atak obszarowy, przed którym nie chroni niewrażliwość uniku. Trzeba wyjść z kręgu albo zablokować.
 
+## Bohaterowie (z Hell Unleashed)
+
+Bohaterowie, ich modele, rig, animacje, bronie startowe i startowe skille pochodzą z gry *Hell Unleashed* (`C:\GIT\Hell Unleashed`), której autorem jest autor Turris. Są trzy **typy bohatera** z czterema lub sześcioma **specjalizacjami** albo bez specjalizacji. Każda klasa ma:
+
+- własny model;
+- zestawy broni na start;
+- **skill klasy** pod osobnym przyciskiem (G / Select);
+- **cechę**;
+- **styl uniku**;
+- **skill startowy**: z broni (grymuar, sztylet do rzucania) albo jeden z dwóch do wyboru.
+
+Typy bohatera zastąpiły dawnego Rycerza, Maga i Łotrzyka i mają te same id, więc profil i odblokowania nadal działają.
+
+| Typ | Specjalizacja | Cecha | Unik | Skill klasy | Broń na start |
+|---|---|---|---|---|---|
+| **Wojownik** | – | Furia | szarża barkiem | Okrzyk bojowy | miecz + tarcza / miecz dwuręczny |
+| | Paladyn | Pobożność (2 aury) | szarża barkiem | Boski osąd | korbacz + tarcza / miecz + tarcza |
+| | Berserker | Żądza krwi | szarża barkiem | Nieśmiertelność | topór dwuręczny / młot bojowy |
+| | Rębajło | Dwie klingi | przewrót | Taniec ostrzy | dwa miecze / korbacz + miecz |
+| **Mag** | – | Arkanowa osłona | odskok widma | Przeciążenie | różdżka + grymuar żywiołu (4 do wyboru) |
+| | Mag ognia / wody / powietrza / ziemi | Arkanowa osłona | odskok widma | Meteor / Wir głębin / Nawałnica / Trzęsienie ziemi | różdżka + grymuar żywiołu |
+| | Przywoływacz | Więź dusz | odskok widma | Legion (ogary) | różdżka + grymuar przywołań (chochliki) |
+| | Mag bitewny | Klinga zaklęć | odskok widma | Cięcie burzy | miecz żywiołu + grymuar |
+| **Łotrzyk** | – | Zasadzka | przewrót w cień | Pierścień ostrzy | łuk / sztylet + nóż do rzucania |
+| | Łucznik | Sokole oko | przewrót w cień | Burza strzał | łuk |
+| | Zabójca | Zasadzka | przewrót w cień | Znak śmierci | sztylet + nóż / dwa sztylety |
+| | Łucznik arkanów | Klinga zaklęć | odskok widma | Strzała żywiołów | łuk |
+
+**Cechy klas:**
+
+- **Furia:** ciosy i trafienia ładują pasek; pełny daje szał na 6 s (+35% szybkości ataku, +15% redukcji obrażeń, bez drgnięć).
+- **Żądza krwi:** jak Furia, a im mniej życia, tym mocniejsze ciosy (do +60%).
+- **Arkanowa osłona:** osłona za 20% maks. życia pochłania ciosy przed życiem i odrasta po 4 s.
+- **Zasadzka:** cios w plecy +60%; pierwszy cios do 1,5 s po uniku +35%.
+- **Pobożność:** dwie aury naraz, pierwsza ×1,2, druga ×0,75.
+- **Dwie klingi:** ciosy na zmianę z prawej i lewej, +20% szybkości ataku.
+- **Klinga zaklęć:** moc czarów działa na ciosy bronią, a każde trafienie oddaje manę.
+- **Sokole oko:** pocisk do +45% mocniejszy od 11 m.
+- **Więź dusz:** +3% redukcji obrażeń za każdego sługę (do 15%).
+
+**Nowe rodzaje umiejętności:**
+
+- aura (włącz/wyłącz);
+- sługi (chochliki, ogary): nie mają życia i znikają po czasie;
+- fala przenikająca wrogów;
+- pocisk przebijający, rozszczepiający się albo wybuchający całymi obrażeniami;
+- doskok z wybuchem;
+- nova z telegrafem, impulsami i przyciąganiem;
+- przeciążenie: następny skill +60%, potem sloty przegrzane;
+- nieśmiertelność.
+
+**Nowe efekty:**
+
+- **zachwianie:** trzecia warstwa ogłusza;
+- **ogłuszenie**;
+- **pęknięcie pancerza:** więcej obrażeń fizycznych.
+
+**Żywioły:** woda z HU to w Turris **mróz**, powietrze to **błyskawica**, a **ziemia** jest nowym żywiołem. Ziemia w płonący cel daje *wybuch żaru*, a w wychłodzony *błoto*, które ogłusza.
+
+Obrażenia z HU są przeliczone ×2,5 (skala Turris). Zasięgi, czasy i odnowienia zostały bez zmian. Pełne dane i decyzje są w [docs/PORT_HELL_UNLEASHED.md](docs/PORT_HELL_UNLEASHED.md).
+
 ## Cechy postaci
 
 | Cecha | Działanie |
@@ -99,7 +172,7 @@ Kolory sygnalizacji ataków przeciwników (przeciwnik świeci podczas zamachu, n
 | **Inteligencja** | mana i moc czarów; wymagania czarów są twarde – bez Inteligencji czaru nie da się rzucić |
 | **Wytrzymałość** | życie, udźwig i pula wytrzymałości |
 
-Klasa ustala wartości startowe (rycerz: Siła 14, Zręczność 12, Inteligencja 8, Wytrzymałość 12; mag: 10/10/16/9; **Łotrzyk**: 10/16/10/10 – noże bliźniacze, skórznia, Wypad i Rzut nożami). **Po każdym piętrze** gracz dostaje 1 punkt i na ekranie między piętrami rozwija wybraną cechę. Stare atrybuty (Witalność, Kondycja, Umysł) zostały scalone – modyfikatory w starych assetach liczą się jako Wytrzymałość lub Inteligencja.
+Klasa ustala wartości startowe: Siła, Zręczność i Inteligencja jak w Hell Unleashed, a Wytrzymałość to średnia Wytrzymałości i Kondycji z HU (np. Wojownik 14/10/7/12, Mag 7/11/15/10, Łotrzyk 9/15/8/11). **Po każdym piętrze** gracz dostaje 1 punkt i na ekranie między piętrami rozwija wybraną cechę. Stare atrybuty (Witalność, Kondycja, Umysł) zostały scalone – modyfikatory w starych assetach liczą się jako Wytrzymałość lub Inteligencja.
 
 ## Umiejętności
 
@@ -116,9 +189,12 @@ Skąd się biorą umiejętności:
 
 | Źródło | Trwałość |
 |---|---|
-| Klasa (rycerz: Rozpłatanie, Uderzenie tarczą; mag: Pocisk arkanów, Fala mocy) | w każdym podejściu tą klasą |
-| Odblokowanie za popiół (menu „Odblokowania”) | **na stałe** – w kolekcji każdego podejścia, bez kosztu w budżecie przygotowania |
+| Klasa (rycerz: Rozpłatanie, Uderzenie tarczą; mag: Pocisk arkanów, Fala mocy; łotrzyk: Wypad, Rzut nożami) | w każdym podejściu tą klasą |
+| Umiejętność obszarowa klasy (rycerz: **Tąpnięcie** – krąg wokół siebie, łamie postawę; mag: **Ognisty krąg** – podpala wszystkich w pobliżu; łotrzyk: **Wachlarz ostrzy** – 10 noży dookoła z krwawieniem) | odblokowana od razu, trzeci slot na start |
+| Odblokowanie za popiół (menu „Odblokowania”) | **na stałe** – na start każdego podejścia klasy, dla której jest przeznaczone (albo każdej, jeśli ogólne), bez kosztu w budżecie przygotowania |
 | Nagroda między piętrami | **tymczasowo** – tylko w tym podejściu |
+
+**Start podejścia jest klasowy.** Dodatki w budżecie i stałe umiejętności są albo **ogólne** (np. Czujność, Przetrwanie, Kojące światło, pierścienie i amulety), albo **przypisane do klasy** (rycerz: topory, tarcze, techniki ciężkiej broni; mag: czary żywiołów, kostury, szaty; łotrzyk: sztylet, kosa, rękawice rzeźnika, techniki krwawienia). Rycerz nie zaczyna więc z kulą ognia. Przypisanie widać w menu „Odblokowania”, a w trakcie podejścia nagrody nie są ograniczone klasą. **Łotrzyk wybiera broń startową** – noże bliźniacze albo łuk – bez kosztu w budżecie.
 
 Nagrody proponują też umiejętności jeszcze nieodblokowane (gdy gracz dotarł na piętro wymagane do ich odblokowania) – można je wypróbować przed zakupem. Nie są proponowane umiejętności, których obecne wyposażenie nie pozwala użyć.
 
@@ -238,6 +314,27 @@ To stylizowany „manekin”, a nie model z gry AAA.
 
 ### Wariant B: model FBX z animacjami (np. Mixamo)
 
+**Bohaterowie z Hell Unleashed korzystają z tego wariantu.** Przygotowanie zasobów:
+
+1. Modele `.glb` z HU konwertuje `bash tools/art/convert_hu_heroes.sh` (Blender 5.2). Konwerter:
+   - ustawia T-pose i nazwy kości Mixamo;
+   - dodaje kości gniazd `HandSlot.R/L` w środku pięści;
+   - zapisuje `<nazwa>.fbx` (model) i `<nazwa>_clips.fbx` (klipy Meshy, z awatarem modelu).
+2. Bronie konwertuje `tools/art/convert_hu_weapon.py`.
+3. Animacje Mixamo leżą w `Models/Animations/Mixamo/`.
+4. W Unity uruchom menu **Turris → Bohaterowie z Hell Unleashed…** albo batch `HeroAssetImport.RunBatch`. Tworzy ono:
+   - materiały Standard z tekstur 4K;
+   - zestawy animacji broni `Content/Visuals/anim_*` (miecz z tarczą, miecz dwuręczny, łuk, z klatkami faz ciosów z HU);
+   - definicje wyglądu `visual_*`.
+5. Batch `HeroAssetImport.ApplyContentBatch`:
+   - dopisuje treść bohaterów;
+   - nadpisuje trzy dawne klasy danymi z HU;
+   - przypisuje wygląd klasom i modele 3D przedmiotom (`ItemDefinition.model`).
+
+Zestaw animacji (`WeaponAnimSet`) wybierany jest według broni. Klipy, których zestaw nie ma (czary, śmierć, trafienie), pochodzą z modelu.
+
+Własny model z Mixamo:
+
 1. Pobierz z [mixamo.com](https://www.mixamo.com) (darmowe konto Adobe) postać w formacie **FBX for Unity, With Skin**. Dobierz do niej animacje, każdą jako **FBX, Without Skin, In Place**:
    - ruch: *Sword And Shield Idle*, *Walk*, *Run*, *Strafe Left/Right*, *Walk Back*;
    - ataki: *Sword And Shield Slash* (najlepiej dwa różne), *Attack Downward*, *Stab/Thrust*;
@@ -294,6 +391,23 @@ Areny buduje `ArenaBuilder`: 65–120 tys. wierzchołków scalonych w kilkadzies
 - **Krypta:** płyty nagrobne, nisze z łukami, sarkofagi z wyrzeźbioną postacią i świecami, łańcuchy, kandelabry, pajęczyny.
 - **Szczyt:** niski parapet, koksowniki, obeliski z żarzącymi się runami, kamienni strażnicy, obracający się krąg rytualny, panorama iglic z oświetlonymi oknami i księżyc.
 
+## Dźwięk
+
+Klimat dark fantasy: stal, kość, kamień, żar, dzwony wieży i chór. Wszystko powstaje w kodzie (jak siatki i tekstury), w wątku tła przy starcie gry – nie ma żadnych plików audio.
+
+- **Efekty (58 rodzajów, 1–6 wariantów każdy):**
+  - broń i ruch: świst lekki i ciężki (zależny od broni i ataku), cięciwa, trafienie strzały, kroki, unik;
+  - trafienia: ciało (lekkie i ciężkie), bohater, blok, parowanie (długo dzwoniące ostrze), przełamanie gardy, chybienie, riposta;
+  - magia: narastanie mocy, pociski i wybuchy żywiołów, zamrożenie, roztrzaskanie, pioruny, leczenie, osłona, okrzyk, krwawy pakt, łańcuchy;
+  - wrogowie: zapowiedź ciężkiego ciosu (niski gong) i ciosu nie do zablokowania (dysonansowy dzwon z trytonem), warczenie ghula, ryk bossa, osobne dźwięki śmierci (ghul, szkielet, zbroja, boss);
+  - przebieg gry: dzwon na wejście na piętro, róg przed kolejną falą, chór po oczyszczeniu piętra, zwycięstwo, śmierć, wchłonięta dusza, bicie serca poniżej 30% życia;
+  - interfejs: ruch fokusu, zatwierdzenie, powrót, zakup, nagroda, punkt cechy.
+- **Muzyka (pętle bez szwu, D-moll):** menu i kapliczka (organowy pedał, chór, dalekie dzwony), walka (bębny wojenne, niskie smyczki, frygijskie półtony – gra tylko, gdy żyją wrogowie), boss (cięższe bębny, dęciaki, akord z trytonem). Przejścia z przenikaniem.
+- **Tła aren:** dziedziniec (wiatr, pochodnie, daleki dzwon), krypta (pomruk grobowca, jęk korytarzy, kapiąca woda, łańcuch), szczyt (porywisty wiatr, świst, dalekie grzmoty). Każda arena ma też własny pogłos (`AudioReverbZone`: korytarz kamienny, jaskinia, góry).
+- **Miks:** pula 40 źródeł, limit jednoczesnych odtworzeń i minimalny odstęp dla każdego efektu (36 wrogów nie zagłusza gry), losowy wariant (nigdy ten sam dwa razy z rzędu) i lekkie odchylenie wysokości. Pauza wstrzymuje efekty gry, muzyka i interfejs grają dalej.
+- **Ustawienia:** menu → **Ustawienia**: głośność ogólna, muzyki i efektów (krok 10%, zapis w profilu).
+- **Podmiana na nagrania:** plik `Resources/Audio/<SoundId>.wav` (albo folder `Resources/Audio/<SoundId>/` z wariantami) i `Resources/Audio/Music/<MusicId>.wav` mają pierwszeństwo przed syntezą. Nazwy – wyliczenia `SoundId` i `MusicId` w `Audio/SoundId.cs`.
+
 ## Przyjęte założenia
 
 - **Kamera:** własny `CameraRig` zamiast Cinemachine. Namierzanie, zmiana celu i kolizje kamery wymagały niewielkiej ilości kodu, a unikamy dodatkowego pakietu i konfiguracji. To dopuszczalne, bo zadanie wymagało Cinemachine tylko „jeśli pasuje”.
@@ -315,15 +429,15 @@ Areny buduje `ArenaBuilder`: 65–120 tys. wierzchołków scalonych w kilkadzies
 
 ## Zakres prototypu
 
-- **Klasy:** Rycerz (miecz, tarcza herbowa, kolczuga) i Mag (kostur, szata, Pocisk arkanów, Fala mocy). Klasa ustala tylko atrybuty, wyposażenie startowe, czary i liczbę flaszek.
-- **Przedmioty:** 6 broni, w tym Wielki topór (dwuręczny) i Sztylet parujący, 3 tarcze oraz pancerz i akcesoria do każdego ze slotów: głowa, korpus, rękawice, pas, buty, 2 pierścienie, amulet.
-- **Czary:** pocisk, fala, włócznia, rozprysk, leczenie w czasie, zaklęte ostrze (dla buildów hybrydowych).
-- **Przeciwnicy (3 archetypy i boss):**
+- **Klasy:** 15 typów/specjalizacji HU z atrybutami, wyposażeniem, skillem klasy i cechami; wygląd wybierany osobno.
+- **Przedmioty:** bronie Turris i 33 odpowiedniki definicji HU, dodatkowe warianty wizualne, tarcze, pancerz i akcesoria.
+- **Umiejętności:** czary i techniki Turris oraz 29 skilli HU; pełne mapowanie 61 źródłowych skilli w audycie P0.
+- **Przeciwnicy:** katalog 34 demonów HU z próbą walki oraz wcześniejsi wrogowie Turris:
   - Ghul — szybki, walczy wręcz;
   - Heretyk — atakuje z dystansu, odpycha i odskakuje;
   - Strażnik Bramy — opancerzony, zasłania się tarczą, ma ciosy z odpornością na przerwanie;
   - Kasztelan Potępionych (boss) — 5 ataków, a poniżej 50% życia druga faza: szybszy, z falą obszarową i salwą pocisków.
-- **Piętra:** I pojedynek (Ghul), II pojedynek (Heretyk), III grupa (2 Ghule i Heretyk), IV pojedynek (Strażnik), V boss.
+- **Piętra:** I–II portale HU, III Władca Bramy, IV–V fale z przeciwnikami Turris i nowymi demonami, VI finałowy boss.
 - **Trudność:** 4 poziomy (Pielgrzym, Potępiony, Przeklęty, Zatracony). Wyższe poziomy wprowadzają:
   - elity z dodatkowymi atakami;
   - mniej flaszek;
@@ -353,11 +467,14 @@ Assets/TurrisDamnatorum/
               ProcMesh (siatki proceduralne), PartBuilder + MaterialLibrary + TintSet (scalanie części, materiały, podświetlenia)
     Fx/       FxLibrary (efekty), FxMaterials (tekstury i materiały w kodzie), FxDecal/FxLight/FxFlicker,
               SwingTrail (smuga ostrza), CombatFxDirector (efekty trafień z CombatEvents)
+    Audio/    Dsp (synteza: szum, filtry, rezonatory, dzwony, chór, pogłos), SoundSynth (przepisy efektów), MusicSynth (muzyka i tła),
+              AudioService + Sfx (bank w tle, pula źródeł, muzyka, pogłos areny), SoundId/MusicId/SoundInfo (lista i miks)
     UI/       GameUI (IMGUI), UINavigator (fokus i nawigacja padem/strzałkami)
-  Scripts/Editor/  TurrisSetup (assety, scena, materiały efektów), CharacterModelTools (import FBX, kreator definicji wyglądu)
+  Scripts/Editor/  TurrisSetup (assety, scena, materiały efektów), CharacterModelTools (import FBX, kreator definicji wyglądu),
+                   HeroAssetImport (bohaterowie z Hell Unleashed: materiały, zestawy animacji, wyglądy, treść)
   Content/         wygenerowane assety (balans edytowalny w inspektorze)
   Resources/       materiały efektów (dla buildu)
-  Models/          miejsce na modele FBX (wariant B), obecnie puste
+  Models/          Heroes/ (15 bohaterów HU), Demons/ (37 modeli z wariantami), Weapons/ (20 modeli), Animations/Mixamo/
   Tests/EditMode, Tests/PlayMode
 tools/run_tests.py  uruchamianie testów z wiersza poleceń
 docs/PROGRESS.md    stan prac, historia, plan
@@ -395,7 +512,7 @@ Kluczowe decyzje architektoniczne:
 
 Testy uruchamiałem w Unity 6000.6.3f1: EditMode w trybie wsadowym, PlayMode w oknie edytora (`tools/run_tests.py PlayMode window`).
 
-**EditMode: 120/120 zaliczonych.** Testy sprawdzają kryteria ukończenia na prawdziwym komponencie `PlayerCombat`:
+**EditMode: 146/146 zaliczonych** (2026-10-22, w tym `HeroClassTests`; PlayMode w oknie 61/61, w tym `HeroSkillPlayTests` i `HeroModelPlayTests`). Testy sprawdzają kryteria ukończenia na prawdziwym komponencie `PlayerCombat`:
 
 - mag zakłada topór i nim atakuje: ataki pochodzą z topora, zużywają wytrzymałość i można blokować toporem;
 - rycerz uczy się czaru i rzuca go, zużywając manę; bez many czar nie zostaje rzucony;
@@ -464,13 +581,15 @@ Testy i przegląd zrzutów wykryły i pomogły usunąć m.in.:
 
 ## Najważniejsze ryzyka i kompromisy / znane braki
 
-- **Postacie proceduralne są stylizowane.** To bryły na szkielecie, bez skinningu i bez motion capture. Pełną jakość da dopiero wariant B z modelami FBX.
-- **Wariant B nie był uruchamiany na prawdziwym modelu Humanoid.** Mapowanie faz na czas klipu jest przetestowane, ale położenie broni w dłoni, maska górnej połowy ciała i dopasowanie nazw trzeba sprawdzić na pobranych plikach.
+- **Demony HU używają istniejących siatek, szkieletów i klipów źródłowych.** Wcześniejsi przeciwnicy Turris pozostają proceduralni.
+- **Warstwa póz FBX jest adapterem Unity:** IK chwytów/tarczy, cięciwa, lewa ręka, sztylet/różdżka i reakcja ciała działają;
+  chwyt i przenikanie wyposażenia na każdym wyglądzie wymagają dalszej ręcznej oceny. Różnice względem HU opisuje raport P0/P1.
 - **Balans jest wstępny.** Wartości ustaliłem na podstawie obliczeń, bez testów z graczami. Wszystkie są w assetach `Content/` i w `GameConfig → balance`.
-- **Podejście trwa krócej niż docelowe 20–30 minut.** Prototyp ma 5 pięter.
+- **Podejście trwa krócej niż docelowe 20–30 minut.** Prototyp ma sześć pięter.
 - **Przeciwnicy nie parują** (`PlayerCombat.OnAttackParried` jest przygotowane). Nie ma też nawigacji NavMesh: areny są płaskie, więc AI porusza się bezpośrednio w stronę gracza i może utknąć za filarem.
-- **IMGUI** jest wystarczające dla prototypu, ale nie nadaje się do wersji docelowej. Nie ma wibracji pada ani zmiany przypisań przycisków z poziomu gry; przypisania są w `PlayerInputReader.cs`.
+- **IMGUI** pozostaje interfejsem prototypu. Nawigacja padem, wibracje i zmiana przypisań w grze działają;
+  docelowa oprawa UI jest dalszym etapem migracji.
 - **Poziom jakości przedmiotu** skaluje modyfikatory i obrażenia, ale nie parametry gardy.
 - **Wydajność nie była mierzona na słabszym sprzęcie.** Na scenie jest kilka–kilkanaście dynamicznych świateł (w krypcie 12), kilkadziesiąt systemów cząsteczek i 65–120 tys. wierzchołków areny. `GameRoot` podnosi `QualitySettings.pixelLightCount` do 8.
-- **Brak dźwięku.**
+- **Dźwięk jest syntezowany w kodzie.** Brzmi spójnie i nie wymaga plików, ale nie dorówna nagraniom foley – docelowe pliki można podłożyć w `Resources/Audio` bez zmian w kodzie.
 - **F9 w menu** to narzędzie deweloperskie do testowania odblokowań. Przed wydaniem trzeba je usunąć.

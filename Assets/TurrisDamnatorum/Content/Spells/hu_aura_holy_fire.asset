@@ -1,0 +1,102 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bfc9e3d0e146d4086347f0e38c03cf, type: 3}
+  m_Name: hu_aura_holy_fire
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
+  id: hu_aura_holy_fire
+  displayName: "Aura \u015Bwi\u0119tego ognia"
+  description: "Aura: co sekund\u0119 parzy demony wok\xF3\u0142 paladyna."
+  tags: 1
+  kind: 23
+  category: 1
+  manaCost: 0
+  castTime: 0.05
+  recovery: 0.35
+  cancelAfter: 0.2
+  staminaCost: 0
+  requirements: []
+  requiredTags: 0
+  intelligenceScaling: 0
+  attack:
+    name: "Aura \u015Bwi\u0119tego ognia"
+    delivery: 2
+    damageType: 1
+    baseDamage: 30
+    windup: 0.25
+    active: 0.1
+    recovery: 0.35
+    cancelAfter: 0.2
+    reach: 0
+    radius: 3.5
+    lunge: 0
+    tracking: 360
+    blockable: 1
+    parryable: 0
+    dodgeable: 1
+    guardLoad: 20
+    poiseDamage: 25
+    heavy: 0
+    staminaCost: 0
+    projectileSpeed: 14
+    projectileCount: 1
+    spreadAngle: 0
+    explosionRadius: 0
+    element: 1
+    elementShare: 1
+    bonusVsFrozen: 0
+    bonusVsBleeding: 0
+    executeBonus: 0
+    statuses: []
+    animation: 0
+  amount: 30
+  duration: 3
+  cooldown: 1
+  charges: 1
+  extraChargeAtLevel: 0
+  cooldownReductionPerLevel: 0.06
+  weaponMultiplier: 1.5
+  arcAngle: 150
+  tickInterval: 1
+  moveMultiplier: 0.5
+  flatDamage: 1
+  pulses: 1
+  pulseInterval: 0.45
+  telegraph: 0
+  followCaster: 0
+  knockback: 0
+  pierce: 0
+  split: 0
+  projectileLifetime: 0
+  fullExplosion: 0
+  zoneRadius: 0
+  zoneDuration: 0
+  zoneInterval: 0.5
+  zoneShare: 0
+  healPercent: 0
+  damageReductionBuff: 0
+  furyGain: 0
+  servant: 0
+  servantCount: 1
+  servantAttackInterval: 1
+  auraModifiers: []
+  finalSlashShare: 0
+  finalRadius: 0
+  waveWidth: 1.6
+  waveSpeed: 16
+  extraWaveShare: 0
+  extraWaveDelay: 0.25
+  dashTime: 0.16
+  levelFeatures: []
+  maxLevel: 2
+  powerPerLevel: 0.4
+  costReductionPerLevel: 0.06
+  color: {r: 1, g: 0.82, b: 0.45, a: 1}

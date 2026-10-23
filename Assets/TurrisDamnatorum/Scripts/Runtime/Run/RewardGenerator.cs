@@ -197,7 +197,10 @@ namespace Turris
             if (s.IsSpell) sb.Append($"Czar · mana {s.manaCost * cost:0}, rzucanie {s.castTime:0.00}s, odnowienie {s.CooldownAt(level):0.#}s{charges}\n");
             else sb.Append($"Technika · wytrzymałość {s.staminaCost * cost:0}, odnowienie {s.CooldownAt(level):0.#}s{charges}\n");
             float mult = s.weaponMultiplier * (1f + s.powerPerLevel * level) * 100f;
-            switch (s.kind)
+            bool hero = s.flatDamage || BuildCalculator.IsHeroKind(s.kind) || s.pulses > 1 || s.telegraph > 0f || s.followCaster
+                        || s.healPercent > 0f || s.damageReductionBuff > 0f || s.pierce > 0 || s.split || s.fullExplosion;
+            if (hero) HeroSkill(sb, s, level);
+            else switch (s.kind)
             {
                 case SpellKind.Projectile: if (!s.IsSpell) break; sb.Append($"Pocisk: {s.attack.baseDamage:0} obrażeń magicznych"); if (s.attack.projectileCount > 1) sb.Append($" ×{s.attack.projectileCount}"); sb.Append('\n'); break;
                 case SpellKind.Nova: sb.Append($"Fala wokół postaci (promień {s.attack.radius:0.#} m): {s.attack.baseDamage:0} obrażeń, postawa {s.attack.poiseDamage:0}\n"); break;
@@ -229,8 +232,9 @@ namespace Turris
             foreach (var f in s.levelFeatures)
                 sb.Append(level >= f.level ? $"<color=#99dd99>✓ +{f.level}: {Names.LevelFeature(f)}</color>\n" : $"<color=#999999>od +{f.level}: {Names.LevelFeature(f)}</color>\n");
             if (s.attack.executeBonus > 0) sb.Append($"Egzekucja: +{s.attack.executeBonus * 100:0}% poniżej 30% życia lub przy przełamanej postawie\n");
-            if (s.attack.explosionRadius > 0) sb.Append($"Wybuch przy trafieniu: promień {s.attack.explosionRadius:0.#} m ({Projectile.SplashShare * 100:0}% obrażeń)\n");
-            if (s.attack.element != Element.None) sb.Append($"Żywioł: {Names.Element(s.attack.element)}{(s.IsSpell ? "" : " (połowa obrażeń)")}\n");
+            if (s.attack.explosionRadius > 0 && !hero) sb.Append($"Wybuch przy trafieniu: promień {s.attack.explosionRadius:0.#} m ({Projectile.SplashShare * 100:0}% obrażeń)\n");
+            if (s.attack.element != Element.None)
+                sb.Append($"Żywioł: {Names.Element(s.attack.element)}{(s.attack.elementShare > 0f && s.attack.elementShare < 1f ? $" ({s.attack.elementShare * 100:0}% obrażeń)" : s.IsSpell || hero ? "" : " (połowa obrażeń)")}\n");
             string st = Names.Statuses(s.attack.statuses);
             if (st.Length > 0) sb.Append((s.kind == SpellKind.WeaponBuff ? "Ciosy nakładają: " : "Nakłada: ") + st).Append('\n');
             if (s.requiredTags != BuildTag.None) sb.Append(char.ToUpper(Names.Requirement(s.requiredTags)[0]) + Names.Requirement(s.requiredTags).Substring(1)).Append('\n');
@@ -243,6 +247,67 @@ namespace Turris
             }
             if (!string.IsNullOrEmpty(s.description)) sb.Append(s.description);
             return sb.ToString().TrimEnd();
+        }
+
+        /// <summary>Opis skilla z Hell Unleashed (własne obrażenia, impulsy, aury, sługi, fale, doskoki).</summary>
+        static void HeroSkill(StringBuilder sb, SpellDefinition s, int level)
+        {
+            float dmg = s.attack.baseDamage * (1f + s.powerPerLevel * level);
+            string pulses = s.pulses > 1 ? $" ×{s.pulses} (co {s.pulseInterval:0.##} s)" : "";
+            string knock = s.knockback > 0f ? $", odrzut {s.knockback:0.#} m" : s.knockback < 0f ? $", przyciąga {-s.knockback:0.#} m" : "";
+            switch (s.kind)
+            {
+                case SpellKind.Aura:
+                    sb.Append($"Aura: włącz i wyłącz tym samym przyciskiem; działa, dopóki jej nie zgasisz\n");
+                    if (s.attack.baseDamage > 0f) sb.Append($"Co {s.tickInterval:0.#} s parzy wrogów do {s.attack.radius:0.#} m: {dmg:0} obrażeń\n");
+                    foreach (var m in s.auraModifiers) sb.Append($"Dopóki trwa: {Names.Stat(m.stat)} {(m.value >= 0 ? "+" : "")}{m.value:0.#}{(m.mode == ModifierMode.Percent ? "%" : "")}\n");
+                    break;
+                case SpellKind.Summon:
+                    sb.Append($"Przyzywa {System.Math.Max(1, s.servantCount)} × {Names.Servant(s.servant)} na {s.duration:0} s: {dmg:0} obrażeń co {s.servantAttackInterval:0.#} s (sługi nie giną od ciosów)\n");
+                    break;
+                case SpellKind.Wave:
+                    sb.Append($"Fala na {s.attack.reach:0} m (szerokość {s.waveWidth:0.#} m) przenika przez wrogów: {dmg:0} obrażeń{knock}\n");
+                    if (s.extraWaveShare > 0f) sb.Append($"Druga fala po {s.extraWaveDelay:0.##} s: {s.extraWaveShare * 100:0}% obrażeń\n");
+                    break;
+                case SpellKind.Dash:
+                    sb.Append($"Doskok do {s.attack.reach:0.#} m (zatrzymuje się przy wrogu), potem cios wokół ({s.attack.explosionRadius:0.#} m): {dmg:0} obrażeń\n");
+                    break;
+                case SpellKind.Overload:
+                    sb.Append("Następny skill ze slotu: +60% obrażeń i promień ×1,2; potem sloty przegrzane przez 2,5 s\n");
+                    break;
+                case SpellKind.Undying:
+                    sb.Append($"Przez {s.duration:0.#} s żaden cios nie zabije; ryk wokół ({s.attack.radius:0.#} m): {dmg:0} obrażeń{knock}\n");
+                    break;
+                case SpellKind.Projectile:
+                    sb.Append($"Pocisk{(s.attack.projectileCount > 1 ? $" ×{s.attack.projectileCount}" : "")}: {dmg:0} obrażeń{knock}\n");
+                    if (s.pierce > 0) sb.Append($"Przebija {s.pierce} wrogów\n");
+                    if (s.split) sb.Append("Przy trafieniu pęka na dwie drzazgi (40% obrażeń)\n");
+                    if (s.fullExplosion) sb.Append($"Wybucha (promień {s.attack.explosionRadius:0.#} m) – całe obrażenia, także na końcu lotu\n");
+                    break;
+                case SpellKind.Cone:
+                case SpellKind.Cleave:
+                    sb.Append($"Cięcie {s.arcAngle:0}° na {s.attack.reach:0.#} m: {dmg:0} obrażeń{knock}\n");
+                    break;
+                case SpellKind.Zone:
+                    sb.Append($"Strefa (promień {s.attack.radius:0.#} m) przez {s.duration:0.#} s: {dmg:0} obrażeń co {s.tickInterval:0.##} s\n");
+                    break;
+                case SpellKind.Whirlwind:
+                    sb.Append($"Wir przez {s.duration:0.#} s (promień {s.attack.radius:0.#} m): {dmg:0} obrażeń co {s.tickInterval:0.##} s");
+                    if (s.finalSlashShare > 0f) sb.Append($"; na koniec cięcie {s.finalSlashShare * 100:0}%");
+                    sb.Append('\n');
+                    break;
+                case SpellKind.Meteor:
+                    sb.Append($"Wybuch w kręgu {s.attack.radius:0.#} m: {dmg:0} obrażeń; potem płonąca ziemia przez {s.duration:0.#} s\n");
+                    break;
+                default:
+                    sb.Append($"Fala wokół postaci (promień {s.attack.radius:0.#} m){pulses}: {dmg:0} obrażeń{knock}\n");
+                    break;
+            }
+            if (s.damageReductionBuff > 0f) sb.Append($"Redukcja obrażeń +{s.damageReductionBuff * 100:0}% przez {s.duration:0} s\n");
+            if (s.healPercent > 0f) sb.Append($"Leczy {s.healPercent * 100:0}% maks. życia\n");
+            if (s.zoneDuration > 0f && s.kind != SpellKind.Meteor) sb.Append($"Zostawia strefę ({s.zoneRadius:0.#} m) na {s.zoneDuration:0.#} s: {s.zoneShare * 100:0}% obrażeń co {s.zoneInterval:0.#} s\n");
+            if (s.furyGain > 0f) sb.Append($"+{s.furyGain:0} furii\n");
+            if (s.attack.bonusVsBleeding > 0f) sb.Append($"+{s.attack.bonusVsBleeding * 100:0}% przeciw krwawiącym\n");
         }
 
         public static string Boon(BoonDefinition d, int currentStacks)

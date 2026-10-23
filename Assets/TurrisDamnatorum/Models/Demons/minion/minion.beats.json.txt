@@ -1,0 +1,10 @@
+{
+  "Attack": {
+    "top": 0.2,
+    "strike": 0.3333
+  },
+  "Special": {
+    "top": 0.3,
+    "strike": 0.4333
+  }
+}

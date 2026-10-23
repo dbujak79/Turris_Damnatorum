@@ -117,21 +117,206 @@ namespace Turris.Tests
         }
 
         [UnityTest]
+        public IEnumerator HitImpact_BodyGivesWayToBlow_HoldsInHitstop_ThenRecovers()
+        {
+            var (v, src) = Dummy(Knight(), Vector3.zero, 0f);
+            src.state = new CharacterAnimState();
+            for (int k = 0; k < 30; k++) v.Tick(1f / 60f);
+            var anim = (ProceduralHumanoidAnimator)v.Driver;
+            Vector3 chest0 = v.Rig[Bone.Chest].position;
+
+            // Cios z przodu (od +Z w stronę postaci): pchnięcie do tyłu. Najpierw hitstop – poza stoi (tylko drży).
+            v.Impact(Vector3.back, 1f);
+            v.Hold(0.1f);
+            Vector3 head0 = v.Rig[Bone.Head].position;
+            for (int k = 0; k < 3; k++) v.Tick(1f / 60f);
+            Assert.Less(Vector3.Distance(v.Rig[Bone.Head].position, head0), 0.06f, "W hitstopie poza zastyga");
+            for (int k = 0; k < 12; k++) v.Tick(1f / 60f);
+            Assert.Less(anim.ReactOffset.z, -0.4f, "Tułów ustępuje w kierunku ciosu");
+            Assert.Less(v.Rig[Bone.Chest].position.z, chest0.z - 0.05f, "Klatka odchyla się do tyłu");
+            yield return null;
+
+            for (int k = 0; k < 90; k++) v.Tick(1f / 60f);
+            Assert.Less(anim.ReactOffset.magnitude, 0.05f, "Po chwili postać wraca do gardy");
+            Assert.Less(Vector3.Distance(v.Rig[Bone.Chest].position, chest0), 0.03f);
+        }
+
+        /// <summary>
+        /// Zachwianie (drgnięcie wroga) zależy od ciosu: tułów odchyla się od napastnika, cios z boku skręca go w bok,
+        /// cięższy cios zgina mocniej i ugina kolana; szczyt przychodzi szybko, powrót jest gładki; nogi kroczą z odrzutem.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Stagger_FollowsBlowDirectionAndWeight_LegsStepWithKnockback()
+        {
+            var cases = new[]
+            {
+                (dir: Vector3.back, w: 0.35f), (dir: Vector3.back, w: 1.1f), (dir: Vector3.right, w: 0.8f),
+            };
+            var head = new Vector3[cases.Length];
+            var hips = new float[cases.Length];
+            Vector3 headRest = Vector3.zero; float hipsRest = 0f;
+            for (int c = 0; c < cases.Length; c++)
+            {
+                var (v, src) = Dummy(Knight(), new Vector3(c * 4f, 0, 0), 0f);
+                src.state = new CharacterAnimState();
+                for (int k = 0; k < 20; k++) v.Tick(1f / 60f);
+                headRest = v.transform.InverseTransformPoint(v.Rig[Bone.Head].position);
+                hipsRest = v.Rig[Bone.Hips].position.y;
+                // Szczyt zachwiania: ~0,14 czasu reakcji (0,75 s).
+                for (int k = 0; k <= 7; k++)
+                {
+                    src.state = new CharacterAnimState { action = AnimAction.Flinch, actionTime = k / 60f, actionDuration = 0.75f, hitDirection = cases[c].dir, hitWeight = cases[c].w };
+                    v.Tick(1f / 60f);
+                }
+                head[c] = v.transform.InverseTransformPoint(v.Rig[Bone.Head].position) - headRest;
+                hips[c] = v.Rig[Bone.Hips].position.y - hipsRest;
+            }
+            yield return null;
+            Debug.Log($"Głowa przy zachwianiu: lekki {head[0]}, ciężki {head[1]}, z boku {head[2]}; biodra {hips[0]:F3} / {hips[1]:F3}");
+            Assert.Less(head[0].z, -0.05f, "Cios z przodu – głowa i tułów do tyłu");
+            Assert.Less(head[1].z, head[0].z - 0.05f, "Cięższy cios odchyla wyraźnie mocniej");
+            Assert.Less(hips[1], hips[0] - 0.01f, "Cięższy cios ugina kolana głębiej");
+            Assert.Greater(head[2].x, 0.03f, "Cios z boku – tułów ugina się w stronę pchnięcia");
+
+            // Odrzut w czasie zachwiania: stopy kroczą (zmieniają się podparcia), zamiast sunąć razem z ciałem.
+            var (s, ss) = Dummy(Knight(), new Vector3(0, 0, 10f), 0f);
+            ss.state = new CharacterAnimState();
+            for (int k = 0; k < 20; k++) s.Tick(1f / 60f);
+            Vector3 footL0 = s.Rig[Bone.FootL].position, footR0 = s.Rig[Bone.FootR].position;
+            float pushed = 0f;
+            int planted = 0;
+            Vector3 pl = footL0, pr = footR0;
+            for (int k = 0; k < 24; k++)
+            {
+                ss.state = new CharacterAnimState { action = AnimAction.Flinch, actionTime = k / 60f, actionDuration = 0.75f, hitDirection = Vector3.back, hitWeight = 1f };
+                float step = k < 11 ? 0.6f / 11f : 0f; // 0,6 m w 0,18 s (3,3 m/s)
+                s.transform.position += Vector3.back * step;
+                pushed += step;
+                s.Tick(1f / 60f);
+                Vector3 l = s.Rig[Bone.FootL].position, r = s.Rig[Bone.FootR].position;
+                // Jedna stopa stoi (podpora), druga wędruje – krok, a nie sunięcie obu nóg razem z ciałem.
+                if (k >= 3 && k < 11 && Mathf.Min((l - pl).magnitude, (r - pr).magnitude) * 60f < 1.2f) planted++;
+                pl = l; pr = r;
+            }
+            float movedL = Vector3.Distance(s.Rig[Bone.FootL].position, footL0), movedR = Vector3.Distance(s.Rig[Bone.FootR].position, footR0);
+            Assert.Greater(Mathf.Max(movedL, movedR), pushed * 0.5f, "Stopy idą za ciałem");
+            Assert.GreaterOrEqual(planted, 3, $"Krok: w czasie odrzutu jedna stopa stoi w podporze (klatek {planted})");
+        }
+
+        [UnityTest]
+        public IEnumerator Death_FallsInDirectionOfBlow()
+        {
+            var (fwd, s1) = Dummy(Knight(), new Vector3(-3f, 0, 0), 0f);
+            var (back, s2) = Dummy(Knight(), new Vector3(3f, 0, 0), 0f);
+            s1.state = new CharacterAnimState { action = AnimAction.Death, actionTime = 2f, hitDirection = Vector3.forward, hitWeight = 1f };
+            s2.state = new CharacterAnimState { action = AnimAction.Death, actionTime = 2f, hitDirection = Vector3.back };
+            for (int k = 0; k < 5; k++) { fwd.Tick(1f / 60f); back.Tick(1f / 60f); }
+            yield return null;
+            Assert.Greater(fwd.Rig[Bone.Head].position.z, 0.9f, "Cios w plecy – pada na twarz, do przodu");
+            Assert.Less(back.Rig[Bone.Head].position.z, -0.6f, "Cios z przodu – pada na plecy");
+            Assert.Less(fwd.Rig[Bone.Head].position.y, 0.5f);
+            Assert.Less(back.Rig[Bone.Head].position.y, 0.5f);
+        }
+
+        [UnityTest]
+        public IEnumerator Run_StanceFootBarelySlides_AndBodyLeansWhenStartingAndStopping()
+        {
+            var (v, src) = Dummy(Knight(), Vector3.zero, 0f);
+            src.state = new CharacterAnimState();
+            var anim = (ProceduralHumanoidAnimator)v.Driver;
+            const float dt = 1f / 60f, speed = 5.2f;
+            for (int k = 0; k < 20; k++) v.Tick(dt);
+            float maxLean = 0f;
+            var feet = new List<(float y, float v)>();
+            Vector3 prevL = v.Rig[Bone.FootL].position, prevR = v.Rig[Bone.FootR].position;
+            for (int k = 0; k < 150; k++)
+            {
+                v.transform.position += Vector3.forward * speed * dt;
+                v.Tick(dt);
+                if (k < 20) maxLean = Mathf.Max(maxLean, anim.Lean.z);
+                Vector3 l = v.Rig[Bone.FootL].position, r = v.Rig[Bone.FootR].position;
+                if (k > 60) { feet.Add((l.y, Mathf.Abs(l.z - prevL.z) / dt)); feet.Add((r.y, Mathf.Abs(r.z - prevR.z) / dt)); }
+                prevL = l; prevR = r;
+            }
+            // Stopa w podporze = na wysokości podłoża (w fazie lotu biegu obie są w górze); jej przesuw względem ziemi ma być mały.
+            float ground = float.MaxValue;
+            foreach (var f in feet) ground = Mathf.Min(ground, f.y);
+            float slide = 0f; int samples = 0;
+            foreach (var f in feet) if (f.y < ground + 0.003f) { slide += f.v; samples++; }
+            Assert.Greater(samples, 20, "Są klatki z podporą");
+            float avgSlide = slide / samples;
+            Debug.Log($"[Turris] Średni poślizg stopy w podporze: {avgSlide:0.00} m/s przy {speed} m/s, pochylenie przy starcie {maxLean:0.00}");
+            Assert.Greater(maxLean, 0.2f, "Przy ruszaniu ciało pochyla się do przodu");
+            Assert.Less(avgSlide, 0.6f, "Stopa w podporze stoi na podłodze (IK)");
+
+            float minLean = 0f;
+            for (int k = 0; k < 30; k++) { v.Tick(dt); minLean = Mathf.Min(minLean, anim.Lean.z); }
+            yield return null;
+            Assert.Less(minLean, -0.1f, "Przy hamowaniu ciało odchyla się do tyłu");
+        }
+
+        [UnityTest]
+        public IEnumerator Cloth_CapeFlowsInRun_TabardFlapsGiveWayToKnees()
+        {
+            var (v, src) = Dummy(Knight(), Vector3.zero, 0f);
+            src.state = new CharacterAnimState();
+            var anim = (ProceduralHumanoidAnimator)v.Driver;
+            Assert.AreEqual(4, v.Rig.CapeSegments.Length, "Peleryna z czterech segmentów");
+            Assert.AreEqual(2, v.Rig.HipFlaps.Count, "Tabard: płat przedni i tylny");
+            for (int k = 0; k < 60; k++) v.Tick(1f / 60f);
+            int fi = v.Rig.HipFlaps.FindIndex(f => f.name == "TabardFront"), bi = v.Rig.HipFlaps.FindIndex(f => f.name == "TabardBack");
+            float idleCape = anim.CapeAngles[0].x;
+            float minFront = 0f, maxBack = 0f, maxCape = idleCape;
+            for (int k = 0; k < 120; k++)
+            {
+                v.transform.position += Vector3.forward * 5.2f / 60f;
+                v.Tick(1f / 60f);
+                maxCape = Mathf.Max(maxCape, anim.CapeAngles[0].x);
+                minFront = Mathf.Min(minFront, anim.FlapAngles[fi]);
+                maxBack = Mathf.Max(maxBack, anim.FlapAngles[bi]);
+                foreach (var a in anim.CapeAngles) Assert.IsFalse(float.IsNaN(a.x) || float.IsNaN(a.y));
+            }
+            yield return null;
+            Assert.Greater(maxCape - idleCape, 12f, "W biegu peleryna odchyla się do tyłu");
+            Assert.Less(minFront, -8f, "Kolano w wykroku odpycha przedni płat tabardu");
+            Assert.Greater(maxBack, 8f, "Tylny płat odchyla się (noga z tyłu, pęd)");
+        }
+
+        [UnityTest]
+        public IEnumerator EnemyVariety_SameArchetype_DifferentLooks()
+        {
+            var def = TestContent.Create().Get<EnemyDefinition>("enemy_ghoul");
+            var a = RigLook.Vary(RigLook.ForEnemy(def), 1);
+            var b = RigLook.Vary(RigLook.ForEnemy(def), 2);
+            var a2 = RigLook.Vary(RigLook.ForEnemy(def), 1);
+            Assert.AreEqual(a.skin, a2.skin, "Ten sam los – ten sam wygląd");
+            Assert.AreNotEqual(a.skin, b.skin, "Różne egzemplarze różnią się odcieniem");
+            Assert.AreEqual(a.style, b.style);
+            Assert.AreEqual(a.weapon, b.weapon, "Broń (i czytelność ataków) bez zmian");
+            var boss = TestContent.Create().Get<EnemyDefinition>("enemy_castellan");
+            Assert.AreEqual(RigLook.ForEnemy(boss).cloth, RigLook.Vary(RigLook.ForEnemy(boss), 5).cloth, "Boss bez odmian");
+            yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator PlayerCombat_DrivesRigInSyncWithActionPhases()
         {
-            var bundle = DefaultContent.Create();
+            var bundle = TestContent.Create();
             var p = WorldBuilder.CreatePlayer();
             cleanup.Add(p);
             p.GetComponent<PlayerController>().enabled = false;
             var pc = p.GetComponent<PlayerCombat>();
-            var plan = new LoadoutPlan { classDef = bundle.Get<ClassDefinition>("class_knight"), difficulty = bundle.config.difficulties[0] };
+            var plan = new LoadoutPlan { classDef = bundle.Get<ClassDefinition>("legacy_knight"), difficulty = bundle.config.difficulties[0] };
             pc.Init(RunFactory.Create(plan, bundle.config, 1), bundle.config);
             p.GetComponent<PlayerVisuals>().Refresh();
             var v = p.GetComponent<CharacterVisual>();
-            Assert.IsNotNull(v.Rig, "Gracz ma proceduralnego humanoida");
-            Assert.AreEqual(WeaponModel.Sword, v.Rig.Look.weapon);
-            Assert.AreEqual(ShieldModel.Heater, v.Rig.Look.shield);
-            Assert.AreEqual(HeadGear.Coif, v.Rig.Look.head, "Rycerz bez hełmu nosi kaptur kolczy pod kolczugą");
+            Assert.IsTrue(v.UsesModel, "Gracz to bohater z modelem FBX");
+            Assert.IsInstanceOf<ClipAnimationDriver>(v.Driver);
+            Assert.IsNotNull(v.ModelSet, "Miecz – zestaw animacji miecza z tarczą");
+            var socket = Util.FindDeep(v.Model.transform, "WeaponSocket");
+            Assert.IsNotNull(socket);
+            var sword = socket.childCount > 0 ? socket.GetChild(0).gameObject : null;
+            Assert.IsNotNull(sword, "Miecz w dłoni");
 
             pc.Request(ActionType.LightAttack);
             var st = pc.GetAnimState();
@@ -145,13 +330,15 @@ namespace Turris.Tests
             run.inventory.Add(axe);
             run.EquipFromInventory(axe, EquipSlot.MainHand);
             pc.RefreshBuild();
-            Assert.AreEqual(WeaponModel.Axe, v.Rig.Look.weapon);
+            yield return null;
+            socket = Util.FindDeep(v.Model.transform, "WeaponSocket");
+            Assert.IsTrue(socket.childCount > 0 && socket.GetChild(0).gameObject != sword, "Topór zamiast miecza – broń w dłoni przebudowana");
         }
 
         [UnityTest]
         public IEnumerator Enemies_UseStyledHumanoids()
         {
-            var bundle = DefaultContent.Create();
+            var bundle = TestContent.Create();
             var ids = new[] { "enemy_ghoul", "enemy_heretic", "enemy_warden", "enemy_castellan" };
             var expected = new[] { RigStyle.Ghoul, RigStyle.Heretic, RigStyle.Warden, RigStyle.Castellan };
             for (int i = 0; i < ids.Length; i++)
@@ -169,7 +356,7 @@ namespace Turris.Tests
         [UnityTest]
         public IEnumerator DetailLevel_ManyParts_FewRenderers()
         {
-            var bundle = DefaultContent.Create();
+            var bundle = TestContent.Create();
             var looks = new (string name, RigLook look, float scale)[]
             {
                 ("rycerz", new RigLook { body = BodyGear.Chain, head = HeadGear.Coif, cape = true, weapon = WeaponModel.Sword, shield = ShieldModel.Heater, cloth = new Color(0.45f, 0.08f, 0.08f) }, 1f),
@@ -225,13 +412,21 @@ namespace Turris.Tests
             var driver = new ClipAnimationDriver(model.GetComponent<Animator>(), def, model.transform);
             try
             {
-                driver.Tick(Attack(AttackAnim.SlashRight, ActionPhase.Startup, 0.5f), Vector3.zero, 0.016f);
-                Assert.AreEqual(2f * 0.2f, driver.CurrentActionTime, 1e-3f, "Połowa zamachu = 0.5 × windupEnd");
-                Assert.AreEqual(2f, arm.localPosition.x, 0.05f);
+                // Cios wręcz: faza aktywna obejmuje w klipie samo przejście ostrza (od chwili przed windupEnd), reszta – powrót.
+                float strike = 0.4f - 0.2f * ClipAnimationDriver.StrikeEarly;
+                float follow = 0.4f + 0.2f * ClipAnimationDriver.StrikeShare;
+                // Kilka klatek w tej samej fazie – warstwa akcji narasta przez przenikanie z ruchu.
+                for (int i = 0; i < 20; i++) driver.Tick(Attack(AttackAnim.SlashRight, ActionPhase.Startup, 0.5f), Vector3.zero, 0.016f);
+                Assert.AreEqual(2f * strike * 0.5f, driver.CurrentActionTime, 1e-3f, "Połowa zamachu = połowa drogi do początku cięcia");
+                Assert.AreEqual(10f * strike * 0.5f, arm.localPosition.x, 0.05f);
 
                 driver.Tick(Attack(AttackAnim.SlashRight, ActionPhase.Active, 1f), Vector3.zero, 0.016f);
-                Assert.AreEqual(2f * 0.6f, driver.CurrentActionTime, 1e-3f, "Koniec fazy aktywnej = activeEnd");
-                Assert.AreEqual(6f, arm.localPosition.x, 0.05f);
+                Assert.AreEqual(2f * follow, driver.CurrentActionTime, 1e-3f, "Koniec fazy aktywnej = koniec przejścia ostrza");
+                Assert.AreEqual(10f * follow, arm.localPosition.x, 0.05f);
+
+                // Strzał z łuku – bez wyprzedzenia: zwolnienie cięciwy dokładnie na granicy faz.
+                driver.Tick(Attack(AttackAnim.BowDraw, ActionPhase.Active, 1f), Vector3.zero, 0.016f);
+                Assert.AreEqual(2f * 0.6f, driver.CurrentActionTime, 1e-3f, "Łuk: koniec fazy aktywnej = activeEnd");
             }
             finally { driver.Dispose(); }
             yield return null;
@@ -314,12 +509,12 @@ namespace Turris.Tests
             {
                 (new RigLook { body = BodyGear.Robe, head = HeadGear.Hood, style = RigStyle.Mage, weapon = WeaponModel.Staff, cloth = new Color(0.2f,0.25f,0.6f) }, 1f, new CharacterAnimState()),
                 (new RigLook { body = BodyGear.Robe, head = HeadGear.Hood, style = RigStyle.Mage, weapon = WeaponModel.Staff, cloth = new Color(0.2f,0.25f,0.6f) }, 1f, Attack(AttackAnim.Cast, ActionPhase.Active, 1f)),
-                (RigLook.ForEnemy(DefaultContent.Create().Get<EnemyDefinition>("enemy_ghoul")), 0.95f, new CharacterAnimState()),
-                (RigLook.ForEnemy(DefaultContent.Create().Get<EnemyDefinition>("enemy_ghoul")), 0.95f, Attack(AttackAnim.Claw, ActionPhase.Startup, 1f)),
-                (RigLook.ForEnemy(DefaultContent.Create().Get<EnemyDefinition>("enemy_heretic")), 1f, Attack(AttackAnim.Cast, ActionPhase.Startup, 1f)),
-                (RigLook.ForEnemy(DefaultContent.Create().Get<EnemyDefinition>("enemy_warden")), 1.25f, new CharacterAnimState { action = AnimAction.Block }),
-                (RigLook.ForEnemy(DefaultContent.Create().Get<EnemyDefinition>("enemy_warden")), 1.25f, Attack(AttackAnim.Overhead, ActionPhase.Startup, 1f)),
-                (RigLook.ForEnemy(DefaultContent.Create().Get<EnemyDefinition>("enemy_castellan")), 1.6f, Attack(AttackAnim.SlashRight, ActionPhase.Startup, 1f)),
+                (RigLook.ForEnemy(TestContent.Create().Get<EnemyDefinition>("enemy_ghoul")), 0.95f, new CharacterAnimState()),
+                (RigLook.ForEnemy(TestContent.Create().Get<EnemyDefinition>("enemy_ghoul")), 0.95f, Attack(AttackAnim.Claw, ActionPhase.Startup, 1f)),
+                (RigLook.ForEnemy(TestContent.Create().Get<EnemyDefinition>("enemy_heretic")), 1f, Attack(AttackAnim.Cast, ActionPhase.Startup, 1f)),
+                (RigLook.ForEnemy(TestContent.Create().Get<EnemyDefinition>("enemy_warden")), 1.25f, new CharacterAnimState { action = AnimAction.Block }),
+                (RigLook.ForEnemy(TestContent.Create().Get<EnemyDefinition>("enemy_warden")), 1.25f, Attack(AttackAnim.Overhead, ActionPhase.Startup, 1f)),
+                (RigLook.ForEnemy(TestContent.Create().Get<EnemyDefinition>("enemy_castellan")), 1.6f, Attack(AttackAnim.SlashRight, ActionPhase.Startup, 1f)),
                 (knight, 1f, new CharacterAnimState { action = AnimAction.Kneel, actionTime = 1f }),
             };
 
@@ -365,7 +560,7 @@ namespace Turris.Tests
 
             // Sekwencja przewrotu w przód (klatki co 0,1 s), widok z boku.
             foreach (var (v, _, _) in all) v.gameObject.SetActive(false);
-            float roll = DefaultContent.Create().config.balance.dodgeRollDuration;
+            float roll = TestContent.Create().config.balance.dodgeRollDuration;
             const int frames = 7;
             for (int i = 0; i < frames; i++)
             {
@@ -400,6 +595,93 @@ namespace Turris.Tests
             yield return null;
             Shot("pose_close_rogue.png", new Vector3(0.6f, 1.5f, 56.4f), new Vector3(0, 1.1f, 60f));
             Shot("pose_bow_side.png", new Vector3(3.6f, 1.5f, 59.6f), new Vector3(0.8f, 1.3f, 60f)); // cięciwa w naciągu z boku
+            rk.gameObject.SetActive(false); rb.gameObject.SetActive(false);
+
+            // Reakcja na cios z przodu: klatki 0 (hitstop) / 0,06 / 0,1 / 0,16 / 0,3 / 0,6 s po trafieniu, widok z boku.
+            float[] reactTimes = { 0f, 0.06f, 0.1f, 0.16f, 0.3f, 0.6f };
+            for (int i = 0; i < reactTimes.Length; i++)
+            {
+                var (v, s) = Dummy(RigLook.ForEnemy(TestContent.Create().Get<EnemyDefinition>("enemy_ghoul")), new Vector3(-4f + i * 1.6f, 0, 80f), 90f, 0.95f);
+                s.state = new CharacterAnimState();
+                for (int k = 0; k < 20; k++) v.Tick(1f / 60f);
+                v.Impact(Vector3.left, 1f); // cios od strony +X (postacie patrzą w +X)
+                int n = Mathf.RoundToInt(reactTimes[i] * 60f);
+                for (int k = 0; k < n; k++) v.Tick(1f / 60f);
+            }
+            yield return null;
+            Shot("pose_hitreact.png", new Vector3(0, 1.2f, 71.5f), new Vector3(0, 1.0f, 80f));
+
+            // Upadek w kierunku ciosu: cios z przodu, w plecy, z lewej, z prawej (postacie patrzą w −Z).
+            Vector3[] blows = { Vector3.forward, Vector3.back, Vector3.right, Vector3.left };
+            for (int i = 0; i < blows.Length; i++)
+            {
+                var (v, s) = Dummy(knight, new Vector3((i - 1.5f) * 4.5f, 0, 100f));
+                s.state = new CharacterAnimState { action = AnimAction.Death, actionTime = 2f, hitDirection = blows[i], hitWeight = 0.8f };
+                for (int k = 0; k < 5; k++) v.Tick(1f / 60f);
+            }
+            yield return null;
+            Shot("pose_death_dirs.png", new Vector3(0, 8f, 92f), new Vector3(0, 0.2f, 100f));
+
+            // Seria: drugie cięcie (w lewo) zaczyna się z wybrzmienia pierwszego – klatki zamachu co 25%, na końcu przestrzał.
+            var comboStates = new List<CharacterAnimState>
+            {
+                Attack(AttackAnim.SlashRight, ActionPhase.Active, 1f),
+                Attack(AttackAnim.SlashLeft, ActionPhase.Startup, 0.25f),
+                Attack(AttackAnim.SlashLeft, ActionPhase.Startup, 0.5f),
+                Attack(AttackAnim.SlashLeft, ActionPhase.Startup, 0.8f),
+                Attack(AttackAnim.SlashLeft, ActionPhase.Active, 0.5f),
+                Attack(AttackAnim.SlashLeft, ActionPhase.Active, 0.8f),
+            };
+            for (int i = 0; i < comboStates.Count; i++)
+            {
+                var (v, s) = Dummy(knight, new Vector3((i - 2.5f) * 2.2f, 0, 120f));
+                // Najpierw wybrzmienie pierwszego ciosu, potem przejście w drugi – jak w grze.
+                s.state = Attack(AttackAnim.SlashRight, ActionPhase.Active, 1f);
+                for (int k = 0; k < 10; k++) v.Tick(1f / 60f);
+                s.state = comboStates[i];
+                for (int k = 0; k < 10; k++) v.Tick(1f / 60f);
+            }
+            yield return null;
+            Shot("pose_combo.png", new Vector3(0, 1.8f, 110f), new Vector3(0, 1.1f, 120f));
+
+            // Bieg (5,2 m/s) – 8 faz jednego cyklu kroku, widok z boku; postacie biegną, a do zdjęcia są ustawione w rzędzie.
+            for (int i = 0; i < 8; i++)
+            {
+                var (v, s) = Dummy(knight, new Vector3(0, 0, 200f + i * 20f), 90f);
+                s.state = new CharacterAnimState();
+                int n = 40 + i * 3;
+                for (int k = 0; k < n; k++) { v.transform.position += Vector3.right * 5.2f / 60f; v.Tick(1f / 60f); }
+                v.transform.position = new Vector3((i - 3.5f) * 1.5f, 0, 140f);
+            }
+            yield return null;
+            Shot("pose_run_side.png", new Vector3(0, 1.0f, 130.5f), new Vector3(0, 0.8f, 140f));
+
+            // Tkaniny w biegu: rycerz z peleryną (widok z tyłu, 3/4) – fala peleryny i płaty tabardu przy udach.
+            {
+                var (v, s) = Dummy(knight, new Vector3(0, 0, 400f), 0f);
+                s.state = new CharacterAnimState();
+                for (int k = 0; k < 47; k++) { v.transform.position += Vector3.forward * 5.2f / 60f; v.Tick(1f / 60f); }
+                v.transform.position = new Vector3(0, 0, 160f);
+            }
+            yield return null;
+            Shot("pose_cloth_run.png", new Vector3(-2.2f, 1.6f, 157.2f), new Vector3(0, 0.9f, 160f));
+
+            // Odmiany wrogów: po sześć egzemplarzy łucznika, ghula i strażnika (różne losy) + halabarda we krwi.
+            var bundle = TestContent.Create();
+            string[] kinds = { "enemy_archer", "enemy_ghoul", "enemy_warden" };
+            for (int row = 0; row < kinds.Length; row++)
+            {
+                var def = bundle.Get<EnemyDefinition>(kinds[row]);
+                for (int i = 0; i < 6; i++)
+                {
+                    var (v, s) = Dummy(RigLook.Vary(RigLook.ForEnemy(def), 100 + i * 17 + row), new Vector3((i - 2.5f) * 1.7f, 0, 180f + row * 3f), 180f, def.scale);
+                    s.state = new CharacterAnimState();
+                    for (int k = 0; k < 10; k++) v.Tick(1f / 60f);
+                    if (row == 2 && i < 2) v.AddWeaponBlood(1f);
+                }
+            }
+            yield return null;
+            Shot("pose_variety.png", new Vector3(0, 3.2f, 169f), new Vector3(0, 1.0f, 182.5f));
         }
     }
 }

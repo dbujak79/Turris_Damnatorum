@@ -9,7 +9,7 @@ namespace Turris
     [Serializable]
     public class ProfileData
     {
-        public const int CurrentVersion = 2;
+        public const int CurrentVersion = 3;
 
         public int version = CurrentVersion;
         public int ash;                                     // waluta trwałego rozwoju
@@ -19,14 +19,34 @@ namespace Turris
         public List<int> victoryTiers = new List<int>();
         public int totalRuns, totalDeaths, totalVictories;
         public string lastClassId;
+        public string lastAppearanceId;
         public int lastDifficultyTier;
         public List<string> lastLoadout = new List<string>();
+        /// <summary>Ostatnio wybrana broń startowa (id, "" = domyślna klasy).</summary>
+        public string lastWeaponId = "";
+        /// <summary>Ostatni zestaw broni na start (indeks w ClassDefinition.loadouts) i wybrany skill startowy (id).</summary>
+        public int lastLoadoutIndex;
+        public string lastStartSkillId = "";
         /// <summary>Ostatni układ slotów umiejętności (id umiejętności, "" = pusty slot) – odtwarzany na starcie podejścia.</summary>
         public List<string> skillSlots = new List<string>();
         /// <summary>Przypisania przycisków (nadpisania Input System w JSON; puste = domyślne).</summary>
         public string bindingOverrides = "";
+        /// <summary>Głośność (0–1): ogólna, muzyka, efekty.</summary>
+        public float masterVolume = 0.8f, musicVolume = 0.7f, sfxVolume = 0.9f;
+        /// <summary>Siła wibracji pada (0 = wyłączone). Nowe pole – starsze zapisy dostają wartość domyślną.</summary>
+        public float rumbleStrength = 1f;
+
+        /// <summary>Bestiariusz: spotkani wrogowie i liczba zabitych (id wroga bazowego – warianty liczą się do niego).</summary>
+        public List<BestiaryRecord> bestiary = new List<BestiaryRecord>();
 
         public bool IsUnlocked(string id) => unlocked.Contains(id);
+    }
+
+    [Serializable]
+    public class BestiaryRecord
+    {
+        public string id;
+        public int kills;
     }
 
     public interface IProfileStorage
@@ -114,6 +134,11 @@ namespace Turris
                 d.victoryTiers = d.victoryTiers ?? new List<int>();
                 d.lastLoadout = d.lastLoadout ?? new List<string>();
                 if (d.totalVictories > 0 && d.victoryTiers.Count == 0) d.victoryTiers.Add(0);
+            }
+            if (fromVersion < 3)
+            {
+                // v2 → v3: ustawienia głośności.
+                d.masterVolume = 0.8f; d.musicVolume = 0.7f; d.sfxVolume = 0.9f;
             }
             d.unlocked = d.unlocked ?? new List<string>();
             d.clearedFloorKeys = d.clearedFloorKeys ?? new List<string>();

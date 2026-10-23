@@ -11,7 +11,45 @@ namespace Turris
     public class LoadoutPlan
     {
         public ClassDefinition classDef;
+        /// <summary>Wyłącznie sylwetka; nie wpływa na atrybuty, cechę, broń ani skille.</summary>
+        public ClassDefinition appearance;
+        public EnemyDefinition trialEnemy;
         public DifficultyDefinition difficulty;
+        /// <summary>Wybrana broń startowa (null = domyślna klasy). Liczy się tylko, jeśli klasa ją oferuje.</summary>
+        public ItemDefinition startingWeapon;
+
+        /// <summary>Wybrany zestaw broni na start (klasy z Hell Unleashed): indeks w <see cref="ClassDefinition.loadouts"/>.</summary>
+        public int loadoutIndex;
+        /// <summary>Wybrany skill startowy (jeden z <see cref="ClassDefinition.startingSkillChoices"/>).</summary>
+        public SpellDefinition startingSkill;
+
+        /// <summary>Zestaw broni na start (null, gdy klasa ich nie definiuje).</summary>
+        public StartingLoadout Loadout => classDef == null || classDef.loadouts.Count == 0 ? null
+            : classDef.loadouts[Mathf.Clamp(loadoutIndex, 0, classDef.loadouts.Count - 1)];
+
+        /// <summary>Broń, z którą postać zacznie: z zestawu, wybrana (jeśli klasa ją oferuje) albo domyślna.</summary>
+        public ItemDefinition Weapon => classDef == null ? null
+            : Loadout != null ? Loadout.weapon
+            : startingWeapon != null && classDef.WeaponChoices.Contains(startingWeapon) ? startingWeapon : classDef.DefaultWeapon;
+
+        /// <summary>Druga ręka z zestawu (tarcza, grymuar, sztylet do rzucania, druga broń).</summary>
+        public ItemDefinition OffHand => Loadout?.offHand;
+
+        /// <summary>Skill z broni startowej (grymuar → nova, sztylet do rzucania → rzut nożami) – wtedy wyboru nie ma.</summary>
+        public SpellDefinition GearSkill => OffHand != null && OffHand.grantedSkill != null ? OffHand.grantedSkill
+            : Weapon != null ? Weapon.grantedSkill : null;
+
+        /// <summary>Skill startowy: z broni, a gdy broń go nie daje – wybrany z listy klasy.</summary>
+        public SpellDefinition OpeningSkill
+        {
+            get
+            {
+                if (classDef == null) return null;
+                if (GearSkill != null) return GearSkill;
+                if (startingSkill != null && classDef.startingSkillChoices.Contains(startingSkill)) return startingSkill;
+                return classDef.startingSkillChoices.Count > 0 ? classDef.startingSkillChoices[0] : null;
+            }
+        }
         public readonly List<UnlockDefinition> extras = new List<UnlockDefinition>();
         /// <summary>Umiejętności odblokowane na stałe – trafiają do kolekcji każdego podejścia (poza budżetem).</summary>
         public readonly List<SpellDefinition> permanentSkills = new List<SpellDefinition>();
@@ -21,7 +59,7 @@ namespace Turris
 
         /// <summary>Umiejętności dostępne na starcie: klasowe i odblokowane na stałe (bez powtórzeń).</summary>
         public IEnumerable<SpellDefinition> StartingSkills =>
-            (classDef != null ? classDef.startingSpells : new List<SpellDefinition>()).Concat(permanentSkills).Where(s => s != null).Distinct();
+            (classDef != null ? classDef.startingSpells : new List<SpellDefinition>()).Concat(new[] { OpeningSkill }).Concat(permanentSkills).Where(s => s != null).Distinct();
 
         /// <summary>Wkłada umiejętność do slotu (jeśli była w innym – zamiana miejscami).</summary>
         public void AssignSlot(SpellDefinition skill, int slot)
@@ -93,19 +131,53 @@ namespace Turris
             return u == null || IsUnlocked(u);
         }
 
-        /// <summary>Dodatki wybierane w budżecie. Umiejętności się tu nie pojawiają – odblokowane są dostępne zawsze.</summary>
+        /// <summary>Dodatki wybierane w budżecie (wszystkie odblokowane, bez względu na klasę). Umiejętności się tu nie pojawiają.</summary>
         public IEnumerable<UnlockDefinition> LoadoutOptions =>
             cfg.unlocks.Where(u => u.kind != UnlockKind.Difficulty && u.kind != UnlockKind.Spell && IsUnlocked(u));
 
-        /// <summary>Umiejętności odblokowane na stałe (za popiół lub domyślnie).</summary>
-        public IEnumerable<SpellDefinition> PermanentSkills =>
-            cfg.unlocks.Where(u => u.kind == UnlockKind.Spell && IsUnlocked(u)).Select(u => u.target as SpellDefinition).Where(s => s != null);
+        /// <summary>
+        /// Dodatki dla danej klasy: ogólne i przypisane do niej. Bez przedmiotów, które klasa i tak ma (np. łuk jako broń do wyboru).
+        /// </summary>
+        public IEnumerable<UnlockDefinition> LoadoutOptionsFor(ClassDefinition c) =>
+            LoadoutOptions.Where(u => u.AvailableFor(c) && !(c != null && u.target is ItemDefinition i && (c.startingItems.Contains(i) || c.alternativeWeapons.Contains(i)
+                                                                                                         || c.loadouts.Any(l => l.weapon == i || l.offHand == i))));
 
-        /// <summary>Uzupełnia plan o trwałe umiejętności i odtwarza zapamiętany układ slotów.</summary>
+        /// <summary>Umiejętności odblokowane na stałe (za popiół lub domyślnie), które ta klasa dostaje na start.</summary>
+        public IEnumerable<SpellDefinition> PermanentSkillsFor(ClassDefinition c) =>
+            cfg.unlocks.Where(u => u.kind == UnlockKind.Spell && IsUnlocked(u) && u.AvailableFor(c)).Select(u => u.target as SpellDefinition).Where(s => s != null);
+
+        /// <summary>Zmiana klasy na ekranie przygotowania: dodatki innej klasy wypadają, umiejętności i broń – od nowa.</summary>
+        public void SelectClass(LoadoutPlan plan, ClassDefinition c)
+        {
+            plan.classDef = c;
+            plan.extras.RemoveAll(u => !LoadoutOptionsFor(c).Contains(u));
+            if (plan.startingWeapon != null && (c == null || !c.WeaponChoices.Contains(plan.startingWeapon))) plan.startingWeapon = null;
+            plan.loadoutIndex = 0;
+            if (c != null && plan.startingSkill != null && !c.startingSkillChoices.Contains(plan.startingSkill)) plan.startingSkill = null;
+            FillSkills(plan);
+        }
+
+        /// <summary>Zmiana zestawu broni na start (np. łuk albo sztylety); skill z broni zastępuje wybór skilla.</summary>
+        public void SelectLoadout(LoadoutPlan plan, int index)
+        {
+            if (plan.classDef == null || plan.classDef.loadouts.Count == 0) return;
+            plan.loadoutIndex = Mathf.Clamp(index, 0, plan.classDef.loadouts.Count - 1);
+            FillSkills(plan);
+        }
+
+        /// <summary>Wybór skilla startowego (gdy broń żadnego nie daje).</summary>
+        public void SelectStartingSkill(LoadoutPlan plan, SpellDefinition skill)
+        {
+            if (plan.classDef == null || !plan.classDef.startingSkillChoices.Contains(skill)) return;
+            plan.startingSkill = skill;
+            FillSkills(plan);
+        }
+
+        /// <summary>Uzupełnia plan o trwałe umiejętności klasy i odtwarza zapamiętany układ slotów.</summary>
         public void FillSkills(LoadoutPlan plan)
         {
             plan.permanentSkills.Clear();
-            plan.permanentSkills.AddRange(PermanentSkills);
+            plan.permanentSkills.AddRange(PermanentSkillsFor(plan.classDef));
             var available = plan.StartingSkills.ToList();
             for (int i = 0; i < plan.skillSlots.Length; i++)
             {
@@ -152,6 +224,8 @@ namespace Turris
             if (plan.difficulty == null || !IsDifficultyAvailable(plan.difficulty)) { reason = "Niedostępna trudność"; return false; }
             if (plan.Cost > cfg.balance.loadoutBudget) { reason = $"Przekroczony budżet ({plan.Cost}/{cfg.balance.loadoutBudget})"; return false; }
             if (plan.extras.Any(e => !IsUnlocked(e))) { reason = "Wybrano zablokowany element"; return false; }
+            var foreign = plan.extras.FirstOrDefault(e => !e.AvailableFor(plan.classDef));
+            if (foreign != null) { reason = $"{foreign.displayName}: niedostępne dla klasy {plan.classDef.displayName}"; return false; }
             return true;
         }
 
@@ -203,10 +277,39 @@ namespace Turris
         {
             Profile.totalRuns++;
             Profile.lastClassId = plan.classDef.id;
+            Profile.lastAppearanceId = plan.appearance != null ? plan.appearance.id : "";
             Profile.lastDifficultyTier = plan.difficulty.tier;
             Profile.lastLoadout = plan.extras.Select(e => e.id).ToList();
+            Profile.lastWeaponId = plan.Weapon != null && plan.Weapon != plan.classDef.DefaultWeapon ? plan.Weapon.id : "";
+            Profile.lastLoadoutIndex = plan.loadoutIndex;
+            Profile.lastStartSkillId = plan.startingSkill != null ? plan.startingSkill.id : "";
             Save();
         }
+
+        // ------------------------------------------------------------------ Bestiariusz
+
+        BestiaryRecord Record(string id, bool create)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+            var r = Profile.bestiary.FirstOrDefault(b => b.id == id);
+            if (r == null && create) { r = new BestiaryRecord { id = id }; Profile.bestiary.Add(r); }
+            return r;
+        }
+
+        /// <summary>Wróg pojawił się na arenie – trafia do bestiariusza (zapis od razu, bo to rzadkie).</summary>
+        public void RecordSeen(EnemyDefinition def)
+        {
+            string id = Bestiary.BaseId(cfg, def);
+            if (Record(id, false) != null) return;
+            Record(id, true);
+            Save();
+        }
+
+        /// <summary>Zabity wróg (zapis przy najbliższym zapisie profilu – koniec piętra, śmierć).</summary>
+        public void RecordKill(EnemyDefinition def) { var r = Record(Bestiary.BaseId(cfg, def), true); if (r != null) r.kills++; }
+
+        public bool Seen(EnemyDefinition def) => Record(Bestiary.BaseId(cfg, def), false) != null;
+        public int Kills(EnemyDefinition def) => Record(Bestiary.BaseId(cfg, def), false)?.kills ?? 0;
 
         public void RecordDeath()
         {
@@ -219,12 +322,20 @@ namespace Turris
             var plan = new LoadoutPlan
             {
                 classDef = cfg.classes.FirstOrDefault(c => c.id == Profile.lastClassId) ?? cfg.classes.FirstOrDefault(),
+                appearance = cfg.classes.FirstOrDefault(c => c.id == Profile.lastAppearanceId),
                 difficulty = cfg.difficulties.FirstOrDefault(d => d.tier == Profile.lastDifficultyTier && IsDifficultyAvailable(d)) ?? cfg.difficulties.FirstOrDefault(),
             };
             foreach (var id in Profile.lastLoadout)
             {
                 var u = cfg.unlocks.FirstOrDefault(x => x.id == id);
-                if (u != null && u.kind != UnlockKind.Spell && IsUnlocked(u) && plan.Cost + u.loadoutCost <= cfg.balance.loadoutBudget) plan.extras.Add(u);
+                if (u != null && u.kind != UnlockKind.Spell && IsUnlocked(u) && u.AvailableFor(plan.classDef) && plan.Cost + u.loadoutCost <= cfg.balance.loadoutBudget) plan.extras.Add(u);
+            }
+            if (plan.classDef != null && !string.IsNullOrEmpty(Profile.lastWeaponId))
+                plan.startingWeapon = plan.classDef.WeaponChoices.FirstOrDefault(w => w.id == Profile.lastWeaponId);
+            if (plan.classDef != null)
+            {
+                plan.loadoutIndex = Mathf.Clamp(Profile.lastLoadoutIndex, 0, Mathf.Max(0, plan.classDef.loadouts.Count - 1));
+                plan.startingSkill = plan.classDef.startingSkillChoices.FirstOrDefault(s => s.id == Profile.lastStartSkillId);
             }
             FillSkills(plan);
             return plan;
@@ -241,17 +352,38 @@ namespace Turris
             var run = new RunState
             {
                 startingClass = plan.classDef,
+                appearance = cfg.classes.Contains(plan.appearance) ? plan.appearance : null,
                 difficulty = plan.difficulty,
                 attributes = AttributeBlock.From(plan.classDef),
                 seed = seed,
             };
-            foreach (var i in plan.classDef.startingItems) if (i != null) run.AddItem(new ItemInstance(i), true);
+            // Broń startowa: wybrana na ekranie przygotowania zastępuje domyślną broń klasy.
+            var defaultWeapon = plan.classDef.DefaultWeapon;
+            var weapon = plan.Weapon;
+            foreach (var i in plan.classDef.startingItems)
+                if (i != null) run.AddItem(new ItemInstance(i == defaultWeapon && weapon != null ? weapon : i), true);
+            // Zestaw broni (klasy z Hell Unleashed): broń w prawej ręce, w lewej tarcza, grymuar, sztylet albo druga broń.
+            var loadout = plan.Loadout;
+            if (loadout != null)
+            {
+                if (loadout.weapon != null) run.AddAndEquip(new ItemInstance(loadout.weapon));
+                if (loadout.offHand != null)
+                {
+                    var displaced = new List<ItemInstance>();
+                    var off = new ItemInstance(loadout.offHand);
+                    if (run.equipment.Equip(off, EquipSlot.OffHand, displaced)) run.inventory.AddRange(displaced);
+                    else run.inventory.Add(off);
+                }
+            }
+            if (plan.classDef.signatureSkill != null) run.signatureSkill = new SpellInstance(plan.classDef.signatureSkill) { permanent = true };
+            run.SyncGrantedSkills();
             foreach (var t in plan.classDef.startingTalents) if (t != null) run.AddBoon(t);
             foreach (var u in plan.extras)
             {
                 switch (u.target)
                 {
-                    case ItemDefinition i: run.AddItem(new ItemInstance(i), true); break;
+                    // Wybrany dodatek ląduje w ręku/na postaci; wyparty przedmiot klasy – do plecaka.
+                    case ItemDefinition i: run.AddAndEquip(new ItemInstance(i)); break;
                     case SpellDefinition s: run.LearnSpell(s); break;
                     case BoonDefinition b: run.AddBoon(b); break;
                 }

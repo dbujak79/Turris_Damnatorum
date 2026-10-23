@@ -79,6 +79,7 @@ namespace Turris
                 {
                     onReturn?.Invoke();
                     FxLibrary.Sparks(target, -to.normalized, new Color(0.9f, 0.85f, 0.7f));
+                    Sfx.Play(SoundId.Block, target, 0.5f, 1.25f);
                     Destroy(gameObject);
                     return;
                 }
@@ -93,6 +94,7 @@ namespace Turris
         {
             if (returning) return;
             returning = true;
+            Sfx.Play(SoundId.SwingHeavy, transform.position, 0.8f, 1.15f);
             tracker.Reset(); // w drodze powrotnej może trafić tych samych wrogów jeszcze raz
         }
     }

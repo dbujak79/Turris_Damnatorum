@@ -73,6 +73,46 @@ namespace Turris
         [Tooltip("Whirlwind: mnożnik szybkości ruchu w trakcie wirowania.")]
         public float moveMultiplier = 0.5f;
 
+        [Header("Skille z Hell Unleashed")]
+        [Tooltip("Technika z własnymi obrażeniami (attack.baseDamage × premie), a nie z obrażeń broni.")]
+        public bool flatDamage;
+        [Tooltip("Nova/Warcry/Undying/Judgement: liczba impulsów, odstęp i opóźnienie pierwszego (telegraf).")]
+        public int pulses = 1;
+        public float pulseInterval = 0.45f;
+        public float telegraph;
+        [Tooltip("Nova: impuls idzie za bohaterem (zamiast zostać w miejscu rzucenia).")]
+        public bool followCaster;
+        [Tooltip("Odrzut trafionych (m); ujemny = przyciąganie do bohatera.")]
+        public float knockback;
+        [Tooltip("Pocisk: ilu kolejnych wrogów przebija.")]
+        public int pierce;
+        [Tooltip("Pocisk pęka na dwie drzazgi przy pierwszym trafieniu.")]
+        public bool split;
+        [Tooltip("Pocisk: czas lotu (s); 0 = 3 s.")]
+        public float projectileLifetime;
+        [Tooltip("Pocisk wybucha całymi obrażeniami (attack.explosionRadius), także na końcu lotu.")]
+        public bool fullExplosion;
+        [Tooltip("Strefa po wybuchu/nowie: promień, czas trwania, odstęp tyknięć, część obrażeń na tyknięcie.")]
+        public float zoneRadius, zoneDuration, zoneInterval = 0.5f, zoneShare;
+        [Tooltip("Leczenie przy rzuceniu: ułamek maks. życia (Boski osąd).")]
+        public float healPercent;
+        [Tooltip("Okrzyk: redukcja obrażeń (ułamek) na czas trwania (duration).")]
+        public float damageReductionBuff;
+        [Tooltip("Furia dodawana przy rzuceniu (cecha Furia/Żądza krwi).")]
+        public float furyGain;
+        [Tooltip("Summon: rodzaj, liczba sług i odstęp ich ataków.")]
+        public ServantKind servant;
+        public int servantCount = 1;
+        public float servantAttackInterval = 1f;
+        [Tooltip("Aura obronna: modyfikatory bohatera, dopóki aura trwa.")]
+        public List<StatModifier> auraModifiers = new List<StatModifier>();
+        [Tooltip("Whirlwind: końcowe cięcie – część obrażeń i promień (0 = brak).")]
+        public float finalSlashShare, finalRadius;
+        [Tooltip("Wave: szerokość pasa i prędkość fali; druga fala – część obrażeń i opóźnienie (0 = brak).")]
+        public float waveWidth = 1.6f, waveSpeed = 16f, extraWaveShare, extraWaveDelay = 0.25f;
+        [Tooltip("Dash: dystans doskoku (attack.reach) pokonywany w tym czasie; zatrzymuje się przy wrogu.")]
+        public float dashTime = 0.16f;
+
         [Header("Ulepszenia")]
         [Tooltip("Cechy dochodzące z poziomem (np. od +2 większy promień, od +4 płonąca ziemia).")]
         public List<LevelFeature> levelFeatures = new List<LevelFeature>();
@@ -93,6 +133,8 @@ namespace Turris
 
         public int MaxCharges(int level) => Mathf.Max(1, charges + (extraChargeAtLevel > 0 && level >= extraChargeAtLevel ? 1 : 0));
         public float CooldownAt(int level) => cooldown * Mathf.Max(0.4f, 1f - cooldownReductionPerLevel * level);
+        /// <summary>Aura: włączana i gaszona tym samym przyciskiem, działa do odwołania.</summary>
+        public bool IsAura => kind == SpellKind.Aura;
         public float CostFactor(int level) => Mathf.Max(0.4f, 1f - costReductionPerLevel * level);
     }
 }

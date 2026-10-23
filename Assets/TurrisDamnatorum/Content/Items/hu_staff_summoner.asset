@@ -1,0 +1,145 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 636ee652052ecf443b59ebf79a72207a, type: 3}
+  m_Name: hu_staff_summoner
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ItemDefinition
+  id: hu_staff_summoner
+  displayName: "Kostur przywo\u0142ywacza"
+  description: "Katalizator: wzmacnia czary i regeneruje man\u0119. W zwarciu \u2013 s\u0142aby cios bez many."
+  tags: 2
+  kind: 0
+  huSourceId: weapon.staff
+  huSourceHash: 9d99ab22376e19c281df3fb6c531cabd5aae411d642fc0c9134965f498a78f6f
+  twoHanded: 1
+  weight: 4
+  requirements:
+  - attribute: 5
+    value: 14
+  modifiers:
+  - stat: 15
+    mode: 1
+    value: 15
+  - stat: 11
+    mode: 0
+    value: 0.8
+  effects: []
+  weapon:
+    light:
+      name: Uderzenie kosturem
+      delivery: 1
+      damageType: 0
+      baseDamage: 75
+      windup: 0.2
+      active: 0.12
+      recovery: 0.93
+      cancelAfter: 0.2
+      reach: 0.9166667
+      radius: 0.8
+      lunge: 0.4
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 18
+      poiseDamage: 14
+      heavy: 0
+      staminaCost: 7
+      projectileSpeed: 7.9166665
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 1.6666666
+      element: 1
+      elementShare: 1
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 1
+        stacks: 1
+        chance: 1
+      animation: 7
+    heavy:
+      name: Zamach kosturem
+      delivery: 1
+      damageType: 0
+      baseDamage: 127.5
+      windup: 0.62
+      active: 0.16
+      recovery: 0.6
+      cancelAfter: 0.3
+      reach: 2.4
+      radius: 0.9
+      lunge: 0.6
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 32
+      poiseDamage: 30
+      heavy: 1
+      staminaCost: 9.099999
+      projectileSpeed: 7.9166665
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 1.6666666
+      element: 1
+      elementShare: 1
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 1
+        stacks: 1
+        chance: 1
+      animation: 7
+    lightComboLength: 3
+    strengthScaling: 0.6
+    dexterityScaling: 0.4
+    intelligenceScaling: 0.5
+    riposteMultiplier: 2.5
+    canBlock: 0
+    guard:
+      physicalReduction: 0.6
+      magicReduction: 0.2
+      stabilityMultiplier: 1.2
+      blockAngle: 100
+      staminaRegenMultiplier: 0.3
+    canParry: 0
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  shield:
+    guard:
+      physicalReduction: 1
+      magicReduction: 0.4
+      stabilityMultiplier: 0.7
+      blockAngle: 140
+      staminaRegenMultiplier: 0.3
+    canParry: 1
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  color: {r: 0.45, g: 0.3, b: 0.2, a: 1}
+  weaponModel: 6
+  shieldModel: 0
+  model: {fileID: 919132149155446097, guid: d8d398e559c201547ab1564badd3f700, type: 3}
+  modelScale: 1
+  modelGripShift: 0
+  grantedSkill: {fileID: 0}

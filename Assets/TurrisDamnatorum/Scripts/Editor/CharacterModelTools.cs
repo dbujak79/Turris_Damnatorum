@@ -17,25 +17,60 @@ namespace Turris.EditorTools
 
         static bool InFolder(string path) => path.Replace('\\', '/').StartsWith(ModelsFolder);
 
+        /// <summary>Modele broni i przedmiotów: bez rigu Humanoid i bez animacji.</summary>
+        public static bool IsGear(string path) => path.Replace('\\', '/').StartsWith(ModelsFolder + "Weapons/");
+
+        /// <summary>Demony z Hell Unleashed (DemonAssetImport): rig Generic.</summary>
+        public static bool IsDemon(string path) => path.Replace('\\', '/').StartsWith(ModelsFolder + "Demons/");
+
         void OnPreprocessModel()
         {
             if (!InFolder(assetPath)) return;
             var mi = (ModelImporter)assetImporter;
+            if (IsGear(assetPath))
+            {
+                mi.animationType = ModelImporterAnimationType.Generic;
+                mi.avatarSetup = ModelImporterAvatarSetup.NoAvatar;
+                mi.importAnimation = false;
+                return;
+            }
+            if (IsDemon(assetPath))
+            {
+                // Demony z Hell Unleashed: różne szkielety (skrzydła, ogony, czerw) – Generic z klipami HU bez zmian.
+                mi.animationType = ModelImporterAnimationType.Generic;
+                mi.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+                mi.importAnimation = true;
+                return;
+            }
             mi.animationType = ModelImporterAnimationType.Human;
-            mi.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+            // Klipy bohatera (<nazwa>_clips.fbx) używają awatara modelu – ustawia to HeroAssetImport.
+            if (!assetPath.EndsWith("_clips.fbx") || mi.avatarSetup != ModelImporterAvatarSetup.CopyFromOther)
+                mi.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
             mi.importAnimation = true;
+        }
+
+        void OnPreprocessTexture()
+        {
+            if (!InFolder(assetPath)) return;
+            var ti = (TextureImporter)assetImporter;
+            string n = Path.GetFileNameWithoutExtension(assetPath).ToLowerInvariant();
+            if (n.EndsWith("_normal")) ti.textureType = TextureImporterType.NormalMap;
+            else if (n.EndsWith("_metallic")) ti.sRGBTexture = false;
+            ti.maxTextureSize = 4096;
         }
 
         void OnPreprocessAnimation()
         {
-            if (!InFolder(assetPath)) return;
+            if (!InFolder(assetPath) || IsGear(assetPath) || IsDemon(assetPath)) return;
             var mi = (ModelImporter)assetImporter;
+            // Klipy ustawione ręcznie albo przez HeroAssetImport (np. wycinek klatek) zostają.
+            if (mi.clipAnimations != null && mi.clipAnimations.Length > 0) return;
             var clips = mi.defaultClipAnimations;
             if (clips == null || clips.Length == 0) return;
             string file = Path.GetFileNameWithoutExtension(assetPath).ToLowerInvariant();
             foreach (var c in clips)
             {
-                string n = (file + " " + c.name).ToLowerInvariant();
+                string n = (file + " " + c.name).ToLowerInvariant().Replace('_', ' ').Replace('|', ' ');
                 c.loopTime = ClipMatcher.IsLoop(n);
                 c.lockRootRotation = true;
                 c.lockRootHeightY = true;

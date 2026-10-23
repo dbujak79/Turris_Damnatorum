@@ -38,8 +38,10 @@ namespace Turris.Tests
             var root = Object.FindAnyObjectByType<GameRoot>();
             Assert.IsNotNull(root, "Scena zawiera GameRoot");
             Assert.IsNotNull(root.config, "Konfiguracja przypisana w scenie");
-            Assert.AreEqual(3, root.config.classes.Count);
-            Assert.AreEqual(5, root.config.tower.floors.Count);
+            Assert.AreEqual(3, root.config.classes.Count(c => c.parent == null), "Trzy typy bohatera");
+            Assert.AreEqual(15, root.config.classes.Count, "…i dwanaście specjalizacji");
+            Assert.IsTrue(root.config.classes.All(c => c.Visual != null), "Każda klasa ma model bohatera");
+            Assert.AreEqual(6, root.config.tower.floors.Count, "3 areny Hell Unleashed + 3 piętra Turris");
             Assert.AreEqual(GameScreen.MainMenu, root.Screen);
 
             var plan = new LoadoutPlan { classDef = root.config.classes[1], difficulty = root.config.difficulties[0] };
@@ -74,6 +76,17 @@ namespace Turris.Tests
             root.CloseControls();
             root.ShowLoadout();
             yield return UiShot(Path.Combine(dir, "0b_loadout_ui.png"));
+            root.Meta.SelectClass(root.Plan, root.config.classes.First(c => c.id == "class_rogue"));
+            root.Meta.SelectLoadout(root.Plan, 1);
+            yield return UiShot(Path.Combine(dir, "0d_loadout_rogue_ui.png"));
+            root.Meta.SelectClass(root.Plan, root.config.classes.First(c => c.id == "class_hu_paladin"));
+            yield return UiShot(Path.Combine(dir, "0f_loadout_paladin_ui.png"));
+            root.Meta.SelectClass(root.Plan, root.config.classes.First(c => c.id == "class_hu_mage_earth"));
+            yield return UiShot(Path.Combine(dir, "0g_loadout_mage_earth_ui.png"));
+            root.Meta.SelectClass(root.Plan, root.config.classes[0]);
+            root.ShowUnlocks();
+            yield return UiShot(Path.Combine(dir, "0e_unlocks_ui.png"));
+            root.ShowLoadout();
 
             var plan = new LoadoutPlan { classDef = root.config.classes[0], difficulty = root.config.difficulties[0] };
             root.StartRun(plan);
@@ -90,6 +103,12 @@ namespace Turris.Tests
             t = 0;
             while (t < 0.6f) { t += Time.deltaTime; yield return null; }
             Shot(root, Path.Combine(dir, "1c_player_heavy_wind.png"));
+            t = 0;
+            while (t < 1.2f) { t += Time.deltaTime; yield return null; }
+            root.Player.RequestSkill(PlayerCombat.SignatureSlot);
+            t = 0;
+            while (t < 0.3f) { t += Time.deltaTime; yield return null; }
+            Shot(root, Path.Combine(dir, "1f_signature_warcry.png"));
 
             // Umiejętności: rozpłatanie (odnowienie w HUD), potem młynek w trzecim slocie.
             var whirl = root.Run.LearnSpell(root.config.unlocks.Select(u => u.target).OfType<SpellDefinition>().First(x => x.id == "skill_whirlwind"));
@@ -151,6 +170,47 @@ namespace Turris.Tests
             root.Controller.ToggleLock();
             while (t < 2.5f) { t += Time.deltaTime; yield return null; }
             Shot(root, Path.Combine(dir, "3_boss.png"));
+        }
+
+        /// <summary>Bestiariusz: spotkani wrogowie z portretami i opisem, niespotkani – „???”; słabości po zabiciach.</summary>
+        [UnityTest]
+        public IEnumerator Bestiary_ShowsMetEnemies_WeaknessesAfterKills()
+        {
+            SceneManager.LoadScene("Main");
+            yield return null;
+            yield return null;
+            var root = Object.FindAnyObjectByType<GameRoot>();
+            var entries = Bestiary.Entries(root.config);
+            var imp = entries.First(e => e.def.id == "enemy_imp");
+            Assert.AreEqual(3, imp.variants.Count, "chochlik z trzema odmianami żywiołów w jednej karcie");
+            Assert.IsTrue(entries.Any(e => e.def.id == "enemy_minion"), "przyzywane sługi też w bestiariuszu");
+            // Spotkani: chochlik (odmiana liczy się do bazowego), kultysta, Władca Bramy.
+            root.Meta.RecordSeen(imp.variants[0]);
+            for (int i = 0; i < Bestiary.RevealKills; i++) root.Meta.RecordKill(imp.variants[i % 3]);
+            var cultist = entries.First(e => e.def.id == "enemy_hu_cultist").def;
+            root.Meta.RecordSeen(cultist);
+            root.Meta.RecordKill(cultist);
+            var lord = entries.First(e => e.def.id == "enemy_gatelord").def;
+            root.Meta.RecordSeen(lord);
+            root.Meta.RecordKill(lord);
+            Assert.IsTrue(root.Meta.Seen(imp.def));
+            Assert.AreEqual(Bestiary.RevealKills, root.Meta.Kills(imp.def));
+            Assert.IsNotEmpty(Bestiary.Weaknesses(imp.def), "chochlik ma słabości");
+            Assert.IsTrue(Bestiary.Strengths(lord).Any(s => s.Contains("szarża")), "Władca Bramy – szarża w mocnych stronach");
+
+            var ui = root.GetComponent<GameUI>();
+            ui.OpenBestiary();
+            for (int i = 0; i < 20; i++) yield return null;
+            Assert.AreEqual(GameScreen.Bestiary, root.Screen);
+            var stage = Object.FindAnyObjectByType<BestiaryStage>();
+            Assert.IsNotNull(stage);
+            Assert.AreEqual(0, stage.PendingPortraits, "portrety kart wyrenderowane");
+            string dir = System.Environment.GetEnvironmentVariable("TURRIS_SHOT_DIR");
+            if (!string.IsNullOrEmpty(dir)) yield return UiShot(Path.Combine(dir, "bestiary_ui.png"));
+            ui.Back();
+            yield return null;
+            Assert.AreEqual(GameScreen.MainMenu, root.Screen);
+            Assert.IsNull(Object.FindAnyObjectByType<BestiaryStage>(), "scena podglądu sprzątnięta");
         }
 
         /// <summary>Zrzut całego ekranu gry razem z interfejsem IMGUI (działa tylko w oknie edytora).</summary>

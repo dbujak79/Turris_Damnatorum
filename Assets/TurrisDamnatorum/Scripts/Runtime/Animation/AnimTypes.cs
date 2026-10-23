@@ -3,10 +3,13 @@ using UnityEngine;
 namespace Turris
 {
     /// <summary>Czynność, którą animacja ma pokazać. Niezależna od tego, kto ją wykonuje (gracz / AI).</summary>
-    public enum AnimAction { None, Attack, Block, Parry, Dodge, Backstep, Cast, Drink, Flinch, GuardBroken, Kneel, Death }
+    public enum AnimAction { None, Attack, Block, Parry, Dodge, Backstep, Cast, Drink, Flinch, GuardBroken, Kneel, Death,
+        /// <summary>Uczepienie (czerw z Hell Unleashed wgryziony w bohatera) – klip w pętli.</summary>
+        Latched }
 
     /// <summary>Styl ruchu ataku. Auto = wyliczany z parametrów ataku i broni.</summary>
-    public enum AttackAnim { Auto, SlashRight, SlashLeft, Overhead, Thrust, Slam, Burst, Cast, Claw, Leap, BowDraw }
+    /// Special i Latch – własne klipy demonów z Hell Unleashed (wielki ruch ataku specjalnego, skok czerwia).
+    public enum AttackAnim { Auto, SlashRight, SlashLeft, Overhead, Thrust, Slam, Burst, Cast, Claw, Leap, BowDraw, Special, Latch }
 
     /// <summary>Model broni. Wartości zapisane w assetach – nowe tylko na końcu.</summary>
     public enum WeaponModel { Auto, None, Sword, Axe, GreatAxe, Dagger, Staff, Halberd, GreatSword, Claws, Mace, Hammer, Spear, Scythe, Knives, Bow }
@@ -28,16 +31,33 @@ namespace Turris
         public float phaseProgress;     // 0..1 w bieżącej fazie
         public float actionTime;        // sekundy od rozpoczęcia akcji
         public float actionDuration;    // łączny czas akcji (dla akcji jednofazowych, np. drgnięcia)
+        public float windupSeconds;     // atak: długość zapowiedzi (s) – demony prowadzą klip do szczytu i ciosu jak w Hell Unleashed
         public bool hasShield;
+        public bool offhandAttack;
         public bool weaponGuard;        // blok bronią (brak tarczy)
         public Vector3 dodgeDirection;  // świat
         public float rollDuration;      // czas przewrotu uniku; 0 = wyliczany z actionDuration
         public float spinAngle;         // obrót całego ciała wokół osi pionowej (młynek), stopnie
+        public Vector3 hitDirection;    // świat: kierunek ostatniego ciosu (od napastnika do postaci) – w tę stronę postać pada
+        public float hitWeight;         // ciężar ostatniego ciosu 0..1+ (odrzut ciała przy upadku)
     }
 
     public interface ICharacterAnimSource
     {
         CharacterAnimState GetAnimState();
+    }
+
+    /// <summary>Sterownik animacji reagujący ciałem na trafienie (odchylenie tułowia i głowy w kierunku ciosu).</summary>
+    public interface IImpactReactive
+    {
+        /// <summary>localDir – kierunek pchnięcia w przestrzeni postaci (+Z = do przodu); strength ≈ 0..1,5.</summary>
+        void AddImpact(Vector3 localDir, float strength);
+    }
+
+    /// <summary>Postać, którą trafienie może na chwilę zatrzymać (hitstop lokalny – bez zatrzymywania całej gry).</summary>
+    public interface IHitStop
+    {
+        void HitStop(float seconds);
     }
 
     /// <summary>Wyliczanie stylu animacji i modeli, gdy w danych ustawiono Auto.</summary>
@@ -46,6 +66,7 @@ namespace Turris
         public static AttackAnim ForAttack(AttackDefinition a, int combo, WeaponModel weapon)
         {
             if (a.animation != AttackAnim.Auto) return a.animation;
+            if (weapon == WeaponModel.Bow && a.delivery == AttackDelivery.Projectile) return AttackAnim.BowDraw;
             if (a.delivery == AttackDelivery.Projectile) return AttackAnim.Cast;
             if (a.delivery == AttackDelivery.AreaAroundSelf) return a.damageType == DamageType.Magic ? AttackAnim.Burst : AttackAnim.Slam;
             if (weapon == WeaponModel.Claws || weapon == WeaponModel.None) return combo % 2 == 0 ? AttackAnim.Claw : AttackAnim.SlashLeft;
@@ -82,6 +103,20 @@ namespace Turris
             if (id.Contains("halberd")) return WeaponModel.Halberd;
             if (id.Contains("greatsword")) return WeaponModel.GreatSword;
             return item.twoHanded ? WeaponModel.GreatSword : WeaponModel.Sword;
+        }
+
+        /// <summary>Chwyt broni dla zestawu animacji modelu FBX.</summary>
+        public static GripStyle GripFor(WeaponModel weapon)
+        {
+            switch (weapon)
+            {
+                case WeaponModel.Bow: return GripStyle.Bow;
+                case WeaponModel.Staff: return GripStyle.Staff;
+                case WeaponModel.GreatAxe: case WeaponModel.GreatSword: case WeaponModel.Halberd:
+                case WeaponModel.Hammer: case WeaponModel.Spear: case WeaponModel.Scythe:
+                    return GripStyle.TwoHand;
+                default: return GripStyle.OneHand;
+            }
         }
 
         public static ShieldModel ForShield(ItemDefinition item)

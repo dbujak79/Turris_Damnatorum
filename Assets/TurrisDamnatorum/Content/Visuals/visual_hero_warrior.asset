@@ -1,0 +1,122 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2b60cb6a9638374aabf2c538e75231f, type: 3}
+  m_Name: visual_hero_warrior
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.CharacterVisualDefinition
+  modelPrefab: {fileID: 919132149155446097, guid: 22f111b4091899644a8c2ea02397b243, type: 3}
+  scale: 0.9729729
+  demon: 0
+  rigidBootToes: 1
+  positionOffset: {x: 0, y: 0, z: 0}
+  rotationOffset: {x: 0, y: 0, z: 0}
+  attachGear: 1
+  weaponBone: 18
+  weaponPosition: {x: 0, y: 0.08, z: 0.02}
+  weaponRotation: {x: 0, y: 0, z: 0}
+  shieldBone: 15
+  shieldPosition: {x: 0, y: 0.12, z: -0.08}
+  shieldRotation: {x: 0, y: -90, z: 0}
+  weaponBonePath: 
+  shieldBonePath: 
+  idle: {fileID: 2314384713841590844, guid: 86c639f3c033eb3458bece644cc31edc, type: 3}
+  walk: {fileID: -8738802000307073089, guid: 86c639f3c033eb3458bece644cc31edc, type: 3}
+  run: {fileID: -203655887218126122, guid: bc2cf2f8c90a8fa42bbfef54d342bc88, type: 3}
+  walkBack: {fileID: 0}
+  strafeLeft: {fileID: 0}
+  strafeRight: {fileID: 0}
+  walkSpeed: 1.4
+  runSpeed: 3.87
+  actions:
+  - action: 11
+    attack: 0
+    clip: {fileID: -982115091633673366, guid: 86c639f3c033eb3458bece644cc31edc, type: 3}
+    windupEnd: 0.35
+    activeEnd: 0.55
+    upperBodyOnly: 0
+    loop: 0
+    rootForward:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  - action: 8
+    attack: 0
+    clip: {fileID: -5663982627635981860, guid: 86c639f3c033eb3458bece644cc31edc, type: 3}
+    windupEnd: 0.35
+    activeEnd: 0.55
+    upperBodyOnly: 0
+    loop: 0
+    rootForward:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  - action: 2
+    attack: 0
+    clip: {fileID: 4805745386581417271, guid: 86c639f3c033eb3458bece644cc31edc, type: 3}
+    windupEnd: 0.35
+    activeEnd: 0.55
+    upperBodyOnly: 1
+    loop: 1
+    rootForward:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  - action: 6
+    attack: 0
+    clip: {fileID: -2328835098782832033, guid: 86c639f3c033eb3458bece644cc31edc, type: 3}
+    windupEnd: 0.3
+    activeEnd: 0.5
+    upperBodyOnly: 0
+    loop: 0
+    rootForward:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  - action: 1
+    attack: 7
+    clip: {fileID: -2328835098782832033, guid: 86c639f3c033eb3458bece644cc31edc, type: 3}
+    windupEnd: 0.3
+    activeEnd: 0.5
+    upperBodyOnly: 0
+    loop: 0
+    rootForward:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  - action: 1
+    attack: 0
+    clip: {fileID: -2328835098782832033, guid: 86c639f3c033eb3458bece644cc31edc, type: 3}
+    windupEnd: 0.35
+    activeEnd: 0.55
+    upperBodyOnly: 0
+    loop: 0
+    rootForward:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  rightSlot: HandSlot.R
+  leftSlot: HandSlot.L
+  oneHandSet: {fileID: 11400000, guid: 7169ca9fa74b85b42aec0ab8b589d517, type: 2}
+  twoHandSet: {fileID: 11400000, guid: b0c8af8eaa852ad47b3fdb0f8b94c4c4, type: 2}
+  bowSet: {fileID: 11400000, guid: f47d8ae92630faa4a95ccb55bf925adf, type: 2}
+  staffSet: {fileID: 0}

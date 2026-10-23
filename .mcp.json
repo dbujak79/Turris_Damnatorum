@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "karnellabs-unity-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "github:karnelian/unity-mcp",
+        "--profile=full"
+      ]
+    }
+  }
+}

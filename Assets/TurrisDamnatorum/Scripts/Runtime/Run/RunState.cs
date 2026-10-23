@@ -10,6 +10,7 @@ namespace Turris
     public class RunState
     {
         public ClassDefinition startingClass;
+        public ClassDefinition appearance;
         public DifficultyDefinition difficulty;
         public AttributeBlock attributes;
         public int seed;
@@ -39,6 +40,10 @@ namespace Turris
         /// <summary>Trzy sloty umiejętności – indeks = przycisk (1/2/3). null = pusty slot.</summary>
         public readonly SpellInstance[] skillSlots = new SpellInstance[SkillSlotCount];
         public readonly List<BoonStack> boons = new List<BoonStack>();
+        /// <summary>Skill klasy pod osobnym przyciskiem (nie zajmuje slotu, nie rośnie poziomem).</summary>
+        public SpellInstance signatureSkill;
+        /// <summary>Premie chwilowe (aury, okrzyk, szał) – ustawia PlayerCombat; liczone jak premie z wyposażenia.</summary>
+        public readonly List<StatModifier> tempModifiers = new List<StatModifier>();
 
         public int healthFlasks, manaFlasks;
         public int bonusHealthFlasks;   // zakupione w kapliczce
@@ -59,6 +64,38 @@ namespace Turris
         }
 
         public SpellInstance FindSpell(SpellDefinition def) => knownSpells.FirstOrDefault(s => s.definition == def);
+
+        /// <summary>
+        /// Umiejętności z założonych przedmiotów (grymuar → nova, sztylet do rzucania → rzut nożami): dochodzą do kolekcji,
+        /// gdy przedmiot jest założony, i znikają razem z nim. Zwraca true, jeśli coś się zmieniło.
+        /// </summary>
+        public bool SyncGrantedSkills()
+        {
+            bool changed = false;
+            var granted = new List<SpellDefinition>();
+            foreach (var slot in new[] { EquipSlot.MainHand, EquipSlot.OffHand })
+            {
+                var it = equipment.Get(slot);
+                if (it != null && it.definition.grantedSkill != null) granted.Add(it.definition.grantedSkill);
+            }
+            for (int i = knownSpells.Count - 1; i >= 0; i--)
+            {
+                var s = knownSpells[i];
+                if (!s.fromItem || granted.Contains(s.definition)) continue;
+                int slot = SlotOf(s);
+                if (slot >= 0) skillSlots[slot] = null;
+                knownSpells.RemoveAt(i);
+                changed = true;
+            }
+            foreach (var g in granted)
+            {
+                if (FindSpell(g) != null) continue;
+                var inst = LearnSpell(g);
+                inst.fromItem = true;
+                changed = true;
+            }
+            return changed;
+        }
 
         /// <summary>Dodaje umiejętność do kolekcji; trafia do pierwszego wolnego slotu, a przy zajętych czeka w kolekcji.</summary>
         public SpellInstance LearnSpell(SpellDefinition def, bool permanent = false)
@@ -131,8 +168,24 @@ namespace Turris
             inventory.Add(item);
         }
 
+        /// <summary>
+        /// Zakłada przedmiot, nawet jeśli slot jest zajęty (dodatek wybrany świadomie na starcie podejścia).
+        /// Wyparte przedmioty trafiają do plecaka. Pierścień idzie do wolnego slotu pierścienia, jeśli jest.
+        /// </summary>
+        public void AddAndEquip(ItemInstance item)
+        {
+            var slot = item.definition.DefaultSlot;
+            if (item.definition.kind == ItemKind.Ring && equipment.Get(EquipSlot.Ring1) != null && equipment.Get(EquipSlot.Ring2) == null) slot = EquipSlot.Ring2;
+            var displaced = new List<ItemInstance>();
+            if (equipment.Equip(item, slot, displaced)) inventory.AddRange(displaced);
+            else inventory.Add(item);
+        }
+
         public IEnumerable<StatModifier> AllModifiers()
         {
+            if (startingClass != null)
+                foreach (var m in startingClass.classModifiers) yield return m;
+            foreach (var m in tempModifiers) yield return m;
             foreach (var m in equipment.AllModifiers()) yield return m;
             foreach (var b in boons)
                 foreach (var m in b.definition.modifiers)

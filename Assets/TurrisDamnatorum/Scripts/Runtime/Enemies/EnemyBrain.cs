@@ -26,11 +26,13 @@ namespace Turris
     /// Stany: Dormant → Moving ⇄ Attacking; reakcje: Guarding, Evading, Staggered, Recoil, PoiseBroken (okno riposty), Dead.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
-    public class EnemyBrain : MonoBehaviour, IHitReceiver, IRiposteTarget, ICharacterAnimSource
+    public partial class EnemyBrain : MonoBehaviour, IHitReceiver, IRiposteTarget, ICharacterAnimSource, IHitStop
     {
         public static readonly List<EnemyBrain> All = new List<EnemyBrain>();
 
-        public enum State { Dormant, Moving, Attacking, Guarding, Evading, Staggered, Recoil, PoiseBroken, Dead }
+        public enum State { Dormant, Moving, Attacking, Guarding, Evading, Staggered, Recoil, PoiseBroken, Dead,
+            /// <summary>Czerw (Hell Unleashed) wgryziony w bohatera: jedzie na nim, spowalnia go i co sekundę rani.</summary>
+            Latched }
 
         public EnemyDefinition Def { get; private set; }
         public State CurrentState { get; private set; } = State.Dormant;
@@ -51,12 +53,21 @@ namespace Turris
 
         public event Action<EnemyBrain> Died;
 
+        /// <summary>Przywołanie sług (Władca Bramy): kto przyzywa, kogo i gdzie. Obsługuje je GameRoot (lista wrogów piętra).</summary>
+        public static event Action<EnemyBrain, EnemyDefinition, Vector3> SummonRequested;
+        /// <summary>Przyzywający – sługa ginie razem z nim.</summary>
+        public EnemyBrain Owner { get; set; }
+        /// <summary>Ile czerwi jest teraz uczepionych bohatera (najwyżej 3 naraz, jak w Hell Unleashed).</summary>
+        public static int LatchedCount { get; private set; }
+        public const int MaxLatched = 3;
+
         /// <summary>Efekty trwające (krwawienie, podpalenie, chłód, porażenie, zamrożenie).</summary>
         public readonly StatusEffects Status = new StatusEffects();
         readonly StatusFx statusFx = new StatusFx();
 
         // Skalowanie
         float damageMult = 1f, aggressionMult = 1f;
+        float DamageMult => damageMult * (hellFrenzy > 0 ? 1.4f : 1f);
         bool bossExtra;
         BalanceConfig rules;
 
@@ -66,6 +77,8 @@ namespace Turris
         float[] cooldowns;
         EnemyAttackEntry current;
         ActionPhase attackPhase;
+        /// <summary>Faza bieżącego ataku (zamach / cios / powrót) – ważna, gdy stan to Attacking.</summary>
+        public ActionPhase AttackPhase => attackPhase;
         float attackT;
         float lungeSpeed;
         readonly HitTracker tracker = new HitTracker();
@@ -81,13 +94,29 @@ namespace Turris
         CharacterController cc;
         CharacterVisual visual;
         WeaponModel weaponModel;
+        RigStyle rigStyle;
         float stateEnterTime, stateLength;
         int comboIndex;
+
+        // Odczucie trafień: hitstop, kierunek i ciężar ostatniego ciosu (upadek), odgłos padającego ciała.
+        float hitStop;
+        Vector3 lastHitDir;
+        float lastHitWeight;
+        bool bodyFallPlayed;
+
+        /// <summary>Styl sylwetki (np. do doboru dźwięku trafienia w pancerz).</summary>
+        public RigStyle Style => rigStyle;
+        public bool InHitStop => hitStop > 0f;
+        public WeaponModel Weapon => weaponModel;
 
         public EnemyAttackEntry CurrentAttack => CurrentState == State.Attacking ? current : null;
         public bool IsTelegraphing => CurrentState == State.Attacking && attackPhase == ActionPhase.Startup;
 
         float SpeedMult => PhaseIndex > 0 && PhaseIndex - 1 < Def.phases.Count ? Def.phases[PhaseIndex - 1].speedMultiplier : 1f;
+        float GlobalMoveMult => rules != null ? rules.enemyMoveSpeedMultiplier : 1f;
+        float AttackSpeedMult => Mathf.Min(HellMaxTempo(), SpeedMult * (rules != null ? rules.enemyAttackSpeedMultiplier : 1f)
+            * (hellFrenzy > 0 ? 1.4f : 1f) * (HellEnraged ? Def.huEnrageTempo : 1f));
+        public float AttackWindupDuration => current != null ? current.attack.windup / Mathf.Max(0.1f, AttackSpeedMult) : 0;
         float PhaseAggression => PhaseIndex > 0 && PhaseIndex - 1 < Def.phases.Count ? Def.phases[PhaseIndex - 1].aggressionMultiplier : 1f;
 
         public void Setup(EnemyDefinition def, PlayerCombat target, float floorScale, DifficultyDefinition difficulty, bool elite, BalanceConfig balance)
@@ -100,9 +129,11 @@ namespace Turris
             visual = GetComponent<CharacterVisual>();
             if (visual != null) visual.Init(this);
             weaponModel = AnimResolve.ForEnemyWeapon(def);
+            rigStyle = AnimResolve.ForEnemy(def);
 
-            float hpMult = floorScale * (difficulty != null ? difficulty.enemyHealthMultiplier : 1f) * (elite ? 1.3f : 1f);
-            damageMult = floorScale * (difficulty != null ? difficulty.enemyDamageMultiplier : 1f) * (elite ? 1.1f : 1f);
+            if (def.isMinion || def.isBoss || !def.huCanBeElite) IsElite = elite = false;
+            float hpMult = floorScale * (difficulty != null ? difficulty.enemyHealthMultiplier : 1f) * (elite ? def.eliteHealthMultiplier : 1f);
+            damageMult = floorScale * (difficulty != null ? difficulty.enemyDamageMultiplier : 1f) * (elite ? def.eliteDamageMultiplier : 1f);
             aggressionMult = (difficulty != null ? difficulty.enemyAggressionMultiplier : 1f) * (elite ? 1.25f : 1f);
             bossExtra = def.isBoss && difficulty != null && difficulty.bossExtraBehavior;
 
@@ -124,24 +155,47 @@ namespace Turris
 
         void OnDestroy()
         {
+            ClearHell();
             All.Remove(this);
+            ReleaseLatch(false);
             ClearMarker();
+            ClearSpecialMarkers();
             statusFx.Clear();
         }
 
         // ------------------------------------------------------------------ Pętla
 
-        void Update()
+        void Update() => Step(Time.deltaTime);
+
+        public void Step(float dt)
         {
             if (Def == null) return;
             if (player == null) { UpdateVisuals(); return; } // bez celu (np. podgląd) – tylko wygląd
-            float dt = Time.deltaTime;
             if (dt <= 0) return;
 
             if (CurrentState == State.Dead)
             {
+                if (hitStop > 0f) { hitStop -= dt; stateEnterTime += dt; return; }
+                // Ciało uderza o ziemię (koniec animacji upadku): głuchy łomot i kurz.
+                if (!bodyFallPlayed && Time.time - stateEnterTime > 0.72f)
+                {
+                    bodyFallPlayed = true;
+                    bool armored = rigStyle == RigStyle.Knight || rigStyle == RigStyle.Warden || rigStyle == RigStyle.Castellan;
+                    Sfx.Play(SoundId.BodyFall, transform.position, armored ? 0.7f : 1f, Def.scale > 1.3f ? 0.8f : 1f);
+                    FxLibrary.Dust(transform.position + lastHitDir * 0.6f * Def.scale, Def.scale * 1.2f);
+                }
                 // Najpierw animacja upadku, potem ciało powoli zapada się pod podłogę.
-                if (Time.time - stateEnterTime > 1.6f) transform.position += Vector3.down * 0.5f * dt;
+                if (Time.time - stateEnterTime > FallTime) transform.position += Vector3.down * 0.5f * dt;
+                return;
+            }
+
+            // Hitstop: wszystko stoi (także liczniki stanu i czas animacji), odrzut czeka na koniec zatrzymania.
+            if (hitStop > 0f)
+            {
+                hitStop -= dt;
+                stateEnterTime += dt;
+                nextAttackTime += dt;
+                UpdateVisuals();
                 return;
             }
 
@@ -149,7 +203,7 @@ namespace Turris
             float statusDamage = Status.Tick(dt, cc.velocity.sqrMagnitude > 0.25f, rules);
             if (statusDamage > 0f) { TakeStatusDamage(statusDamage); if (IsDead) return; }
             statusFx.Update(Status, transform, Def.scale, dt);
-            if (Status.Frozen) { ApplyMove(Vector3.zero, dt); UpdateVisuals(); return; }
+            if (Status.Incapacitated) { ApplyMove(Vector3.zero, dt); UpdateVisuals(); return; }
 
             // Regeneracja postawy i wytrzymałości
             if (poiseTimer > 0) poiseTimer -= dt; else Poise.Restore(Def.poiseRegen * dt);
@@ -157,6 +211,8 @@ namespace Turris
             for (int i = 0; i < cooldowns.Length; i++) cooldowns[i] -= dt;
 
             CheckPhase();
+            TickHell(dt);
+            if (IsDead) return;
 
             Vector3 move = Vector3.zero;
             float dist = FlatDistance(player.transform.position);
@@ -190,6 +246,11 @@ namespace Turris
                     if (stateTimer <= 0) EnterMoving();
                     break;
 
+                case State.Latched:
+                    TickLatch(dt);
+                    UpdateVisuals();
+                    return;
+
                 case State.Staggered:
                 case State.Recoil:
                 case State.PoiseBroken:
@@ -209,6 +270,7 @@ namespace Turris
 
         void ApplyMove(Vector3 horizontal, float dt)
         {
+            if (!cc.enabled) return;
             if (cc.isGrounded && verticalVelocity < 0) verticalVelocity = -2f;
             verticalVelocity += Physics.gravity.y * dt;
             cc.Move((horizontal + Vector3.up * verticalVelocity) * dt);
@@ -222,9 +284,17 @@ namespace Turris
             {
                 PhaseIndex++;
                 CombatEvents.RaiseMessage(Def.phases[PhaseIndex - 1].announcement, new Color(1f, 0.3f, 0.3f));
+                Sfx.Play(Def.isBoss ? SoundId.BossRoar : SoundId.GhoulGrowl, AimPoint);
                 FxLibrary.Shockwave(transform.position, new Color(1f, 0.2f, 0.15f), 6f);
                 FxLibrary.Flash(AimPoint, new Color(1f, 0.3f, 0.15f), 2.5f);
                 Poise.SetCurrent(Poise.Max);
+                // Wejście w fazę może od razu otworzyć atak (np. Władca Bramy przyzywa nietoperze).
+                int open = Def.phases[PhaseIndex - 1].openingAttack;
+                if (open >= 0 && open < Def.attacks.Count && CurrentState != State.Latched)
+                {
+                    if (CurrentState == State.Attacking) EndSpecialActive();
+                    StartAttack(open);
+                }
             }
         }
 
@@ -242,8 +312,9 @@ namespace Turris
 
             Vector3 to = player.transform.position - transform.position; to.y = 0;
             Vector3 dir = to.sqrMagnitude > 0.001f ? to.normalized : transform.forward;
-            float speed = Def.moveSpeed * SpeedMult * Status.MoveMultiplier(rules);
+            float speed = Def.moveSpeed * SpeedMult * GlobalMoveMult * Status.MoveMultiplier(rules) * (hellFrenzy > 0 ? 1.4f : 1f);
 
+            if (HellSummonerSpent) return dist > 1.2f ? dir * speed : Vector3.zero;
             if (Def.retreatRange > 0 && dist < Def.retreatRange) return -dir * speed * 0.9f;
             if (dist > Def.preferredRange) return dir * speed;
 
@@ -305,6 +376,7 @@ namespace Turris
         bool Usable(int i, float dist)
         {
             var e = Def.attacks[i];
+            if (!HellUsable(e)) return false;
             if (cooldowns[i] > 0) return false;
             if (e.minPhase > PhaseIndex) return false;
             if (e.eliteOnly && !IsElite) return false;
@@ -317,7 +389,7 @@ namespace Turris
             comboIndex = chained ? comboIndex + 1 : 0;
             MarkState(0f);
             current = Def.attacks[idx];
-            cooldowns[idx] = current.cooldown;
+            cooldowns[idx] = current.cooldown * (hellFrenzy > 0 ? 0.7f : 1f);
             attackT = 0;
             attackPhase = ActionPhase.Startup;
             tracker.Reset();
@@ -325,19 +397,26 @@ namespace Turris
             lungeSpeed = a.lunge / Mathf.Max(0.05f, (a.windup + a.active));
             CurrentState = State.Attacking;
             ClearMarker();
+            BeginSpecial(current);
             if (a.delivery == AttackDelivery.AreaAroundSelf)
             {
                 var c = TelegraphColors.For(a.Telegraph); c.a = 1f;
                 marker = VisualFx.GroundMarker(transform.position, a.radius, c);
             }
+            // Zapowiedź dźwiękiem: cios, którego nie da się zablokować – dysonansowy dzwon; ciężki – niski gong.
+            var tg = a.Telegraph;
+            if (tg == TelegraphKind.Unblockable || tg == TelegraphKind.NoDodge) Sfx.Play(SoundId.TelegraphUnblockable, AimPoint);
+            else if (tg != TelegraphKind.Normal) Sfx.Play(SoundId.TelegraphHeavy, AimPoint);
+            else if (rigStyle == RigStyle.Ghoul && Random.value < 0.35f) Sfx.Play(SoundId.GhoulGrowl, AimPoint, 0.8f);
+            if (a.delivery == AttackDelivery.Projectile && weaponModel != WeaponModel.Bow) Sfx.Play(SoundId.CastCharge, AimPoint, 0.7f);
             if (a.delivery == AttackDelivery.Projectile && visual != null && weaponModel != WeaponModel.Bow)
-                FxLibrary.Gather(visual.RightHand != null ? visual.RightHand : transform, TelegraphColors.For(a.Telegraph), a.windup / Mathf.Max(0.1f, SpeedMult));
+                FxLibrary.Gather(visual.RightHand != null ? visual.RightHand : transform, TelegraphColors.For(a.Telegraph), a.windup / Mathf.Max(0.1f, AttackSpeedMult));
         }
 
         Vector3 TickAttack(float dt)
         {
             var a = current.attack;
-            float speed = SpeedMult * Status.ActionSpeedMultiplier(rules); // chłód spowalnia także zamach
+            float speed = AttackSpeedMult * Status.ActionSpeedMultiplier(rules); // chłód spowalnia także zamach
             attackT += dt * speed;
             Vector3 move = Vector3.zero;
 
@@ -346,6 +425,7 @@ namespace Turris
                 case ActionPhase.Startup:
                     if (attackT < a.windup * 0.75f) FacePlayer(a.tracking, dt);
                     move = transform.forward * lungeSpeed * speed * LungeGate();
+                    move += SpecialWindup(a, speed);
                     if (marker != null)
                     {
                         marker.transform.position = transform.position + Vector3.up * 0.03f;
@@ -360,8 +440,10 @@ namespace Turris
                     break;
                 case ActionPhase.Active:
                     move = transform.forward * lungeSpeed * speed * LungeGate();
-                    if (a.delivery == AttackDelivery.Melee) SweepMelee();
-                    if (attackT >= a.windup + a.active) attackPhase = ActionPhase.Recovery;
+                    move += SpecialActive(a, speed, dt);
+                    if (a.delivery == AttackDelivery.Melee && (current.special == EnemySpecial.None || current.special == EnemySpecial.Latch)) SweepMelee();
+                    if (CurrentState != State.Attacking) return Vector3.zero; // uczepienie przejęło stan
+                    if (attackT >= a.windup + a.active) { attackPhase = ActionPhase.Recovery; EndSpecialActive(); }
                     break;
                 case ActionPhase.Recovery:
                     if (attackT >= a.windup + a.active + a.recovery) FinishAttack();
@@ -376,19 +458,24 @@ namespace Turris
         void OnAttackActive()
         {
             var a = current.attack;
-            float dmg = a.baseDamage * damageMult;
+            float dmg = a.baseDamage * DamageMult;
+            if (SpecialStrike(a, dmg)) return;
             switch (a.delivery)
             {
+                case AttackDelivery.Melee:
+                    Sfx.Play(a.heavy || Def.scale > 1.3f ? SoundId.SwingHeavy : SoundId.SwingLight, AimPoint, 1f, Def.scale > 1.3f ? 0.85f : 1f);
+                    break;
                 case AttackDelivery.Projectile:
                 {
                     Vector3 origin = transform.position + Vector3.up * 1.3f * Def.scale + transform.forward * (0.8f * Def.scale);
                     Vector3 aim = player.AimPoint - origin;
+                    Sfx.Play(weaponModel == WeaponModel.Bow ? SoundId.BowRelease : Sfx.ForElement(a.element, SoundId.ArcaneBolt), origin);
                     int count = Mathf.Max(1, a.projectileCount);
                     for (int i = 0; i < count; i++)
                     {
                         float ang = count == 1 ? 0 : Mathf.Lerp(-a.spreadAngle, a.spreadAngle, i / (float)(count - 1));
                         Vector3 dir = Quaternion.Euler(0, ang, 0) * aim.normalized;
-                        var hit = HitData.FromAttack(a, dmg, origin, this);
+                        var hit = BasicHit(a, dmg, origin);
                         if (weaponModel == WeaponModel.Bow)
                             Projectile.Spawn(origin, dir, a.projectileSpeed, hit, Faction.Enemy, this, new Color(0.85f, 0.8f, 0.7f), 0.12f, 3f, arrow: true);
                         else
@@ -399,9 +486,10 @@ namespace Turris
                 case AttackDelivery.AreaAroundSelf:
                 {
                     ClearMarker();
-                    var hit = HitData.FromAttack(a, dmg, transform.position, this);
+                    var hit = BasicHit(a, dmg, transform.position);
                     HitQuery.Sphere(transform.position + Vector3.up, a.radius, Faction.Enemy, tracker, r => HitQuery.Apply(this, r, hit, false));
                     VisualFx.Ring(transform.position, a.radius, TelegraphColors.For(a.Telegraph), 0.4f);
+                    Sfx.Play(a.damageType == DamageType.Magic ? SoundId.Shockwave : SoundId.Quake, transform.position);
                     break;
                 }
             }
@@ -413,17 +501,26 @@ namespace Turris
             float s = Def.scale;
             Vector3 from = transform.position + Vector3.up * 1.0f * s + transform.forward * 0.3f * s;
             Vector3 to = transform.position + Vector3.up * 1.0f * s + transform.forward * a.reach;
+            var entry = current;
             HitQuery.Capsule(from, to, a.radius, Faction.Enemy, tracker, r =>
             {
-                var hit = HitData.FromAttack(a, a.baseDamage * damageMult, transform.position, this);
-                HitQuery.Apply(this, r, hit, true);
+                var hit = BasicHit(a, a.baseDamage * DamageMult, transform.position);
+                hit.weapon = weaponModel == WeaponModel.Auto ? WeaponModel.None : weaponModel;
+                var res = HitQuery.Apply(this, r, hit, true);
+                // Wgryzienie: skok, który doszedł (nie zablokowany, nie uniknięty), kończy się uczepieniem.
+                if (entry.special == EnemySpecial.Latch && res.outcome == HitOutcome.Hit && ReferenceEquals(r, player) && !IsDead)
+                    BeginLatch(entry);
             });
         }
 
         void FinishAttack()
         {
+            InterruptHell();
             var finished = current;
             int f = finished.followUp;
+            // Krok serii dostępny dopiero w późniejszej fazie (np. dodatkowe cięcie w szale) jest pomijany – seria idzie dalej.
+            for (int guard = 0; f >= 0 && f < Def.attacks.Count && (Def.attacks[f].minPhase > PhaseIndex || (Def.attacks[f].huEnragedOnly && !HellEnraged)) && guard < 8; guard++)
+                f = Def.attacks[f].followUp;
             if (f >= 0 && f < Def.attacks.Count && !player.IsDead && Random.value < finished.followUpChance
                 && Usable(f, Mathf.Min(FlatDistance(player.transform.position), Def.attacks[f].maxRange)))
             {
@@ -451,7 +548,7 @@ namespace Turris
         void ScheduleNextAttack()
         {
             float agg = Mathf.Max(0.1f, aggressionMult * PhaseAggression);
-            nextAttackTime = Time.time + Random.Range(Def.attackInterval.x, Def.attackInterval.y) / agg;
+            nextAttackTime = Time.time + Random.Range(Def.attackInterval.x, Def.attackInterval.y) / agg * (hellFrenzy > 0 ? 0.7f : 1f);
         }
 
         void ClearMarker()
@@ -464,7 +561,21 @@ namespace Turris
         {
             Vector3 to = player.transform.position - transform.position; to.y = 0;
             if (to.sqrMagnitude < 0.001f) return;
+            degPerSec *= TurnMultiplier(to);
             transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(to), degPerSec * dt);
+        }
+
+        /// <summary>
+        /// Wróg „gubi” gracza, który przetacza się obok (w czasie uniku i chwilę po nim), i wolniej odwraca się do tego,
+        /// kto zaszedł go od tyłu – dzięki temu unik na skos do przodu daje szansę na cios w plecy.
+        /// </summary>
+        public float TurnMultiplier(Vector3 toPlayer)
+        {
+            if (rules == null || player == null) return 1f;
+            float m = 1f;
+            if (player.TimeSinceDodge < rules.enemyTurnDodgeGrace) m *= rules.enemyTurnDuringDodge;
+            if (Vector3.Angle(transform.forward, toPlayer) > 100f) m *= rules.enemyTurnBehind;
+            return m;
         }
 
         float FlatDistance(Vector3 p)
@@ -475,20 +586,49 @@ namespace Turris
 
         // ------------------------------------------------------------------ Trafienia
 
+        /// <summary>Hitstop lokalny: wróg (logika i animacja) zatrzymuje się na chwilę.</summary>
+        public void HitStop(float seconds)
+        {
+            // Działa też na cios kończący: ciało zastyga na chwilę, zanim zacznie padać.
+            hitStop = Mathf.Max(hitStop, seconds);
+            if (visual != null) visual.Hold(seconds);
+        }
+
+        /// <summary>Odrzut od ciosu (po hitstopie). Bossy i elity słabiej, pancerz w zamachu – prawie wcale.</summary>
+        public void Knockback(Vector3 dir, float distance, float time = 0.18f)
+        {
+            if (IsDead || distance <= 0f) return;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 1e-4f) return;
+            float m = Def.isBoss ? 0.2f : IsElite ? 0.5f : 1f;
+            if (CurrentState == State.Attacking && current != null && current.hyperArmor) m *= 0.3f;
+            displacement = dir.normalized * (distance * m / time);
+            displacementTime = time;
+        }
+
+        void RecordHit(Vector3 source, float weight)
+        {
+            Vector3 d = transform.position - source; d.y = 0f;
+            lastHitDir = d.sqrMagnitude > 1e-4f ? d.normalized : -transform.forward;
+            lastHitWeight = weight;
+        }
+
         public DefenseState CurrentDefense() => new DefenseState
         {
             position = transform.position,
             forward = transform.forward,
-            guarding = CurrentState == State.Guarding,
+            guarding = CurrentState == State.Guarding || (Def.huArchetype == 9 && CurrentState == State.Moving && Stamina.Current > 0),
             guard = Def.guard,
             stamina = Stamina.Current,
-            physicalResist = Def.physicalResist,
+            physicalResist = hellStoneTime > 0 || (Def.huArchetype == 11 && CurrentState == State.Dormant) ? 0.9f : Def.physicalResist,
             magicResist = Def.magicResist,
             dead = IsDead,
         };
 
         public HitResult ReceiveHit(HitData hit)
         {
+            // Cechy klasy gracza zależne od celu (zasadzka z tyłu, sokole oko, żądza krwi, egzekucja).
+            if (hit.attacker is PlayerCombat pc && !hit.isStatusTick) pc.OutgoingAgainst(ref hit, this);
             // Słabość/odporność dotyczy części z żywiołem; porażenie i szok termiczny – przed pancerzem.
             if (hit.element != Element.None && hit.magic > 0)
             {
@@ -506,12 +646,17 @@ namespace Turris
 
             var r = DamageResolver.Resolve(hit, CurrentDefense(), rules);
             if (r.outcome == HitOutcome.Ignored) return r;
+            r.healthDamage = AbsorbHellWard(r.healthDamage);
+            if (!hit.isStatusTick && !hit.isReaction && r.healthDamage > 0) hellDirectHits++;
+            if (!hit.isStatusTick) RecordHit(hit.sourcePosition, ImpactDirector.Weight(hit)); // ten sam ciężar co odczucie ciosu
             float instant = Status.OnLanded(hit, r, rules, out var landedReaction, out bool froze, out float shatter);
             if (shatter > 0) Shatter(shatter, hit);
             if (hit.mods.conductionJump && Status.LastConductionDamage > 0) JumpConduction(Status.LastConductionDamage * 0.5f, hit);
             r.healthDamage += instant;
             reaction = reaction ?? landedReaction;
             if (reaction != null) CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.7f, reaction, Names.ElementColor(hit.element));
+            if (reaction != null) Sfx.Play(Sfx.ImpactFor(hit.element), AimPoint, 0.8f);
+            else if (hit.fromMeleeWeapon && hit.element != Element.None && hit.magic > 0 && r.outcome == HitOutcome.Hit) Sfx.Play(Sfx.ImpactFor(hit.element), AimPoint, 0.45f);
             Health.Drain(r.healthDamage);
             if (r.staminaDamage > 0) Stamina.Drain(r.staminaDamage, 1f);
             if (froze && Health.Current > 0)
@@ -519,7 +664,7 @@ namespace Turris
                 // Zamrożenie przerywa atak (także z pancerzem) – krócej na bossach i elitach.
                 // Na czas zamrożenia pętla stoi, więc po odmrożeniu zostaje tylko krótkie drgnięcie.
                 Interrupt(State.Staggered, 0.2f);
-                CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.7f, "ZAMROŻONY", Names.StatusColor(StatusKind.Frozen));
+                AnnounceControl();
             }
 
             if (Health.Current <= 0)
@@ -531,6 +676,16 @@ namespace Turris
 
             if (CurrentState == State.Dormant) CurrentState = State.Moving;
 
+            // Odrzut (albo przyciągnięcie) z umiejętności: od źródła trafienia.
+            if (hit.knockback != 0f && (r.outcome == HitOutcome.Hit || r.outcome == HitOutcome.GuardBroken))
+            {
+                Vector3 away = transform.position - hit.sourcePosition; away.y = 0f;
+                if (away.sqrMagnitude < 1e-4f) away = -transform.forward;
+                away.Normalize();
+                if (hit.knockback > 0f) Pull(transform.position + away * (hit.knockback + 1f), hit.knockback, 0.2f);
+                else Pull(hit.sourcePosition, -hit.knockback, 0.25f);
+            }
+
             switch (r.outcome)
             {
                 case HitOutcome.Hit:
@@ -539,14 +694,17 @@ namespace Turris
                     if (Poise.Current <= 0)
                     {
                         bool armored = CurrentState == State.Attacking && current != null && current.hyperArmor;
-                        if (!armored && CurrentState != State.PoiseBroken)
+                        if (!armored && CurrentState != State.PoiseBroken && CurrentState != State.Latched)
                         {
+                            // Przełamana postawa – zachwianie widać jak po ciężkim ciosie, nawet gdy przelał czarę lekki.
+                            lastHitWeight = Mathf.Max(lastHitWeight, 0.8f);
                             Interrupt(State.Staggered, 0.75f);
                             Poise.SetCurrent(Poise.Max);
                         }
                     }
                     break;
                 case HitOutcome.GuardBroken:
+                    lastHitWeight = Mathf.Max(lastHitWeight, 0.9f);
                     Interrupt(State.Staggered, 1.2f);
                     CombatEvents.RaiseMessage("Garda wroga przełamana!", new Color(1f, 0.8f, 0.3f));
                     break;
@@ -559,7 +717,10 @@ namespace Turris
 
         void Interrupt(State s, float time)
         {
+            InterruptHell();
             ClearMarker();
+            if (CurrentState == State.Attacking) EndSpecialActive();
+            ReleaseLatch(false);
             current = null;
             CurrentState = s;
             stateTimer = time;
@@ -578,6 +739,8 @@ namespace Turris
             }
             else
             {
+                // Odbity cios odrzuca napastnika do tyłu (od broni obrońcy).
+                RecordHit(transform.position + transform.forward, 0.6f);
                 Interrupt(State.Recoil, 0.7f);
             }
         }
@@ -587,6 +750,7 @@ namespace Turris
         public void ReceiveRiposte(float damage, IHitReceiver attacker)
         {
             if (!CanBeRiposted) return;
+            if (attacker != null) RecordHit(attacker.Transform.position, 1f);
             float dmg = damage * (1f - Def.physicalResist * 0.5f);
             Health.Drain(dmg);
             CombatEvents.RaiseHit(AimPoint, new HitResult { outcome = HitOutcome.Hit, healthDamage = dmg }, false);
@@ -611,6 +775,7 @@ namespace Turris
             HitQuery.Sphere(transform.position + Vector3.up, rules.shatterRadius, attacker != null ? attacker.Faction : Faction.Player, tr, r => HitQuery.Apply(attacker, r, splash, false));
             FxLibrary.Shockwave(transform.position, Names.StatusColor(StatusKind.Frozen), rules.shatterRadius, false);
             FxLibrary.Impact(AimPoint, Names.StatusColor(StatusKind.Frozen), 1.5f);
+            Sfx.Play(SoundId.Shatter, AimPoint);
         }
 
         /// <summary>Przewodzenie przeskakuje na najbliższego innego wroga (przedmiot „Amulet przewodnika”).</summary>
@@ -630,6 +795,7 @@ namespace Turris
                 attacker = source.attacker, element = Element.Lightning, isReaction = true, attackName = "Przewodzenie", mods = StatusModifiers.None,
             };
             FxLibrary.Lightning(AimPoint, best.AimPoint, Names.ElementColor(Element.Lightning));
+            Sfx.Play(SoundId.LightningZap, best.AimPoint, 0.7f);
             HitQuery.Apply(source.attacker as IHitReceiver, best, jump, false);
         }
 
@@ -644,7 +810,22 @@ namespace Turris
             if (Status.Apply(kind, landedPhysical, landedMagic, rules) && kind != StatusKind.Bleed)
             {
                 Interrupt(State.Staggered, 0.2f);
+                AnnounceControl();
+            }
+        }
+
+        /// <summary>Napis i dźwięk po zamrożeniu albo ogłuszeniu.</summary>
+        void AnnounceControl()
+        {
+            if (Status.Frozen)
+            {
+                Sfx.Play(SoundId.Freeze, AimPoint);
                 CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.7f, "ZAMROŻONY", Names.StatusColor(StatusKind.Frozen));
+            }
+            else
+            {
+                Sfx.Play(SoundId.Quake, AimPoint, 0.6f, 1.4f);
+                CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.7f, "OGŁUSZONY", Names.StatusColor(StatusKind.Stun));
             }
         }
 
@@ -669,6 +850,7 @@ namespace Turris
             if (dmg <= 0f) return 0f;
             Health.Drain(dmg);
             CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.7f, $"ROZDARCIE {dmg:0}", Names.StatusColor(StatusKind.Bleed));
+            Sfx.Play(SoundId.HitFleshHeavy, AimPoint);
             FxLibrary.Blood(AimPoint, Vector3.up, 2.5f);
             if (Health.Current <= 0) Die();
             return dmg;
@@ -679,12 +861,22 @@ namespace Turris
         {
             Health.Drain(dmg);
             CombatEvents.RaiseWorldText(AimPoint, $"{dmg:0}", Status.BleedStacks > 0 ? Names.StatusColor(StatusKind.Bleed) : Names.StatusColor(StatusKind.Burn));
+            Sfx.Play(Status.BleedStacks > 0 ? SoundId.BleedTick : SoundId.BurnTick, AimPoint);
             if (Health.Current <= 0) Die();
         }
 
         void Die()
         {
+            if (IsDead) return;
+            ClearHell();
+            if (Def.huSplitCount > 0 && Def.huSummon != null)
+            {
+                SummonHell(Def.huSummon, Def.huSplitCount, Def.huSplitCount);
+                foreach (var child in All) if (child.Owner == this && child.Def == Def.huSummon) child.Owner = Owner;
+            }
+            ReleaseLatch(false);
             ClearMarker();
+            ClearSpecialMarkers();
             Status.Clear();
             statusFx.Clear();
             CurrentState = State.Dead;
@@ -693,14 +885,24 @@ namespace Turris
             cc.enabled = false;
             if (visual != null) { visual.SetWeaponGlow(Color.black, 0f); visual.SetTint(Color.black, 0.45f); }
             FxLibrary.DeathAsh(transform.position, Def.scale);
+            Sfx.Play(Def.isBoss ? SoundId.BossDeath : rigStyle == RigStyle.Ghoul ? SoundId.DeathGhoul : rigStyle == RigStyle.Archer ? SoundId.DeathBones : SoundId.DeathArmored, AimPoint);
             All.Remove(this);
             CombatEvents.RaiseDied(this);
             Died?.Invoke(this);
-            Destroy(gameObject, 3f);
+            Destroy(gameObject, FallTime + 1.4f);
+            // Sługi giną razem z przyzywającym (Hell Unleashed).
+            foreach (var m in All.ToArray())
+                if (m != null && m.Owner == this && !m.IsDead) m.Die();
         }
+
+        /// <summary>Czas upadku (klip śmierci modelu), zanim ciało zacznie się zapadać.</summary>
+        float FallTime => visual != null ? visual.DeathFallTime : 1.6f;
 
         /// <summary>Tylko do testów.</summary>
         public void DebugKill() { Health.Drain(Health.Current); Die(); }
+
+        /// <summary>Tylko do testów: natychmiast zaczyna wskazany atak (także specjalny).</summary>
+        public void DebugStartAttack(int index) { if (!IsDead && index >= 0 && index < Def.attacks.Count) StartAttack(index); }
 
         // ------------------------------------------------------------------ Animacja i czytelność
 
@@ -714,9 +916,11 @@ namespace Turris
         {
             var st = new CharacterAnimState
             {
-                actionTime = Status.Frozen ? 0.12f : Time.time - stateEnterTime, // zamrożony – poza zatrzymana
+                actionTime = Status.Incapacitated ? 0.12f : Time.time - stateEnterTime, // zamrożony / ogłuszony – poza zatrzymana
                 actionDuration = stateLength,
                 hasShield = Def != null && Def.guardChance > 0,
+                hitDirection = lastHitDir,
+                hitWeight = lastHitWeight,
             };
             switch (CurrentState)
             {
@@ -726,6 +930,7 @@ namespace Turris
                     st.action = AnimAction.Attack;
                     st.attack = AnimResolve.ForAttack(a, comboIndex, weaponModel);
                     st.phase = attackPhase;
+                    st.windupSeconds = a.windup / Mathf.Max(0.1f, AttackSpeedMult);
                     switch (attackPhase)
                     {
                         case ActionPhase.Startup: st.phaseProgress = a.windup > 0 ? attackT / a.windup : 1f; break;
@@ -741,6 +946,7 @@ namespace Turris
                 case State.Recoil: st.action = AnimAction.Flinch; break;
                 case State.PoiseBroken: st.action = AnimAction.Kneel; break;
                 case State.Dead: st.action = AnimAction.Death; break;
+                case State.Latched: st.action = AnimAction.Latched; break;
             }
             return st;
         }

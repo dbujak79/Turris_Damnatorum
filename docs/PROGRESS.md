@@ -1,12 +1,123 @@
 # Turris Damnatorum — stan prac i plan
 
-Aktualizacja: 2026-09-29. Opis gry, sterowania i architektury jest w [README.md](../README.md). Ten plik służy do przekazania pracy między sesjami.
+Aktualizacja: 2026-10-23 (korekta stopy i stalowego noska, testy przez Unity MCP). Opis gry, sterowania i architektury jest w [README.md](../README.md). Ten plik służy do przekazania pracy między sesjami.
+
+### Ostatnia sesja — 2026-10-23: ustawienie stopy
+
+- Uaktualniono [plan migracji](PLAN_MIGRACJI_HELL_UNLEASHED.md) w projekcie Turris oraz raport P0/P1:
+  stan etapów, korekty stopy/noska, wyniki testów z rozróżnieniem kolejności zmian, praca przez MCP i zadania do odbioru.
+  Starszy `PORT_HELL_UNLEASHED.md` odsyła do aktualnego planu. Etap 4 pozostaje nierozpoczęty.
+- Referencja użytkownika: [nienaturalna stopa](references/2026-10-22-nienaturalna-stopa.png).
+  Pomiar wykazał obrót całej tylnej nogi w źródłowym `Idle_Combat`: prawa stopa około **80°** od kierunku postaci,
+  przy znacznie mniejszym skręcie samej kostki. Nie zmieniano klipów ani modeli.
+- `ClipAnimationDriver.ApplyIdleLegPose` ogranicza rozwarcie stóp w spoczynku do **40°**.
+  Obraca nogę wokół osi biodro–kostka, zachowując położenie kostki i długości kości, następnie zachowuje pochylenie podeszwy.
+  Korekta jest ważona udziałem spoczynku i wygasa podczas akcji całego ciała; wcześniejsza korekta stóp w biegu pozostaje.
+- Nowy `FootPosePlayTests` mierzy spoczynek i blok na sześciu modelach (wojownik, dual, paladyn, berserker, wiedźma, łucznik).
+  We wszystkich prawa stopa ma **40°**, lewa około **9°**; skręt kostki pozostaje poniżej 30°
+  (wojownik: prawa 18,85° przed → 21,16° po; lewa bez zmian 11,56°).
+  Obejrzano galerię przed i po: `TestResults/foot/before/idle_feet.png`, `TestResults/foot/after/idle_feet.png`.
+  Ostatnia kolumna to diagnostyczny przekrój z góry z celowo odciętym tułowiem; miarodajny wygląd siatki pokazują kolumny 1–2.
+  Pomiary są w `TestResults/foot/{before,after}/ankles.tsv`.
+- **Testy przez MCP w otwartym edytorze**, zgodnie z preferencją użytkownika. Wymóg zamknięcia Unity dotyczy
+  `tools/run_tests.py`, który uruchamia drugi proces edytora; nie dotyczy Test Runnera ani MCP.
+  Dodano pomocniczy `tools/unity_mcp.py` (lokalny klient, lista narzędzi, wywołania z JSON, oczekiwanie i zapis wyniku).
+  Przed późniejszą korektą noska pełne EditMode: **156 zaliczonych, 0 błędów, 1 opcjonalny eksport WAV pominięty** (`TestResults/foot/EditMode-MCP.json`).
+  Zestaw celowany: **5 zakończonych bez błędów** (pomiar i galeria stóp, bieg, krok przy ciosie, blok).
+  Pełne PlayMode: **100 zaliczonych, 0 błędów, 16 opcjonalnych galerii pominiętych**, 185,9 s
+  (`TestResults/foot/PlayMode-MCP.json`); testy obsługi menu padem także zaliczone.
+- **Dalsza korekta po uwadze użytkownika o opadającym czubku stalowego buta:**
+  [referencja](references/2026-10-23-opadajacy-nosek.png). W źródłowej siatce paladyna do kości palców przypisano
+  157 lewych i 149 prawych wierzchołków; klip zmienia ich obrót względem modelu nawet o około 40°.
+  Zrzut kontrolny z neutralnymi palcami potwierdził przyczynę: stalowy nosek zginał się jak miękkie obuwie.
+  `CharacterVisualDefinition.rigidBootToes` włączono tylko u paladyna i wojownika, również w `HeroAssetImport`.
+  Sterownik zachowuje lokalną pozę palców (pozycja, obrót, skala), przy swobodnym ruchu stawu skokowego i reszty nogi.
+  Nie zmieniano źródłowych modeli, wag ani klipów. Pozostałe modele zachowują dotychczasową animację palców.
+- `SteelBoots_ForefootMeshKeepsItsShape` bada ostatnie 4 cm noska z `BakeMesh` w spoczynku, biegu i ciosie.
+  Mierzy zmianę kształtu w układzie stopy, po odjęciu przesunięcia całego fragmentu, bez przegubu cholewki ważonego do goleni.
+  Próba kontrolna na kopii definicji z wyłączoną korektą wykrywa deformację **53,638 mm / 33,411 mm** (paladyn / wojownik);
+  przy właściwym ustawieniu assetów oba wyniki wynoszą około **0,001 mm**, przy progu 3 mm.
+  Pomiary: `TestResults/boot/shape.tsv`. Po tej zmianie **6/6 celowanych testów PlayMode przez MCP bez błędów**:
+  kształt siatki, spoczynek/blok sześciu modeli, galeria, kierunek stóp w biegu, krok ciosu i blok górnej połowy ciała.
+  Wynik: `TestResults/boot/Targeted-MCP.json`. Obejrzano `TestResults/boot/after/idle_feet.png` i
+  `TestResults/boot/comparison.png` (paladyn / wojownik, lewa kolumna przed, prawa po).
+- Hell Unleashed wyłącznie do odczytu: ponowna weryfikacja **2335 plików bez zmian**, **38 zgodnych tekstur VFX**.
+  Zakres migracji nadal obejmuje etapy 1–3. Następnie ręczna ocena pozy w grze, chwytów i nowych walk oraz balans IV–V;
+  nie rozpoczynać etapu 4 bez nowego zlecenia.
+
+### Poprzednia sesja: P0/P1 — audyt, animacje i pełny katalog demonów
+
+- **Zakres użytkownika: tylko etapy 1–3. Etapu 4 nie rozpoczynać bez nowego zlecenia. Hell Unleashed wyłącznie do odczytu.**
+- Nie generowano nowych potworów: skopiowano istniejące GLB, tekstury i animacje HU, konwersja do FBX wyłącznie w Turris.
+  Dodano 29 brakujących modeli demonów (łącznie 34 źródłowe i 3 wcześniejsze warianty chochlika), 7 modeli broni i 11 przedmiotów.
+- `import_hu_catalog.py`: rzeczywiste `.tres`, poziomy skilli, SHA, mapowania 61 skilli/53 broni/34 demonów,
+  porównanie fabryki i zapisanych assetów. Mapowania: 29 skilli, 33 bronie, wszystkie demony. Braki jawne w audycie.
+  Trzy różnice fabryki to celowe poprawki skali/chwytu wcześniejszych modeli.
+- IK obu rąk, tarcza, pozy sztyletu/różdżki, lustrzany atak lewej ręki, naciąg łuku.
+  `AnimResolve` poprawnie wybiera `BowDraw` przed ogólnym `Cast`; test starego oczekiwania zaktualizowany.
+  Dopracowane klipy zachowane. Wygląd wybierany niezależnie od klasy i zapamiętywany w profilu.
+- Warstwy cienia/przemoczenia/żaru/elity na materiałach kopii modelu współpracują z błyskiem trafienia.
+- `HellEnemyCatalog` i `EnemyBrain.Hell`: brakujące demony i bossowie, kombinacje, sygnały obrony, szał,
+  fazy, kanały, osłony, jaja i rozpad. Wersja importu nowych definicji: **4**.
+  Rytuał wzmacnia jednego wybranego sojusznika po kanale, trafienie kapłana go przerywa.
+  Kokon zatrzymuje ruch/unik bez blokowania ataków/czarów, ma odporność na powtarzanie i pajęczynę bez obrażeń.
+  Nekromanta ma budżet 3 × limit przywołań w życiu i zapasowy pocisk.
+- Bestiariusz zawiera cały katalog i próbę walki bez zmian profilu; zwycięstwo wraca do bestiariusza.
+  W ośmiu miejscach fal IV–V wprowadzono nowe archetypy. Zachowano sześć pięter, liczbę fal i 36 pozycji w listach wieży.
+- Fale wroga trafiają właściwą frakcję. Pauza nie wypuszcza nowego trafienia; strefa nadrabia tyknięcia długiej klatki.
+  Efekty wroga sprzątają się po śmierci/przejściu piętra, sługi po śmierci mistrza; wyklucie/rozpad bez osieroconego właściciela.
+- **Kontrola źródła:** `import_hu_catalog.py --verify` potwierdza 2335 niezmienionych plików,
+  `import_hu_vfx.py --verify` — 38 identycznych tekstur i zgodne receptury.
+- **Wyniki:** pełne EditMode 156 zaliczonych, 0 błędów, 1 opcjonalny eksport WAV pominięty;
+  testy mechanik migracji PlayMode 10/10 (134 zdolności i kroki kombinacji, modele, klasy/oba urządzenia,
+  rytuał/kokon, sługi, pauza, strefy, osłona, próba bez zapisu).
+  Pełne PlayMode window: **99 zaliczonych, 0 błędów, 15 galerii pominiętych**;
+  pełne gfx: **97 zaliczonych, 0 błędów, 17 pominiętych** (galerie i OnGUI). Końcowa galeria P1: **5/5**.
+  Raporty `TestResults/PlayMode-hu-p1-full-window.xml`, `PlayMode-hu-p1-full-gfx.xml`, `PlayMode-hu-p1-gallery.xml`.
+  Wcześniejszy niestabilny pomiar szczytu reakcji ciała poprawiono na stały krok 1/120 s po rzeczywistym trafieniu;
+  próg pozostał bez zmian. Oba końcowe pełne przebiegi zielone.
+- Obejrzane arkusze wszystkich modeli i broni oraz warstw sylwetki w `TestResults/hu-p1/`.
+  Pomiar 30 demonów w edytorze RTX 4070/D3D12, 1600×900: mediana 10,06 ms / p95 13,37 ms;
+  CPU `Camera.Render` 1,06/1,68 ms, 208 systemów / 1800 cząsteczek, 1273 MiB. To diagnostyka edytora, nie benchmark buildu/GPU.
+- Szczegółowy zakres i ograniczenia (w tym pojedynczy żywioł magiczny, kolejka faz, zachowany wcześniejszy balans):
+  [RAPORT_MIGRACJI_P0_P1.md](RAPORT_MIGRACJI_P0_P1.md), [AUDYT_HU_P0.md](AUDYT_HU_P0.md),
+  [KATALOG_DEMONOW_HU.md](KATALOG_DEMONOW_HU.md), [plan](PLAN_MIGRACJI_HELL_UNLEASHED.md).
+- Import przyrostowy: menu **Turris → Hell Unleashed → Import P1 (dodaj brakujące)**;
+  odświeża tylko własne nowe definicje o starszej wersji i brakujące referencje. Nie używać `RunBatchForce`.
+  Przy kolejnej celowej zmianie wersji sprawdzić lokalne poprawki nowych demonów przed nadpisaniem.
+- Następny krok: ręczna ocena chwytów i nowych walk, balans IV–V. Pozostałe 32 skille, pieczęcie,
+  ekonomia, pełne shadery/siatki biomów i UI są późniejszymi etapami.
+
+### Poprzednia sesja: cząsteczki Hell Unleashed → Unity
+
+- **Hell Unleashed tylko do odczytu.** Nie zmieniano ani nie usuwano tam plików. Wszystkie kopie, nowe skrypty i dokumenty są w Turris.
+- Skopiowano **38 PNG**, manifest pochodzenia i sumy SHA-256 do `Resources/HellVfx`.
+  `tools/art/import_hu_vfx.py` odtwarza import; `--verify` bez zapisu potwierdza zgodność kopii i receptur ze źródłem.
+- `HellParticleRecipes` + `HellParticles`: oryginalne warstwy HU w natywnym ParticleSystem, gradienty, siły,
+  tłumienie/turbulencja, flipbooki 8×8 i nieruchome atlasy 4×4/4×2; współdzielone materiały i shadery w Resources.
+- Wpięto cząsteczki do pocisków/różdżek, wybuchów, stref i aur, fal, statusów, ognisk/portali, śmierci,
+  krwi/pyłu, zniknięcia/odskoku widma i kości już przeniesionych demonów.
+- `HellFxPool` ogranicza wybuchy do 6 na rodzinę i krótkie światła do 6. Smugi kończą emisję i dogasają
+  również po bezpośrednim zniszczeniu pocisku; strefa jest właścicielem swojej oprawy i sprząta ją przy usunięciu.
+- **Audyt 29 skilli HU:** `HellSkillFx` i `HitData.visualElement` oddzielają wygląd od obrażeń.
+  Wir głębin i wodna nova zachowują wodne cząsteczki przy mechanice mrozu. Rozpłatanie/Cięcie krzyżowe
+  nie wywołują już FrostCone, Cięcie burzy używa powietrza. Poprawiono podwójne wywołania wybuchów
+  pocisków/meteoru i bezterminową aurę nieśmiertelności.
+- Przy sprawdzaniu skilli znaleziono też pomijanie kolejnych celów przebicia w długiej klatce.
+  `Projectile.Step` porządkuje trafienia całego odcinka; test obejmuje dwa cele w jednym kroku 0,4 s.
+- Szczegółowy zakres, tabela wszystkich 29 skilli i ograniczenia:
+  [MIGRACJA_EFEKTOW_HU.md](MIGRACJA_EFEKTOW_HU.md).
+- Plan pozostałych elementów po przeglądzie architektury i danych obu gier:
+  [PLAN_MIGRACJI_HELL_UNLEASHED.md](PLAN_MIGRACJI_HELL_UNLEASHED.md).
+- Obejrzano 6 renderów galerii `TestResults/hu-vfx/` (ogień, woda, powietrze, ziemia, lód, krew/cień).
+  Adapter nie zastępuje całego renderera Godota: osobne shadery brył, materiały sylwetki, siatki kolców/lodu
+  i tło sklepu 2D są wyszczególnione w planie. Potrzebna dalsza ocena wyglądu i wydajności w normalnej walce.
 
 ## 1. Stan na teraz
 
 Prototyp jest **grywalny od początku do końca**:
-- wybór klasy, trudności i dodatków w budżecie przygotowania;
-- 5 pięter z bossem, nagrody między piętrami, kapliczki;
+- wybór typu bohatera i specjalizacji (15 bohaterów z Hell Unleashed), broni startowej, skilla startowego, trudności i dodatków w budżecie przygotowania;
+- 6 pięter: I–III to areny Hell Unleashed (portale z demonami, Władca Bramy), IV–VI – piętra Turris z bossem; nagrody między piętrami, kapliczki;
 - śmierć i szybki restart, meta-postęp z zapisem.
 
 Działają mysz z klawiaturą oraz pad, także w menu.
@@ -20,21 +131,36 @@ Działają mysz z klawiaturą oraz pad, także w menu.
 | Cechy postaci: Siła, Zręczność, Inteligencja, Wytrzymałość; +1 punkt po każdym piętrze | gotowe, pokryte testami (`AttributeTests`) |
 | Przemapowanie przycisków (klawiatura/mysz i pad osobno), zapis w profilu | gotowe, pokryte testami (`InputRebindPlayTests`) |
 | Modele broni: buława, młot, włócznia, kosa, noże bliźniacze, łuk; ciężki rzut ze smugą | gotowe |
-| Klasy: Rycerz, Mag, Łotrzyk | gotowe |
+| Bohaterowie z Hell Unleashed: 3 typy (Wojownik, Mag, Łotrzyk – w miejscu dawnych klas, te same id) + 12 specjalizacji; modele FBX (Meshy, T-pose, Humanoid), tekstury 4K, animacje Mixamo i Meshy, 13 modeli broni | gotowe, pokryte testami (`HeroClassTests`, `HeroSkillPlayTests`, `HeroModelPlayTests`) – **do oceny w graniu i balansu** |
+| Skill klasy (G / Select), 9 cech klas, 4 style uniku, aury, sługi, fale, przebijanie/rozszczep/wybuch pocisków, doskok, przeciążenie, nieśmiertelność; żywioł Ziemia, zachwianie → ogłuszenie, pęknięcie pancerza | gotowe, pokryte testami |
 | Fale wrogów na piętrach (36 wrogów na wieżę), Szkieletowy łucznik, strzały specjalne | gotowe – do oceny długość pięter w ręcznym graniu |
 | Wyposażenie, statystyki, nagrody, odblokowania, trudność, zapis z wersjonowaniem | gotowe, pokryte testami |
-| AI: 3 archetypy + boss z 2 fazami, elity, dodatkowe zachowania bossa | gotowe |
-| Postacie: proceduralne humanoidy (240–330 części), animacja zsynchronizowana z fazami walki | gotowe |
-| Postacie FBX (Mixamo) – wariant B | kod i narzędzia gotowe, **nieprzetestowane na prawdziwym modelu** |
+| AI: przeciwnicy Turris, 14 archetypów HU, bossowie z fazami/kombinacjami, elity, kanały i osłony | wdrożone; nowe demony dostępne w próbie walki, wybrane na IV–V; do oceny balansu |
+| Postacie: proceduralne humanoidy (240–345 części), animacja zsynchronizowana z fazami walki; nogi na IK, ruch wtórny, ataki w 5 etapach, peleryna i płaty tabardu na sprężynach, odmiany wrogów | gotowe, pokryte testami (`AnimationPlayTests`) |
+| Odczucie ciosu (bez wstrząsów kamery): hitstop lokalny, reakcja ciała, odrzut, błysk, upadek w kierunku ciosu, warstwy dźwięku, wibracje pada | gotowe, pokryte testami (`CombatFeelTests`, `Impact_…`) – **do oceny w graniu** |
+| Postacie FBX – wariant B | działa na bohaterach z HU (zestawy animacji broni `WeaponAnimSet`, gniazda dłoni, modele przedmiotów); braki względem HU – patrz [PORT_HELL_UNLEASHED.md](PORT_HELL_UNLEASHED.md) |
+| Demony HU: komplet 34 definicji, modele i klipy Generic, 3 dodatkowe warianty chochlika, bestiariusz/próba, portale I–II i nowe archetypy IV–V | testy `DemonPlayTests`, `DemonContentTests`, `HellMigrationPlayTests` — **do oceny w graniu i balansu** |
 | Efekty czarów i walki (ParticleSystem, kręgi runiczne, światła, smugi ostrzy) | gotowe |
 | Areny: Dziedziniec, Krypta, Szczyt (65–120 tys. wierzchołków) | gotowe |
 | Interfejs IMGUI z nawigacją padem | gotowy (prototypowy) |
-| Dźwięk | **brak** |
+| Dźwięk: 58 efektów syntezowanych w kodzie, muzyka (menu, walka, boss), tła 3 aren, pogłos, głośność w ustawieniach | gotowe, pokryte testami (`AudioSynthTests`, `AudioPlayTests`) – **do oceny na słuch** |
 
 ### Wyniki testów (ostatni przebieg)
 
-- **EditMode:** 120/120.
-- **PlayMode:** 42/42 + 3 galerie pominięte (bez `TURRIS_SHOT_DIR`) w oknie edytora; z `TURRIS_SHOT_DIR` w oknie 45/45 (`python tools/run_tests.py PlayMode window`).
+- **Po migracji cząsteczek (2026-10-22):** EditMode **150 zaliczonych, 0 błędów**, 1 pominięty eksport WAV.
+  Pełny PlayMode `gfx`: **87 zaliczonych, 0 błędów**, 12 pominiętych (10 galerii bez zmiennej środowiskowej i 2 testy menu wymagające OnGUI).
+- **Skille HU w oknie Unity po poprawce przebijania:** **11/11** (`PlayMode-hero-skills-window.xml`),
+  w tym stożki, wodny Wir głębin, strzała żywiołów, aury, fale i dwa cele przebite w jednej klatce.
+  Oba testy `GamepadPlayTests` zaliczone w pełnym przebiegu okienkowym.
+- **Uwaga o wcześniejszym przebiegu okienkowym tej sesji:** test reakcji ciała `Impact_HitstopBothSides_KnockbackAndBodyReaction`
+  raz nie osiągnął progu odchylenia. Powtórzenie osobno oraz końcowy pełny `gfx` przeszły; nie zmieniano progu ani algorytmu reakcji.
+  Drugi wykryty błąd (przebijanie) został poprawiony w kodzie i potwierdzony testem regresji. Raport wcześniejszego przebiegu: `TestResults/PlayMode-full-window.xml`.
+- **Grafika/import HU:** obejrzane 6 PNG w `TestResults/hu-vfx/`; `import_hu_vfx.py --verify` potwierdza
+  identyczność 38 tekstur i SHA-256 źródłowego `ElementFx.cs`, zgodność wygenerowanych receptur. W kopii nie ma plików `.import` Godota.
+- **EditMode (2026-10-22, przez Unity MCP w otwartym edytorze):** 150/150 + eksport WAV pominięty (bez `TURRIS_SOUND_DIR`).
+- **PlayMode po sesji „stopa w biegu, postawa HU, bestiariusz” (2026-10-22):** 81/81 + 9 galerii pominiętych; EditMode 150/150.
+- **PlayMode po sesji „krok ciosu, bieg, portale” (2026-10-22):** 79/79 + 8 galerii pominiętych. Wszystkie testy w silniku używają bohaterów z modelami FBX (`TestContent.Create()` nadaje klasom wygląd z assetów; także `legacy_*`).
+- **PlayMode (2026-10-22, przez Unity MCP):** 78/78 + 5 galerii pominiętych bez `TURRIS_SHOT_DIR` (galeria demonów `demon_*` obejrzana). Testy demonów używają konfiguracji z assetów i Wojownika z modelem FBX. Galerie bohaterów i gry obejrzane (`hero_*`, `0f_loadout_paladin_ui`, `1_floor1_start`, `1f_signature_warcry`). Testy pada bywają niestabilne, gdy okno Unity traci fokus (wirtualny pad nie dostaje wejścia) – ponowne uruchomienie przechodzi.
 - **PlayMode w trybie wsadowym:** 2 testy pada są pomijane, bo nie działa tam `OnGUI`. Galerie zrzutów są pomijane bez zmiennej `TURRIS_SHOT_DIR`.
 
 ### Metryki szczegółowości (z testu `DetailLevel_ManyParts_FewRenderers`)
@@ -60,8 +186,8 @@ Areny z testu `Arenas_BuildWithSimpleCollidersAndBakedVisuals` (po powiększeniu
 
 ### Stan repozytorium
 
-- GitHub: `dbujak79/Turris_Damnatorum`, gałąź `main`. Commity: `init`, `graphics improvement`.
-- **Niezatwierdzone zmiany** z ostatniej iteracji: efekty (`Scripts/Runtime/Fx/`), `ArenaBuilder`, druga warstwa detali postaci, materiały w `Resources/`, `tools/run_tests.py`, ta dokumentacja. Do zatwierdzenia na prośbę użytkownika.
+- GitHub: `dbujak79/Turris_Damnatorum`, gałąź `main`. Ostatni commit: `83ddcac new class and weapons`.
+- **Niezatwierdzone zmiany:** dźwięk (`Scripts/Runtime/Audio/`, wpięcia w walkę, przebieg i UI, głośność w profilu v3), testy dźwięku, ta dokumentacja. Do zatwierdzenia na prośbę użytkownika.
 
 ## 2. Historia iteracji (sesja 2026-09-28)
 
@@ -124,8 +250,232 @@ Plan z etapami i dziennikiem: [PLAN_ROZWOJU.md](PLAN_ROZWOJU.md). Zrobione: fund
 
 - **Do oceny w ręcznym graniu:** czy tempo nie jest za duże dla wrogów (gameSpeed przyspiesza też AI) i czy unik-przerwanie nie jest zbyt „bezpieczne” (ewentualnie dodać koszt wytrzymałości lub minimalny czas zamachu).
 
+### Sesja 2026-09-29: dźwięk (dark fantasy)
+
+Prośba: dźwięk w klimacie dark fantasy. W projekcie nie było żadnych plików audio, więc wszystko jest syntezowane w kodzie (wariant „oba”: działa od razu, a pliki w `Resources/Audio` podmieniają syntezę bez zmian w kodzie).
+- **Synteza (`Audio/Dsp`):** szum przez filtr stanu TPT, oscylatory, rezonatory modalne (metal, szkło, drewno, dzwon z tercją małą), trzaski, chór (piły przez formanty „a/o”), Freeverb. Czysty C# – działa w wątku tła i w EditMode.
+- **Efekty (`SoundSynth`, 58 rodzajów, 126 wariantów):** głośność względna, warianty, limit głosów i odstęp w `SoundInfo.For`. Głośności wyrównane pomiarem (K-ważony RMS w oknie 400 ms): trafienia ~−12…−15, świsty ~−19, kroki ~−29, tyknięcia ~−29, UI ~−22…−26.
+- **Muzyka (`MusicSynth`):** pętle stereo 24 kHz; zdarzenia zawijają się na początek (`FoldLoop`), pogłos liczony okresowo – szew bez trzasku (test). Generacja ~16 s CPU w tle; efekty są gotowe wcześniej.
+- **`AudioService`:** bank statyczny (raz na uruchomienie, klipy `DontUnloadUnusedAsset`), pula 40 źródeł, muzyka i tło z przenikaniem (dwie warstwy), `AudioReverbZone` za kamerą z presetem areny, pauza przez `AudioListener.pause` (muzyka/UI `ignoreListenerPause`), bicie serca < 30% życia. `Sfx.Play/Ui` – statyczne wywołania, bez usługi nic nie robią.
+- **Wpięcia:** `CombatFxDirector` (wynik trafienia), `EnemyBrain` (zapowiedzi ciosów dźwiękiem, zamachy, pociski, ryk fazy, śmierć wg sylwetki, zamrożenie, roztrzaskanie, reakcje, tyknięcia), `PlayerCombat` (świst wg broni, łuk, unik, umiejętności wg rodzaju i żywiołu, flaszka, riposta), `Projectile`/`DelayedStrike`/`StormEffect`/`DamageZone`/`ThrownWeapon`, `PlayerController` (kroki), `GameRoot` (dzwon piętra, róg fali, chór, zwycięstwo, śmierć, dusze, sklep), `GameUI` (nawigacja).
+- **Ustawienia:** ekran „Sterowanie” → „Ustawienia – dźwięk i sterowanie” (głośność ogólna/muzyka/efekty, krok 10%). `ProfileData` v3: `masterVolume/musicVolume/sfxVolume`, migracja z v2 ustawia domyślne.
+- **Weryfikacja:** nie da się tego odsłuchać automatycznie – testy sprawdzają poprawność sygnału (brak NaN i przesterowania, cichy koniec, powtarzalność, różne warianty, szew pętli), a `AudioPlayTests` – odtwarzanie w grze (dzwon piętra, świst, unik, pauza, muzyka menu → walki, tło areny, śmierć wroga, dusza, głośność w profilu). WAV-y do odsłuchu: `TURRIS_SOUND_DIR=<katalog> python tools/run_tests.py EditMode`.
+- **Do oceny na słuch:** czy świsty i trafienia nie są zbyt „syntetyczne”, głośność muzyki względem efektów, częstość zapowiedzi ciosów przy wielu wrogach, czy bicie serca nie męczy.
+
+### Sesja 2026-09-29: start klasowy, łuk łotrzyka, umiejętności obszarowe, zachodzenie od tyłu
+
+Uwagi użytkownika po graniu: łotrzyk nie może zacząć z łukiem; po uniku na skos za plecy wróg za szybko się odwraca; przy wielu wrogach każda klasa potrzebuje umiejętności obszarowej; dodatki na start – ogólne albo klasowe (rycerz nie powinien zaczynać z kulą ognia).
+- **Start klasowy:** `UnlockDefinition.classes` (puste = ogólne). `MetaService.LoadoutOptionsFor(klasa)`, `PermanentSkillsFor(klasa)`, `SelectClass` (zmiana klasy usuwa cudze dodatki), walidacja odrzuca dodatki innej klasy. Przypisanie w `DefaultContent` (`ForClass`); ogólne: Czujność, Przetrwanie, Kojące światło, pierścień riposty, amulety przewodnika i salamandry. Pocisk arkanów (domyślny) – tylko mag. Nagrody w podejściu bez ograniczeń.
+- **Broń startowa:** `ClassDefinition.alternativeWeapons` (łotrzyk: łuk), `LoadoutPlan.startingWeapon/Weapon`, zapamiętywana w profilu (`lastWeaponId`). Łuk nie pojawia się już jako dodatek łotrzyka.
+- **Umiejętności obszarowe (odblokowane od razu, klasowe):** Tąpnięcie (`skill_stomp`, Quake z zasięgiem 0), Ognisty krąg (`spell_firering`, Nova z ogniem i podpaleniem), Wachlarz ostrzy (`skill_bladefan`, 10 noży dookoła, krwawienie). Zajmują trzeci slot na start; są też w puli nagród.
+- **Obrót wrogów:** `BalanceConfig.enemyTurnDuringDodge` (0,35 w czasie uniku i `enemyTurnDodgeGrace` 0,4 s po nim) i `enemyTurnBehind` (0,6, gdy gracz jest ponad 100° za plecami); działa też na śledzenie w zamachu. `EnemyBrain.TurnMultiplier`, `PlayerCombat.TimeSinceDodge`.
+- **UI:** wybór broni startowej w kolumnie klasy, dodatki filtrowane klasą („… klasy”), w „Odblokowaniach” oznaczenie „ogólne” albo nazwa klasy. Zrzuty `0b_loadout_ui`, `0d_loadout_rogue_ui`, `0e_unlocks_ui` obejrzane.
+- **Assety:** `SyncContent` dodał 3 umiejętności i 3 odblokowania oraz uzupełnił `classes` w 38 odblokowaniach i `alternativeWeapons` łotrzyka (nowe pola w `FillNewDefaults`). Opisy rycerza i łotrzyka poprawione ręcznie w assetach.
+- **Do oceny w graniu:** siła mnożników obrotu (zachodzenie od tyłu nie może być za łatwe), obrażenia i odnowienia nowych umiejętności obszarowych, podział odblokowań między klasy.
+
+### Sesja 2026-09-29: odczucie walki, płynność animacji, szczegółowość modeli (pakiety A–C)
+
+Prośba: płynniejsza gra i lepsze odczucie walki, dokładniejsze modele i więcej animacji. **Bez wstrząsów ekranu** – siłę ciosu oddają reakcja przeciwnika i dźwięk (trwała preferencja użytkownika).
+
+**A – odczucie ciosu** (`Fx/ImpactDirector.cs`, nowe zdarzenie `CombatEvents.Impact` z `HitQuery.Apply` i riposty):
+- **Hitstop lokalny** (`IHitStop`): trafiony i atakujący bronią zastygają na 0,05–0,15 s (lekki / ciężki i cios kończący / riposta; blok i parowanie 0,06–0,09 s). Stoją logika (`EnemyBrain`, `PlayerCombat.Tick`, ruch w `PlayerController`) i animacja (`CharacterVisual.Hold`); reszta gry toczy się dalej. Trafiona postać drży wzdłuż kierunku ciosu (sama postać, nie kamera). Techniki wielotrafieniowe nie zatrzymują atakującego (`HitData.weapon` = Auto).
+- **Reakcja ciała** (`IImpactReactive`, sprężyny w `ProceduralHumanoidAnimator`): tułów, głowa (z opóźnieniem), ręce, miednica i przechył ciała ustępują w kierunku ciosu i wracają z lekkim przestrzałem – dokładane na każdą pozę, także w trakcie ataku. Biały błysk ~0,1 s (`CharacterVisual.Impact`).
+- **Odrzut**: wróg 0,25–0,7 m (boss ×0,2, elita ×0,5, pancerz w zamachu ×0,3), bohater 0,4 m (blok – połowa).
+- **Upadek w kierunku ciosu** (`CharacterAnimState.hitDirection/hitWeight`): na plecy, na twarz (z przygięciem w pasie) lub na bok; ciężki cios odrzuca ciało dalej, krótkie odbicie przy uderzeniu o ziemię + kurz i dźwięk.
+- **Dźwięk – 4 nowe efekty** (`SoundId` na końcu wyliczenia): `HitBlunt` (obuch: buława, młot, pięści, kostur), `HitArmor` (cios w strażnika/rycerza), `KillBlow` (cios kończący), `BodyFall` (ciało o ziemię). Warstwy nakładane na dotychczasowe trafienie.
+- **Wibracje pada** (`Core/Rumble.cs`): impulsy wygasające liniowo, osobne dla zadanego/otrzymanego ciosu, bloku, parowania, przełamania gardy i zabicia; w pauzie stoją. Ustawienie „Wibracje” (0–100%) w ekranie ustawień, `ProfileData.rumbleStrength` (nowe pole, bez zmiany wersji).
+- Parametry w `GameConfig → balance` („Odczucie trafień”): `hitstopLight/Heavy/Riposte/Block`, `hitReactStrength`, `knockbackLight/Heavy`, `playerKnockback`.
+
+**B – płynność animacji:**
+- **Nogi na IK** (`SolveLegs`): stopa w podporze stoi na podłodze, w wymachu przenosi się łukiem (odbicie palcami, lądowanie na pięcie). Udział podpory maleje z prędkością (bieg ma fazę lotu), biodra obniżają się tyle, by noga sięgnęła. Długość cyklu 1,15–1,75 m (×1,25 w sprincie). Poślizg stopy w podporze: **0,44 m/s zamiast ~6 m/s** przy biegu 5,2 m/s. FK zostaje dla przewrotu, młynka, skoku i śmierci. Kroki dźwiękowe zsynchronizowane (co 0,9 m / 1,03 m w sprincie).
+- **Ruch wtórny**: pochylenie przy ruszaniu/hamowaniu i przechył w zakrętach (sprężyna `Lean`), kołysanie miednicy w chodzie z kontrą klatki, przenoszenie ciężaru i rozglądanie się w bezruchu.
+- **Ataki w 5 etapach** (`PoseLibrary.SampleAttack`): przygotowanie (ugięcie kolan), zamach z przestrzałem, przyspieszające cięcie, wybrzmienie z przestrzałem (`Pose.LerpUnclamped`), powrót. **Seria**: kolejny cios zaczyna zamach z wybrzmienia poprzedniego (nie z gardy). Skręt tułowia zaczyna się w biodrach, nogi go kompensują.
+
+**C – szczegółowość i tkaniny:**
+- **Peleryna z 4 segmentów** (`HumanoidRig.CapeSegments`) – łańcuch sprężyn: fala w dół, łopot w biegu, odchylenie przy ruszaniu i w zakrętach, podrzut przy trafieniu; nie wchodzi w plecy. Obszycie brzegów i szwy.
+- **Płaty na biodrach** (`HumanoidRig.HipFlaps`: tabard przód/tył, fartuch strażnika, pasy skórzni): kołyszą się, a kolano w wykroku je odpycha (twarde ograniczenie – koniec przenikania tkaniny przez uda).
+- **Odmiany wrogów** (`RigLook.Vary`, w `WorldBuilder.CreateEnemy`): odcień tkanin/zbroi/skóry, tusza, grubość kończyn, garb, u łuczników peleryna; styl, broń i tarcza bez zmian (czytelność walki). Boss bez odmian.
+- **Krew na broni**: metalowe części broni (tylko materiały „Metal”) ciemnieją po trafieniach i schną ~30 s.
+- Metryki: rycerz 286 części / 26 rendererów, strażnik 291/21, kasztelan 345/23.
+
+- **Nowe testy:** `CombatFeelTests` (EditMode: ciężar ciosu, wibracje, seria z przestrzałem), `HitImpact_BodyGivesWayToBlow_HoldsInHitstop_ThenRecovers`, `Death_FallsInDirectionOfBlow`, `Run_StanceFootBarelySlides_AndBodyLeansWhenStartingAndStopping`, `Cloth_CapeFlowsInRun_TabardFlapsGiveWayToKnees`, `EnemyVariety_SameArchetype_DifferentLooks`, `Impact_HitstopBothSides_KnockbackAndBodyReaction` (w silniku, z krwią na ostrzu).
+- **Nowe zrzuty:** `pose_hitreact`, `pose_death_dirs`, `pose_combo`, `pose_run_side`, `pose_cloth_run`, `pose_variety`.
+- **Do oceny w graniu:** długość hitstopu (czy nie „lepi” szybkich serii), siła odrzutu przy grupach wrogów, głośność nowych warstw dźwięku, siła wibracji; wygląd biegu (głębokość ugięcia kolan).
+
+### Sesja 2026-09-29: czytelność odblokowań, dodatek-broń na starcie
+
+- **Ekran odblokowań** jako karty: nazwa + klasa + „budżet N”/„na stałe”, jedna linijka opisu (rodzaj · `UnlockDefinition.description`); pełne parametry pod przyciskiem „Szczegóły ▼” (osobno dla każdej karty) albo „Rozwiń wszystkie szczegóły”. Przycisk „Odblokuj – N popiołu” lub powód blokady w osobnej kolumnie. Po wejściu fokus pada na pierwszy możliwy zakup (`UINavigator.FocusOn`).
+- **Błąd:** dodatek z przygotowania (np. Topór bojowy) lądował w plecaku, bo `AddItem(autoEquip)` zakłada tylko do pustego slotu. Teraz `RunState.AddAndEquip` – dodatek w ręku, wyparty przedmiot klasy do plecaka. Test `ExtraWeaponAndShield_AreEquippedAtStart_ClassItemsGoToBackpack`.
+- **Przełączniki** (`Tog`: klasa, trudność, dodatki, broń startowa) – zaznaczony jest złoty i pogrubiony (wcześniej stan „wł.” był prawie niewidoczny).
+
+### Sesja 2026-10-22: bohaterowie z Hell Unleashed
+
+Prośba: przenieść bohaterów, ich modele, rig, animacje, bronie i startowe skille z gry „Hell Unleashed” (ten sam autor, `C:\GIT\Hell Unleashed`). Decyzje użytkownika i pełny opis: [PORT_HELL_UNLEASHED.md](PORT_HELL_UNLEASHED.md).
+
+- **Zasoby:**
+  - 15 bohaterów: Blender → FBX, T-pose, kości Mixamo, gniazda dłoni, osobny plik klipów;
+  - 13 broni;
+  - animacje Mixamo;
+  - materiały Standard z tekstur 4K;
+  - 3 zestawy animacji broni z klatkami faz ciosów z HU.
+
+  Narzędzia: `tools/art/convert_hu_*.py`, `mixamo_concat.py`, `hu_textures.py`; edytor `HeroAssetImport`.
+- **Wygląd:**
+  - `CharacterVisual.BuildModel(def, scale, RigLook)` – gniazda z kości `HandSlot.R/L` (rotacja w T-pose: ostrze do przodu), łuk w lewej ręce, kostur pionowo w spoczynku;
+  - `ItemDefinition.model/modelScale/modelGripShift`;
+  - `ClipAnimationDriver` z `WeaponAnimSet` (ruch i ciosy z zestawu, reszta z modelu).
+- **Klasy:**
+  - `ClassDefinition.parent` (specjalizacja), `tagline`, `trait`, `dodgeStyle`, `signatureSkill`, `startingSkillChoices`, `loadouts` (`StartingLoadout`), `classModifiers`, `lookOverride`;
+  - `LoadoutPlan.loadoutIndex/startingSkill/OpeningSkill/GearSkill`, `MetaService.SelectLoadout/SelectStartingSkill`, profil `lastLoadoutIndex/lastStartSkillId`;
+  - ekran przygotowania: typy, specjalizacje, cecha, unik, skill klasy, zestawy broni, skill startowy.
+- **Walka:**
+  - `PlayerCombat.Hero.cs` (klasa częściowa) – skill klasy (`SignatureSlot`), cechy, style uniku, aury (`AuraEffect`), sługi (`Servant`), fala (`WaveEffect`), doskok, przeciążenie, nieśmiertelność, impulsy novy;
+  - `Projectile` – przebijanie, rozszczep, pełny wybuch, strefa;
+  - `DamageZone` w barwach żywiołu;
+  - `HitData.knockback/isProjectile`;
+  - hak `EnemyBrain.ReceiveHit → PlayerCombat.OutgoingAgainst` (zasadzka, sokole oko, żądza krwi);
+  - nowe staty: Ziemia, wszystkie obrażenia, redukcja obrażeń, szybkość ataku, skrócenie odnowień, kradzież życia, egzekucja;
+  - druga ręka: `ItemKind.OffHand` (grymuar, sztylet do rzucania – `grantedSkill`, `RunState.SyncGrantedSkills`), druga broń jednoręczna (ciosy na zmianę).
+- **Treść:**
+  - `DefaultContent.Heroes.cs` – 23 bronie/przedmioty drugiej ręki, 28 skilli, 12 specjalizacji; trzy dawne klasy nadpisane danymi HU;
+  - assety: `SyncContent` (65 nowych) + punktowe `TurrisSetup.OverwriteFromDefaults("class_knight", "class_mage", "class_rogue")`;
+  - klasyczne zestawy Rycerz/Mag/Łotrzyk zostały tylko w pamięci jako `legacy_*` do testów mechanik.
+- **Wejście:**
+  - skill klasy: G / Select;
+  - pomoc padem: Select tylko poza rozgrywką;
+  - nawigacja padem w poziomie: najpierw ten sam wiersz.
+
+### Sesja 2026-10-22: wolniejsi wrogowie (−10%)
+
+- `BalanceConfig` ma nowe globalne mnożniki `enemyMoveSpeedMultiplier` i `enemyAttackSpeedMultiplier`, oba = 0.9. Oba działają dodatkowo do mnożników faz bossa i statusów.
+- `EnemyBrain`:
+  - chód, strafe i wycofywanie są wolniejsze o 10%;
+  - zamach, cios i powrót (`attackT`) też trwają o 10% dłużej, a czas zbierania energii czaru skaluje się razem z nimi;
+  - odstępy między atakami (`attackInterval`), uniki wroga i prędkość pocisków zostały bez zmian.
+- Testy: EditMode 146/146, PlayMode (okno) 62/62.
+
+### Sesja 2026-10-22: stopa w biegu, postawa jak w HU, bestiariusz
+
+- **Lewa stopa wykręcona w biegu** (uwaga użytkownika): przeniesienie biegu Mixamo na modele Meshy dawało lewej stopie w podporze −48…−57°
+  (spoczynek modelu −13°, w nagraniu prosto; kolano proste). `ClipAnimationDriver.MeasureFootYaw` mierzy dla chodu i biegu do przodu kierunek stóp
+  w podporze i co klatkę obraca stopę w kostce o różnicę do pozy spoczynkowej (`FootYawFix`). Test `Run_FeetInStancePointLikeRestPose` (4 bohaterów, ≤15°).
+- **Ukryty błąd:** pomiary na klipach przy budowie sterownika widziały pozę spoczynkową (ewaluacja grafu jeszcze nie przesuwa kości) – fazy kroków
+  wychodziły zerowe od sesji animacji. Teraz pomiary w drugiej klatce (`measureIn`), poza spoczynkowa – przy budowie.
+- **Wojownik trzyma miecz jak w HU:** miecz z tarczą stoi we własnym `Idle_Combat` modelu (`WeaponAnimSet.useModelIdle`, jak `UseCalmIdle` w HU),
+  a ostrze w spoczynku ustawia się jak `SwingStyles.Stance` z HU (32° w prawo, 34° w górę; `CharacterVisual.PostPose`). Postawa po ciosie (`combatIdle`)
+  dla tego zestawu zbędna. Galeria `WarriorIdleGallery_WhenRequested`. **Do poprawy:** tarcza w tej postawie zasłania twarz i wydaje się większa niż w HU
+  (HU układa lewą rękę warstwą `HeroPoseLayer.HoldShield`, której Turris nie ma).
+- **Bestiariusz** (menu główne → „Bestiariusz”; `GameUI.Bestiary.cs`, `BestiaryStage`, `Meta/Bestiary.cs`): zakładki „Demony” (HU) i „Wrogowie wieży”,
+  siatka kart z portretami 3D (render do tekstur), duży obracający się podgląd, opis, piętro, odmiany żywiołów, liczba zabitych, mocne strony
+  (odporności, pancerz, ataki specjalne, fazy bossa) i słabe – odkrywane po 20 zabitych (boss – po pierwszym). Niespotkani – czarna sylwetka i „???”.
+  Profil: `ProfileData.bestiary` (spotkani + zabici; warianty liczą się do bazowego). Test `Bestiary_ShowsMetEnemies_WeaknessesAfterKills` (zrzut obejrzany).
+
+### Sesja 2026-10-22: krok przy ciosie, bieg na skos, portale, większe areny
+
+Uwagi użytkownika: „atak mieczem powinien prowadzić do małego kroku naprzód, a nie do wycofania nogi”; „wojownik ma krzywo nogę jak biegnie”;
+„przestań testować stare modele”; „powiększ arenę o 20% średnicy; w fali co kilka sekund potwór w różnych miejscach, wychodzi z portalu jak town portal w Diablo, tylko czerwony”.
+
+- **Krok z nagrania ciosu:** `ActionClip.rootForward` (RootT.z z klipu, `HeroAssetImport.RootForward`) – bohater idzie naprzód tyle, ile ciało w nagraniu,
+  tylko do przodu (`ClipAnimationDriver.ConsumeAdvance`, `PlayerController`); stały `lunge` broni tylko dla postaci bez modelu.
+  **Zakotwiczenie stóp** (`AnchorFeet`): stopa na ziemi nie jedzie do tyłu przy wejściu w cios ze spoczynku i przy wygaszaniu akcji – bohater robi wtedy
+  krok naprzód, druga noga się dostawia. Ruch nadany przez sterownik nie włącza chodu (`selfSpeed`).
+- **Klipy cięć:** miecz z tarczą SlashLeft = „slash (5)” (dawny „slash (3)” cofał wykroczną nogę o 0,7 m); dwuręczny SlashLeft = „slash (4)”, Thrust = „great sword attack”.
+- **Postawa bojowa** (`WeaponAnimSet.combatIdle`, miecz z tarczą: „idle (4)”, tarcza w pionie dzięki chwytowi na przedramieniu): 4 s po ciosie/parowaniu –
+  kolejny cios bez wykroku (krok 0,3–0,7 m); potem swobodne stanie (tylna noga dostawia się naprzód). Blok nie przełącza postawy.
+- Test `SwordAttack_StepsForward_NoFootRetreats`: cofnięcie stóp ≤ 0,11 m (było 0,5 m), krok w walce ≤ 0,8 m (dwuręczny „slash (4)” ~1,3 m – nagranie).
+- **Bieg na skos** (błąd z sesji animacji – mieszanie biegu w przód i bokiem krzyżowało kolana): strefy kierunków – na skos jedno nagranie (przód/tył),
+  biodra i nogi obrócone w stronę ruchu, kręgosłup i klatka oddają obrót (`LegTwist`, maks. 65°); bokiem tylko blisko 90°. Galeria `RunGallery_WhenRequested`.
+- **Testy na modelach FBX:** `Tests/PlayMode/TestContent.cs`; testy riga proceduralnego gracza przepisane na model. Przy okazji: drugi nóż w lewej dłoni
+  modelu FBX przy nożach bliźniaczych (brakowało).
+- **Areny ×1,2 średnicy:** Dziedziniec 17,5, Krypta 29,5, Szczyt 22,8 (kolumny przesunięte proporcjonalnie) – w kodzie i w assetach.
+- **Portale w każdej fali:** fale bez bossa nie pojawiają się naraz – wrogowie wychodzą po jednym co 2,5 s (`GameRoot.StreamInterval`) z portali w losowych
+  miejscach (≥ 7 m od bohatera); bossowie wchodzą od razu. **`DemonPortal`**: stojący czerwony owal (wir `FxMaterials.Portal`, jasna obwódka, iskry, światło,
+  blask na ziemi), otwiera się od szczeliny, wróg wychodzi krokiem w stronę bohatera, portal się zamyka; elita – złoty. Galeria `PortalGallery_WhenRequested`.
+
+### Sesja 2026-10-22: demony z pierwszych trzech aren Hell Unleashed
+
+Prośba: „przenieś z hell unleashed wszystkie potwory, które pojawiają się na pierwszych trzech arenach”. Decyzje użytkownika:
+piętra I–III jak w HU; **małe grupy wychodzą z portali w różnych miejscach przez cały czas piętra – trzeba je szybko zabijać, bo robi się tłoczno**.
+
+- **Skład (HU fale 1–3):** fala 1 – chochlik; fala 2 – chochlik, kultysta, czerw; fala 3 – boss `enemy.boss` (Władca Bramy, model gatelord) i jego sługi (ożywione nietoperze).
+- **Modele:** `tools/art/convert_hu_demons.sh` → `Models/Demons/<nazwa>/` (Blender: `convert_hu_demon.py`, rig **Generic** – szkielety różne: skrzydła, ogony, czerw;
+  tekstury wprost z .glb: `hu_demon_textures.py`; takty ciosu `<nazwa>.beats.json.txt`). Importer: `DemonAssetImport` (menu „Turris/Demony z Hell Unleashed…”,
+  `ApplyContent` = import + `SyncContent` + `OverwriteFromDefaults("tower_main")` + przypisanie wyglądów). Postprocesor modeli: folder `Demons/` = Generic.
+- **Animacja:** `DemonAnimationDriver` – zamach prowadzony jak w HU (`DriveAttackClip`: wyhamowane wznoszenie do szczytu, trzymanie, przyspieszenie do klatki ciosu
+  w ostatnich 0,07–0,2 s zapowiedzi), potem klip gra sam; przenikanie klipów, odchylenie ciała od ciosu (sprężyna), spłaszczenie przy własnym ciosie.
+  `CharacterAnimState.windupSeconds`, `AnimAction.Latched`, `AttackAnim.Special/Latch`.
+- **Liczby:** zdrowie i obrażenia HU ×2,5 (chochlik 55 PŻ = 2 cięcia mieczem), odległości/prędkości px/24, czasy bez zmian. Chochlik zawsze w żywiole
+  (ogień = model imp, mróz = imp_water, błyskawica = imp_air, ziemia = imp_earth; 60% ciosu w żywiole, odporność własna, słabość przeciwna).
+  Złote elity HU: co 20–30 demonów z portalu, ×7 zdrowia, ×1,6 obrażeń, znają specjały (chochlik – dwa cięcia, kultysta – wachlarz 5 kul, czerw – wgryzienie).
+- **Portale** (`FloorDefinition.portals`, `GameRoot.Portals.cs`): czas/budżet/odstęp grup/wagi jak fale HU 1–2 (75 s/30, 78 s/44), grupy 1–2 (czerw – stado 4),
+  portal ≥7 m od bohatera, demony wychodzą po 1,1 s (`FxLibrary.Portal`), limit 30 żywych; HUD: „Portale: N s” → „Dobij pozostałe demony”.
+- **Ataki specjalne** (`EnemySpecial`, `EnemyBrain.Specials.cs`): wgryzienie (czerw jedzie na bohaterze, −20% prędkości, gryzie co 1 s z krwawieniem, strząsa unik; maks. 3),
+  szarża po zapowiedzianej linii z płonącym śladem i wybuchem, kręgi ognia, piekielne kule z płonącą ziemią, skok z uderzeniem w krąg, przywołanie sług
+  (`EnemyBrain.SummonRequested`, sługi giną z przyzywającym). Władca Bramy: 2500 PŻ, od 50% wezwanie 6 nietoperzy i nowe ataki, od 30% szał (tempo ×1,35);
+  krok serii „tylko w szale” pomijany wcześniej (`minPhase` w łańcuchu).
+- **Wieża:** I. Wrota Otchłani, II. Kult Bramy, III. Władca Bramy (odpoczynek po nim), IV. Zbrojownia, V. Brama Strażnika, VI. Szczyt Wieży. Dawne pojedynki z ghulem
+  i heretykiem zniknęły jako osobne piętra (ci wrogowie są w falach IV–V).
+- **Znalezione przy okazji:** `convert_hu_hero.py` ustawia 30 kl./s **po** imporcie glb – klipy Meshy bohaterów (Idle_A, Walking_A, Cast…) mogą grać o 25% za szybko. Nie poprawione.
+
+### Sesja 2026-10-22: animacje walki i ruchu bohaterów, reakcje wrogów
+
+Prośba: lepsze animacje walki i chodu bohaterów, płynne i zgodne z anatomią; widoczna siła ciosu w reakcji wroga;
+przejścia między animacjami; „dziwnie stoi nowy wojownik”. Praca na **nowych modelach FBX z HU** (`ClipAnimationDriver`);
+wrogowie zostali proceduralni (migracja objęła tylko bohaterów), więc ich reakcje są w `ProceduralHumanoidAnimator`.
+
+- **Przejścia (`ClipAnimationDriver`):** każda warstwa akcji ma mikser z dwoma wejściami (bieżący i zamrożony poprzedni klip) –
+  kolejny cios serii, ten sam klip od nowa, unik, drgnięcie i powrót do ruchu przenikają się po krzywej gładkiej.
+  Czas przenikania zależy od **odległości póz dłoni** (próbna ewaluacja grafu): średnio do 7 m/s (akcje wymuszone – trafienie,
+  unik, parowanie, śmierć – 8 m/s), maks. 0,26 s / 0,18 s. Wcześniej: twarde przełączenie, a przy trafieniu w czasie ciosu
+  dłoń przeskakiwała 0,53 m w jednej klatce.
+- **Tempo ciosu:** klipy Mixamo są ~2× dłuższe niż ciosy Turris. Faza aktywna obejmuje w klipie tylko przejście ostrza
+  (`StrikeEarly` 0,1, `StrikeShare` 0,6 rozpiętości), powrót sięga 75% reszty klipu, dalej przenikanie do gardy (0,24 s).
+  Szczyt prędkości dłoni ~25 m/s zamiast ~35, powrót wolniejszy od cięcia. Łuk i pociski czarów – bez przesunięć (wystrzał na granicy faz).
+- **Klipy akcji „w miejscu”** (`HeroAssetImport.InPlace`): ciosy, parowanie, czary, drgnięcia – wpieczony krok wysuwał ciało
+  do 0,5 m przed postać, a przejście ściągało je z powrotem. Śmierć zostaje z przesunięciem.
+- **Ruch:** mieszanie 2D (przód/tył/lewo/prawo, cosinusy) chodu i **biegu w tył i bokiem** (nowe pola `WeaponAnimSet.runBack/runLeft/runRight`:
+  miecz z tarczą `run (2)`, `strafe (3)/(4)`; dwuręczny `run`, `strafe (3)/(4)`; łuk `run back/left/right`). Prędkość nagrania każdego klipu
+  z ruchu korzenia (`averageSpeed`). **Faza kroków wyrównana**: dla każdego klipu chwila, w której lewa stopa najbardziej wyprzedza prawą
+  w kierunku ruchu (pomiar przy budowie sterownika) – nogi nie krzyżują się przy biegu po skosie.
+- **Ruch wtórny bohatera (`BodyDynamics`, nowy plik):** reakcja na trafienie (sprężyny tułowia i głowy jak u proceduralnych postaci;
+  głowa z bezwładnością), pochylenie przy ruszaniu/hamowaniu i w zakrętach. Zgięcie rozłożone na lędźwie/klatkę/górną klatkę
+  (30/35/35%), kąty ograniczone; biodra i nogi z klipu – stopy nie odjeżdżają. `ClipAnimationDriver` implementuje `IImpactReactive`.
+- **Spoczynek wojownika:** dawny `sword and shield idle (4)` to szeroki przysiad z tarczą trzymaną płasko. Pozostałe idle z paczki są złe
+  (bez numeru – obrót o 90°, (2)/(3) – broń odrywa się od dłoni, `Idle_Combat` z modelu – przysiad). Teraz `Pro Longbow Pack/unarmed idle 01`
+  (swobodne stanie); miecz przy opuszczonej ręce opada sztychem w dół (`CharacterVisual.PostPose`, tylko poza walką).
+- **Tarcza na przedramieniu:** `WeaponAnimSet.hasShieldGrip/shieldGripPosition/shieldGripEuler` (wyliczone z pozy bloku, jednakowe dla
+  wszystkich bohaterów – gniazdo wyrównane w T-pose), węzeł `ShieldGrip`. Przy przedramieniu uniesionym – lico do przodu, góra do góry;
+  przy ręce opuszczonej tarcza płynnie przechodzi do zawieszenia pionowo przy boku (`CarryShield`). Wcześniej tarcza obracała się jak ostrze
+  (płasko „jak taca” w gardzie i biegu). **Poprawka po uwadze użytkownika:** tarcza jest teraz liczona co klatkę z kierunku przedramienia
+  (`CarryShield`), a nie ze stałego kąta względem dłoni – przedramię leży na tarczy, a przy przedramieniu poziomym tarcza stoi w pionie
+  (zgięcie nadgarstka jej nie przechyla); test `Shield_StrappedToForearm_UprightWhenForearmLevel`. Kostur: poprawka liczona od chwytu z dłoni (wcześniej kumulowała się między klatkami).
+- **Wrogowie – reakcja zależna od ciosu:** `PoseLibrary.Stagger` zastępuje symetryczne `Flinch`: tułów odchyla się od napastnika
+  (z boku – skręt i przechył), szybkie narastanie (~0,1 s), krótkie łapanie równowagi, gładki powrót; ciężar ciosu pogłębia zgięcie,
+  ugina kolana, poszerza postawę; ramiona z bezwładnością; głowa – broda do piersi (bez „limbo”, tułów najwyżej ~30°).
+  Nogi kroczą razem z odrzutem. `EnemyBrain`: ciężar = `ImpactDirector.Weight` (ten sam co odczucie ciosu), przełamanie postawy ≥ 0,8,
+  przełamanie gardy ≥ 0,9, odbity cios (parowanie) – pchnięcie do tyłu. Przenikanie póz przy przerwaniu akcji – gładka krzywa.
+- **Nowe testy:** `Transitions_Crossfade_NoPoseJump`, `Strike_HandSpeed_HumanlikeProfile`, `Locomotion_DirectionalRunClips`,
+  `HeroBody_GivesWayToBlow_ThenRecovers` (HeroModelPlayTests), `Stagger_FollowsBlowDirectionAndWeight_LegsStepWithKnockback` (AnimationPlayTests);
+  `ClipDriver_ScrubsActionClipByCombatPhase` dostosowany do nowego rozkładu czasu.
+- **Weryfikacja wzrokowa:** zrzuty renderowane w edytorze przez Unity MCP (wojownik: spoczynek, chód, bieg, bieg bokiem/w tył, blok, seria ciosów,
+  trafienie; wróg: zachwianie lekkie/ciężkie/z boku). Assety `Content/Visuals/anim_*.asset` przebudowane `HeroAssetImport.Run()`.
+- **Blok – noga do tyłu (uwaga użytkownika):** w miejscu stopy stoją (7 cm za biodrami); wyrzut nogi brał się z cofania w bloku
+  (55% prędkości ≈ 2,9 m/s), gdzie dołączał klip biegu w tył (stopa 53 cm za biodrami). W gardzie (blok, picie) nie ma biegu: chód
+  szybciej (do 2,7×), a powyżej nagranej prędkości chodu do 20% domieszki postawy w miejscu z proporcjonalnie szybszą kadencją –
+  krótsze kroki bez ślizgania (35 cm). Testy `Block_Backpedal_ShortSteps`, `Block_UpperBody_FeetStayWhereLocomotionPutsThem`.
+  Parowanie (pełny klip `sword and shield block`) ma szeroki wykrok – 69 cm – bez zmian, do oceny.
+- **Blok z boku (uwaga użytkownika):** w bloku bohater obraca się szybko (`balance.guardTurnSpeed` 1800°/s) do wroga, który się
+  zamachuje lub uderza (najbliższy w zasięgu 10 m, faza aktywna przed zamachem – `PlayerController.IncomingThreat`, `EnemyBrain.AttackPhase`).
+  Cios w blok z kąta do `balance.guardAutoTurnAngle` (120°) od przodu jest blokowany i zleca obrót do napastnika (`PlayerCombat.GuardFace`);
+  cios w plecy przechodzi. Testy `Block_SideHit_TurnsToAttackerAndBlocks_BackHitStillLands` (EditMode), `Block_TurnsQuicklyToAttackerFromSide_AndBlocks`
+  (w silniku, ghul z boku: w chwili ciosu bohater stoi przodem, cios zablokowany).
+- **Do oceny w graniu:** czy spokojny spoczynek pasuje (alternatywa: postawa bojowa w czasie walki), długość przejść między ciosami,
+  siła reakcji wrogów; klipy dwuręczne i łuku – postawa w spoczynku nie była zmieniana.
+
 ## 3. Jak pracować z projektem (ważne dla kolejnej sesji)
 
+- **Unity MCP (edytor otwarty):** kompilacja (`refresh_unity`), testy (`run_tests` – EditMode i PlayMode), kod w edytorze (`execute_code`, tylko C# 6 – CodeDom)
+  i zrzuty renderowane kamerą do PNG. Zrzut `manage_camera screenshot` zapisuje plik w `Assets/Screenshots` – usuwać po obejrzeniu.
 - **Testy i kompilacja z CLI wymagają zamkniętego edytora.** Gdy projekt jest otwarty, Unity kończy się od razu z kodem 1. Trzeba poprosić użytkownika o zamknięcie edytora. Otwartość można sprawdzić przez `tasklist | grep -i unity.exe`.
 - **Kompilacja = uruchomienie testów EditMode** (`python tools/run_tests.py EditMode`). Błędy `error CS` są wypisywane z logu.
 - **Weryfikacja wyglądu:** `TURRIS_SHOT_DIR=<katalog> python tools/run_tests.py PlayMode gfx` zapisuje PNG. Galerie:
@@ -135,6 +485,7 @@ Plan z etapami i dziennikiem: [PLAN_ROZWOJU.md](PLAN_ROZWOJU.md). Zrobione: fund
   - `0_menu` … `3_boss` — gra.
 
   Zrzuty trzeba obejrzeć przed ogłoszeniem efektu. Kilka błędów wizualnych wyszło dopiero na nich.
+- **Dźwięk do odsłuchu:** `TURRIS_SOUND_DIR=<katalog> python tools/run_tests.py EditMode` zapisuje wszystkie efekty i utwory jako WAV. Głośność względną warto mierzyć (np. numpy/scipy: RMS K-ważony w oknie 400 ms), bo normalizacja jest szczytowa.
 - **`OnGUI` nie działa w trybie `-batchmode`**, także z grafiką. Testy interfejsu (`GamepadPlayTests`) uruchamiaj w trybie `window`.
 - **Regeneracja treści:**
   - `-executeMethod Turris.EditorTools.TurrisSetup.RunBatch` tworzy brakujące assety, scenę i materiały efektów;
@@ -143,6 +494,12 @@ Plan z etapami i dziennikiem: [PLAN_ROZWOJU.md](PLAN_ROZWOJU.md). Zrobione: fund
   Nowe pola w SO dodawaj z wartością domyślną `Auto`, żeby istniejące assety działały bez regeneracji.
 - **Długie skrypty edycyjne:** w narzędziu Bash długi heredoc z Pythonem potrafi się wysypać („unexpected EOF”). Lepiej zapisać skrypt `.py` w katalogu tymczasowym i go uruchomić. Uwaga na `\b` w stringach Pythona: bez prefiksu `r` to znak backspace, a nie granica słowa w regex.
 - **Klasy `ScriptableObject` i `MonoBehaviour` serializowane w assetach** muszą mieć plik o tej samej nazwie co klasa.
+- **Bohaterowie z Hell Unleashed** (zasoby i treść):
+  1. `bash tools/art/convert_hu_heroes.sh` – Blender, ok. 1 min.
+  2. `Unity -batchmode -executeMethod Turris.EditorTools.HeroAssetImport.RunBatch` – materiały, zestawy animacji, wyglądy.
+  3. `HeroAssetImport.ApplyContentBatch` – SyncContent + nadpisanie trzech klas + przypisanie wyglądu i modeli.
+
+  Pierwszy import tekstur 4K trwa kilka minut.
 
 ## 4. Pułapki techniczne już rozwiązane
 
@@ -154,16 +511,35 @@ Plan z etapami i dziennikiem: [PLAN_ROZWOJU.md](PLAN_ROZWOJU.md). Zrobione: fund
 - Wybór „słońca” w `GameRoot` obejmuje tylko `LightType.Directional`, bo światła pochodni są niszczone przy zmianie areny.
 - Otwarte bryły obrotowe (szaty, rękawy, kaptur) są dwustronne (`ProcMesh.Lathe(doubleSided)`), inaczej od środka znikają.
 - **`WaitForEndOfFrame` nigdy nie nadchodzi w `-batchmode`** – test czekający na niego wisi bez końca (tak zawiesił się przebieg `gfx`). Zrzuty z interfejsem (`UiShot`, `ScreenCapture`) robi się tylko w trybie `window`; w trybie wsadowym są pomijane.
+- `GetComponent<T>() ?? AddComponent<T>()` nie działa w edytorze (brakujący komponent to „fałszywy null”) – trzeba jawnego `if (x == null)`.
+- Kolejna gra (np. następny test) tworzy nowy `AudioService`, zanim poprzedni zostanie zniszczony – nowa instancja przejmuje `Instance` zamiast niszczyć siebie. Bank klipów jest statyczny (synteza raz na uruchomienie).
 - Scalanie części (`PartBuilder.BakeAll`) łączy tylko bezpośrednie dzieci z `RigPart`. Obiekty przełączane (flaszka) i przestawiane (gniazda broni) muszą być osobnymi węzłami.
+- **Po testach PlayMode w oknie edytor zostaje z pustą sceną tymczasową** i przy następnym starcie otwiera „Untitled” – Play pokazuje wtedy samo niebo. `MainSceneAutoOpen` (edytor) otwiera wtedy `Scenes/Main.unity` (nie w trybie wsadowym ani z `-runTests`).
+- **Klipy ruchu Mixamo nie są „w miejscu”** – biodra idą do przodu (bieg ok. 2,7 m na cykl). Z „Bake Into Pose” XZ (`lockRootPositionXZ`) ciało odjeżdża od postaci i co pętlę wraca skokiem (szarpanie biegu). Pętle i uniki importuje się z `lockRootPositionXZ = false` (`HeroAssetImport.Loop/Roll`) – ruch korzenia jest wyjmowany i odrzucany, bo `applyRootMotion = false`. Modele Meshy mają tylko chód; bieg bez zestawu broni (mag) pochodzi z paczki miecza i tarczy. `ClipAnimationDriver` prowadzi klipy ruchu wspólną fazą kroków; test `HeroModelPlayTests.Run_BodyStaysOverCharacter_LegsStride`.
+- **Eksporter FBX Blendera z animacjami zapisuje jako pozę domyślną klatkę pierwszego klipu** (u bohaterów – pozę bloku). Unity buduje z niej awatar Humanoid i wszystkie klipy dostają przesunięte ręce. Dlatego model jest eksportowany bez animacji (czysty T-pose), a klipy w osobnym `<nazwa>_clips.fbx` z awatarem skopiowanym z modelu (`CopyFromOther`).
+- **Animator z domyślnym `cullingMode` nie nakłada pozy z ręcznie ewaluowanego grafu Playables, gdy postaci nie widzi kamera** (testy, postać poza kadrem). Pozostaje wtedy poza z pliku. `CharacterVisual.BuildModel` ustawia `AnimatorCullingMode.AlwaysAnimate`. Wyłączony Animator w ogóle nie przyjmuje pozy z grafu.
+- **Klipy akcji Mixamo z wpieczonym ruchem korzenia** (`lockRootPositionXZ`) przesuwają ciało względem postaci – ciosy i drgnięcia importuje się „w miejscu” (`InPlace`).
+- **`sword and shield idle (2)/(3)` odrywają broń od dłoni** (gniazda `HandSlot` nie nadążają) – nie używać jako spoczynku.
+- Zapis spakowanego obrazu z `.glb` w Blenderze: `img.save(filepath=...)` (sam `filepath_raw` + `save()` nic nie zapisuje). Eksport Meshy zawiera pomocniczą kulę „Icosphere” (2 m) – trzeba ją usunąć.
 
 ## 5. Kolejne kroki (propozycja priorytetów)
 
-1. **Sesja ręcznego grania** (użytkownik, pad i klawiatura). Do oceny: odczucie sterowania i kamery, czytelność telegrafów i efektów, balans pięter. Poprawki parametrów w `GameConfig → balance` i assetach wrogów.
+0. **Demony z HU – ocena w graniu (użytkownik):** tłok na piętrach I–II (budżet, odstęp grup, limit żywych), zdrowie Władcy Bramy (2500), czytelność portali;
+   brakuje dźwięków własnych demonów (używane są dźwięki Turris) i efektów ciała z HU (`DemonFx` – krople, całun, żar).
+   Rozważyć poprawkę kl./s w `convert_hu_hero.py` (klipy Meshy bohaterów).
+0. **Bohaterowie z HU – ocena w graniu (użytkownik).** Do sprawdzenia:
+   - balans: obrażenia skilli ×2,5, zdrowie klas, mistrzostwa;
+   - czy wygląda chwyt broni dwuręcznej i tarczy;
+   - tempo ciosów Mixamo względem faz walki Turris.
+
+   Braki względem HU: IK drugiej ręki na drzewcu (chwyt tarczy na przedramieniu jest – sesja animacji), cięciwa łuku, lustrzane ciosy lewą ręką, wybór wyglądu niezależny od specjalizacji, rezerwa many Pobożności, poziomy III skilli (druga fala Cięcia wichru, Podpalenie aury świętego ognia).
+
+1. **Sesja ręcznego grania** (użytkownik, pad i klawiatura). Do oceny: odczucie ciosu (hitstop, odrzut, wibracje, nowe dźwięki), sterowanie i kamera, czytelność telegrafów i efektów, balans pięter. Poprawki parametrów w `GameConfig → balance` i assetach wrogów.
 2. **Pomiar wydajności.** Profiler, FPS w krypcie (12 świateł, 44 systemy cząsteczek). W razie potrzeby:
    - ustawienie jakości (liczba świateł i cząsteczek);
    - łączenie świec w jedno światło;
    - LOD dla panoramy szczytu.
-3. **Dźwięk:** uderzenia, blok, parowanie, czary, kroki, muzyka bossa. Obecnie brak.
+3. **Dźwięk – ocena na słuch** (użytkownik): poprawki barw i głośności w `SoundSynth`/`SoundInfo`; w razie potrzeby podmiana wybranych efektów na nagrania w `Resources/Audio/`.
 4. **Wariant B na prawdziwych plikach z Mixamo.** Sprawdzić:
    - kreator `CharacterModelTools`;
    - maskę górnej połowy ciała;
@@ -176,6 +552,8 @@ Plan z etapami i dziennikiem: [PLAN_ROZWOJU.md](PLAN_ROZWOJU.md). Zrobione: fund
 ## 6. Preferencje użytkownika
 
 - Komunikacja i dokumentacja **po polsku**.
+- Hell Unleashed jest **wyłącznie źródłem do odczytu**. Migracja ma dodawać/zmieniać pliki tylko w Turris, bez modyfikacji ani usuwania plików HU.
+- Treści z Hell Unleashed (jego własnej gry) przenosi „tak jak tam jest”: oryginalne tekstury 4K, typy bohatera + specjalizacje, Turris ma dostosować się do mechanik HU.
 - Oczekuje wysokiej szczegółowości wizualnej; kolejne rundy prosiły o „×4–5”, a potem „×2”. Mierzalne liczby (części, renderery) i zrzuty pomagają pokazać postęp.
 - Chce pełnej obsługi pada.
 - Przy decyzjach architektonicznych wybrał podejście łączące: szybki efekt teraz, a jednocześnie gotowość na lepsze rozwiązanie później.

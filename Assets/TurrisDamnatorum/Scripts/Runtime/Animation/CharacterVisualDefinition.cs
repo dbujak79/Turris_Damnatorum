@@ -20,6 +20,9 @@ namespace Turris
         public bool upperBodyOnly;
         [Tooltip("Klip zapętlony (np. trzymanie bloku, klęczenie).")]
         public bool loop;
+        [Tooltip("Ciosy: wysunięcie ciała do przodu w nagraniu (czas znormalizowany → RootT.z w jednostkach awatara). " +
+                 "Bohater idzie o tyle naprzód, ile ciało w klipie – stopa podporowa stoi, zamiast jechać do tyłu. Wypełnia HeroAssetImport.")]
+        public AnimationCurve rootForward;
     }
 
     /// <summary>
@@ -33,6 +36,10 @@ namespace Turris
         [Tooltip("Prefab/FBX z komponentem Animator (Rig: Humanoid zalecany).")]
         public GameObject modelPrefab;
         public float scale = 1f;
+        [Tooltip("Demon z Hell Unleashed (rig Generic, własne klipy): sterownik DemonAnimationDriver, bez doczepianej broni.")]
+        public bool demon;
+        [Tooltip("Sztywny stalowy nosek: palce zachowują pozę modelu względem stopy, także podczas biegu i ataków.")]
+        public bool rigidBootToes;
         public Vector3 positionOffset;
         public Vector3 rotationOffset;
 
@@ -56,7 +63,27 @@ namespace Turris
         [Header("Akcje")]
         public List<ActionClip> actions = new List<ActionClip>();
 
-        public ActionClip Find(AnimAction action, AttackAnim attack)
+        [Header("Zestawy animacji broni (Mixamo, Humanoid)")]
+        [Tooltip("Gniazda broni w modelu (kości dodane przy konwersji). Puste = kości dłoni z rigu Humanoid.")]
+        public string rightSlot = "HandSlot.R", leftSlot = "HandSlot.L";
+        public WeaponAnimSet oneHandSet, twoHandSet, bowSet;
+        [Tooltip("Zestaw dla kostura i różdżki. Puste = klipy samego modelu (np. rzucanie czarów).")]
+        public WeaponAnimSet staffSet;
+
+        public WeaponAnimSet SetFor(WeaponModel weapon)
+        {
+            switch (AnimResolve.GripFor(weapon))
+            {
+                case GripStyle.Bow: return bowSet;
+                case GripStyle.TwoHand: return twoHandSet;
+                case GripStyle.Staff: return staffSet;
+                default: return weapon == WeaponModel.None ? null : oneHandSet;
+            }
+        }
+
+        public ActionClip Find(AnimAction action, AttackAnim attack) => FindIn(actions, action, attack);
+
+        public static ActionClip FindIn(List<ActionClip> actions, AnimAction action, AttackAnim attack)
         {
             ActionClip generic = null;
             foreach (var a in actions)

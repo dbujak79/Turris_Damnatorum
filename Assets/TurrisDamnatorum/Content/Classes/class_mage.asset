@@ -14,21 +14,66 @@ MonoBehaviour:
   m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ClassDefinition
   id: class_mage
   displayName: Mag
-  description: "Kostur, dwa czary i wysoka Inteligencja. Mo\u017Ce p\xF3\u017Aniej si\u0119gn\u0105\u0107 po top\xF3r i ci\u0119\u017Ck\u0105 zbroj\u0119."
+  description: "R\xF3\u017Cd\u017Cka i grymuar z nov\u0105 tego samego \u017Cywio\u0142u. Mniej zdrowia, walka na dystans. Arkanowa os\u0142ona poch\u0142ania ciosy przed \u017Cyciem."
   tags: 0
-  vigor: 9
-  endurance: 9
-  mind: 14
-  strength: 10
-  dexterity: 10
-  intelligence: 16
+  parent: {fileID: 0}
+  tagline: "R\xF3\u017Cd\u017Cka i grymuar"
+  trait: 2
+  dodgeStyle: 2
+  signatureSkill: {fileID: 11400000, guid: 233741266571d0f4396fbaf1832f8c49, type: 2}
+  startingSkillChoices: []
+  loadouts:
+  - label: "Ogie\u0144"
+    element: 1
+    weapon: {fileID: 11400000, guid: 2179e0df1fd3f5e4b8f303e978a849d7, type: 2}
+    offHand: {fileID: 11400000, guid: b52ed0b43e8c46a4d935cf765c59d8d6, type: 2}
+  - label: Woda
+    element: 2
+    weapon: {fileID: 11400000, guid: 8d97af11f1db0554fa042a681bb4922d, type: 2}
+    offHand: {fileID: 11400000, guid: 9fb2c751fbad24a4bbf874a56d3401d5, type: 2}
+  - label: Powietrze
+    element: 3
+    weapon: {fileID: 11400000, guid: 30c849969864616458866b6b3b608a1f, type: 2}
+    offHand: {fileID: 11400000, guid: fa3a3a2b9032145488c585c2b70c175a, type: 2}
+  - label: Ziemia
+    element: 4
+    weapon: {fileID: 11400000, guid: 9946cbfef59da704583980ef0bd8cf93, type: 2}
+    offHand: {fileID: 11400000, guid: 9004754a91bcb88448668622c7a5020f, type: 2}
+  classModifiers:
+  - stat: 6
+    mode: 0
+    value: -10
+  - stat: 12
+    mode: 0
+    value: -15.000001
+  - stat: 21
+    mode: 0
+    value: 15.000001
+  - stat: 22
+    mode: 0
+    value: 15.000001
+  - stat: 23
+    mode: 0
+    value: 15.000001
+  - stat: 28
+    mode: 0
+    value: 15.000001
+  - stat: 20
+    mode: 0
+    value: 5.357143
+  lookOverride: {fileID: 0}
+  toughness: 10
+  strength: 7
+  dexterity: 11
+  intelligence: 15
+  endurance: 10
+  mind: 10
   startingItems:
-  - {fileID: 11400000, guid: 922b1ff3979b74f4385b10e6879d07db, type: 2}
   - {fileID: 11400000, guid: 50ff6deab55afef4abd0dc05f945f2b1, type: 2}
-  startingSpells:
-  - {fileID: 11400000, guid: 84eb9921608a7a1469226073a465c43d, type: 2}
-  - {fileID: 11400000, guid: 6c10e3f4d91b51a47887af33082fb9e6, type: 2}
+  alternativeWeapons: []
+  startingSpells: []
   startingTalents: []
   healthFlasks: 3
   manaFlasks: 3
   color: {r: 0.35, g: 0.35, b: 0.75, a: 1}
+  visual: {fileID: 11400000, guid: 4a915a5088d95f045bd3c2ebc80586c6, type: 2}

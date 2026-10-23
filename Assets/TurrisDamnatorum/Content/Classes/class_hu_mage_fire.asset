@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 364e1a8d61b62a543b912077a454451b, type: 3}
+  m_Name: class_hu_mage_fire
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ClassDefinition
+  id: class_hu_mage_fire
+  displayName: Mag ognia
+  description: "Specjalizacja w ogniu: +25% obra\u017Ce\u0144 od ognia. Skill klasy: Meteor \u2013 spada we wskazane miejsce i zostawia p\u0142on\u0105c\u0105 ziemi\u0119."
+  tags: 0
+  parent: {fileID: 11400000, guid: 238a470220177034c9a2fb416776b492, type: 2}
+  tagline: "Ogie\u0144 i meteory"
+  trait: 2
+  dodgeStyle: 2
+  signatureSkill: {fileID: 11400000, guid: 4665e20b6404a6c439ec2cbbae046fd8, type: 2}
+  startingSkillChoices: []
+  loadouts:
+  - label: "Ogie\u0144"
+    element: 1
+    weapon: {fileID: 11400000, guid: 2179e0df1fd3f5e4b8f303e978a849d7, type: 2}
+    offHand: {fileID: 11400000, guid: b52ed0b43e8c46a4d935cf765c59d8d6, type: 2}
+  classModifiers:
+  - stat: 6
+    mode: 0
+    value: -20
+  - stat: 12
+    mode: 0
+    value: -15.000001
+  - stat: 21
+    mode: 0
+    value: 35
+  - stat: 22
+    mode: 0
+    value: -5
+  - stat: 23
+    mode: 0
+    value: 15.000001
+  - stat: 28
+    mode: 0
+    value: 15.000001
+  - stat: 20
+    mode: 0
+    value: 5.357143
+  - stat: 24
+    mode: 0
+    value: 35
+  lookOverride: {fileID: 0}
+  toughness: 10
+  strength: 7
+  dexterity: 10
+  intelligence: 16
+  endurance: 10
+  mind: 10
+  startingItems:
+  - {fileID: 11400000, guid: 50ff6deab55afef4abd0dc05f945f2b1, type: 2}
+  alternativeWeapons: []
+  startingSpells: []
+  startingTalents: []
+  healthFlasks: 3
+  manaFlasks: 3
+  color: {r: 1, g: 0.5, b: 0.15, a: 1}
+  visual: {fileID: 11400000, guid: d6bd792d27922f644a6b357a7a051040, type: 2}

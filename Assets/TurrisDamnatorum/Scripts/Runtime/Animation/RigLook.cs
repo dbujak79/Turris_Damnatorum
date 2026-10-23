@@ -29,7 +29,11 @@ namespace Turris
         public WeaponModel weapon = WeaponModel.Sword;
         public Color weaponColor = new Color(0.82f, 0.83f, 0.86f);
         public ShieldModel shield = ShieldModel.None;
+        /// <summary>Boss (model demona): trafienia i własne ciosy prawie nie odchylają ani nie spłaszczają ciała.</summary>
+        public bool boss;
         public Color shieldColor = new Color(0.55f, 0.35f, 0.2f);
+        /// <summary>Przedmioty w dłoniach – ich modele 3D (jeśli mają) zastępują broń proceduralną na postaci FBX.</summary>
+        public ItemDefinition weaponItem, offhandItem;
 
         /// <summary>Posąg: wszystkie części z kamienia (dekoracje aren).</summary>
         public bool stone;
@@ -71,6 +75,8 @@ namespace Turris
             look.weapon = main != null ? AnimResolve.ForItem(main) : WeaponModel.None;
             if (main != null) look.weaponColor = main.color;
             var off = run.equipment.Get(EquipSlot.OffHand)?.definition;
+            look.weaponItem = main;
+            look.offhandItem = off;
             look.shield = AnimResolve.ForShield(off);
             if (off != null) look.shieldColor = off.color;
             return look;
@@ -112,6 +118,53 @@ namespace Turris
             }
             // Kolor z definicji przeciwnika barwi tkaniny, żeby łatwo odróżnić warianty.
             if (look.style != RigStyle.Ghoul) look.cloth = Color.Lerp(look.cloth, e.color, 0.35f);
+            return look;
+        }
+
+        /// <summary>
+        /// Odmiana egzemplarza: ten sam typ wroga, ale każdy nieco inny – odcień tkanin, zbroi i skóry, sylwetka,
+        /// u rycerzy i łuczników hełm/peleryna. Sylwetka archetypu (styl, broń, tarcza) zostaje, więc czytelność walki się nie zmienia.
+        /// Boss jest jedyny – bez odmian.
+        /// </summary>
+        public static RigLook Vary(RigLook look, int seed)
+        {
+            if (look.style == RigStyle.Castellan) return look;
+            var rng = new System.Random(seed);
+            float R(float a, float b) => a + (float)rng.NextDouble() * (b - a);
+            Color Shade(Color c, float v, float hue)
+            {
+                Color.RGBToHSV(c, out float hh, out float ss, out float vv);
+                var o = Color.HSVToRGB(Mathf.Repeat(hh + R(-hue, hue), 1f), Mathf.Clamp01(ss * R(0.85f, 1.15f)), Mathf.Clamp01(vv * R(1f - v, 1f + v)));
+                o.a = c.a;
+                return o;
+            }
+            look.cloth = Shade(look.cloth, 0.14f, 0.025f);
+            look.armor = Shade(look.armor, 0.08f, 0.01f);
+            look.leather = Shade(look.leather, 0.15f, 0.02f);
+            look.skin = Shade(look.skin, 0.08f, 0.015f);
+            look.bulk *= R(0.95f, 1.07f);
+            look.limbThickness *= R(0.95f, 1.06f);
+            switch (look.style)
+            {
+                case RigStyle.Ghoul:
+                    look.hunch += R(-5f, 6f);
+                    look.armLength *= R(0.95f, 1.08f);
+                    break;
+                case RigStyle.Knight:
+                {
+                    double r = rng.NextDouble();
+                    look.head = r < 0.55 ? HeadGear.GreatHelm : r < 0.85 ? HeadGear.Coif : HeadGear.Bare;
+                    look.cape = rng.NextDouble() < 0.7;
+                    break;
+                }
+                case RigStyle.Archer:
+                    look.cape = rng.NextDouble() < 0.6;
+                    look.hunch += R(-2f, 5f);
+                    break;
+                case RigStyle.Heretic:
+                    look.hunch += R(0f, 6f);
+                    break;
+            }
             return look;
         }
     }

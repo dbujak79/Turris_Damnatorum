@@ -90,8 +90,8 @@ namespace Turris.Tests
         [Test]
         public void PlayerResist_ReducesElementalPart()
         {
-            var plain = fx.NewCombatant(fx.NewRun("class_knight"));
-            var run = fx.NewRun("class_knight");
+            var plain = fx.NewCombatant(fx.NewRun("legacy_knight"));
+            var run = fx.NewRun("legacy_knight");
             run.AddItem(new ItemInstance(fx.Get<ItemDefinition>("head_fur")), true);
             var furred = fx.NewCombatant(run);
             Assert.AreEqual(30f, furred.Build.stats[StatType.FrostResist], 1e-3f);
@@ -118,7 +118,7 @@ namespace Turris.Tests
         [Test]
         public void BloodPact_CostsHealth_ThenSpellsAreFree()
         {
-            var run = fx.NewRun("class_mage");
+            var run = fx.NewRun("legacy_mage");
             var pact = run.LearnSpell(fx.Get<SpellDefinition>("spell_bloodpact"));
             run.AssignSlot(pact, 2);
             var pc = fx.NewCombatant(run);
@@ -137,7 +137,7 @@ namespace Turris.Tests
         [Test]
         public void Warcry_GrantsDamageBuff_AndStamina()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var cry = run.LearnSpell(fx.Get<SpellDefinition>("skill_warcry"));
             var pc = fx.NewCombatant(run);
             pc.Stamina.Drain(50);
@@ -152,7 +152,7 @@ namespace Turris.Tests
         [Test]
         public void StormBoots_ChargeAfterDodge()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             run.AddItem(new ItemInstance(fx.Get<ItemDefinition>("feet_storm")), true);
             var pc = fx.NewCombatant(run);
             Assert.IsFalse(pc.ShockCharged);
@@ -174,7 +174,7 @@ namespace Turris.Tests
             StringAssert.Contains("od +4", Describe.Spell(fireball, 0, null, fx.Cfg.balance), "Opis zapowiada cechę");
             StringAssert.Contains("✓ +4", Describe.Spell(fireball, 4, null, fx.Cfg.balance), "Opis potwierdza odblokowaną cechę");
 
-            var run = fx.NewRun("class_mage");
+            var run = fx.NewRun("legacy_mage");
             var inst = run.LearnSpell(fireball);
             inst.level = 3;
             var upgrade = new RewardOption { kind = RewardKind.UpgradeSpell, spellToUpgrade = inst };

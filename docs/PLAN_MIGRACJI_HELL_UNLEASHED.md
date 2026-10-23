@@ -1,0 +1,259 @@
+# Plan dalszej migracji Hell Unleashed → Turris Damnatorum
+
+Aktualizacja stanu: **2026-10-23**; inwentaryzacja źródła: 2026-10-22.
+Źródło: `C:/GIT/Hell Unleashed` (Godot 4.7.2 .NET).
+Cel i jedyne miejsce zapisu: `C:/GIT/Gry/Turris_Damnatorum` (Unity 6000.6.3f1, Built-in Render Pipeline).
+
+**Nie zmieniać, nie przenosić i nie usuwać plików w Hell Unleashed.** Import oznacza kopiowanie
+zasobów do Turris i pisanie odpowiedników adapterów silnika. Zastane zmiany w obu repozytoriach należą
+do wcześniejszych prac i nie należy ich resetować. Ten plan nie jest zgodą na zmianę zasad rozgrywki Turris.
+
+**Realizacja P0/P1 (2026-10-22): etapy 1–3.** Zakres został ograniczony przez użytkownika do tych etapów.
+Wdrożenie, testy i świadome różnice: [RAPORT_MIGRACJI_P0_P1.md](RAPORT_MIGRACJI_P0_P1.md).
+Etapu 4 nie rozpoczęto. Modele i animacje skopiowano z istniejących zasobów HU i przekonwertowano do FBX.
+
+**Uzupełnienie z 2026-10-23:** poprawiono ustawienie tylnej stopy w spoczynku i bloku oraz zginanie
+stalowych nosków paladyna i wojownika. Zmiany dotyczą wyłącznie adaptera i definicji wyglądu w Turris.
+Nie zmieniano modeli, klipów ani żadnych plików Hell Unleashed. Ostatnia kontrola potwierdziła
+**2335 niezmienionych plików źródła**; kontrola VFX — **38 identycznych tekstur i zgodne receptury**.
+
+| Zakres | Stan na 2026-10-23 |
+|---|---|
+| Cząsteczki i ich użycie przez 29 przeniesionych skilli | Wdrożone; dalsze siatki i shadery środowiska w etapie 7 |
+| Etap 1 — audyt i zgodność (P0) | Wdrożony; 29/61 skilli, 33/53 broni z jawnym mapowaniem i opisem różnic |
+| Etap 2 — animacje, broń i sylwetka (P1) | Wdrożony, wraz z korektami stopy i sztywnego noska; pozostaje ręczna ocena |
+| Etap 3 — demony i bossowie (P1) | Wdrożony; 34 definicje źródłowe, 37 modeli z wariantami, bestiariusz i próba walki |
+| Etap 4 — pozostałe 32 skille i runtime'y | Nierozpoczęty, poza zatwierdzonym zakresem |
+| Etapy 5–8 — pieczęcie, ekonomia, biomy, UI/audio/postęp | Plan dalszych prac, bez deklaracji pełnej migracji |
+
+Najbliższe zadanie w obecnym zakresie: ręczna ocena pozy i chwytów, nowych pojedynków oraz balansu IV–V.
+Rozszerzenie zakresu o etap 4 wymaga nowego zlecenia użytkownika.
+
+## 1. Jak są napisane obie gry
+
+| Obszar | Hell Unleashed | Turris Damnatorum | Konsekwencja migracji |
+|---|---|---|---|
+| Reguły | `src/Game.Core/`: zwykły C#, bez Godota; osobne testy xUnit | `Scripts/Runtime/{Combat,Stats,Run,Meta}` we wspólnym assembly Unity | Przenosić algorytmy i testy reguł, przepisywać zależności od typów Unity; nie dublować istniejących systemów |
+| Treść | `.tres` → adaptery `Scripts/Content` → rekordy domeny | `ScriptableObject`, `DefaultContent`, assety w `Content/` | Potrzebny jawny import danych i porównywanie wartości; sama kopia `.tres` nie działa |
+| Świat | `ArenaController`, `CombatWorld`, aktorzy, komponentowe skille i runtime'y | `GameRoot`, `WorldBuilder`, `EnemyBrain`, `PlayerCombat`, osobne komponenty dostaw | Zachować jednego właściciela obrażeń; VFX mają tylko prezentować zdarzenia |
+| Modele | GLB, szkielety Generic i Mixamo, warstwy póz | FBX, `CharacterVisual`, Playables, osobny sterownik demonów | Używać istniejących konwerterów i definicji wyglądu |
+| Efekty | `GpuParticles3D`, materiały Godota, pule i proceduralne siatki | `ParticleSystem`, shadery ShaderLab, `HellParticles`, `HellFxPool` | Receptury i tekstury są przenośne; symulacja i materiały wymagają adaptera |
+| UI | Godot Control, tekstury HUD/menu/sklepu, podglądy 3D | IMGUI i `UINavigator`, własne ekrany | Przenosić wygląd i funkcje do docelowego UI Unity, zachowując działający pad |
+| Zapis | `ProgressProfile`, `GameSettings`, stan domenowy | `PlayerProfile`, `MetaService`, wersjonowany profil Turris | Nie kopiować zapisów Godota wprost ani nie zmieniać istniejących identyfikatorów |
+
+## 2. Co już jest przeniesione
+
+- [x] 15 klas/bohaterów, specjalizacje, modele, startowe zestawy broni, klipy i cechy klas.
+- [x] Skill klasy, aury, sługi, fale, doskok, impulsy novy, przebijanie/rozszczep/wybuch pocisków.
+- [x] Ziemia, zachwianie, ogłuszenie i pęknięcie pancerza; adaptacja pozostałych statusów.
+- [x] Cały katalog 34 demonów HU z modelami i klipami, adapterami zdolności i próbą walki w bestiariuszu;
+  wybrane nowe archetypy na piętrach IV–V. Wcześniejsze demony i początkowe portale zachowują dotychczasowy balans.
+- [x] Chwyty IK, lewa ręka, cięciwa łuku, brakujące modele broni P1, warstwy sylwetki i osobny wybór wyglądu.
+- [x] Korekta spoczynkowego rozwarcia stóp i sztywne stalowe noski paladyna/wojownika;
+  test kształtu siatki w spoczynku, biegu i ciosie oraz porównawcze zrzuty.
+- [x] Tekstury i warstwy cząsteczek HU oraz integracja ze skopiowanymi umiejętnościami —
+  zakres, audyt wywołań i ograniczenia w [MIGRACJA_EFEKTOW_HU.md](MIGRACJA_EFEKTOW_HU.md).
+
+Poprzednie decyzje i przeliczenia: [PORT_HELL_UNLEASHED.md](PORT_HELL_UNLEASHED.md).
+Nie przywracać listy „do zrobienia” na podstawie starszych fragmentów historii w `PROGRESS.md`.
+
+## 3. Inwentaryzacja danych źródłowych
+
+Liczby policzone z plików `src/Game/Content/<kategoria>/*.tres`, bez dodatkowych projektów `UI_v2`:
+
+| Kategoria HU | Pliki | Stan w Turris |
+|---|---:|---|
+| Klasy | 15 | Jest komplet typów i specjalizacji; pozostają różnice animacji i wyglądu |
+| Umiejętności | 61 | Są **29 assetów `hu_*.asset`** oraz własne skille Turris; liczba wszystkich skilli Turris nie oznacza pełnej migracji HU |
+| Bronie | 53 | 33 jawne mapowania, modele P1 i 11 nowych definicji; pozostałe warianty w dalszym katalogu |
+| Przedmioty | 71 | Turris ma własną kolekcję, bez pełnego mapowania HU |
+| Affixy | 131 | Brak pełnego odpowiednika generatora i katalogu HU |
+| Perki/ulepszenia | 46 | Częściowo podobne talenty i pasywy; potrzebne porównanie po funkcji |
+| Pieczęcie | 186 | Brak kompletnego systemu form, wsparć, synergii i więzi |
+| Efekty statusowe | 7 | Adaptowane; woda/chłód i reakcje mają świadome różnice |
+| Wrogowie | 34 | Komplet mapowań i modeli, katalog oraz próba walki; źródłowe reguły zaadaptowane do Turris |
+| Fale | 30 | Turris zachowuje strukturę wieży; nie kopiować 30 fal w miejsce pięter |
+| Biomy | 8 | Są 3 proceduralne areny Turris; brak pełnych biomów HU |
+
+Źródło jest nadal rozwijane. Przed każdym etapem ponownie porównać aktualne pliki, a nie traktować
+tych liczb jako stałego kontraktu. W nowych importerach zapisywać identyfikator źródła, SHA-256 i mapowanie docelowe.
+
+## 4. Kolejność prac
+
+### Etap 1 — zgodność tego, co już działa (P0)
+
+- [x] Utworzyć tabelę `HU id → Turris id → różnica → test` dla 61 skilli i 53 broni.
+  Czytać rzeczywiste `.tres`, `DefaultContent.Heroes.cs` **oraz zapisane assety**, bo mogą się różnić.
+- [x] Porównać koszty, czasy, progi poziomów, zasięgi, liczbę impulsów, statusy i strefy po wybuchu.
+  Utrzymać dotychczasowe ×2,5 obrażeń tylko tam, gdzie pasuje do skali Turris.
+- [x] Przejść wszystkie klasy i zestawy startowe na klawiaturze i padzie, sprawdzić anulowanie rzutów,
+  utratę celu, śmierć, pauzę i przejście piętra z aktywnym efektem.
+- [x] Sprawdzić VFX i sygnały ataków przy kamerze Turris względem danych HU; wykonać galerie i pomiar większej walki.
+
+Wynik: [audyt 61 skilli/53 broni](AUDYT_HU_P0.md), testy wejścia wszystkich klas, cyklu życia i czasu efektów.
+Galeria 30 demonów i metryki są w `TestResults/hu-p1`. Subiektywna ocena czytelności w ręcznym graniu pozostaje wskazana.
+
+**Odbiór:** żaden przeniesiony skill nie używa przypadkowego żywiołu, każda różnica jest opisana,
+testy istniejących mechanik pozostają zielone. Nie zaczynać kolejnej dużej porcji treści przed usunięciem regresji.
+
+### Etap 2 — animacje, broń i sylwetka (P1)
+
+Źródło: `HeroPoseLayer`, `PalmUpLayer`, `WeaponVisual`, `SwingStyles`, modele i klipy HU.
+Cel: `Animation/ClipAnimationDriver`, `WeaponAnimSet`, `CharacterVisual`, `BodyDynamics`, importer modeli.
+
+- [x] IK drugiej ręki na broni dwuręcznej i ręki z tarczą; dostosowanie do Humanoid i Playables.
+- [x] Własne pozy sztyletów/różdżek, lustrzane ciosy drugą ręką, ruch cięciwy łuku.
+- [x] Brakujące modele broni: warianty korbaczy i morgensternów dwuręcznych oraz kostury;
+  wyeksportować tylko używane zasoby, uwzględnić warianty nowych toporów i młotów z bieżącego HU.
+- [x] Oddzielny wybór wyglądu od specjalizacji, dostępny w przygotowaniu runu i zapisany w profilu.
+- [x] Warstwy materiałów sylwetki HU (cień, przemoczenie, żar, obrys elity) i ich połączenie
+  z obecnym hit-flash/tint; cząsteczki są już osobną warstwą, sam materiał sylwetki to inna praca.
+- [x] Korekta tylnej nogi w `Idle_Combat`: około 80° → 40° kierunku stopy, z zachowaniem punktu podparcia.
+  `ApplyIdleLegPose` obraca nogę wokół osi biodro–kostka, wygasa z udziałem spoczynku i akcji całego ciała.
+  Sprawdzono spoczynek i blok sześciu modeli oraz wcześniejsze regresje biegu i kroku podczas ciosu.
+- [x] Sztywny stalowy nosek: `CharacterVisualDefinition.rigidBootToes` włączone u paladyna i wojownika,
+  także w `HeroAssetImport`. Lokalna poza palców pozostaje zgodna z modelem; kostka i noga nadal się poruszają.
+  Zachowano źródłowe siatki, wagi i klipy. Pozostałe modele zachowują animację palców.
+
+Test `SteelBoots_ForefootMeshKeepsItsShape` porównuje kształt ostatnich 4 cm noska z `BakeMesh`,
+po odjęciu przesunięcia całego fragmentu. Próba kontrolna z wyłączoną korektą wykrywa deformację
+53,638 mm u paladyna i 33,411 mm u wojownika; po korekcie oba wyniki to około 0,001 mm (próg 3 mm).
+Obejrzano [porównanie przed/po](../TestResults/boot/comparison.png) i
+[galerię sześciu modeli](../TestResults/boot/after/idle_feet.png). Pomiary: `TestResults/boot/shape.tsv`.
+
+**Odbiór:** galeria pozy/ataku każdą bronią, poprawny chwyt i brak przenikania tarczy/łuku;
+zachowana zgodność animacji z momentem trafienia. Brak nadpisania istniejących dopracowanych klipów.
+
+### Etap 3 — pozostałe demony i bossowie (P1)
+
+Źródło: `Content/Enemies`, `EnemyActor`, `EnemyBehaviours`, `BossBehaviour`, `EnemySpecials`,
+`BossProfile`, modele/klipy demonów. Cel: `EnemyDefinition`, `EnemyBrain.Specials`, `DemonAnimationDriver`.
+
+- [x] Najpierw przeciwnicy o podobnych regułach do istniejących archetypów (ogar, ciężki wręcz,
+  szarżujący), potem nekromanta/przywoływacz, artyleria, skrytobójca i przeciwnicy ze strefami.
+- [x] Przenosić bossów osobno: zdolność → zapowiedź → obrażenia → kanał → odpoczynek → przerwanie;
+  progi faz, kolejność kombinacji, sługi, bariery i śmierć mistrza.
+- [x] Przy każdym nowym demonie odtworzyć doczepienia VFX występujące w źródle na kościach.
+- [x] Rozszerzyć bestiariusz i wybrane fale pięter IV–V po testach pojedynczych przeciwników.
+  Zachować obecne wagi początkowych portali; nowych bossów udostępnić w próbie walki przed doborem do wieży.
+
+Komplet definicji i pochodzenie: [KATALOG_DEMONOW_HU.md](KATALOG_DEMONOW_HU.md).
+Adaptacje reguł i pozostałe ograniczenia są jawnie opisane w raporcie P0/P1.
+
+**Odbiór:** testy obrażeń i przerwania każdej zdolności, brak osieroconych stref/sług,
+czytelne kolory ataków blokowalnych/parowalnych i niewrażliwych na unik, galeria oraz próba całego piętra.
+
+### Etap 4 — pozostałe umiejętności i runtime'y (P1/P2)
+
+**Poza obecnym zleceniem — użytkownik zatwierdził tylko etapy 1–3.**
+
+Źródło: `SkillCaster`, `CombatWorld`, `SkillShape`, `SkillRuntimes`, `SealRuntimes`, `HostileRuntimes`, `GearPowers`,
+`Content/Skills`. Cel: `SpellDefinition`, dostawy `Projectile/DamageZone/DelayedStrike/WaveEffect/Servant`.
+
+- [ ] Dopisać brakujące pozycje katalogu po audycie etapu 1, bez tworzenia drugiej wersji już działającego skilla.
+- [ ] Zaimplementować brakujące zachowania wymagane przez treść: ślady/strefy po drodze,
+  miny, orbity, upadek z góry, dodatkowe przywołania i różne kształty dostaw — tylko gdy potwierdzi je katalog.
+- [ ] Modele i zachowania przyzwanych chochlików, ogarów i golema; obecne sługi są proceduralnymi widmami.
+- [ ] Jawne limity instancji i anulowanie runtime'u przy śmierci/przejściu piętra, spójne z zegarem pauzy.
+
+**Odbiór:** dla każdego nowego skilla test skutku mechanicznego, czasu, zasięgu, poziomów i VFX;
+efekt nie może sam tworzyć obrażeń. Turris zachowuje trzy sloty i osobny skill klasy.
+
+### Etap 5 — pieczęcie (P2, po etapie 4)
+
+Źródło: `SkillSealData`, `SkillShape.Compose`, `SkillInstance`, `SealCodex`, `BondRules`, katalog `Content/Seals`,
+`docs/skill-seals*.md`. Cel: nowy moduł kompilowania konfiguracji skilla i assety definicji pieczęci.
+
+- [ ] Model formy, wsparcia, synergii i więzi między dwoma skillami; zgodność tagów, gniazda i poziomy.
+- [ ] Kolejność operacji: dodanie/usunięcie/zamiana komponentu, zmiana żywiołu, parametry i mnożniki.
+- [ ] Kompilacja kopii definicji na potrzeby runu, bez modyfikowania współdzielonych ScriptableObject.
+- [ ] Rodzina VFX powinna podążać za **wynikowym** żywiołem/kształtem po konwersji, z możliwością
+  zachowania osobnego wyglądu. Rozszerzyć `HellSkillFx`, zamiast rozpoznawać barwę efektu.
+- [ ] UI montowania/porównania, generator ofert i zapis wyposażonych pieczęci.
+
+**Odbiór:** przeniesione testy kompilatora i reguł, deterministyczny wynik, brak podwójnego naliczania bonusów;
+macierz zgodności i testy wybranych synergii/więzi w walce.
+
+### Etap 6 — przedmioty, affixy, łupy i ekonomia (P2)
+
+Źródło: `AffixData`, `ItemData`, `Run/LootTable`, `Run/SealLoot`, `World/LootDrop`, `ShopGenerator`, `LoadoutAnalysis`, `Content/{Items,Affixes,Upgrades}`.
+Cel: `ItemDefinition`, `Equipment`, `BuildCalculator`, `RewardGenerator`, `SoulShop`, UI ekwipunku.
+
+- [ ] Rzadkości, pule i wykluczające się grupy affixów, unikatowe moce, wymagania i poziomy przedmiotów.
+- [ ] Plecak/łup na ziemi, porównanie przedmiotów i czytelne wyjaśnienie zmian buildu.
+- [ ] Oferty i ulepszenia między piętrami, skalowanie cen i wartość nagród dostosowana do długości wieży.
+- [ ] Opcjonalnie model dojrzewania dusz (`SoulAbsorptionSystem`) i kary po trafieniu — to zmiana projektu ekonomii,
+  nie konieczny warunek skopiowania efektu wizualnego duszy.
+
+**Odbiór:** deterministyczne losowanie na seedzie, poprawne wykluczenia i limity statystyk,
+atomowy zakup, brak duplikacji waluty, zgodne podsumowanie buildu i faktyczne obrażenia.
+
+### Etap 7 — biomy, środowisko i oprawa (P2)
+
+Źródło: `Content/Biomes`, budowa aren, `IceSheet`, `WaveFx`, `BossBehaviour.StoneSpikes`, `EmberPulse`,
+`OccluderFader`, tekstury środowiska. Cel: `ArenaDefinition`, `ArenaBuilder`, oświetlenie/kamera Unity.
+
+- [ ] Mapowanie 8 biomów na kolejne piętra/odmiany 3 obecnych aren; najpierw dekoracje i materiały, potem geometria.
+- [ ] Woda, lodowe płyty i kolce jako siatki/shadery Unity; nie mylić ich z przeniesionymi cząsteczkami.
+- [ ] Pełny shader portalu HU i detale ziemi, jeśli obecna oprawa portalu Turris nie wystarczy.
+- [ ] Przenikanie zasłaniających ścian, czytelność pod kamerą zza pleców i zagrożeń przy krawędzi areny.
+
+**Odbiór:** poprawne kolizje/nawigacja, brak blokad portali, brak ukrytych zagrożeń;
+porównawcze zrzuty, liczby rendererów, cząsteczek, świateł i koszt klatki na docelowej maszynie.
+
+### Etap 8 — UI, audio i postęp (P2/P3)
+
+- [ ] UI: przenieść grafiki HUD, ikon, sklepu i menu z `Assets/Textures/UI`; ustalić docelową technologię
+  Unity przed budową ekranów. Zachować nawigację padem, rebinding, tooltips i aktualne sloty Turris.
+- [ ] Cząsteczki 2D sklepu (`UI/ShopMood`) i shader świec dopiero z migracją właściwego ekranu;
+  obecny sklep IMGUI nie ma warstwy Godot Control.
+- [ ] Audio: skopiować wybrane gotowe klipy HU, przypisać je do istniejącego `AudioService/SoundId`;
+  porównać miks i limity z obecną syntezą, nie uruchamiać dwóch usług równolegle.
+- [ ] Profil: dopisywać nowe pola z wersjonowaniem i wartościami domyślnymi; nie zmieniać id już
+  odblokowanych klas/przedmiotów. Import starych zapisów HU traktować jako osobną funkcję.
+- [x] Katalog bestiariusza i próba walki bez zapisu/nagród wdrożone w etapie 3.
+- [ ] Pozostałe statystyki i oprawa UI bestiariusza z HU.
+
+**Odbiór:** cała gra obsługiwana padem, skalowanie tekstu i ekranów, odczyt starszego profilu,
+zachowanie głośności, brak utraty odblokowań; test przejścia pełnej wieży i samodzielnego buildu Windows.
+
+## 5. Reguły realizacji każdego etapu
+
+1. Czytać aktualne źródło HU; zapisy i eksporty kierować wyłącznie do katalogu Turris.
+2. Przejść od reguły i danych do adaptera Unity, potem dodać prezentację i integrację z pętlą gry.
+3. Importery mają dodawać brakujące assety lub pokazywać różnice. Nie uruchamiać pełnego resetu treści.
+4. Testować reguły w EditMode, zachowanie w PlayMode, wygląd renderem. Przy otwartym Unity używać
+   MCP lub Test Runnera; `tools/unity_mcp.py` pozwala wywołać testy i zapisać wynik.
+   Zamknięcie edytora jest wymagane tylko przed `tools/run_tests.py`, który uruchamia osobny proces Unity.
+   Testy wsadowe pomijają część UI pada.
+5. Uaktualnić ten plan i `PROGRESS.md`, zapisać wyniki oraz świadome odstępstwa.
+
+Następny zakres do osobnego zatwierdzenia: **etap 4 — pozostałe 32 skille i wymagane runtime'y**.
+Przed rozszerzeniem katalogu warto ocenić w graniu chwyty, nowe pojedynki i balans pięter IV–V.
+Pieczęcie i ekonomia wymagają największych nowych systemów.
+
+## 6. Weryfikacja i stan przekazania
+
+| Moment / przebieg | Zaliczone | Błędy | Pominięte |
+|---|---:|---:|---:|
+| P0/P1, 2026-10-22 — pełne EditMode | 156 | 0 | 1 |
+| P0/P1, 2026-10-22 — pełne PlayMode window | 99 | 0 | 15 |
+| P0/P1, 2026-10-22 — pełne PlayMode gfx | 97 | 0 | 17 |
+| P0/P1, 2026-10-22 — galeria migracji | 5 | 0 | 0 |
+| Korekta kierunku stopy, 2026-10-23 — pełne EditMode przez MCP | 156 | 0 | 1 |
+| Korekta kierunku stopy, 2026-10-23 — pełne PlayMode przez MCP | 100 | 0 | 16 |
+| Po korekcie stalowego noska, 2026-10-23 — celowane PlayMode przez MCP | 6 | 0 | 0 |
+
+Pełne przebiegi z 23 października wykonano **przed** późniejszą korektą stalowego noska.
+Po niej sprawdzono kształt noska (z próbą kontrolną), spoczynek/blok sześciu modeli, galerię,
+kierunek stóp w biegu, krok przy ciosie i blok górnej połowy ciała.
+Wyniki lokalne: `TestResults/foot/EditMode-MCP.json`, `TestResults/foot/PlayMode-MCP.json`,
+`TestResults/boot/Targeted-MCP.json`. Ostatni zapis MCP zawiera status ukończenia 6/6 bez błędów;
+pełna lista wyników nie przetrwała przeładowania domeny. Pomiary siatki i rendery zapisano osobno.
+
+- [ ] Ręcznie ocenić chwyty, sztywność butów i płynność przejść podczas normalnej gry na wybranych wyglądach.
+- [ ] Ocenić czytelność nowych demonów i balans pięter IV–V; automatyczne testy i galerie nie zamykają odbioru balansu.
+- [ ] Przed etapem 4 ponownie porównać aktualne źródło i audyt brakujących skilli; nie dublować już działających umiejętności.
+
+Szczegóły wdrożenia: [raport P0/P1](RAPORT_MIGRACJI_P0_P1.md).
+Historia i pułapki techniczne: [PROGRESS.md](PROGRESS.md).

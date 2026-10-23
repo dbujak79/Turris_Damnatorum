@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 364e1a8d61b62a543b912077a454451b, type: 3}
+  m_Name: class_hu_battlemage
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ClassDefinition
+  id: class_hu_battlemage
+  displayName: Mag bitewny
+  description: "Hybryda wojownika i maga: miecz \u017Cywio\u0142u i grymuar. Klinga zakl\u0119\u0107: moc czar\xF3w dzia\u0142a na cios mieczem, a ka\u017Cdy trafiony wr\xF3g oddaje man\u0119. Skill klasy: Ci\u0119cie burzy."
+  tags: 0
+  parent: {fileID: 11400000, guid: 238a470220177034c9a2fb416776b492, type: 2}
+  tagline: Miecz i czary
+  trait: 7
+  dodgeStyle: 2
+  signatureSkill: {fileID: 11400000, guid: 128789da06c4a2442bfe65009ad43442, type: 2}
+  startingSkillChoices: []
+  loadouts:
+  - label: "Ogie\u0144"
+    element: 1
+    weapon: {fileID: 11400000, guid: 0bfca6e20e0b8bb45ab51904eeab5304, type: 2}
+    offHand: {fileID: 11400000, guid: b52ed0b43e8c46a4d935cf765c59d8d6, type: 2}
+  - label: Woda
+    element: 2
+    weapon: {fileID: 11400000, guid: 0f036969ea835e74f9f4235741cb96c1, type: 2}
+    offHand: {fileID: 11400000, guid: 9fb2c751fbad24a4bbf874a56d3401d5, type: 2}
+  - label: Powietrze
+    element: 3
+    weapon: {fileID: 11400000, guid: 68aae621249d9d4449fe6aeb2fd1b382, type: 2}
+    offHand: {fileID: 11400000, guid: fa3a3a2b9032145488c585c2b70c175a, type: 2}
+  - label: Ziemia
+    element: 4
+    weapon: {fileID: 11400000, guid: f564f3f8df43c294dbc6f103a3a2dcc8, type: 2}
+    offHand: {fileID: 11400000, guid: 9004754a91bcb88448668622c7a5020f, type: 2}
+  classModifiers:
+  - stat: 6
+    mode: 0
+    value: 16
+  - stat: 12
+    mode: 0
+    value: 12
+  - stat: 21
+    mode: 0
+    value: 5
+  - stat: 22
+    mode: 0
+    value: 5
+  - stat: 23
+    mode: 0
+    value: 5
+  - stat: 28
+    mode: 0
+    value: 5
+  - stat: 20
+    mode: 0
+    value: 2.6785715
+  - stat: 15
+    mode: 0
+    value: 10
+  - stat: 8
+    mode: 0
+    value: 15
+  lookOverride: {fileID: 0}
+  toughness: 10
+  strength: 11
+  dexterity: 10
+  intelligence: 13
+  endurance: 10
+  mind: 10
+  startingItems:
+  - {fileID: 11400000, guid: 8386e7fa5789f05439ca843032b39bf3, type: 2}
+  alternativeWeapons: []
+  startingSpells: []
+  startingTalents: []
+  healthFlasks: 3
+  manaFlasks: 2
+  color: {r: 0.35, g: 0.45, b: 0.8, a: 1}
+  visual: {fileID: 11400000, guid: 6263052dce614534193c68552aa4a24b, type: 2}

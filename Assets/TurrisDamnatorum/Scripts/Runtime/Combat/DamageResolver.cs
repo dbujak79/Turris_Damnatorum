@@ -6,6 +6,8 @@ namespace Turris
     /// <summary>Jedno trafienie. Obrażenia rozbite na składniki fizyczny i magiczny.</summary>
     public struct HitData
     {
+        /// <summary>Opcjonalna rodzina cząsteczek HU; nie bierze udziału w obliczaniu obrażeń.</summary>
+        public HellFxElement? visualElement;
         public float physical;
         public float magic;
         public float guardLoad;
@@ -27,6 +29,9 @@ namespace Turris
         public bool isReaction;        // obrażenia reakcji (roztrzaskanie, przeskok przewodzenia) – nie wywołują kolejnych reakcji
         public float bonusVsFrozen, bonusVsBleeding, executeBonus;
         public StatusModifiers mods;   // modyfikatory efektów z wyposażenia atakującego
+        public WeaponModel weapon;     // zwykły cios bronią (Auto = nie broń: czar, technika, pocisk) – barwa trafienia i hitstop atakującego
+        public float knockback;        // odrzut trafionego wroga (m); ujemny = przyciągnięcie do źródła
+        public bool isProjectile;      // trafienie pociskiem (Sokole oko)
 
         public float Total => physical + magic;
 

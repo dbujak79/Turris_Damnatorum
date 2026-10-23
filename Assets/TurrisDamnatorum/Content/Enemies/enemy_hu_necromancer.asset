@@ -1,0 +1,261 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 180b36b7263f32b49b05445d75c51ead, type: 3}
+  m_Name: enemy_hu_necromancer
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.EnemyDefinition
+  id: enemy_hu_necromancer
+  displayName: Nekromanta
+  description: 'Demon z Hell Unleashed: enemy.necromancer'
+  tags: 0
+  huSourceId: enemy.necromancer
+  huSourceHash: 640e8cbc47f2174324351019ee075288cd8e957f34cb0f276f8ff0744bfe5e13
+  huModel: necromancer
+  huMigrationVersion: 4
+  huArchetype: 7
+  huSplitCount: 0
+  huSummonCount: 2
+  huWakeRadius: 0
+  huHatchSeconds: 0
+  huEnrageHealth: 0
+  huEnrageTempo: 1
+  huCanBeElite: 1
+  huSummon: {fileID: 11400000, guid: d6884fecedd52b3498ec567d061c047c, type: 2}
+  archetype: "Przywo\u0142ywacz"
+  maxHealth: 175
+  maxPoise: 35
+  poiseRegenDelay: 2
+  poiseRegen: 20
+  maxStamina: 80
+  physicalResist: 0.1
+  magicResist: 0
+  moveSpeed: 2.0125
+  turnSpeed: 360
+  fireMultiplier: 1.3
+  frostMultiplier: 1
+  lightningMultiplier: 1
+  bleedMultiplier: 1
+  earthMultiplier: 0.8
+  element: 0
+  variants: []
+  variantChance: 0.4
+  preferredRange: 8.333333
+  retreatRange: 5
+  attackInterval: {x: 3, y: 3}
+  strafeChance: 0
+  evadeChance: 0
+  guardChance: 0
+  guard:
+    physicalReduction: 1
+    magicReduction: 0.7
+    stabilityMultiplier: 1
+    blockAngle: 0
+    staminaRegenMultiplier: 0.3
+  riposteWindow: 1.8
+  attacks:
+  - attack:
+      name: Nekromanta
+      delivery: 0
+      damageType: 0
+      baseDamage: 17.5
+      windup: 1.2
+      active: 0.12
+      recovery: 0.4
+      cancelAfter: 0.2
+      reach: 9.166667
+      radius: 1.75
+      lunge: 0.5
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 24
+      poiseDamage: 20
+      heavy: 0
+      staminaCost: 15
+      projectileSpeed: 7.0833335
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses: []
+      animation: 0
+    minRange: 0
+    maxRange: 25
+    weight: 1
+    cooldown: 7.5
+    minPhase: 0
+    eliteOnly: 0
+    bossExtraOnly: 0
+    followUp: -1
+    followUpChance: 0.5
+    hyperArmor: 0
+    retreatAfter: 0
+    special: 5
+    specialCount: 2
+    specialRadius: 0
+    specialDuration: 0
+    specialShare: 0
+    summon: {fileID: 11400000, guid: d6884fecedd52b3498ec567d061c047c, type: 2}
+    summonMax: 4
+    huAbility:
+      name: 
+      argument: 
+      parameters: []
+    huOnPhase: 0
+    huEnragedOnly: 0
+  - attack:
+      name: Nekromanta
+      delivery: 1
+      damageType: 0
+      baseDamage: 17.5
+      windup: 0.6
+      active: 0.12
+      recovery: 0.4
+      cancelAfter: 0.2
+      reach: 9.166667
+      radius: 1.75
+      lunge: 0.5
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 24
+      poiseDamage: 20
+      heavy: 0
+      staminaCost: 15
+      projectileSpeed: 7.0833335
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses: []
+      animation: 0
+    minRange: 0
+    maxRange: 10.833332
+    weight: 1
+    cooldown: 0
+    minPhase: 0
+    eliteOnly: 0
+    bossExtraOnly: 0
+    followUp: -1
+    followUpChance: 0.5
+    hyperArmor: 0
+    retreatAfter: 0
+    special: 0
+    specialCount: 0
+    specialRadius: 0
+    specialDuration: 0
+    specialShare: 0
+    summon: {fileID: 0}
+    summonMax: 0
+    huAbility:
+      name: 
+      argument: 
+      parameters: []
+    huOnPhase: 0
+    huEnragedOnly: 0
+  - attack:
+      name: 'Nekromanta: InfernalOrb'
+      delivery: 0
+      damageType: 0
+      baseDamage: 25
+      windup: 0.6
+      active: 0.12
+      recovery: 0.6
+      cancelAfter: 0.2
+      reach: 2.9166667
+      radius: 1.875
+      lunge: 0.5
+      tracking: 360
+      blockable: 1
+      parryable: 0
+      dodgeable: 0
+      guardLoad: 35
+      poiseDamage: 25
+      heavy: 0
+      staminaCost: 15
+      projectileSpeed: 5
+      projectileCount: 1
+      spreadAngle: 60
+      explosionRadius: 0
+      element: 0
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses: []
+      animation: 11
+    minRange: 0
+    maxRange: 11.666667
+    weight: 1
+    cooldown: 10
+    minPhase: 0
+    eliteOnly: 0
+    bossExtraOnly: 0
+    followUp: -1
+    followUpChance: 0.5
+    hyperArmor: 0
+    retreatAfter: 0
+    special: 0
+    specialCount: 0
+    specialRadius: 0
+    specialDuration: 0
+    specialShare: 0
+    summon: {fileID: 0}
+    summonMax: 0
+    huAbility:
+      name: InfernalOrb
+      argument: 
+      parameters:
+      - key: damage.physical
+        value: 10
+      - key: radius
+        value: 45
+      - key: speed
+        value: 120
+      - key: count
+        value: 1
+      - key: duration
+        value: 2.5
+      - key: share
+        value: 0.25
+      - key: telegraph
+        value: 0.6
+      - key: every
+        value: 10
+      - key: wave
+        value: 17
+      - key: reach
+        value: 280
+    huOnPhase: 0
+    huEnragedOnly: 0
+  phases: []
+  isBoss: 0
+  soulReward: 6
+  color: {r: 1, g: 0, b: 0, a: 1}
+  scale: 1.1111112
+  rigStyle: 3
+  weaponModel: 9
+  visual: {fileID: 11400000, guid: e3e019e71aa179f47aab2cae1c0fe56b, type: 2}
+  spawnCost: 5
+  packSize: 1
+  eliteHealthMultiplier: 7
+  eliteDamageMultiplier: 1.6
+  isMinion: 0

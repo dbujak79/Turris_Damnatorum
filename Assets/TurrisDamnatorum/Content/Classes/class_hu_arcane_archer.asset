@@ -1,0 +1,76 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 364e1a8d61b62a543b912077a454451b, type: 3}
+  m_Name: class_hu_arcane_archer
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ClassDefinition
+  id: class_hu_arcane_archer
+  displayName: "\u0141ucznik arkan\xF3w"
+  description: "Hybryda \u0142otrzyka i maga: \u0142uk, w kt\xF3ry wplata czary. Klinga zakl\u0119\u0107: moc czar\xF3w dzia\u0142a na strza\u0142y. Skill klasy: Strza\u0142a \u017Cywio\u0142\xF3w."
+  tags: 0
+  parent: {fileID: 11400000, guid: 732b37bdf25d91e489b61471fb1ebc3e, type: 2}
+  tagline: "\u0141uk i czary"
+  trait: 7
+  dodgeStyle: 2
+  signatureSkill: {fileID: 11400000, guid: c228feb426aaeaf42b3600990111dbe5, type: 2}
+  startingSkillChoices:
+  - {fileID: 11400000, guid: c893e4f274b002c4f93ff9c36fe93473, type: 2}
+  - {fileID: 11400000, guid: f293e9542f9b24d46848bb8599940e72, type: 2}
+  loadouts:
+  - label: "\u0141uk"
+    element: 0
+    weapon: {fileID: 11400000, guid: 691cf58902a0f564cbe1c169a594c24d, type: 2}
+    offHand: {fileID: 0}
+  classModifiers:
+  - stat: 6
+    mode: 0
+    value: -10
+  - stat: 12
+    mode: 0
+    value: 6
+  - stat: 30
+    mode: 0
+    value: -5
+  - stat: 21
+    mode: 0
+    value: 10
+  - stat: 22
+    mode: 0
+    value: 10
+  - stat: 23
+    mode: 0
+    value: 10
+  - stat: 20
+    mode: 0
+    value: 10.714286
+  - stat: 15
+    mode: 0
+    value: 10
+  - stat: 26
+    mode: 0
+    value: 10
+  lookOverride: {fileID: 0}
+  toughness: 10
+  strength: 8
+  dexterity: 13
+  intelligence: 12
+  endurance: 10
+  mind: 10
+  startingItems:
+  - {fileID: 11400000, guid: 9ae482a8e59b1594982f88a35bd5e4e4, type: 2}
+  - {fileID: 11400000, guid: 8bedcc70c079ec04689419018eecf68b, type: 2}
+  alternativeWeapons: []
+  startingSpells: []
+  startingTalents: []
+  healthFlasks: 3
+  manaFlasks: 2
+  color: {r: 0.35, g: 0.4, b: 0.75, a: 1}
+  visual: {fileID: 11400000, guid: 01bd3b1db7cd6a04faefc945cb5e1b2a, type: 2}

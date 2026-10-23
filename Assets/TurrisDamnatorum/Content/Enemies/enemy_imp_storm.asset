@@ -1,0 +1,250 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 180b36b7263f32b49b05445d75c51ead, type: 3}
+  m_Name: enemy_imp_storm
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.EnemyDefinition
+  id: enemy_imp_storm
+  displayName: Chochlik wichru
+  description: "Ma\u0142y, szybki demon. Zawsze rodzi si\u0119 w jednym z \u017Cywio\u0142\xF3w: tnie nim i jest na niego odporny."
+  tags: 0
+  huSourceId: 
+  huSourceHash: 
+  huModel: 
+  huMigrationVersion: 0
+  huArchetype: -1
+  huSplitCount: 0
+  huSummonCount: 0
+  huWakeRadius: 0
+  huHatchSeconds: 0
+  huEnrageHealth: 0
+  huEnrageTempo: 1
+  huCanBeElite: 1
+  huSummon: {fileID: 0}
+  archetype: "Szybki (wr\u0119cz)"
+  maxHealth: 55
+  maxPoise: 12
+  poiseRegenDelay: 2
+  poiseRegen: 25
+  maxStamina: 80
+  physicalResist: 0
+  magicResist: 0
+  moveSpeed: 3.24
+  turnSpeed: 480
+  fireMultiplier: 0.75
+  frostMultiplier: 1.25
+  lightningMultiplier: 0.5
+  bleedMultiplier: 1
+  earthMultiplier: 1.35
+  element: 3
+  variants: []
+  variantChance: 0.4
+  preferredRange: 1.3
+  retreatRange: 0
+  attackInterval: {x: 1, y: 1.6}
+  strafeChance: 0.3
+  evadeChance: 0.12
+  guardChance: 0
+  guard:
+    physicalReduction: 1
+    magicReduction: 0.4
+    stabilityMultiplier: 0.7
+    blockAngle: 140
+    staminaRegenMultiplier: 0.3
+  riposteWindow: 1.8
+  attacks:
+  - attack:
+      name: Pazury
+      delivery: 0
+      damageType: 0
+      baseDamage: 18
+      windup: 0.3
+      active: 0.12
+      recovery: 0.25
+      cancelAfter: 0.2
+      reach: 1.55
+      radius: 0.6
+      lunge: 0.6
+      tracking: 420
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 12
+      poiseDamage: 10
+      heavy: 0
+      staminaCost: 0
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 3
+      elementShare: 0.6
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 3
+        stacks: 1
+        chance: 1
+      animation: 0
+    minRange: 0
+    maxRange: 1.9
+    weight: 3
+    cooldown: 0
+    minPhase: 0
+    eliteOnly: 0
+    bossExtraOnly: 0
+    followUp: -1
+    followUpChance: 0.5
+    hyperArmor: 0
+    retreatAfter: 0
+    special: 0
+    specialCount: 0
+    specialRadius: 0
+    specialDuration: 0
+    specialShare: 0
+    summon: {fileID: 0}
+    summonMax: 0
+    huAbility:
+      name: 
+      argument: 
+      parameters: []
+    huOnPhase: 0
+    huEnragedOnly: 0
+  - attack:
+      name: "Dwa ci\u0119cia"
+      delivery: 0
+      damageType: 0
+      baseDamage: 18
+      windup: 0.55
+      active: 0.12
+      recovery: 0.3
+      cancelAfter: 0.2
+      reach: 1.8
+      radius: 0.7
+      lunge: 0.7
+      tracking: 380
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 14
+      poiseDamage: 12
+      heavy: 0
+      staminaCost: 0
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 3
+      elementShare: 0.6
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 3
+        stacks: 1
+        chance: 1
+      animation: 11
+    minRange: 0
+    maxRange: 2.1
+    weight: 1.5
+    cooldown: 6
+    minPhase: 0
+    eliteOnly: 1
+    bossExtraOnly: 0
+    followUp: 2
+    followUpChance: 1
+    hyperArmor: 0
+    retreatAfter: 0
+    special: 0
+    specialCount: 0
+    specialRadius: 0
+    specialDuration: 0
+    specialShare: 0
+    summon: {fileID: 0}
+    summonMax: 0
+    huAbility:
+      name: 
+      argument: 
+      parameters: []
+    huOnPhase: 0
+    huEnragedOnly: 0
+  - attack:
+      name: "Drugie ci\u0119cie"
+      delivery: 0
+      damageType: 0
+      baseDamage: 21
+      windup: 0.45
+      active: 0.12
+      recovery: 0.9
+      cancelAfter: 0.2
+      reach: 1.8
+      radius: 0.7
+      lunge: 0.7
+      tracking: 300
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 14
+      poiseDamage: 12
+      heavy: 0
+      staminaCost: 0
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 3
+      elementShare: 0.6
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 3
+        stacks: 1
+        chance: 1
+      animation: 0
+    minRange: 0
+    maxRange: 2.4
+    weight: 0
+    cooldown: 0
+    minPhase: 0
+    eliteOnly: 0
+    bossExtraOnly: 0
+    followUp: -1
+    followUpChance: 0.5
+    hyperArmor: 0
+    retreatAfter: 0
+    special: 0
+    specialCount: 0
+    specialRadius: 0
+    specialDuration: 0
+    specialShare: 0
+    summon: {fileID: 0}
+    summonMax: 0
+    huAbility:
+      name: 
+      argument: 
+      parameters: []
+    huOnPhase: 0
+    huEnragedOnly: 0
+  phases: []
+  isBoss: 0
+  soulReward: 10
+  color: {r: 0.6, g: 0.7, b: 0.95, a: 1}
+  scale: 0.7222222
+  rigStyle: 0
+  weaponModel: 0
+  visual: {fileID: 11400000, guid: 7d6efdec2e29d2e49bec7ea0a58ceed3, type: 2}
+  spawnCost: 1
+  packSize: 1
+  eliteHealthMultiplier: 7
+  eliteDamageMultiplier: 1.6
+  isMinion: 0

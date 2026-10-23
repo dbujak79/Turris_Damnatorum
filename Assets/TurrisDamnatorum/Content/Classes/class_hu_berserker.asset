@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 364e1a8d61b62a543b912077a454451b, type: 3}
+  m_Name: class_hu_berserker
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ClassDefinition
+  id: class_hu_berserker
+  displayName: Berserker
+  description: "Bro\u0144 dwur\u0119czna i sza\u0142. \u017B\u0105dza krwi: im mniej zdrowia, tym mocniejsze ciosy (do +60%). Skill klasy: Nie\u015Bmiertelno\u015B\u0107 \u2013 przez 3 s \u017Caden cios nie zabije, d\u0142ugie odnowienie."
+  tags: 0
+  parent: {fileID: 11400000, guid: 14b6652c1c070c941b190a5c9859be54, type: 2}
+  tagline: "Bro\u0144 dwur\u0119czna i sza\u0142"
+  trait: 4
+  dodgeStyle: 1
+  signatureSkill: {fileID: 11400000, guid: 4cda2037ffc929748b2c35b8ba7a2e0a, type: 2}
+  startingSkillChoices:
+  - {fileID: 11400000, guid: 92a150761796f7948aee0ad14c2433a3, type: 2}
+  - {fileID: 11400000, guid: d9b28305965ac2a49b7a7951e82942d0, type: 2}
+  loadouts:
+  - label: "Top\xF3r dwur\u0119czny"
+    element: 0
+    weapon: {fileID: 11400000, guid: 8240413f9a0548442bd9a54392230392, type: 2}
+    offHand: {fileID: 0}
+  - label: "M\u0142ot bojowy"
+    element: 0
+    weapon: {fileID: 11400000, guid: 9ea4d7e99c13c284b98d49a0d981e7a7, type: 2}
+    offHand: {fileID: 0}
+  classModifiers:
+  - stat: 6
+    mode: 0
+    value: 60
+  - stat: 12
+    mode: 0
+    value: 11
+  - stat: 31
+    mode: 0
+    value: 5
+  - stat: 30
+    mode: 0
+    value: 15.000001
+  - stat: 21
+    mode: 0
+    value: -10
+  - stat: 22
+    mode: 0
+    value: -10
+  - stat: 23
+    mode: 0
+    value: -10
+  - stat: 28
+    mode: 0
+    value: -10
+  - stat: 20
+    mode: 0
+    value: 3.5714285
+  - stat: 32
+    mode: 0
+    value: 5
+  - stat: 34
+    mode: 0
+    value: 1
+  lookOverride: {fileID: 0}
+  toughness: 12
+  strength: 16
+  dexterity: 11
+  intelligence: 6
+  endurance: 10
+  mind: 10
+  startingItems:
+  - {fileID: 11400000, guid: 8386e7fa5789f05439ca843032b39bf3, type: 2}
+  alternativeWeapons: []
+  startingSpells: []
+  startingTalents: []
+  healthFlasks: 4
+  manaFlasks: 1
+  color: {r: 0.7, g: 0.25, b: 0.15, a: 1}
+  visual: {fileID: 11400000, guid: 74e4bb6b058adf34189620bd6c9fe3a3, type: 2}

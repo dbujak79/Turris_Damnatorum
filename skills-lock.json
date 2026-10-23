@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "scenario-unity-expert": {
+      "source": "scenario-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/game-engines/unity/scenario-unity-expert/SKILL.md",
+      "computedHash": "1b599fc2dc8ce093f7d5fd25287dd0bd6884d4f1d99a7b32a56402e6d5d036d7"
+    },
+    "scenario-unity-performance": {
+      "source": "scenario-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/game-engines/unity/scenario-unity-performance/SKILL.md",
+      "computedHash": "80d7809965d068c404ae4e2775e578b6ab6cdddf2b6a3f9c3a97d0e36514fdc1"
+    },
+    "scenario-unity-shaders": {
+      "source": "scenario-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/game-engines/unity/scenario-unity-shaders/SKILL.md",
+      "computedHash": "0d67746a48e81c6a10279db2b68e95378a2367d028f1a52ac92bb70829da1348"
+    },
+    "scenario-unity-vfx": {
+      "source": "scenario-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/game-engines/unity/scenario-unity-vfx/SKILL.md",
+      "computedHash": "ca3d4b6ef7aac6aecfbbe0ba227cb62e787bc0e5897702f6e118d401314b4bf7"
+    }
+  }
+}

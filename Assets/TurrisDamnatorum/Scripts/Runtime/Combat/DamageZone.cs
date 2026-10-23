@@ -18,6 +18,7 @@ namespace Turris
         IHitReceiver owner;
         float radius, interval, life, timer;
         readonly HitTracker tracker = new HitTracker();
+        GameObject visual;
 
         public float Radius => radius;
 
@@ -29,23 +30,38 @@ namespace Turris
             var go = new GameObject("DamageZone");
             go.transform.position = center;
             var z = go.AddComponent<DamageZone>();
+            if (owner is EnemyBrain enemy) enemy.TrackOwnedEffect(z);
             z.hit = hit; z.faction = faction; z.owner = owner;
             z.radius = radius; z.interval = Mathf.Max(0.1f, interval); z.life = duration;
-            FxLibrary.BurningGround(center, radius, color, duration);
+            z.visual = FxLibrary.ElementGround(center, radius, hit.element, color, duration, hit.visualElement);
+            Sfx.Play(Sfx.ForElement(hit.element, SoundId.Chains), center, 0.8f, 0.8f);
             return z;
         }
 
-        void Update()
+        void Update() => Step(Time.deltaTime);
+        public void Step(float dt)
         {
-            float dt = Time.deltaTime;
+            if (dt <= 0) return;
+            if (owner != null && owner.IsDead) { Destroy(gameObject); return; }
+            float advance = Mathf.Min(dt, life);
+            float next = timer;
+            while (next <= advance && next < life)
+            {
+                tracker.Reset(); hit.sourcePosition = transform.position;
+                HitQuery.Sphere(transform.position + Vector3.up * 0.6f, radius, faction, tracker, r => HitQuery.Apply(owner, r, hit, false));
+                next += interval;
+            }
+            timer = next - advance;
             life -= dt;
-            if (life <= 0) { Destroy(gameObject); return; }
-            timer -= dt;
-            if (timer > 0) return;
-            timer = interval;
-            tracker.Reset();
-            hit.sourcePosition = transform.position;
-            HitQuery.Sphere(transform.position + Vector3.up * 0.6f, radius, faction, tracker, r => HitQuery.Apply(owner, r, hit, false));
+            if (life <= 0) Destroy(gameObject);
+        }
+
+        void OnDestroy()
+        {
+            if (visual == null) return;
+            var particles = visual.GetComponentInChildren<HellParticles>();
+            if (particles != null) particles.StopAndRelease();
+            Destroy(visual);
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Turris.Tests
         [Test]
         public void Slots_AssignSwapAndClear()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var cleave = run.FindSpell(Def("skill_cleave"));
             var bash = run.FindSpell(Def("skill_shieldbash"));
             CollectionAssert.AreEqual(new[] { cleave, bash, null }, run.skillSlots, "Umiejętności klasy w kolejnych slotach");
@@ -45,7 +45,7 @@ namespace Turris.Tests
         [Test]
         public void EachSlotUsesItsOwnSkill_WithCooldown()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var pc = fx.NewCombatant(run);
             var cleave = pc.Skill(0);
             Assert.AreEqual(SpellKind.Cleave, cleave.Def.kind);
@@ -76,7 +76,7 @@ namespace Turris.Tests
         [Test]
         public void Cooldown_StaysWithSkill_WhenMovedToAnotherSlot()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var pc = fx.NewCombatant(run);
             var cleave = run.skillSlots[0];
             pc.RequestSkill(0);
@@ -91,7 +91,7 @@ namespace Turris.Tests
         [Test]
         public void ExtraCharge_FromUpgrade()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var charge = run.LearnSpell(Def("skill_charge"));
             Assert.AreEqual(1, charge.MaxCharges);
             charge.level = charge.definition.extraChargeAtLevel;
@@ -108,7 +108,7 @@ namespace Turris.Tests
         [Test]
         public void ShieldBash_RequiresShield()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var pc = fx.NewCombatant(run);
             Assert.IsTrue(pc.Skill(1).equipmentMet);
             run.UnequipToInventory(EquipSlot.OffHand);
@@ -122,7 +122,7 @@ namespace Turris.Tests
         [Test]
         public void DodgeInterruptsTechnique_BeforeRelease_RefundsCharge()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var pc = fx.NewCombatant(run);
             pc.RequestSkill(0);
             Assert.AreEqual(ActionPhase.Startup, pc.Actions.Phase);
@@ -134,7 +134,7 @@ namespace Turris.Tests
         [Test]
         public void Barrier_AbsorbsDamage_AndFullyAbsorbedHitDoesNotFlinch()
         {
-            var run = fx.NewRun("class_mage");
+            var run = fx.NewRun("legacy_mage");
             var barrier = run.LearnSpell(Def("spell_barrier"));
             run.AssignSlot(barrier, 0);
             var pc = fx.NewCombatant(run);
@@ -184,15 +184,15 @@ namespace Turris.Tests
             var storage = new MemoryProfileStorage();
             var meta = new MetaService(fx.Cfg, storage);
             var plan = meta.LastPlan();
-            var bolt = Def("spell_bolt");
-            plan.AssignSlot(bolt, 0);
+            var stomp = Def("skill_stomp"); // umiejętność klasy (pierwsza klasa – rycerz), przestawiona na pierwszy slot
+            plan.AssignSlot(stomp, 0);
             meta.RememberSkillSlots(plan.skillSlots);
 
             var plan2 = new MetaService(fx.Cfg, storage).LastPlan();
-            Assert.AreSame(bolt, plan2.skillSlots[0]);
+            Assert.AreSame(stomp, plan2.skillSlots[0]);
             var run = RunFactory.Create(plan2, fx.Cfg, 3);
-            Assert.AreEqual(bolt, run.skillSlots[0].definition, "Wybrany układ obowiązuje od startu");
-            Assert.IsTrue(run.skillSlots.All(s => s != null), "Pozostałe sloty wypełniły się automatycznie");
+            Assert.AreEqual(stomp, run.skillSlots[0].definition, "Wybrany układ obowiązuje od startu");
+            Assert.AreEqual(System.Math.Min(RunState.SkillSlotCount, run.knownSpells.Count), run.skillSlots.Count(s => s != null), "Pozostałe sloty wypełniły się automatycznie");
         }
 
         [Test]
@@ -208,7 +208,7 @@ namespace Turris.Tests
             var offered = new HashSet<string>();
             for (int seed = 0; seed < 300; seed++)
             {
-                var run = fx.NewRun("class_mage");
+                var run = fx.NewRun("legacy_mage");
                 foreach (var o in RewardGenerator.Generate(run, BuildCalculator.Compute(run, fx.Cfg), pools, fx.Cfg, new System.Random(seed)))
                     if (o.kind == RewardKind.LearnSpell) offered.Add(o.spell.id);
             }
@@ -219,7 +219,7 @@ namespace Turris.Tests
         [Test]
         public void TechniqueDamage_ScalesWithWeapon()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var cleave = run.skillSlots[0];
             var snap = BuildCalculator.Compute(run, fx.Cfg);
             float before = snap.WeaponDamage(snap.weapon.light) * snap.skills[0].power;

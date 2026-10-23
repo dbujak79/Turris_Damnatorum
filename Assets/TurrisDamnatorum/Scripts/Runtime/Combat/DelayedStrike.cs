@@ -26,16 +26,21 @@ namespace Turris
             var go = new GameObject("DelayedStrike");
             go.transform.position = center;
             var s = go.AddComponent<DelayedStrike>();
+            if (owner is EnemyBrain enemy) enemy.TrackOwnedEffect(s);
             s.hit = hit; s.faction = faction; s.owner = owner; s.radius = radius; s.delay = Mathf.Max(0.05f, delay); s.color = color;
             s.afterZone = afterZone;
-            s.marker = VisualFx.GroundMarker(center, radius, color);
+            s.marker = VisualFx.GroundMarker(center, radius, color, hit.visualElement ?? HellFx.For(hit.element));
             FxLibrary.Gather(go.transform, color, s.delay);
+            Sfx.Play(SoundId.CastCharge, center, 0.8f, 0.6f);
             return s;
         }
 
-        void Update()
+        void Update() => Step(Time.deltaTime);
+        public void Step(float dt)
         {
-            t += Time.deltaTime;
+            if (dt <= 0) return;
+            if (owner != null && owner.IsDead) { Destroy(gameObject); return; }
+            t += dt;
             if (marker != null)
             {
                 var decal = marker.GetComponent<FxDecal>();
@@ -46,9 +51,10 @@ namespace Turris
             var tracker = new HitTracker();
             hit.sourcePosition = transform.position;
             HitQuery.Sphere(transform.position + Vector3.up * 0.5f, radius, faction, tracker, r => HitQuery.Apply(owner, r, hit, false));
-            FxLibrary.Shockwave(transform.position, color, radius);
-            FxLibrary.Impact(transform.position + Vector3.up * 0.5f, color, 2f);
+            HellFx.Shockwave(transform.position, hit.visualElement ?? HellFx.For(hit.element), color, radius);
             FxLibrary.Dust(transform.position, 2.5f);
+            Sfx.Play(hit.element == Element.Fire ? SoundId.FireExplosion : SoundId.Quake, transform.position);
+            Sfx.Play(SoundId.Quake, transform.position, 0.6f);
             if (afterZone.HasValue)
             {
                 var z = afterZone.Value;
@@ -87,6 +93,7 @@ namespace Turris
         void Update()
         {
             float dt = Time.deltaTime;
+            if (dt <= 0) return;
             life -= dt;
             if (life <= 0 || center == null) { Destroy(gameObject); return; }
             timer -= dt;
@@ -98,6 +105,7 @@ namespace Turris
             if (candidates.Count == 0) return;
             var target = candidates[Random.Range(0, candidates.Count)];
             FxLibrary.Lightning(target.transform.position + Vector3.up * 9f + Random.insideUnitSphere, target.AimPoint, color);
+            Sfx.Play(SoundId.Thunder, target.AimPoint, 0.8f);
             hit.sourcePosition = target.transform.position + Vector3.up * 3f;
             HitQuery.Apply(owner, target, hit, false);
         }

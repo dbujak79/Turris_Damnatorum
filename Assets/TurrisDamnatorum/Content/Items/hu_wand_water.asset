@@ -1,0 +1,140 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 636ee652052ecf443b59ebf79a72207a, type: 3}
+  m_Name: hu_wand_water
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ItemDefinition
+  id: hu_wand_water
+  displayName: "R\xF3\u017Cd\u017Cka wody"
+  description: "Pocisk wody, kt\xF3ry wych\u0142adza i spowalnia."
+  tags: 2
+  kind: 0
+  twoHanded: 0
+  weight: 1
+  requirements:
+  - attribute: 5
+    value: 10
+  modifiers:
+  - stat: 15
+    mode: 1
+    value: 5
+  effects: []
+  weapon:
+    light:
+      name: "R\xF3\u017Cd\u017Cka wody"
+      delivery: 1
+      damageType: 1
+      baseDamage: 25
+      windup: 0.2
+      active: 0.1
+      recovery: 0.22
+      cancelAfter: 0.2
+      reach: 0
+      radius: 0.3
+      lunge: 0
+      tracking: 540
+      blockable: 1
+      parryable: 0
+      dodgeable: 1
+      guardLoad: 10
+      poiseDamage: 8
+      heavy: 0
+      staminaCost: 4
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 2
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 2
+        stacks: 1
+        chance: 0.5
+      animation: 7
+    heavy:
+      name: "R\xF3\u017Cd\u017Cka wody \u2013 pe\u0142na moc"
+      delivery: 1
+      damageType: 1
+      baseDamage: 55
+      windup: 0.6
+      active: 0.1
+      recovery: 0.4
+      cancelAfter: 0.2
+      reach: 0
+      radius: 0.3
+      lunge: 0
+      tracking: 540
+      blockable: 1
+      parryable: 0
+      dodgeable: 1
+      guardLoad: 25
+      poiseDamage: 25
+      heavy: 1
+      staminaCost: 4
+      projectileSpeed: 16.1
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 2
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 2
+        stacks: 1
+        chance: 1
+      animation: 7
+    lightComboLength: 3
+    strengthScaling: 0
+    dexterityScaling: 0.2
+    intelligenceScaling: 1.4
+    riposteMultiplier: 2
+    canBlock: 0
+    guard:
+      physicalReduction: 0.6
+      magicReduction: 0.2
+      stabilityMultiplier: 1.2
+      blockAngle: 100
+      staminaRegenMultiplier: 0.3
+    canParry: 0
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  shield:
+    guard:
+      physicalReduction: 1
+      magicReduction: 0.4
+      stabilityMultiplier: 0.7
+      blockAngle: 140
+      staminaRegenMultiplier: 0.3
+    canParry: 1
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  color: {r: 0.55, g: 0.85, b: 1, a: 1}
+  weaponModel: 6
+  shieldModel: 0
+  model: {fileID: 919132149155446097, guid: 449418bab2f27f248901803dd28d2fba, type: 3}
+  modelScale: 1
+  modelGripShift: 0
+  grantedSkill: {fileID: 0}

@@ -1,0 +1,82 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 364e1a8d61b62a543b912077a454451b, type: 3}
+  m_Name: class_hu_dual
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ClassDefinition
+  id: class_hu_dual
+  displayName: "R\u0119baj\u0142o"
+  description: "Bro\u0144 w ka\u017Cdej r\u0119ce: ciosy id\u0105 na zmian\u0119 z prawej i lewej. Dwie klingi: +20% szybko\u015Bci ataku z dwiema broniami. Skill klasy: Taniec ostrzy."
+  tags: 0
+  parent: {fileID: 11400000, guid: 14b6652c1c070c941b190a5c9859be54, type: 2}
+  tagline: "Bro\u0144 w ka\u017Cdej r\u0119ce"
+  trait: 6
+  dodgeStyle: 0
+  signatureSkill: {fileID: 11400000, guid: 2b84eb4820fef24448f53ee65d676dfb, type: 2}
+  startingSkillChoices:
+  - {fileID: 11400000, guid: 92a150761796f7948aee0ad14c2433a3, type: 2}
+  - {fileID: 11400000, guid: d9b28305965ac2a49b7a7951e82942d0, type: 2}
+  loadouts:
+  - label: Dwa miecze
+    element: 0
+    weapon: {fileID: 11400000, guid: 116b6db2435d0b445b199590de7acef8, type: 2}
+    offHand: {fileID: 11400000, guid: c5099ced18821134689c696df3764eab, type: 2}
+  - label: Korbacz i miecz
+    element: 0
+    weapon: {fileID: 11400000, guid: 02a39d8ede96f7f46a256236f3d61658, type: 2}
+    offHand: {fileID: 11400000, guid: 116b6db2435d0b445b199590de7acef8, type: 2}
+  classModifiers:
+  - stat: 6
+    mode: 0
+    value: 20
+  - stat: 12
+    mode: 0
+    value: 22
+  - stat: 31
+    mode: 0
+    value: 5
+  - stat: 30
+    mode: 0
+    value: 5
+  - stat: 21
+    mode: 0
+    value: -5
+  - stat: 22
+    mode: 0
+    value: -5
+  - stat: 23
+    mode: 0
+    value: -5
+  - stat: 28
+    mode: 0
+    value: -5
+  - stat: 20
+    mode: 0
+    value: 7.142857
+  - stat: 27
+    mode: 0
+    value: 20
+  lookOverride: {fileID: 0}
+  toughness: 12
+  strength: 12
+  dexterity: 14
+  intelligence: 7
+  endurance: 10
+  mind: 10
+  startingItems:
+  - {fileID: 11400000, guid: 8386e7fa5789f05439ca843032b39bf3, type: 2}
+  alternativeWeapons: []
+  startingSpells: []
+  startingTalents: []
+  healthFlasks: 4
+  manaFlasks: 1
+  color: {r: 0.65, g: 0.15, b: 0.2, a: 1}
+  visual: {fileID: 11400000, guid: d15a11bb18cba0e4f9bd6c6dc5534a67, type: 2}

@@ -12,7 +12,7 @@ namespace Turris.Tests
         [Test]
         public void Rogue_StartsNimble_WithKnivesAndTechniques()
         {
-            var run = fx.NewRun("class_rogue");
+            var run = fx.NewRun("legacy_rogue");
             Assert.AreEqual(16, run.attributes.dexterity);
             var snap = BuildCalculator.Compute(run, fx.Cfg);
             Assert.Greater(snap.evasionChance, 0f, "Zręczność 16 – uchylenie");
@@ -37,7 +37,7 @@ namespace Turris.Tests
             Assert.IsTrue(knives.canParry);
             Assert.IsFalse(knives.canBlock);
 
-            var run = fx.NewRun("class_rogue");
+            var run = fx.NewRun("legacy_rogue");
             var pc = fx.NewCombatant(run);
             for (int i = 0; i < 4; i++)
             {
@@ -51,11 +51,14 @@ namespace Turris.Tests
         public void Floors_HaveWaves_BossFloorIsDuel()
         {
             var floors = fx.Cfg.tower.floors;
-            for (int i = 0; i < floors.Count - 1; i++) Assert.GreaterOrEqual(floors[i].WaveCount, 3, floors[i].name + ": co najmniej 3 fale");
+            // Piętra z portalami (Hell Unleashed) i bossowie w środku wieży mają własny rytm – fale liczą się na pozostałych.
+            for (int i = 0; i < floors.Count - 1; i++)
+                if (!floors[i].portals.enabled && !floors[i].enemies.Exists(e => e.isBoss))
+                    Assert.GreaterOrEqual(floors[i].WaveCount, 3, floors[i].name + ": co najmniej 3 fale");
             Assert.AreEqual(1, floors[floors.Count - 1].WaveCount, "Boss – pojedynek");
             int total = 0;
             foreach (var f in floors) { total += f.enemies.Count; foreach (var w in f.extraWaves) total += w.enemies.Count; }
-            Assert.GreaterOrEqual(total, 30, "Dużo więcej wrogów niż dawniej (8)");
+            Assert.GreaterOrEqual(total, 20, "Dużo więcej wrogów niż dawniej (8), nie licząc demonów z portali");
             Assert.IsTrue(floors.Exists(f => f.extraWaves.Exists(w => w.enemies.Exists(e => e.id == "enemy_archer"))), "Łucznicy w falach");
         }
 
@@ -73,7 +76,7 @@ namespace Turris.Tests
         [Test]
         public void ArrowTechniques_RequireBow()
         {
-            var run = fx.NewRun("class_rogue");
+            var run = fx.NewRun("legacy_rogue");
             var fire = run.LearnSpell(fx.Get<SpellDefinition>("skill_firearrow"));
             run.AssignSlot(fire, 0);
             var pc = fx.NewCombatant(run);
@@ -96,7 +99,7 @@ namespace Turris.Tests
             Assert.Greater(bow.weapon.heavy.baseDamage, bow.weapon.light.baseDamage);
             Assert.IsTrue(bow.twoHanded);
             Assert.AreEqual(WeaponModel.Bow, AnimResolve.ForItem(bow));
-            Assert.AreEqual(AttackAnim.Cast, AnimResolve.ForAttack(bow.weapon.light, 0, WeaponModel.Bow));
+            Assert.AreEqual(AttackAnim.BowDraw, AnimResolve.ForAttack(bow.weapon.light, 0, WeaponModel.Bow));
             Assert.IsTrue(fx.Cfg.baseItemPool.Contains(bow) && fx.Cfg.unlocks.Exists(u => u.target == bow), "Łuk w nagrodach i jako dodatek startowy");
         }
     }

@@ -16,5 +16,17 @@ namespace Turris
         {
             if (o != null) Object.DestroyImmediate(o);
         }
+
+        /// <summary>Potomek o podanej nazwie na dowolnej głębokości (np. kość w hierarchii modelu).</summary>
+        public static Transform FindDeep(Transform root, string name)
+        {
+            if (root.name == name) return root;
+            foreach (Transform c in root)
+            {
+                var t = FindDeep(c, name);
+                if (t != null) return t;
+            }
+            return null;
+        }
     }
 }

@@ -7,10 +7,13 @@ namespace Turris
     /// Decyduje o słabościach/odpornościach wroga i o reakcjach (szok termiczny, przewodzenie).
     /// Obrażenia żywiołów liczą się jako magiczne (obrona magiczna je redukuje).
     /// </summary>
-    public enum Element { None, Fire, Frost, Lightning }
+    public enum Element { None, Fire, Frost, Lightning, Earth }
 
-    /// <summary>Efekty trwające na postaci. Zamrożenie powstaje z trzeciej warstwy chłodu.</summary>
-    public enum StatusKind { Bleed, Burn, Chill, Shock, Frozen }
+    /// <summary>
+    /// Efekty trwające na postaci. Zamrożenie powstaje z trzeciej warstwy chłodu, ogłuszenie – z trzeciej warstwy zachwiania.
+    /// Pęknięcie pancerza zwiększa obrażenia fizyczne.
+    /// </summary>
+    public enum StatusKind { Bleed, Burn, Chill, Shock, Frozen, Stagger, Stun, Sunder }
 
     public enum ArenaStyle { Auto, Courtyard, Crypt, Summit }
 
@@ -42,6 +45,14 @@ namespace Turris
         FrostDamage,
         LightningDamage,
         BleedDamage,      // % premii do obrażeń krwawienia
+        EarthResist,
+        EarthDamage,
+        GlobalDamage,     // % premii do wszystkich obrażeń (premia klasy)
+        DamageReduction,  // % redukcji każdego trafienia (po obronie)
+        AttackSpeed,      // % szybkości ataków bronią
+        CooldownReduction,// % skrócenia odnowień umiejętności
+        LifeLeech,        // % zadanych obrażeń bezpośrednich wraca jako życie
+        ExecuteDamage,    // % premii do obrażeń przeciw celom poniżej 30% życia
     }
 
     /// <summary>Cztery cechy postaci (wartości liczbowe zgodne ze <see cref="StatType"/>; 1 i 2 wycofane).</summary>
@@ -51,7 +62,8 @@ namespace Turris
 
     public enum EquipSlot { MainHand, OffHand, Head, Body, Hands, Belt, Feet, Ring1, Ring2, Amulet }
 
-    public enum ItemKind { Weapon, Shield, Head, Body, Hands, Belt, Feet, Ring, Amulet }
+    /// <summary>OffHand – przedmiot drugiej ręki, który nie jest tarczą (grymuar, sztylet do rzucania); zwykle daje umiejętność.</summary>
+    public enum ItemKind { Weapon, Shield, Head, Body, Hands, Belt, Feet, Ring, Amulet, OffHand }
 
     public enum AttackDelivery { Melee, Projectile, AreaAroundSelf }
 
@@ -63,7 +75,18 @@ namespace Turris
     /// Warcry (okrzyk: premia do obrażeń), Meteor (zapowiedziany krąg), Storm (pioruny w losowych wrogów), BloodPact (życie za darmowe czary),
     /// FrostArmor (osłona + odwet chłodem), Pull (przyciąganie), Counter (postawa kontry), Rupture (rozdarcie ran).
     public enum SpellKind { Projectile, Nova, Heal, WeaponBuff, Barrier, Cleave, Charge, Whirlwind, Quake, ShieldBash, Cone, Chain, Zone, Flurry,
-        Warcry, Meteor, Storm, BloodPact, FrostArmor, Pull, Counter, Rupture, WeaponThrow }
+        Warcry, Meteor, Storm, BloodPact, FrostArmor, Pull, Counter, Rupture, WeaponThrow,
+        // Skille z Hell Unleashed: aura (włącz/wyłącz), sługi, fala przenikająca, doskok z wybuchem, przeciążenie, nieśmiertelność.
+        Aura, Summon, Wave, Dash, Overload, Undying }
+
+    /// <summary>Cecha klasy (Hell Unleashed). Wartości zapisane w assetach – nowe tylko na końcu.</summary>
+    public enum ClassTrait { None, Fury, ArcaneWard, Ambush, Bloodlust, Devotion, TwinBlades, Spellblade, Hawkeye, SoulBond }
+
+    /// <summary>Styl uniku klasy: przewrót, szarża barkiem (rani), mrugnięcie (odskok z wybuchem), zniknięcie (przewrót w cień).</summary>
+    public enum DodgeStyle { Roll, ShoulderCharge, Blink, Vanish }
+
+    /// <summary>Rodzaj sługi przyzywanego umiejętnością.</summary>
+    public enum ServantKind { Imp, Hound, Golem }
 
     /// <summary>Czar kosztuje manę i skaluje z Inteligencją; technika kosztuje wytrzymałość i skaluje z obrażeniami broni.</summary>
     public enum SkillCategory { Spell, Technique }

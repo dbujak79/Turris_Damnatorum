@@ -56,6 +56,8 @@ namespace Turris
             Color c = color * a;
             block.SetColor(TintId, new Color(c.r, c.g, c.b, 1f));
             block.SetColor(ColorId, c);
+            block.SetFloat("_Fill", Progress >= 0 ? Mathf.Clamp01(Progress) : 1f);
+            block.SetFloat("_Clock", Time.time);
             rend.SetPropertyBlock(block);
         }
     }

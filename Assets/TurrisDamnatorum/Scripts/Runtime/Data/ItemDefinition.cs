@@ -8,6 +8,7 @@ namespace Turris
     public class ItemDefinition : ContentDefinition
     {
         public ItemKind kind;
+        public string huSourceId, huSourceHash;
         [Tooltip("Broń dwuręczna zajmuje główną rękę i blokuje drugą.")]
         public bool twoHanded;
         public float weight = 2f;
@@ -22,16 +23,26 @@ namespace Turris
         [Tooltip("Model broni/tarczy na postaci. Auto = na podstawie id.")]
         public WeaponModel weaponModel = WeaponModel.Auto;
         public ShieldModel shieldModel = ShieldModel.Auto;
+        [Tooltip("Model 3D przedmiotu w dłoni postaci FBX (początek w środku rękojeści, ostrze wzdłuż +Y). Puste = model proceduralny.")]
+        public GameObject model;
+        public float modelScale = 1f;
+        [Tooltip("Przesunięcie chwytu wzdłuż drzewca (+Y modelu), m – np. młot trzymany wyżej.")]
+        public float modelGripShift;
+        [Tooltip("Umiejętność, którą daje przedmiot, dopóki jest założony (np. grymuar – nova, sztylet do rzucania – rzut nożami).")]
+        public SpellDefinition grantedSkill;
 
         public bool IsWeapon => kind == ItemKind.Weapon;
         public bool IsShield => kind == ItemKind.Shield;
+        /// <summary>Broń jednoręczna do walki wręcz – może iść do drugiej ręki (walka dwiema brońmi).</summary>
+        public bool IsOneHandedMelee => kind == ItemKind.Weapon && !twoHanded && weapon != null && weapon.light != null && weapon.light.delivery == AttackDelivery.Melee;
 
         public bool FitsSlot(EquipSlot slot)
         {
             switch (kind)
             {
-                case ItemKind.Weapon: return slot == EquipSlot.MainHand;
+                case ItemKind.Weapon: return slot == EquipSlot.MainHand || (slot == EquipSlot.OffHand && IsOneHandedMelee);
                 case ItemKind.Shield: return slot == EquipSlot.OffHand;
+                case ItemKind.OffHand: return slot == EquipSlot.OffHand;
                 case ItemKind.Head: return slot == EquipSlot.Head;
                 case ItemKind.Body: return slot == EquipSlot.Body;
                 case ItemKind.Hands: return slot == EquipSlot.Hands;
@@ -51,6 +62,7 @@ namespace Turris
                 {
                     case ItemKind.Weapon: return EquipSlot.MainHand;
                     case ItemKind.Shield: return EquipSlot.OffHand;
+                    case ItemKind.OffHand: return EquipSlot.OffHand;
                     case ItemKind.Head: return EquipSlot.Head;
                     case ItemKind.Body: return EquipSlot.Body;
                     case ItemKind.Hands: return EquipSlot.Hands;

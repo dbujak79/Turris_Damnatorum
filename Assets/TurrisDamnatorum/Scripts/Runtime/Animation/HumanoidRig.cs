@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -26,6 +27,11 @@ namespace Turris
         public Transform NockedArrow { get; private set; }
         public Transform CapePivot { get; private set; }
         public Transform CapeLower { get; private set; }
+        /// <summary>Segmenty peleryny od góry (każdy dzieckiem poprzedniego) – kołyszą się łańcuchem sprężyn.</summary>
+        public Transform[] CapeSegments { get; private set; }
+        /// <summary>Płaty tkaniny zwisające z bioder (tabard, fartuch, pasy skóry) – ustępują nogom i kołyszą się.</summary>
+        public readonly List<Transform> HipFlaps = new List<Transform>();
+        Transform tabardFront, tabardBack;
         public RigLook Look { get; private set; }
         public readonly Transform[] bones = new Transform[17];
 
@@ -39,6 +45,9 @@ namespace Turris
 
         readonly TintSet bodyTint = new TintSet();
         readonly TintSet weaponTint = new TintSet();
+        /// <summary>Tylko metal broni (ostrze, grot, obuch) – na nim osiada krew.</summary>
+        readonly TintSet bladeTint = new TintSet();
+        static bool IsMetal(Material m) => m.name.StartsWith("Metal") || m.name.StartsWith("DarkMetal");
         GameObject weaponObject, shieldObject, flaskObject, offhandObject, quiverObject;
 
         public Transform this[Bone b] => bones[(int)b];
@@ -87,6 +96,18 @@ namespace Turris
             PartBuilder.Add(t, m, s, c, pos, scale, euler);
             PartCount++;
         }
+
+        /// <summary>Płat zawieszony na biodrach w punkcie <paramref name="hinge"/> (przestrzeń bioder).</summary>
+        Transform Flap(string name, Vector3 hinge)
+        {
+            var t = Node(name, this[Bone.Hips], hinge);
+            HipFlaps.Add(t);
+            return t;
+        }
+
+        /// <summary>Część płata: pozycja podana w przestrzeni bioder (jak dotąd), zawieszona na płacie.</summary>
+        void PF(Transform flap, Mesh m, Surface s, Color c, Vector3 posInHips, Vector3 scale, Vector3 euler = default)
+            => P(flap, m, s, c, posInHips - flap.localPosition, scale, euler);
 
         static Mesh Box => ProcMesh.Box();
         static Mesh Sph => ProcMesh.Sphere();
@@ -267,8 +288,9 @@ namespace Turris
                             P(chest, Box, Surface.Metal, new Color(0.75f, 0.75f, 0.78f), new Vector3(d * 0.085f, 0.23f, 0.146f), new Vector3(0.012f, 0.05f, 0.006f), new Vector3(0, 0, d * 35f));
                         }
                         P(chest, Fr(1.25f, 0.9f), Surface.Cloth, Cl, new Vector3(0, 0.31f, 0), new Vector3(0.4f * w, 0.09f, 0.24f));
+                        var strips = Flap("LeatherFlap", new Vector3(0, -0.11f, 0.12f));
                         for (int i = 0; i < 6; i++)
-                            P(hips, Box, Surface.Leather, Le * (i % 2 == 0 ? 0.9f : 0.75f), new Vector3((-0.125f + i * 0.05f) * w, -0.2f, 0.12f), new Vector3(0.045f * w, 0.18f, 0.012f), new Vector3(-6f, 0, 0));
+                            PF(strips, Box, Surface.Leather, Le * (i % 2 == 0 ? 0.9f : 0.75f), new Vector3((-0.125f + i * 0.05f) * w, -0.2f, 0.12f), new Vector3(0.045f * w, 0.18f, 0.012f), new Vector3(-6f, 0, 0));
                         Belt(Le);
                         break;
                     }
@@ -277,14 +299,17 @@ namespace Turris
                     for (int side = -1; side <= 1; side += 2)
                     {
                         float z = side * 0.122f;
+                        // Dolna część tabardu to osobny płat: w biegu ustępuje udom zamiast przez nie przenikać.
+                        var flap = Flap(side > 0 ? "TabardFront" : "TabardBack", new Vector3(0, -0.02f, side * 0.117f));
+                        if (side > 0) tabardFront = flap; else tabardBack = flap;
                         P(chest, Fr(1.1f, 1f), Surface.Cloth, Cl, new Vector3(0, 0.08f, z), new Vector3(0.27f * w, 0.36f, 0.015f));
                         P(spine, Box, Surface.Cloth, Cl, new Vector3(0, 0.1f, side * 0.108f), new Vector3(0.25f * w, 0.22f, 0.012f));
-                        P(hips, Fr(1.05f, 1f), Surface.Cloth, Cl, new Vector3(0, -0.25f, side * 0.14f), new Vector3(0.25f * w, 0.44f, 0.015f), new Vector3(side * -6f, 0, 0));
-                        P(hips, Box, Surface.Gold, Tr, new Vector3(0, -0.465f, side * 0.163f), new Vector3(0.25f * w, 0.02f, 0.016f), new Vector3(side * -6f, 0, 0));
+                        PF(flap, Fr(1.05f, 1f), Surface.Cloth, Cl, new Vector3(0, -0.25f, side * 0.14f), new Vector3(0.25f * w, 0.44f, 0.015f), new Vector3(side * -6f, 0, 0));
+                        PF(flap, Box, Surface.Gold, Tr, new Vector3(0, -0.465f, side * 0.163f), new Vector3(0.25f * w, 0.02f, 0.016f), new Vector3(side * -6f, 0, 0));
                         for (int e = -1; e <= 1; e += 2)
                         {
                             P(chest, Box, Surface.Gold, Tr, new Vector3(e * 0.14f * w, 0.08f, z + side * 0.006f), new Vector3(0.012f, 0.36f, 0.01f));
-                            P(hips, Box, Surface.Gold, Tr, new Vector3(e * 0.126f * w, -0.25f, side * 0.148f), new Vector3(0.012f, 0.44f, 0.01f), new Vector3(side * -6f, 0, 0));
+                            PF(flap, Box, Surface.Gold, Tr, new Vector3(e * 0.126f * w, -0.25f, side * 0.148f), new Vector3(0.012f, 0.44f, 0.01f), new Vector3(side * -6f, 0, 0));
                         }
                         P(chest, Box, Surface.Gold, Tr, new Vector3(0, 0.1f, z + side * 0.011f), new Vector3(0.035f, 0.2f, 0.01f));
                         P(chest, Box, Surface.Gold, Tr, new Vector3(0, 0.15f, z + side * 0.011f), new Vector3(0.13f, 0.035f, 0.01f));
@@ -430,8 +455,15 @@ namespace Turris
                     for (int k = 0; k < 3; k++) P(hips, Tor(0.1f), Surface.Chain, Ch * 0.8f, new Vector3(0, -0.06f - k * 0.08f, 0), new Vector3(0.31f * w + k * 0.035f, 0.2f, 0.225f + k * 0.02f));
                     // Frędzle tabardu
                     for (int side = -1; side <= 1; side += 2)
+                    {
+                        var flap = side > 0 ? tabardFront : tabardBack;
                         for (int i = 0; i < 8; i++)
-                            P(hips, Cone, Surface.Gold, Tr, new Vector3((-0.105f + i * 0.03f) * w, -0.49f, side * 0.166f), new Vector3(0.018f, 0.04f, 0.01f), new Vector3(side * -6f + 180f, 0, 0));
+                        {
+                            var pos = new Vector3((-0.105f + i * 0.03f) * w, -0.49f, side * 0.166f);
+                            if (flap != null) PF(flap, Cone, Surface.Gold, Tr, pos, new Vector3(0.018f, 0.04f, 0.01f), new Vector3(side * -6f + 180f, 0, 0));
+                            else P(hips, Cone, Surface.Gold, Tr, pos, new Vector3(0.018f, 0.04f, 0.01f), new Vector3(side * -6f + 180f, 0, 0));
+                        }
+                    }
                     // Klamry pendentu
                     for (int i = 0; i < 2; i++) P(chest, Box, Surface.Gold, Tr, new Vector3(-0.07f + i * 0.14f, 0.02f + i * 0.17f, 0.141f), new Vector3(0.025f, 0.025f, 0.008f), new Vector3(0, 0, 38f));
                     break;
@@ -465,7 +497,8 @@ namespace Turris
                             P(chest, Cone, Surface.Hair, fur * (i % 2 == 0 ? 1f : 0.8f), new Vector3(Mathf.Sin(rad) * 0.27f * w, 0.24f, Mathf.Cos(rad) * 0.19f), new Vector3(0.06f, 0.09f, 0.04f), new Vector3(180f - 20f, a, 0));
                         }
                         P(chest, Fr(1.05f, 1f), Surface.Cloth, Cl, new Vector3(0, 0.02f, 0.17f), new Vector3(0.22f * w, 0.26f, 0.01f));
-                        P(hips, Fr(1.05f, 1f), Surface.Cloth, Cl, new Vector3(0, -0.3f, 0.16f), new Vector3(0.22f * w, 0.42f, 0.012f), new Vector3(-6f, 0, 0));
+                        var wf = Flap("WardenFlap", new Vector3(0, -0.07f, 0.14f));
+                        PF(wf, Fr(1.05f, 1f), Surface.Cloth, Cl, new Vector3(0, -0.3f, 0.16f), new Vector3(0.22f * w, 0.42f, 0.012f), new Vector3(-6f, 0, 0));
                         P(chest, Box, Surface.Gold, Tr, new Vector3(0, 0.04f, 0.178f), new Vector3(0.1f, 0.1f, 0.006f), new Vector3(0, 0, 45f));
                     }
                     if (look.style == RigStyle.Castellan)
@@ -1122,15 +1155,33 @@ namespace Turris
             float w = look.bulk;
             var chest = this[Bone.Chest];
             Color c = look.cloth * 0.75f, Tr = look.trim;
-            CapePivot = Node("CapePivot", chest, new Vector3(0, 0.27f, -0.15f));
-            P(CapePivot, Box, Surface.Cloth, look.cloth * 0.6f, new Vector3(0, 0f, 0.02f), new Vector3(0.42f * w, 0.05f, 0.05f));
-            P(CapePivot, Fr(0.85f, 1f), Surface.Cloth, c, new Vector3(0, -0.22f, 0), new Vector3(0.44f * w, 0.44f, 0.022f));
-            CapeLower = Node("CapeLower", CapePivot, new Vector3(0, -0.44f, 0));
-            P(CapeLower, Fr(0.95f, 1f), Surface.Cloth, c * 0.97f, new Vector3(0, -0.2f, 0), new Vector3(0.49f * w, 0.4f, 0.022f));
-            P(CapeLower, Box, Surface.Gold, Tr, new Vector3(0, -0.4f, 0), new Vector3(0.49f * w, 0.02f, 0.026f));
+            // Cztery segmenty (każdy dzieckiem poprzedniego) – łańcuch, który faluje przy ruszaniu, zakrętach i trafieniach.
+            float[] len = { 0.22f, 0.21f, 0.21f, 0.2f };
+            float[] wid = { 0.37f, 0.44f, 0.47f, 0.49f, 0.5f };
+            CapeSegments = new Transform[len.Length];
+            Transform parent = chest;
+            Vector3 at = new Vector3(0, 0.27f, -0.15f);
+            for (int i = 0; i < len.Length; i++)
+            {
+                var seg = Node("Cape" + i, parent, at);
+                CapeSegments[i] = seg;
+                Color sc = c * (1f - i * 0.012f);
+                P(seg, Fr(wid[i] / wid[i + 1], 1f), Surface.Cloth, sc, new Vector3(0, -len[i] * 0.5f, 0), new Vector3(wid[i + 1] * w, len[i] + 0.01f, 0.022f));
+                // Szew poprzeczny i obszycie brzegów – tkanina nie wygląda jak jedna płyta.
+                if (i > 0) P(seg, Box, Surface.Cloth, sc * 0.8f, new Vector3(0, 0.002f, -0.012f), new Vector3(wid[i] * w * 0.98f, 0.008f, 0.004f));
+                for (int e = -1; e <= 1; e += 2)
+                    P(seg, Box, Surface.Cloth, sc * 0.75f, new Vector3(e * (wid[i] + wid[i + 1]) * 0.25f * w, -len[i] * 0.5f, 0), new Vector3(0.012f, len[i] + 0.01f, 0.026f));
+                parent = seg;
+                at = new Vector3(0, -len[i], 0);
+            }
+            CapePivot = CapeSegments[0];
+            CapeLower = CapeSegments[2];
+            var last = CapeSegments[len.Length - 1];
+            P(CapeSegments[0], Box, Surface.Cloth, look.cloth * 0.6f, new Vector3(0, 0f, 0.02f), new Vector3(0.42f * w, 0.05f, 0.05f));
+            P(last, Box, Surface.Gold, Tr, new Vector3(0, -0.2f, 0), new Vector3(0.5f * w, 0.02f, 0.026f));
             if (look.style == RigStyle.Castellan)
                 for (int i = 0; i < 6; i++)
-                    P(CapeLower, Box, Surface.Cloth, c * 0.9f, new Vector3(-0.2f * w + i * 0.08f * w, -0.43f - (i % 2) * 0.03f, 0), new Vector3(0.05f, 0.05f, 0.02f), new Vector3(0, 0, 45f));
+                    P(last, Box, Surface.Cloth, c * 0.9f, new Vector3(-0.2f * w + i * 0.08f * w, -0.23f - (i % 2) * 0.03f, 0), new Vector3(0.05f, 0.05f, 0.02f), new Vector3(0, 0, 45f));
             for (int s = -1; s <= 1; s += 2)
                 P(chest, Sph, Surface.Gold, Tr, new Vector3(s * 0.16f * w, 0.27f, 0.09f), new Vector3(0.05f, 0.05f, 0.03f));
             P(chest, Box, Surface.Gold, Tr * 0.9f, new Vector3(0, 0.26f, 0.105f), new Vector3(0.3f * w, 0.01f, 0.01f));
@@ -1172,6 +1223,9 @@ namespace Turris
             weaponTint.Clear();
             weaponTint.Collect(weaponObject.GetComponentsInChildren<Renderer>(true));
             if (offhandObject != null) weaponTint.Collect(offhandObject.GetComponentsInChildren<Renderer>(true));
+            bladeTint.Clear();
+            bladeTint.Collect(weaponObject.GetComponentsInChildren<Renderer>(true), IsMetal);
+            if (offhandObject != null) bladeTint.Collect(offhandObject.GetComponentsInChildren<Renderer>(true), IsMetal);
             CollectBodyTint();
         }
 
@@ -1224,6 +1278,9 @@ namespace Turris
             }
             weaponTint.SetGlow(c, intensity);
         }
+
+        /// <summary>Krew na broni (0–1): ostrze ciemnieje do barwy zakrzepłej krwi.</summary>
+        public void SetWeaponBlood(float amount) => bladeTint.SetTint(new Color(0.3f, 0.015f, 0.015f), Mathf.Clamp01(amount) * 0.7f);
 
         /// <summary>Punkt na końcu broni (do testów i efektów).</summary>
         public Vector3 WeaponTip

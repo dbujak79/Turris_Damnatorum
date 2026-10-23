@@ -32,6 +32,9 @@ namespace Turris
             public float sizeGrow;          // >1: rośnie, <1: maleje
             public float drag;
             public Vector3 rotation;        // obrót kształtu emitera
+            public string sprite;           // oryginalna tekstura HU (domyślnie glow/spark/smoke)
+            public Vector2Int atlas;        // losowany, nieruchomy obraz z atlasu
+            public int flipbook;            // liczba kolumn i wierszy animowanej planszy
         }
 
         public static ParticleSystem Particles(Vector3 pos, in Emit e, Transform parent = null)
@@ -107,7 +110,16 @@ namespace Turris
             }
 
             var r = go.GetComponent<ParticleSystemRenderer>();
-            r.material = e.alpha ? FxMaterials.AlphaBlended : FxMaterials.Additive;
+            r.sharedMaterial = HellVfxMaterials.Sprite(e.sprite ?? (e.alpha ? "smoke" : e.stretch ? "spark" : "glow"), !e.alpha);
+            if (e.flipbook > 0 || e.atlas.x > 0)
+            {
+                var sheet = ps.textureSheetAnimation;
+                sheet.enabled = true;
+                sheet.numTilesX = e.flipbook > 0 ? e.flipbook : e.atlas.x;
+                sheet.numTilesY = e.flipbook > 0 ? e.flipbook : e.atlas.y;
+                sheet.startFrame = e.flipbook > 0 ? new ParticleSystem.MinMaxCurve(0f) : new ParticleSystem.MinMaxCurve(0f, 1f);
+                sheet.frameOverTime = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0, 0, 1, e.flipbook > 0 ? 1 : 0));
+            }
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             r.receiveShadows = false;
             if (e.stretch)
@@ -183,9 +195,7 @@ namespace Turris
         /// <summary>Trafienie w ciało: ciemnoczerwone krople i kurz.</summary>
         public static void Blood(Vector3 pos, Vector3 dir, float amount = 1f)
         {
-            if (!Enabled) return;
-            Particles(pos, new Emit { burst = Mathf.RoundToInt(28 * amount), life = new Vector2(0.35f, 0.8f), speed = new Vector2(1.5f, 4.5f), size = new Vector2(0.07f, 0.15f), colorA = new Color(0.45f, 0.02f, 0.02f, 1f), colorB = new Color(0.25f, 0.0f, 0.0f, 1f), gravity = 1.6f, alpha = true, shape = ParticleSystemShapeType.Cone, angle = 35f, radius = 0.05f, rotation = Quaternion.LookRotation(dir.sqrMagnitude > 0.01f ? dir : Vector3.up).eulerAngles, sizeGrow = 0.6f });
-            Particles(pos, new Emit { burst = 10, life = new Vector2(0.18f, 0.3f), speed = new Vector2(1f, 3f), size = new Vector2(0.08f, 0.14f), colorA = new Color(1f, 0.45f, 0.3f), stretch = true, gravity = 0.5f });
+            HellFx.Blood(pos, dir, amount);
         }
 
         /// <summary>Parowanie: złoto-biała gwiazda, pierścień i fala iskier.</summary>
@@ -212,22 +222,19 @@ namespace Turris
         /// <summary>Unik: kurz spod stóp.</summary>
         public static void Dust(Vector3 pos, float scale = 1f)
         {
-            if (!Enabled) return;
-            Particles(pos + Vector3.up * 0.1f, new Emit { burst = 14, life = new Vector2(0.5f, 0.9f), speed = new Vector2(0.6f, 1.6f) * scale, size = new Vector2(0.25f, 0.5f) * scale, colorA = new Color(0.55f, 0.5f, 0.45f, 0.5f), alpha = true, shape = ParticleSystemShapeType.Circle, radius = 0.3f * scale, sizeGrow = 2f, rotation = new Vector3(-90, 0, 0), drag = 2f });
+            HellFx.SlamDust(pos, Mathf.Max(0.5f, scale * 1.2f));
         }
 
         /// <summary>Fala uderzeniowa: krąg na ziemi + pierścień + iskry + słup światła.</summary>
         public static void Shockwave(Vector3 ground, Color c, float radius, bool pillar = true)
         {
             if (!Enabled) return;
-            Vector3 g = new Vector3(ground.x, 0.02f, ground.z);
-            Decal(g, FxMaterials.Ring, c, 0.3f, radius * 2.2f, 0.45f);
-            Decal(g, FxMaterials.Glyph, c, radius * 2f, radius * 2.1f, 0.7f, 90f);
-            Particles(g + Vector3.up * 0.2f, new Emit { burst = Mathf.RoundToInt(50 + radius * 16), life = new Vector2(0.4f, 0.7f), speed = new Vector2(radius * 1.6f, radius * 2.6f), size = new Vector2(0.12f, 0.24f), colorA = c, colorB = Color.white, shape = ParticleSystemShapeType.Circle, radius = 0.2f, stretch = true, rotation = new Vector3(-90, 0, 0), sizeGrow = 0.3f });
-            Particles(g, new Emit { burst = Mathf.RoundToInt(20 + radius * 8), life = new Vector2(0.6f, 1.1f), speed = new Vector2(0.4f, 1.2f), size = new Vector2(0.3f, 0.6f), colorA = new Color(0.45f, 0.4f, 0.38f, 0.45f), alpha = true, shape = ParticleSystemShapeType.Circle, radius = radius * 0.8f, rotation = new Vector3(-90, 0, 0), sizeGrow = 2f });
-            if (pillar)
-                Particles(g, new Emit { burst = 70, life = new Vector2(0.5f, 0.9f), speed = new Vector2(3f, 7f), size = new Vector2(0.14f, 0.28f), colorA = c, colorB = Color.white, shape = ParticleSystemShapeType.Circle, radius = radius * 0.35f, rotation = new Vector3(-90, 0, 0), sizeGrow = 0.2f });
-            PointLight(g + Vector3.up, c, 5f, radius * 2.5f, 0.5f);
+            var family = HellFx.FromColor(c);
+            HellFx.Burst(ground + Vector3.up * 0.1f, family, radius);
+            Decal(ground, HellVfxMaterials.Ground(family), c, radius * 2, radius * 2, 0.55f, 0, 0.6f);
+            Decal(ground, FxMaterials.Ring, c, 0.3f, radius * 2, 0.4f);
+            if (pillar) HellFx.SlamDust(ground, radius);
+            HellFxPool.Instance.FlashLight(ground + Vector3.up, c, 3.5f, radius * 2, 0.3f);
         }
 
         /// <summary>Energia zbierająca się w dłoni podczas rzucania czaru.</summary>
@@ -263,9 +270,7 @@ namespace Turris
         /// <summary>Śmierć przeciwnika: rozsypuje się w popiół i żar.</summary>
         public static void DeathAsh(Vector3 pos, float scale)
         {
-            if (!Enabled) return;
-            Particles(pos + Vector3.up * 0.9f * scale, new Emit { burst = Mathf.RoundToInt(60 * scale), life = new Vector2(1.2f, 2.4f), speed = new Vector2(0.2f, 0.8f), size = new Vector2(0.08f, 0.2f) * scale, colorA = new Color(0.12f, 0.1f, 0.1f, 0.8f), colorB = new Color(0.3f, 0.28f, 0.26f, 0.6f), alpha = true, shape = ParticleSystemShapeType.Box, radius = 0.4f, gravity = -0.12f, noise = 0.6f, sizeGrow = 1.5f });
-            Particles(pos + Vector3.up * 0.9f * scale, new Emit { burst = Mathf.RoundToInt(70 * scale), life = new Vector2(1f, 2f), speed = new Vector2(0.3f, 1f), size = new Vector2(0.06f, 0.11f), colorA = new Color(1f, 0.5f, 0.15f), colorB = new Color(1f, 0.8f, 0.3f), shape = ParticleSystemShapeType.Sphere, radius = 0.5f * scale, gravity = -0.2f, noise = 0.8f, sizeGrow = 0.2f });
+            HellFx.Burst(pos + Vector3.up * 0.9f * scale, HellFxElement.Ash, scale * 2.4f);
         }
 
         /// <summary>Ogień (pochodnie, koksowniki): płomień, żar, dym i migoczące światło. Efekt trwały.</summary>
@@ -273,15 +278,29 @@ namespace Turris
         {
             if (!Enabled) return null;
             var root = new GameObject("Fire");
-            root.transform.SetParent(parent, false);
+            if (parent != null) root.transform.SetParent(parent, false);
             root.transform.position = pos;
-            Loop(root.transform, new Emit { rate = 40 * scale, life = new Vector2(0.35f, 0.6f), speed = new Vector2(0.6f, 1.3f) * scale, size = new Vector2(0.18f, 0.32f) * scale, colorA = new Color(1f, 0.45f, 0.1f), colorB = new Color(1f, 0.8f, 0.3f), shape = ParticleSystemShapeType.Sphere, radius = 0.08f * scale, sizeGrow = 0.2f, noise = 0.3f });
-            Loop(root.transform, new Emit { rate = 16 * scale, life = new Vector2(0.2f, 0.35f), speed = new Vector2(0.3f, 0.6f) * scale, size = new Vector2(0.1f, 0.16f) * scale, colorA = new Color(1f, 0.95f, 0.7f), shape = ParticleSystemShapeType.Sphere, radius = 0.04f * scale, sizeGrow = 0.3f });
-            Loop(root.transform, new Emit { rate = 6 * scale, life = new Vector2(1f, 2f), speed = new Vector2(0.5f, 1.5f), size = new Vector2(0.02f, 0.04f), colorA = new Color(1f, 0.6f, 0.2f), shape = ParticleSystemShapeType.Sphere, radius = 0.1f * scale, noise = 0.8f, sizeGrow = 0.3f });
-            Loop(root.transform, new Emit { rate = 5 * scale, life = new Vector2(1.5f, 2.5f), speed = new Vector2(0.4f, 0.8f), size = new Vector2(0.25f, 0.4f) * scale, colorA = new Color(0.15f, 0.13f, 0.12f, 0.35f), alpha = true, shape = ParticleSystemShapeType.Sphere, radius = 0.08f * scale, sizeGrow = 3f, noise = 0.3f }, 0.35f * scale);
-            var l = PointLight(pos + Vector3.up * 0.3f * scale, new Color(1f, 0.6f, 0.25f), 1.6f * scale, 7f * scale, 0f, root.transform);
-            if (l != null) l.gameObject.AddComponent<FxFlicker>().baseIntensity = l.intensity;
+            HellFx.Flame(root.transform, Vector3.zero, Mathf.Max(0.1f, scale * 0.6f));
+            var light = PointLight(pos + Vector3.up * 0.3f * scale, new Color(1f,0.6f,0.25f), 1.6f*scale, 7f*scale, 0, root.transform);
+            if (light != null) light.gameObject.AddComponent<FxFlicker>().baseIntensity = light.intensity;
             return root;
+        }
+
+        /// <summary>Ciągła emisja przyczepiona do obiektu, w jego orientacji (kształt emitera obraca się z nim).</summary>
+        public static ParticleSystem LoopEmit(Transform parent, Vector3 localOffset, Emit e)
+        {
+            var ps = Particles(parent.TransformPoint(localOffset), e, parent);
+            if (ps == null) return null;
+            ps.transform.rotation = parent.rotation * Quaternion.Euler(e.rotation);
+            var main = ps.main;
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            main.loop = true;
+            main.duration = 1f;
+            main.maxParticles = Mathf.CeilToInt(e.rate * e.life.y * 1.5f) + 8;
+            var em = ps.emission;
+            em.rateOverTime = e.rate;
+            ps.Play();
+            return ps;
         }
 
         static void Loop(Transform parent, Emit e, float yOffset = 0f)
@@ -318,20 +337,15 @@ namespace Turris
         }
 
         /// <summary>Oprawa pocisku: jądro, halo, smuga, krążące iskry i światło. Zwraca obiekt do odczepienia przy trafieniu.</summary>
-        public static GameObject ProjectileVisual(Transform projectile, Color c, float size)
+        public static GameObject ProjectileVisual(Transform projectile, Color c, float size, Element element = Element.None, bool hostile = false, HellFxElement? visualFamily = null)
         {
             if (!Enabled) return null;
             var root = new GameObject("ProjectileFx");
             root.transform.SetParent(projectile, false);
-            // Halo
-            Loop(root.transform, new Emit { rate = 40, life = new Vector2(0.12f, 0.16f), size = new Vector2(size * 4f, size * 4.8f), colorA = c, shape = ParticleSystemShapeType.Sphere, radius = 0.01f, sizeGrow = 1.2f });
-            // Smuga (świat): cząsteczki zostają w miejscu i gasną
-            Loop(root.transform, new Emit { rate = 120, life = new Vector2(0.3f, 0.45f), size = new Vector2(size * 1.8f, size * 2.6f), colorA = c, colorB = Color.white, shape = ParticleSystemShapeType.Sphere, radius = size * 0.4f, sizeGrow = 0.1f });
-            // Iskry odpadające
-            Loop(root.transform, new Emit { rate = 40, life = new Vector2(0.3f, 0.6f), speed = new Vector2(0.5f, 1.5f), size = new Vector2(0.04f, 0.08f), colorA = Color.white, colorB = c, shape = ParticleSystemShapeType.Sphere, radius = size, noise = 1f, sizeGrow = 0.2f });
-            var orb = Particles(projectile.position, new Emit { rate = 20, duration = 1f, life = new Vector2(0.3f, 0.4f), size = new Vector2(size * 0.5f, size * 0.7f), colorA = Color.white, colorB = c, shape = ParticleSystemShapeType.Circle, radius = size * 2f, orbital = 12f, localSpace = true, sizeGrow = 0.4f }, root.transform);
-            if (orb != null) { var m = orb.main; orb.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear); m.loop = true; orb.Play(); }
-            PointLight(projectile.position, c, 2.2f, 4f, 0f, root.transform);
+            HellFxElement family = visualFamily ?? (element != Element.None ? HellFx.For(element) : hostile ? HellFxElement.Enemy : HellFx.FromColor(c));
+            var trail = HellFx.Trail(root.transform, family, size);
+            var bolt = root.AddComponent<HellBolt>();
+            bolt.Init(trail, element, c, size);
             return root;
         }
 
@@ -339,20 +353,13 @@ namespace Turris
         public static void DetachProjectileVisual(GameObject fx)
         {
             if (fx == null) return;
+            var bolt = fx.GetComponent<HellBolt>();
+            if (bolt != null) { bolt.Release(); return; }
+            var layers = fx.GetComponent<HellParticles>();
+            if (layers != null) { layers.StopAndRelease(); return; }
             fx.transform.SetParent(null, true);
-            foreach (var ps in fx.GetComponentsInChildren<ParticleSystem>())
-            {
-                var main = ps.main;
-                main.loop = false;
-                ps.Stop(false, ParticleSystemStopBehavior.StopEmitting);
-            }
-            foreach (var l in fx.GetComponentsInChildren<Light>())
-            {
-                var f = l.gameObject.AddComponent<FxLight>();
-                f.life = 0.2f;
-                f.startIntensity = l.intensity;
-            }
-            Object.Destroy(fx, 1.2f);
+            foreach (var ps in fx.GetComponentsInChildren<ParticleSystem>()) ps.Stop(false, ParticleSystemStopBehavior.StopEmitting);
+            Object.Destroy(fx, 2.5f);
         }
 
         /// <summary>Błyskawica między dwoma punktami: poszarpana linia, rozbłysk i iskry na końcu.</summary>
@@ -376,8 +383,8 @@ namespace Turris
             lr.startWidth = 0.16f; lr.endWidth = 0.08f;
             lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             Object.Destroy(go, 0.18f);
-            Particles(to, new Emit { burst = 18, life = new Vector2(0.15f, 0.35f), speed = new Vector2(3f, 6f), size = new Vector2(0.05f, 0.1f), colorA = c, colorB = Color.white, stretch = true, sizeGrow = 0.2f });
-            PointLight((from + to) * 0.5f, c, 4f, 6f, 0.15f);
+            HellFx.Crackle(to);
+            HellFxPool.Instance.FlashLight((from + to) * 0.5f, c, 4f, 6f, 0.15f);
         }
 
         /// <summary>Podmuch mrozu w stożku przed postacią.</summary>
@@ -393,31 +400,41 @@ namespace Turris
         /// <summary>Płonąca ziemia: krąg i kilka ognisk na czas trwania strefy.</summary>
         public static GameObject BurningGround(Vector3 center, float radius, Color c, float life)
         {
-            if (!Enabled) return null;
-            var root = new GameObject("BurningGround");
-            root.transform.position = center;
-            Decal(center, FxMaterials.Glyph, c, radius * 2f, radius * 2.1f, life, 20f, 0.2f);
-            Decal(center, FxMaterials.Ring, c, radius * 1.6f, radius * 2.05f, life, 0f, 0.2f);
-            // Języki ognia nad całą strefą przez cały czas jej trwania.
-            Particles(center + Vector3.up * 0.1f, new Emit { rate = 45f * radius, duration = life, life = new Vector2(0.5f, 0.9f), speed = new Vector2(0.6f, 1.6f), size = new Vector2(0.3f, 0.6f), colorA = c, colorB = new Color(1f, 0.85f, 0.4f), shape = ParticleSystemShapeType.Circle, radius = radius * 0.9f, rotation = new Vector3(-90, 0, 0), sizeGrow = 0.3f, noise = 0.4f }, root.transform);
-            int fires = Mathf.Clamp(Mathf.RoundToInt(radius * 2.5f), 3, 8);
-            for (int i = 0; i < fires; i++)
+            return HellFx.Ground(center, radius, HellFxElement.Fire, c, life);
+        }
+
+        /// <summary>
+        /// Strefa na ziemi w barwach żywiołu: ogień – płonąca ziemia; mróz – szron i mgła; błyskawica – iskry i pioruny;
+        /// ziemia – pył i odłamki; bez żywiołu – kolce i linki (sidła).
+        /// </summary>
+        public static GameObject ElementGround(Vector3 center, float radius, Element element, Color c, float life, HellFxElement? visualFamily = null)
+        {
+            var ground = HellFx.Ground(center, radius, visualFamily ?? HellFx.For(element), c, life);
+            if (ground != null && element == Element.Lightning) ground.AddComponent<GroundBolts>().Init(center, radius, c, life);
+            return ground;
+        }
+
+        /// <summary>Pioruny bijące w losowe miejsca strefy (nawałnica).</summary>
+        class GroundBolts : MonoBehaviour
+        {
+            Vector3 center; float radius, life, timer; Color color;
+            public void Init(Vector3 c, float r, Color col, float l) { center = c; radius = r; color = col; life = l; }
+            void Update()
             {
-                Vector2 p = Random.insideUnitCircle * radius * 0.8f;
-                Fire(center + new Vector3(p.x, 0.05f, p.y), Random.Range(0.6f, 1f), root.transform);
+                life -= Time.deltaTime; timer -= Time.deltaTime;
+                if (life <= 0 || timer > 0) return;
+                timer = Random.Range(0.15f, 0.35f);
+                Vector2 p = Random.insideUnitCircle * radius * 0.9f;
+                Vector3 g = center + new Vector3(p.x, 0.05f, p.y);
+                Lightning(g + Vector3.up * 7f + new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)), g, color);
+                Flash(g + Vector3.up * 0.3f, color, 0.6f);
             }
-            Object.Destroy(root, life);
-            return root;
         }
 
         /// <summary>Wybuch pocisku przy trafieniu.</summary>
         public static void Impact(Vector3 pos, Color c, float scale = 1f)
         {
-            if (!Enabled) return;
-            Particles(pos, new Emit { burst = 1, life = new Vector2(0.14f, 0.2f), size = new Vector2(1.1f, 1.4f) * scale, colorA = c, colorB = Color.white, sizeGrow = 1.8f });
-            Particles(pos, new Emit { burst = 40, life = new Vector2(0.35f, 0.7f), speed = new Vector2(2f, 6f) * scale, size = new Vector2(0.08f, 0.14f), colorA = c, colorB = Color.white, stretch = true, gravity = 0.4f, sizeGrow = 0.2f });
-            Particles(pos, new Emit { burst = 12, life = new Vector2(0.4f, 0.8f), speed = new Vector2(0.3f, 1f), size = new Vector2(0.15f, 0.3f) * scale, colorA = c * 0.6f, noise = 0.6f, sizeGrow = 1.8f });
-            PointLight(pos, c, 4f * scale, 5f * scale, 0.3f);
+            HellFx.Impact(pos, HellFx.FromColor(c), c, scale * 1.5f);
         }
     }
 }

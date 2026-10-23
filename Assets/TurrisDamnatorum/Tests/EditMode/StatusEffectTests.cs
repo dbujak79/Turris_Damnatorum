@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 
 namespace Turris.Tests
@@ -145,7 +146,7 @@ namespace Turris.Tests
         [Test]
         public void Player_BleedsFromLandedHit_ButNotFromBlockedOne()
         {
-            var pc = fx.NewCombatant(fx.NewRun("class_knight"));
+            var pc = fx.NewCombatant(fx.NewRun("legacy_knight"));
             pc.ReceiveHit(WithStatus(Fixture.FrontHit(40), StatusKind.Bleed));
             Assert.AreEqual(1, pc.Status.BleedStacks);
             Fixture.Advance(pc, 0.5f);
@@ -153,7 +154,7 @@ namespace Turris.Tests
             Fixture.Advance(pc, 1.5f);
             Assert.Less(pc.Health.Current, hp, "Krwawienie zadaje obrażenia w czasie");
 
-            var blocker = fx.NewCombatant(fx.NewRun("class_knight"));
+            var blocker = fx.NewCombatant(fx.NewRun("legacy_knight"));
             blocker.SetBlockHeld(true);
             var r = blocker.ReceiveHit(WithStatus(Fixture.FrontHit(40), StatusKind.Bleed));
             Assert.AreEqual(HitOutcome.Blocked, r.outcome);
@@ -163,7 +164,7 @@ namespace Turris.Tests
         [Test]
         public void Player_FrozenAfterThreeChills_CannotAct()
         {
-            var pc = fx.NewCombatant(fx.NewRun("class_knight"));
+            var pc = fx.NewCombatant(fx.NewRun("legacy_knight"));
             for (int i = 0; i < 3; i++) pc.ReceiveHit(WithStatus(Fixture.FrontHit(5), StatusKind.Chill));
             Assert.IsTrue(pc.Status.Frozen);
             Assert.AreEqual(ActionType.Flinch, pc.Actions.Current);
@@ -176,7 +177,7 @@ namespace Turris.Tests
         [Test]
         public void Player_Barrier_AbsorbsStatusTicks()
         {
-            var run = fx.NewRun("class_mage");
+            var run = fx.NewRun("legacy_mage");
             var barrier = run.LearnSpell(fx.Get<SpellDefinition>("spell_barrier"));
             run.AssignSlot(barrier, 0);
             var pc = fx.NewCombatant(run);
@@ -204,8 +205,10 @@ namespace Turris.Tests
                 if (s.attack.element != Element.None || s.attack.statuses.Count > 0)
                     StringAssert.Contains(s.attack.statuses.Count > 0 ? Names.Status(s.attack.statuses[0].kind) : Names.Element(s.attack.element),
                         Describe.Spell(s, 0, null, fx.Cfg.balance), s.id + ": opis pokazuje żywioł/efekt");
-                Assert.IsTrue(fx.Cfg.baseSpellPool.Contains(s) || fx.Cfg.unlocks.Exists(u => u.target == s) || fx.Cfg.classes.Exists(c => c.startingSpells.Contains(s)),
-                    s.id + " jest dostępna (pula, odblokowanie lub klasa)");
+                Assert.IsTrue(fx.Cfg.baseSpellPool.Contains(s) || fx.Cfg.unlocks.Exists(u => u.target == s)
+                              || fx.Cfg.classes.Exists(c => c.startingSpells.Contains(s) || c.signatureSkill == s || c.startingSkillChoices.Contains(s))
+                              || fx.bundle.all.OfType<ItemDefinition>().Any(i => i.grantedSkill == s),
+                    s.id + " jest dostępna (pula, odblokowanie, klasa albo przedmiot)");
             }
             Assert.GreaterOrEqual(spells, 13);
             Assert.GreaterOrEqual(techniques, 10);

@@ -52,7 +52,7 @@ co najmniej: broń, 1–2 przedmioty, czar lub technikę oraz wroga, który go �
 
 0. ~~G – cechy postaci~~ – zrobione.
 1. ~~E1 – przemapowanie przycisków~~ – zrobione. (osobno pad i klawiatura): ekran ustawień, `PerformInteractiveRebinding`, zapis nadpisań w profilu, podpowiedzi w HUD z bieżącego układu.
-2. **F1 – modele broni**: buława, młot i włócznia mają dziś zastępcze modele (topór/wielki topór); własna geometria w `GearBuilder` + zrzuty.
+2. ~~F1/F2 – modele broni i ciężki rzut~~ – zrobione.
 3. **Balans w ręcznym graniu**: ceny sklepu, siła roztrzaskania (80%), częstość wariantów (40%), meteor/burza.
 
 ## Etap G – cechy postaci (prośba z 2026-09-29) 🟡

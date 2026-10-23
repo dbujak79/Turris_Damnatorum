@@ -14,23 +14,55 @@ MonoBehaviour:
   m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ClassDefinition
   id: class_rogue
   displayName: "\u0141otrzyk"
-  description: "No\u017Ce bli\u017Aniacze i sk\xF3rznia. Zr\u0119czno\u015B\u0107: uchylenie, d\u0142ugi unik i szybkie ataki. Techniki: Wypad i Rzut no\u017Cami."
+  description: "Szybki i lekki, uderza s\u0142abiej, ale z zaskoczenia. \u0141uk albo sztylet z no\u017Cami do rzucania. Unik to przewr\xF3t w cie\u0144; cios w plecy zadaje +60%, a pierwszy cios do 1,5 s po uniku +35%."
   tags: 0
-  toughness: 10
-  strength: 10
-  dexterity: 16
-  intelligence: 10
+  parent: {fileID: 0}
+  tagline: "\u0141uk albo sztylety"
+  trait: 3
+  dodgeStyle: 3
+  signatureSkill: {fileID: 11400000, guid: b7225dae3b169ab4d83a0a36d842b462, type: 2}
+  startingSkillChoices:
+  - {fileID: 11400000, guid: c893e4f274b002c4f93ff9c36fe93473, type: 2}
+  - {fileID: 11400000, guid: f293e9542f9b24d46848bb8599940e72, type: 2}
+  loadouts:
+  - label: "\u0141uk"
+    element: 0
+    weapon: {fileID: 11400000, guid: 691cf58902a0f564cbe1c169a594c24d, type: 2}
+    offHand: {fileID: 0}
+  - label: Sztylety
+    element: 0
+    weapon: {fileID: 11400000, guid: a188e54fb0a32a34aa6088bbbb485ebd, type: 2}
+    offHand: {fileID: 11400000, guid: ece2f7893541079409873f53b3e8589d, type: 2}
+  classModifiers:
+  - stat: 12
+    mode: 0
+    value: 6
+  - stat: 30
+    mode: 0
+    value: -10
+  - stat: 23
+    mode: 0
+    value: 10
+  - stat: 28
+    mode: 0
+    value: -10
+  - stat: 20
+    mode: 0
+    value: 14.285714
+  lookOverride: {fileID: 0}
+  toughness: 11
+  strength: 9
+  dexterity: 15
+  intelligence: 8
   endurance: 10
   mind: 10
   startingItems:
-  - {fileID: 11400000, guid: 0dfec5e7a81128a498ea326e35f41328, type: 2}
   - {fileID: 11400000, guid: 9ae482a8e59b1594982f88a35bd5e4e4, type: 2}
   - {fileID: 11400000, guid: 8bedcc70c079ec04689419018eecf68b, type: 2}
-  startingSpells:
-  - {fileID: 11400000, guid: 8de9464719d1ceb488060fe8cdb76a20, type: 2}
-  - {fileID: 11400000, guid: 4917e706fa64320469d4cb9e61ffdbb6, type: 2}
+  alternativeWeapons: []
+  startingSpells: []
   startingTalents: []
   healthFlasks: 3
   manaFlasks: 1
   color: {r: 0.25, g: 0.42, b: 0.3, a: 1}
-  visual: {fileID: 0}
+  visual: {fileID: 11400000, guid: 0025dd68e26bff94caa00cda7b5833ba, type: 2}

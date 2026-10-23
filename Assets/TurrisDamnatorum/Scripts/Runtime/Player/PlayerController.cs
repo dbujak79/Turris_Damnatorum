@@ -8,6 +8,17 @@ namespace Turris
     {
         public CameraRig cameraRig;
         [Tooltip("Awaryjna szybkość obrotu, gdy brak konfiguracji (właściwa wartość: GameConfig → balance.playerTurnSpeed).")]
+        CharacterVisual visual;
+        /// <summary>Sterownik klipów modelu bohatera (null – postać proceduralna).</summary>
+        ClipAnimationDriver ClipDriver
+        {
+            get
+            {
+                if (visual == null) visual = GetComponent<CharacterVisual>();
+                return visual != null ? visual.Driver as ClipAnimationDriver : null;
+            }
+        }
+
         public float turnSpeed = 1080f;
         public float lockOnRange = 25f;
         public float flickThreshold = 6f;
@@ -86,6 +97,14 @@ namespace Turris
             float speed = b.moveSpeed * (1f + combat.Build.stats[StatType.MoveSpeed] / 100f) * combat.Status.MoveMultiplier(b);
             Vector3 horizontal = Vector3.zero;
             Vector3? face = null;
+            // Krok z klipu liczy się w ciosie i w powrocie z niego do spoczynku (dostawienie nogi), gdy gracz stoi;
+            // w innych akcjach i w ruchu przepada.
+            float settle = 0f;
+            if (cur != ActionType.LightAttack && cur != ActionType.HeavyAttack)
+            {
+                float adv = ClipDriver != null ? ClipDriver.ConsumeAdvance() : 0f;
+                if (cur == ActionType.None && intent.sqrMagnitude < 0.01f && dt > 0f) settle = adv / dt;
+            }
             float faceSpeed = b.playerTurnSpeed > 0 ? b.playerTurnSpeed : turnSpeed;
             // true: prędkość wynika z ruchu swobodnego i jest wygładzana; false: narzuca ją akcja (unik, wypad).
             bool steered = true;
@@ -96,12 +115,18 @@ namespace Turris
                 case ActionType.None:
                     sprint = InputEnabled && input.SprintHeld && intent.sqrMagnitude > 0.1f && combat.Stamina.Current > 0;
                     horizontal = intent * speed * (sprint ? b.sprintMultiplier : 1f);
+                    if (settle > 0f) { horizontal = transform.forward * settle; steered = false; }
                     face = (LockTarget != null && !sprint) ? DirTo(LockTarget.transform.position) : (intent.sqrMagnitude > 0.01f ? intent : (Vector3?)null);
                     break;
                 case ActionType.Block:
+                {
                     horizontal = intent * speed * b.guardMoveMultiplier;
                     face = LockTarget != null ? DirTo(LockTarget.transform.position) : (intent.sqrMagnitude > 0.01f ? intent : (Vector3?)null);
+                    // Garda zasłania kierunek ataku: najpierw cios, który właśnie przyjęto z boku, potem wróg, który się zamachuje.
+                    var guardDir = combat.GuardFace ?? IncomingThreat();
+                    if (guardDir.HasValue) { face = guardDir; faceSpeed = Mathf.Max(faceSpeed, b.guardTurnSpeed); }
                     break;
+                }
                 case ActionType.Flask:
                     horizontal = intent * speed * b.flaskMoveSpeedMultiplier;
                     break;
@@ -121,7 +146,10 @@ namespace Turris
                 {
                     var atk = cur == ActionType.LightAttack ? combat.Build.weapon.light : combat.Build.weapon.heavy;
                     float t = combat.AttackWindup + combat.AttackActive; // już ze Zręcznością i tempem
-                    if (actions.Elapsed < t && t > 0) horizontal = transform.forward * (atk.lunge / t);
+                    // Bohater z modelem: krok naprzód dokładnie taki, jak w nagraniu ciosu (stopa podporowa stoi w miejscu).
+                    var clips = ClipDriver;
+                    if (clips != null && clips.StepsFromClips) horizontal = dt > 0f ? transform.forward * (clips.ConsumeAdvance() / dt) : Vector3.zero;
+                    else if (actions.Elapsed < t && t > 0) horizontal = transform.forward * (atk.lunge / t);
                     steered = false;
                     if (actions.Elapsed < combat.AttackWindup * 0.6f)
                     {
@@ -146,6 +174,13 @@ namespace Turris
             }
             combat.Sprinting = sprint;
 
+            // Odrzut po otrzymanym ciosie (drgnięcie, blok, przełamana garda) – krótki poślizg zamiast ruchu z akcji.
+            Vector3 push = combat.PushVelocity;
+            if (push != Vector3.zero) { horizontal = push + horizontal * 0.3f; steered = false; face = null; }
+            // Hitstop: bohater zastyga (wypad ataku też czeka), grawitacja działa dalej.
+            if (combat.InHitStop) { horizontal = Vector3.zero; steered = false; face = null; }
+            if (combat.Status.Rooted) { horizontal = Vector3.zero; steered = false; }
+
             // Swobodny ruch przyspiesza i hamuje płynnie; akcje (unik, wypad) narzucają prędkość wprost,
             // a po nich ruch płynnie przejmuje pęd zamiast zatrzymywać się w miejscu.
             if (steered)
@@ -165,6 +200,42 @@ namespace Turris
             if (cc.isGrounded && verticalVelocity < 0) verticalVelocity = -2f;
             verticalVelocity += Physics.gravity.y * dt;
             cc.Move((planarVelocity + Vector3.up * verticalVelocity) * dt);
+            TickFootsteps(steered, sprint, dt);
+        }
+
+        float stepDistance;
+
+        /// <summary>Kroki co długość kroku (dłuższy w biegu); cichsze przy powolnym ruchu i z podniesioną gardą.</summary>
+        void TickFootsteps(bool steered, bool sprint, float dt)
+        {
+            float v = new Vector3(planarVelocity.x, 0f, planarVelocity.z).magnitude;
+            if (!steered || v < 0.6f || !cc.isGrounded) { stepDistance = Mathf.Min(stepDistance, 0.9f); return; }
+            stepDistance += v * dt;
+            float stride = sprint ? 1.03f : 0.9f; // pół cyklu chodu z animacji (cykl ≈ 1,8 m w biegu, ≈ 2,05 m w sprincie)
+            if (stepDistance < stride) return;
+            stepDistance -= stride;
+            Sfx.Play(SoundId.Footstep, transform.position, Mathf.Clamp(v / 5f, 0.4f, 1.2f), sprint ? 0.92f : 1f);
+        }
+
+        /// <summary>
+        /// Kierunek do wroga, którego cios nadchodzi najwcześniej: atakujący (zamach lub faza aktywna) w zasięgu 10 m,
+        /// bliższy ma pierwszeństwo, a faza aktywna – przed zamachem. Null – nikt nie atakuje.
+        /// </summary>
+        Vector3? IncomingThreat()
+        {
+            EnemyBrain best = null;
+            float bestScore = float.MaxValue;
+            foreach (var e in EnemyBrain.All)
+            {
+                if (e == null || e.IsDead || e.CurrentState != EnemyBrain.State.Attacking) continue;
+                float dist = Vector3.Distance(e.transform.position, transform.position);
+                if (dist > 10f) continue;
+                float score = dist - (e.AttackPhase == ActionPhase.Active ? 100f : 0f);
+                if (score < bestScore) { bestScore = score; best = e; }
+            }
+            if (best == null) return null;
+            var d = DirTo(best.transform.position);
+            return d.sqrMagnitude > 1e-4f ? d : (Vector3?)null;
         }
 
         Vector3 DirTo(Vector3 p)

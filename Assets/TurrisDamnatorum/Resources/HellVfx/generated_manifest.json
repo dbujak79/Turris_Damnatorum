@@ -1,0 +1,69 @@
+{
+  "source": "ElevenLabs image generation, model gpt-image-2.5-sunburst, 2048x2048, quality high",
+  "flow": "Hell Unleashed - prąd, lód, zmrożona ziemia (4MVKOaIikLBqNtQo9w9V)",
+  "date": "2026-10-19",
+  "budget": {
+    "generations": 28,
+    "credits": 18673,
+    "note": "7 prompts x 4 variants; one variant per prompt picked by the user (A-D = generation ids sorted by name)"
+  },
+  "import": "tools/art/import_generated_vfx.py",
+  "textures": [
+    {
+      "master": "lightning_arcs",
+      "variant": "C",
+      "generation_id": "wBPrHAvEqrTbT2taRpqz",
+      "outputs": ["Vfx/lightning_arcs.png"],
+      "purpose": "4x4 atlas of arcs laid along the lightning ribbon (LightningFx)",
+      "prompt": "Game VFX texture atlas for a dark fantasy action game, to be used with additive blending. Pure black background (#000000), nothing else in the image. A 4x4 grid of 16 separate electric lightning arcs, each one inside its own equal square cell, never touching the cell edges or each other. Every arc runs horizontally from the left side of its cell to the right side, jagged and forked like a real electrical discharge, with 1-3 thin side branches. Each arc has a thin white-hot core, surrounded by an electric blue glow (around #4da3ff to #9cc8ff) that fades smoothly to black; branches are thinner and dimmer. Vary thickness, kinks and branching between cells. Flat front view, no perspective, no floor, no sparks outside the arcs, no text, no grid lines, no border."
+    },
+    {
+      "master": "electric_sparks",
+      "variant": "D",
+      "generation_id": "VzbAjGRVvi0urfSzHze2",
+      "outputs": ["Vfx/electric_sparks.png"],
+      "purpose": "4x4 atlas of crackles thrown where lightning lands",
+      "prompt": "Game VFX particle sprite atlas for a dark fantasy action game, to be used with additive blending. Pure black background (#000000). A 4x4 grid of 16 separate electric spark sprites, each centred in its own equal square cell with generous black margin, never touching the cell edges. Mix of: short jagged zigzag sparks, small crackling star-shaped electric bursts with 3-6 short forked tendrils, and tiny branching filaments. Each has a white-hot centre and an electric blue glow (#4da3ff to #9cc8ff) fading smoothly to black. Flat front view, no perspective, no text, no grid lines, no border."
+    },
+    {
+      "master": "plasma_orb",
+      "variant": "B",
+      "generation_id": "eSZVqdC27AqqYmZ1eGUj",
+      "outputs": ["Vfx/plasma_orb.png"],
+      "purpose": "4x4 flipbook of ball lightning",
+      "prompt": "Game VFX flipbook sprite sheet for a dark fantasy action game, to be used with additive blending. Pure black background (#000000). A 4x4 grid of 16 frames of the same ball of lightning plasma, each centred in its own equal square cell with black margin around it. The orb is a dense sphere of crackling electricity: a bright white core, inside it a tangle of writhing blue-white discharge filaments, a soft electric blue halo (#4da3ff to #9cc8ff) fading to black, and a few short arcs leaping off its surface. Consecutive frames show the filaments and surface arcs shifting position so the sheet plays as a looping animation; the orb keeps the same size and position in every cell. Flat front view, no text, no grid lines, no border."
+    },
+    {
+      "master": "ice_shards",
+      "variant": "A",
+      "generation_id": "Aqwt0GH8T2FFhSF48Rnx",
+      "outputs": ["Vfx/ice_shards.png"],
+      "purpose": "4x4 atlas of ice splinters thrown by ice bursts and hits",
+      "prompt": "Game VFX particle sprite atlas for a dark fantasy action game. Pure black background (#000000). A 4x4 grid of 16 separate shards of ice, each centred in its own equal square cell with black margin, never touching the cell edges. Shapes vary: long thin icicles, wedge-shaped broken chunks, flat splinters, small faceted crystals. The ice is translucent and pale cyan-white, with sharp faceted edges, bright white highlights along the edges, frosted white patches, tiny trapped air bubbles and internal cracks, and a darker cold blue (#2a5f8a) in the thickest parts. Each shard is lit from the upper left. Slightly painterly, readable at small size. Flat front view, no shadows on the background, no text, no grid lines, no border."
+    },
+    {
+      "master": "frost_mist",
+      "variant": "B",
+      "generation_id": "BFEPYMUlb0wnDG3u4Kv9",
+      "outputs": ["Vfx/frost_mist.png", "Vfx/frost_rime.png"],
+      "purpose": "top two rows: freezing mist puffs (4x2); bottom two rows: rime crystals and glitter (4x2)",
+      "prompt": "Game VFX particle sprite atlas for a dark fantasy action game, to be used with alpha blending. Pure black background (#000000). A 4x4 grid of 16 separate sprites, each centred in its own equal square cell with black margin so nothing touches the cell edges. Top two rows: 8 soft puffs of freezing mist, wispy and irregular, pale icy blue-white (#cfe9ff) with feathered edges fading fully to black, some denser, some thin and stretched. Bottom two rows: 8 small frost particles: six-armed ice crystals, rime flakes and tiny glittering frost specks, white with a faint cyan tint. Flat front view, no text, no grid lines, no border."
+    },
+    {
+      "master": "frozen_ground",
+      "variant": "C",
+      "generation_id": "PPQHEaZG9Bqy5nXeNxwb",
+      "outputs": ["frozen_ground/frozen_ground_albedo.jpg", "frozen_ground/frozen_ground_normal.jpg", "frozen_ground/frozen_ground_roughness.jpg", "frozen_ground/frozen_ground_ao.jpg"],
+      "purpose": "tileable frozen stone under ice sheets (IceSheet), darkened on import",
+      "prompt": "Seamless tileable PBR albedo texture, viewed straight down from above, flat even lighting with no cast shadows and no light falloff, for the floor of a frozen crypt in a dark fantasy game. Old dark grey flagstones and broken stone slabs, frozen over: a layer of clear dark-blue ice lies on top of the stone so the stone shows through it, with trapped air bubbles, white fracture lines with real depth, and fern-like hoar frost and white rime packed into the gaps between the stones and along the cracks. Muted colours: cold desaturated greys and deep blue-greys, white only in the frost. Realistic, photographic material scan look. The texture must tile seamlessly on all four edges, with no visible repeating landmarks, no vignette, no text."
+    },
+    {
+      "master": "frost_decal",
+      "variant": "B",
+      "generation_id": "pcwi1qr1pQBq5fHSeJXC",
+      "outputs": ["Vfx/frost_decal.png"],
+      "purpose": "ragged rime edge of ice left by a freezing blow",
+      "prompt": "Game decal texture, viewed straight down from above, flat even lighting, on a pure black background (#000000). A single roughly circular patch of frost and ice, centred, filling about 80% of the image, with nothing touching the edges. The middle is a sheet of clear dark-blue ice with fine crazed cracks and a few trapped bubbles; towards the edge it turns into dense white hoar frost, and the outer edge is ragged and crystalline, breaking up into feathery fern-like frost fingers and scattered ice crystals that reach out into the black. Muted, realistic, cold blue-greys and white. No text, no border."
+    }
+  ]
+}

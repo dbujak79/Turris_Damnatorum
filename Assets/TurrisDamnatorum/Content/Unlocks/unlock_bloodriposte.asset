@@ -23,3 +23,6 @@ MonoBehaviour:
   unlockedByDefault: 0
   requiredBestFloor: 0
   requiredVictoryTier: -1
+  classes:
+  - {fileID: 11400000, guid: 14b6652c1c070c941b190a5c9859be54, type: 2}
+  - {fileID: 11400000, guid: 732b37bdf25d91e489b61471fb1ebc3e, type: 2}

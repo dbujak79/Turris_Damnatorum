@@ -90,6 +90,7 @@ namespace Turris.EditorTools
             // Obiekty z pamięci, które nie stały się assetami, nie są już potrzebne.
             foreach (var so in bundle.all)
                 if (!(so is ContentDefinition cd && created.Contains(cd.id)) && !AssetDatabase.Contains(so)) Object.DestroyImmediate(so);
+            foreach (var so in bundle.legacy) if (so != null) Object.DestroyImmediate(so);
             Debug.Log($"[Turris] Dodano nową treść: {created.Count} ({string.Join(", ", created)}).");
             return created.Count;
         }
@@ -133,6 +134,20 @@ namespace Turris.EditorTools
                         }
                     }
                     break;
+                case ClassDefinition src when target is ClassDefinition dst:
+                    if ((dst.alternativeWeapons == null || dst.alternativeWeapons.Count == 0) && src.alternativeWeapons.Count > 0)
+                    {
+                        dst.alternativeWeapons = new System.Collections.Generic.List<ItemDefinition>(src.alternativeWeapons);
+                        changed = true;
+                    }
+                    break;
+                case UnlockDefinition src when target is UnlockDefinition dst:
+                    if ((dst.classes == null || dst.classes.Count == 0) && src.classes.Count > 0)
+                    {
+                        dst.classes = new System.Collections.Generic.List<ClassDefinition>(src.classes);
+                        changed = true;
+                    }
+                    break;
                 case SpellDefinition src when target is SpellDefinition dst:
                     changed |= FillAttack(src.attack, dst.attack);
                     if ((dst.levelFeatures == null || dst.levelFeatures.Count == 0) && src.levelFeatures.Count > 0)
@@ -157,6 +172,39 @@ namespace Turris.EditorTools
             }
             if (dst.explosionRadius == 0f && src.explosionRadius > 0f) { dst.explosionRadius = src.explosionRadius; changed = true; }
             return changed;
+        }
+
+        /// <summary>Słownik id → asset treści z dysku (Content/).</summary>
+        public static System.Collections.Generic.Dictionary<string, ContentDefinition> ContentOnDisk()
+        {
+            var real = new System.Collections.Generic.Dictionary<string, ContentDefinition>();
+            foreach (var guid in AssetDatabase.FindAssets("t:ScriptableObject", new[] { ContentDir }))
+            {
+                var def = AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(guid)) as ContentDefinition;
+                if (def != null && !string.IsNullOrEmpty(def.id)) real[def.id] = def;
+            }
+            return real;
+        }
+
+        /// <summary>
+        /// Nadpisuje wskazane assety danymi z <see cref="DefaultContent"/> (z podmianą referencji na assety z dysku).
+        /// Używane świadomie dla konkretnych id (np. klasy zastąpione bohaterami z Hell Unleashed) – reszta treści bez zmian.
+        /// </summary>
+        public static void OverwriteFromDefaults(params string[] ids)
+        {
+            var real = ContentOnDisk();
+            var bundle = DefaultContent.Create();
+            foreach (var id in ids)
+            {
+                if (!bundle.byId.TryGetValue(id, out var src) || !real.TryGetValue(id, out var dst)) { Debug.LogWarning("[Turris] Brak " + id); continue; }
+                EditorUtility.CopySerialized(src, dst);
+                dst.name = id;
+                RemapReferences(dst, real);
+                EditorUtility.SetDirty(dst);
+            }
+            AssetDatabase.SaveAssets();
+            foreach (var so in bundle.all) if (so != null && !AssetDatabase.Contains(so)) Object.DestroyImmediate(so);
+            foreach (var so in bundle.legacy) if (so != null) Object.DestroyImmediate(so);
         }
 
         static void RemapReferences(Object obj, System.Collections.Generic.Dictionary<string, ContentDefinition> real)

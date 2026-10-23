@@ -17,7 +17,7 @@ namespace Turris
         public static readonly (string action, string label)[] Rebindable =
         {
             ("Light", "Szybki atak / riposta"), ("Heavy", "Mocny atak"), ("Block", "Blok (trzymaj)"), ("Parry", "Parowanie"),
-            ("Dodge", "Unik"), ("Skill1", "Umiejętność 1"), ("Skill2", "Umiejętność 2"), ("Skill3", "Umiejętność 3"),
+            ("Dodge", "Unik"), ("Skill1", "Umiejętność 1"), ("Skill2", "Umiejętność 2"), ("Skill3", "Umiejętność 3"), ("Signature", "Skill klasy"),
             ("FlaskHealth", "Flaszka życia"), ("FlaskMana", "Flaszka many"), ("Sprint", "Bieg (trzymaj)"),
             ("LockOn", "Namierzanie"), ("SwitchLeft", "Zmiana celu w lewo"), ("SwitchRight", "Zmiana celu w prawo"),
         };
@@ -26,7 +26,7 @@ namespace Turris
         InputActionRebindingExtensions.RebindingOperation rebinding;
         /// <summary>Trwa oczekiwanie na przycisk do przypisania (menu ignoruje wtedy wejście).</summary>
         public bool IsRebinding => rebinding != null;
-        InputAction move, look, sprint, block, light, heavy, parry, dodge, skill1, skill2, skill3, flaskHp, flaskMp, lockOn, switchLeft, switchRight, pause;
+        InputAction move, look, sprint, block, light, heavy, parry, dodge, skill1, skill2, skill3, signature, flaskHp, flaskMp, lockOn, switchLeft, switchRight, pause;
 
         public Vector2 Move => move.ReadValue<Vector2>();
         public Vector2 LookDelta { get; private set; }
@@ -36,7 +36,7 @@ namespace Turris
         public event Action LightPressed, HeavyPressed, ParryPressed, DodgePressed,
             FlaskHealthPressed, FlaskManaPressed, LockOnPressed, PausePressed;
         public event Action<int> SwitchTargetPressed;
-        /// <summary>Przycisk umiejętności: 0, 1 lub 2.</summary>
+        /// <summary>Przycisk umiejętności: 0, 1 lub 2; 3 = skill klasy.</summary>
         public event Action<int> SkillPressed;
 
         public float mouseSensitivity = 0.12f;
@@ -75,6 +75,8 @@ namespace Turris
             skill1 = Button("Skill1", "<Keyboard>/q", "<Gamepad>/buttonSouth");
             skill2 = Button("Skill2", "<Keyboard>/e", "<Gamepad>/buttonWest");
             skill3 = Button("Skill3", "<Keyboard>/r", "<Gamepad>/buttonNorth");
+            // Skill klasy (Hell Unleashed): osobny przycisk, nie zajmuje slotu.
+            signature = Button("Signature", "<Keyboard>/g", "<Gamepad>/select");
             flaskHp = Button("FlaskHealth", "<Keyboard>/1", "<Gamepad>/dpad/up");
             flaskMp = Button("FlaskMana", "<Keyboard>/2", "<Gamepad>/dpad/down");
             lockOn = Button("LockOn", "<Keyboard>/tab", "<Gamepad>/rightStickPress");
@@ -90,6 +92,7 @@ namespace Turris
             skill1.performed += _ => SkillPressed?.Invoke(0);
             skill2.performed += _ => SkillPressed?.Invoke(1);
             skill3.performed += _ => SkillPressed?.Invoke(2);
+            signature.performed += _ => SkillPressed?.Invoke(3);
             flaskHp.performed += _ => FlaskHealthPressed?.Invoke();
             flaskMp.performed += _ => FlaskManaPressed?.Invoke();
             lockOn.performed += _ => LockOnPressed?.Invoke();

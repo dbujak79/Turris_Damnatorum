@@ -142,7 +142,8 @@ namespace Turris
 
         public int Count => slots.Count;
 
-        public void Collect(IEnumerable<Renderer> renderers)
+        /// <summary>Zbiera podsiatki rendererów; <paramref name="filter"/> – tylko wybrane materiały (np. metal ostrza).</summary>
+        public void Collect(IEnumerable<Renderer> renderers, System.Func<Material, bool> filter = null)
         {
             foreach (var r in renderers)
             {
@@ -151,7 +152,7 @@ namespace Turris
                 for (int i = 0; i < mats.Length; i++)
                 {
                     var m = mats[i];
-                    if (m == null) continue;
+                    if (m == null || (filter != null && !filter(m))) continue;
                     slots.Add(new Slot
                     {
                         r = r, index = i,

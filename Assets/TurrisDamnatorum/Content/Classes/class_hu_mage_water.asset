@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 364e1a8d61b62a543b912077a454451b, type: 3}
+  m_Name: class_hu_mage_water
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ClassDefinition
+  id: class_hu_mage_water
+  displayName: Mag wody
+  description: "Specjalizacja w wodzie (mrozie): +20% obra\u017Ce\u0144 od mrozu, wi\u0119cej many. Skill klasy: Wir g\u0142\u0119bin \u2013 pulsuj\u0105cy kr\u0105g wody, kt\xF3ry wci\u0105ga i spowalnia."
+  tags: 0
+  parent: {fileID: 11400000, guid: 238a470220177034c9a2fb416776b492, type: 2}
+  tagline: Woda i spowolnienie
+  trait: 2
+  dodgeStyle: 2
+  signatureSkill: {fileID: 11400000, guid: 1e6b08a85fcfe6c48b9cf42102c9f80d, type: 2}
+  startingSkillChoices: []
+  loadouts:
+  - label: Woda
+    element: 2
+    weapon: {fileID: 11400000, guid: 8d97af11f1db0554fa042a681bb4922d, type: 2}
+    offHand: {fileID: 11400000, guid: 9fb2c751fbad24a4bbf874a56d3401d5, type: 2}
+  classModifiers:
+  - stat: 6
+    mode: 0
+    value: -10
+  - stat: 12
+    mode: 0
+    value: -15.000001
+  - stat: 21
+    mode: 0
+    value: -5
+  - stat: 22
+    mode: 0
+    value: 35
+  - stat: 23
+    mode: 0
+    value: 15.000001
+  - stat: 28
+    mode: 0
+    value: 15.000001
+  - stat: 20
+    mode: 0
+    value: 5.357143
+  - stat: 25
+    mode: 0
+    value: 30
+  - stat: 8
+    mode: 0
+    value: 20
+  lookOverride: {fileID: 0}
+  toughness: 10
+  strength: 7
+  dexterity: 11
+  intelligence: 15
+  endurance: 10
+  mind: 10
+  startingItems:
+  - {fileID: 11400000, guid: 50ff6deab55afef4abd0dc05f945f2b1, type: 2}
+  alternativeWeapons: []
+  startingSpells: []
+  startingTalents: []
+  healthFlasks: 3
+  manaFlasks: 3
+  color: {r: 0.55, g: 0.85, b: 1, a: 1}
+  visual: {fileID: 11400000, guid: b8dbc985bdd8c9547bba2778e334cd95, type: 2}

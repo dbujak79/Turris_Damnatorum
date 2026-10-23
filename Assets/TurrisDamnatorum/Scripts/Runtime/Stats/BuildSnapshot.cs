@@ -46,6 +46,12 @@ namespace Turris
 
         /// <summary>Umiejętności w slotach 1–3 (null = pusty slot).</summary>
         public readonly SpellRuntime[] skills = new SpellRuntime[RunState.SkillSlotCount];
+        /// <summary>Skill klasy (osobny przycisk); null, gdy klasa go nie ma.</summary>
+        public SpellRuntime signature;
+        /// <summary>Druga broń w lewej ręce (walka dwiema brońmi) – null, gdy brak.</summary>
+        public ItemInstance offWeapon;
+        /// <summary>Klinga zaklęć: moc czarów działa też na ciosy bronią (1 = brak).</summary>
+        public float spellbladeFactor = 1f;
 
         public bool CanBlock => guard != null;
         public bool CanParry => parry != null;
@@ -61,7 +67,17 @@ namespace Turris
                              + stats[StatType.Dexterity] * weapon.dexterityScaling
                              + stats[StatType.Intelligence] * weapon.intelligenceScaling) / 100f;
             return atk.baseDamage * (1f + scaling) * (1f + stats[StatType.PhysicalDamage] / 100f)
-                   * mainHand.WeaponLevelFactor * weaponEffectiveness;
+                   * mainHand.WeaponLevelFactor * weaponEffectiveness * spellbladeFactor;
+        }
+
+        /// <summary>Obrażenia ataku drugiej broni (walka dwiema brońmi).</summary>
+        public float OffWeaponDamage(AttackDefinition atk)
+        {
+            if (offWeapon == null) return 0f;
+            var w = offWeapon.definition.weapon;
+            float scaling = (stats[StatType.Strength] * w.strengthScaling + stats[StatType.Dexterity] * w.dexterityScaling
+                             + stats[StatType.Intelligence] * w.intelligenceScaling) / 100f;
+            return atk.baseDamage * (1f + scaling) * (1f + stats[StatType.PhysicalDamage] / 100f) * offWeapon.WeaponLevelFactor * spellbladeFactor;
         }
 
         public float PhysicalReduction(BalanceConfig b) => StatCalculator.DefenseToReduction(stats[StatType.PhysicalDefense], b);
@@ -120,8 +136,13 @@ namespace Turris
             float dex = snap.stats[StatType.Dexterity];
             float dexOver = Mathf.Max(0f, dex - 10f);
             snap.evasionChance = Mathf.Clamp((dex - b.evasionFromDexterity) * b.evasionPerDexterity, 0f, b.maxEvasion) / 100f;
-            snap.attackSpeed = (1f + Mathf.Min(b.maxAttackSpeedBonus, dexOver * b.attackSpeedPerDexterity))
+            snap.attackSpeed = (1f + Mathf.Min(b.maxAttackSpeedBonus, dexOver * b.attackSpeedPerDexterity) + snap.stats[StatType.AttackSpeed] / 100f)
                                * (snap.weaponEffectiveness < 1f ? b.unmetRequirementAttackSpeed : 1f);
+            // Druga broń jednoręczna w lewej ręce: ciosy na zmianę; cecha Dwie klingi – szybciej.
+            if (off != null && off.definition.IsWeapon) snap.offWeapon = off;
+            var cls = run.startingClass;
+            if (cls != null && cls.trait == ClassTrait.TwinBlades && snap.offWeapon != null) snap.attackSpeed *= 1.2f;
+            if (cls != null && cls.trait == ClassTrait.Spellblade) snap.spellbladeFactor = 1f + snap.stats[StatType.SpellPower] / 100f;
             float dodgeBonus = Mathf.Min(b.maxDodgeDistanceBonus, dexOver * b.dodgeDistancePerDexterity);
             snap.dodge = new DodgeParams
             {
@@ -132,6 +153,8 @@ namespace Turris
                 totalDuration = b.dodgeTotalDuration,
                 rollDuration = Mathf.Clamp(b.dodgeRollDuration, 0.2f, b.dodgeTotalDuration),
             };
+            // Szarża barkiem (Hell Unleashed) jest krótsza od przewrotu.
+            if (run.startingClass != null && run.startingClass.dodgeStyle == DodgeStyle.ShoulderCharge) snap.dodge.distance *= 0.805f;
 
             var tags = run.CurrentTags(snap);
             for (int i = 0; i < run.skillSlots.Length; i++)
@@ -142,8 +165,17 @@ namespace Turris
                 rt.equipmentMet = (s.definition.requiredTags & tags) == s.definition.requiredTags;
                 snap.skills[i] = rt;
             }
+            if (run.signatureSkill != null)
+            {
+                snap.signature = ComputeSpell(run.signatureSkill, snap.stats, b);
+                snap.signature.equipmentMet = (run.signatureSkill.definition.requiredTags & tags) == run.signatureSkill.definition.requiredTags;
+            }
             return snap;
         }
+
+        /// <summary>Rodzaje umiejętności z Hell Unleashed – zawsze z własnymi obrażeniami.</summary>
+        public static bool IsHeroKind(SpellKind k) => k == SpellKind.Aura || k == SpellKind.Summon || k == SpellKind.Wave
+                                                      || k == SpellKind.Dash || k == SpellKind.Overload || k == SpellKind.Undying;
 
         public static SpellRuntime ComputeSpell(SpellInstance s, StatSheet stats, BalanceConfig b)
         {
@@ -161,6 +193,22 @@ namespace Turris
                         * (1f + def.powerPerLevel * s.level)
                         * (met ? 1f : b.unmetRequirementEffectiveness);
             float unmet = met ? 1f : b.unmetRequirementEffectiveness;
+            if (def.flatDamage || IsHeroKind(def.kind))
+            {
+                // Skille z Hell Unleashed: własne obrażenia (attack.baseDamage) – czar skaluje z Inteligencją i mocą czarów,
+                // technika z premią do obrażeń fizycznych.
+                float scale = def.IsSpell
+                    ? (1f + stats[StatType.Intelligence] * def.intelligenceScaling / 100f) * (1f + stats[StatType.SpellPower] / 100f)
+                    : 1f + stats[StatType.PhysicalDamage] / 100f;
+                return new SpellRuntime
+                {
+                    instance = s,
+                    manaCost = def.IsSpell ? def.manaCost * def.CostFactor(s.level) : 0f,
+                    staminaCost = def.staminaCost * (def.IsSpell ? 1f : def.CostFactor(s.level)),
+                    power = def.attack.baseDamage * scale * (1f + def.powerPerLevel * s.level) * unmet,
+                    requirementsMet = met,
+                };
+            }
             if (!def.IsSpell)
             {
                 // Technika: mnożnik obrażeń broni (same obrażenia broni liczy PlayerCombat w chwili trafienia).

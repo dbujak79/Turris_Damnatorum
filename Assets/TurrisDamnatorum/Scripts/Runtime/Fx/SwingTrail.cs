@@ -105,6 +105,7 @@ namespace Turris
 
         void OnHit(Vector3 pos, HitResult r, bool targetIsPlayer)
         {
+            PlaySound(pos, r, targetIsPlayer);
             var cam = Camera.main;
             Vector3 toCam = cam != null ? (cam.transform.position - pos).normalized : Vector3.up;
             switch (r.outcome)
@@ -125,6 +126,23 @@ namespace Turris
                 case HitOutcome.Dodged:
                     FxLibrary.Particles(pos, new FxLibrary.Emit { burst = 12, life = new Vector2(0.3f, 0.5f), speed = new Vector2(0.5f, 1.5f), size = new Vector2(0.15f, 0.3f), colorA = new Color(0.5f, 0.85f, 1f), noise = 0.5f, sizeGrow = 1.6f });
                     break;
+            }
+        }
+
+        /// <summary>Dźwięk trafienia dobrany do wyniku: ciało, blok, parowanie, przełamanie gardy, chybienie.</summary>
+        static void PlaySound(Vector3 pos, HitResult r, bool targetIsPlayer)
+        {
+            switch (r.outcome)
+            {
+                case HitOutcome.Hit:
+                    if (r.healthDamage <= 0.5f) break; // w pełni pochłonięte przez osłonę
+                    if (targetIsPlayer) Sfx.Play(SoundId.HitPlayer, pos);
+                    else Sfx.Play(r.healthDamage >= 60f || r.poiseDamage >= 40f ? SoundId.HitFleshHeavy : SoundId.HitFlesh, pos);
+                    break;
+                case HitOutcome.Blocked: Sfx.Play(SoundId.Block, pos); break;
+                case HitOutcome.Parried: Sfx.Play(SoundId.Parry, pos); break;
+                case HitOutcome.GuardBroken: Sfx.Play(SoundId.GuardBreak, pos); break;
+                case HitOutcome.Dodged: Sfx.Play(SoundId.Whiff, pos); break;
             }
         }
     }

@@ -52,6 +52,7 @@ namespace Turris.Tests
         {
             foreach (var go in spawned) if (go != null) Object.DestroyImmediate(go);
             foreach (var so in bundle.all) if (so != null) Object.DestroyImmediate(so);
+            foreach (var so in bundle.legacy) if (so != null) Object.DestroyImmediate(so);
         }
 
         /// <summary>Symuluje upływ czasu w krokach 1/60 s.</summary>

@@ -1,0 +1,182 @@
+[
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/archdemon.glb",
+    "sha256": "8253966986b0b715dd4f2185a419f437e76335961e7613c8b5aaff5e3a0374d5",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/archdemon/archdemon.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/bomber.glb",
+    "sha256": "844a18fac50a335f490832db2de355c554bc1adae7c4677ca2ad5d8eb8759306",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/bomber/bomber.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/bonelord.glb",
+    "sha256": "ebe37a12b62393782169b5e29481cb8a11fd8129b1bf82ac3b77744eb0b4a1a7",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/bonelord/bonelord.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/brute.glb",
+    "sha256": "49e212249b431aa0678df9dc67a72f3a9238988aa5b44d32468dae26b3fb077e",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/brute/brute.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/burrower.glb",
+    "sha256": "78707185ce16fae3117b609c787e6cf84cd1d884c785394e2883d8d850f00b5d",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/burrower/burrower.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/butcher.glb",
+    "sha256": "a3c2927fb23057a237a4daa5680e00b16c493a1b4f649d9dbf1df2067635278d",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/butcher/butcher.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/charger.glb",
+    "sha256": "35910b5286437f436967b86abb9c7fff811fc5551650b8ff4c04e2b2b2813fb1",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/charger/charger.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/eggsac.glb",
+    "sha256": "a914e3289516581fe1968f55fe99a02099a56701968f095d6bc988f18f99b567",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/eggsac/eggsac.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/emberbrute.glb",
+    "sha256": "c6e3de752ab94e1d8fcf1facb671f1f699285c2f99b2e6439bb7a573d5640243",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/emberbrute/emberbrute.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/forgemaster.glb",
+    "sha256": "0f0c1e152d472d4658ecd1eab680a57b98a265f7b21edac658753b54abd8e55e",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/forgemaster/forgemaster.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/frostcaster.glb",
+    "sha256": "e7d2fddf20b5a4931453f2b758b22d30862b34999db01f42b559776a744f95e8",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/frostcaster/frostcaster.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/gargoyle.glb",
+    "sha256": "5dd9388e689acb735d4a214e07264288b618055f534168e0f7f12c817ff99dc0",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/gargoyle/gargoyle.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/harpy.glb",
+    "sha256": "f606f470b25fe2d9b853500fd0e58f34766e82dc8444f055ae3def1ea6ee874c",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/harpy/harpy.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/hound.glb",
+    "sha256": "880767c507653c006eb3b5ab44cef0437457524486f9e3e6d762a4952384b5cd",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/hound/hound.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/legionary.glb",
+    "sha256": "bc05784ad7890958651de2c5e07d7baa2ecec6f6f46d95611d059531cf9b4f93",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/legionary/legionary.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/mortar.glb",
+    "sha256": "984150fd0d1acac36c1ded8a09b1581a33b45461ae19c1f326439214112a3eea",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/mortar/mortar.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/necromancer.glb",
+    "sha256": "b797904ed051094d120206411c442b10d1a35511ad561435ebd40ccc3c3a53c9",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/necromancer/necromancer.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/packlord.glb",
+    "sha256": "7aab9541cae96b1d2e1d9dcc2193d3261b50975bf4001b1e5cd2f5b65a45208d",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/packlord/packlord.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/rotter.glb",
+    "sha256": "7f42f608297b985b91a297d2fe54abd5a15c7d47b9c32d9876b6ae7d439b7776",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/rotter/rotter.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/sacrificer.glb",
+    "sha256": "fad05ca0f9602487912daeb6b71e206ead859024a7510f9db5e1a3c623417b24",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/sacrificer/sacrificer.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/shadowlord.glb",
+    "sha256": "50dade7f902a42dcc9b948eae20a291e46d2a271c03523dd288771b86af2e60f",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/shadowlord/shadowlord.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/spiderling.glb",
+    "sha256": "3b1d6fa78beb854af724e2aa8ec7f74ee3fbced008b7455e9728e3f1c8cb4340",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/spiderling/spiderling.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/stalker.glb",
+    "sha256": "fb7813776c704720ef32be39b5d159efc9608562210ffe35f180e20ebd5c59a6",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/stalker/stalker.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/stormmother.glb",
+    "sha256": "d0f3be75b4b47771661c37807302586552f17c69ffe180387e8b851b8b5dbb10",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/stormmother/stormmother.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/stormwitch.glb",
+    "sha256": "fb27924d160eb2fe968d567b3a3d8f43927438096e9c3848e2e763a955240d2d",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/stormwitch/stormwitch.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/tidequeen.glb",
+    "sha256": "0530fe668ea4fa318a4f172c5bc621735681854c85cff6eb680e145dc2de262b",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/tidequeen/tidequeen.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/titan.glb",
+    "sha256": "f971c3004cf702b44246e1697b8f224ab4407e60728358c9c670497fa3934e4e",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/titan/titan.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/weaver.glb",
+    "sha256": "b93d3426a7ba9cbddeb316d43ec2c6c8bef4064484c848898f664261d058c447",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/weaver/weaver.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Demons/wraith.glb",
+    "sha256": "cf14068dbfa19a58594c47fb263e9202dad7afb236a9d01446f46fac924d4ed6",
+    "target": "Assets/TurrisDamnatorum/Models/Demons/wraith/wraith.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Weapons/flail_2h.glb",
+    "sha256": "2bbc47ceea4b56204fabbc77cd9c8ec3ab6a86af74884d1521dc07a4b6901591",
+    "target": "Assets/TurrisDamnatorum/Models/Weapons/flail_2h/flail_2h.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Weapons/morningstar_2h.glb",
+    "sha256": "8c4411751774773b854d532c4216a61c98fe4336853d7adb149466594aaf74b2",
+    "target": "Assets/TurrisDamnatorum/Models/Weapons/morningstar_2h/morningstar_2h.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Weapons/mage_staff.glb",
+    "sha256": "bc4ca97f57ccb6696460446d6132a53443253801e4fec6c141934ef539ec5f15",
+    "target": "Assets/TurrisDamnatorum/Models/Weapons/mage_staff/mage_staff.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Weapons/mage_staff_summoner.glb",
+    "sha256": "0268b10aa1e3319cbac000e47ca4345122fc5b76715a7d23e7fa9e0d516a721f",
+    "target": "Assets/TurrisDamnatorum/Models/Weapons/mage_staff_summoner/mage_staff_summoner.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Weapons/mage_staff_witch.glb",
+    "sha256": "570e2eeeae595508dcce0c6968734db380728cdf94ad5e086b79565a0033ccdd",
+    "target": "Assets/TurrisDamnatorum/Models/Weapons/mage_staff_witch/mage_staff_witch.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Weapons/greataxe.glb",
+    "sha256": "e25360f964e7a43d0671fd4861587fb19996eff89a9b645afe6a855c9fc14c8a",
+    "target": "Assets/TurrisDamnatorum/Models/Weapons/greataxe_hu_p1/greataxe_hu_p1.fbx"
+  },
+  {
+    "source": "C:/GIT/Hell Unleashed/src/Game/Assets/Models/Weapons/warhammer.glb",
+    "sha256": "be9a51859fb379cf8b9e01728954def157641a403f0cb8fba373e3f0d4956bb4",
+    "target": "Assets/TurrisDamnatorum/Models/Weapons/warhammer_hu_p1/warhammer_hu_p1.fbx"
+  }
+]

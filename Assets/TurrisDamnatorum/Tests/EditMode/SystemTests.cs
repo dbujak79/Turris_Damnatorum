@@ -150,7 +150,7 @@ namespace Turris.Tests
         [Test]
         public void EquipUnequip_DoesNotAccumulateBonuses()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             float baseHp = BuildCalculator.Compute(run, fx.Cfg).MaxHealth;
             var ring = new ItemInstance(fx.Get<ItemDefinition>("ring_blood"));
             run.inventory.Add(ring);
@@ -170,7 +170,7 @@ namespace Turris.Tests
         [Test]
         public void PercentBonuses_FromDifferentSourcesStack()
         {
-            var run = fx.NewRun("class_mage"); // kostur: +15% mocy czarów
+            var run = fx.NewRun("legacy_mage"); // kostur: +15% mocy czarów
             run.AddItem(new ItemInstance(fx.Get<ItemDefinition>("head_hood")), true); // +8%
             run.AddBoon(fx.Get<BoonDefinition>("boon_arcane")); // +12%
             Assert.AreEqual(35f, BuildCalculator.Compute(run, fx.Cfg).stats[StatType.SpellPower], 0.01f);
@@ -179,7 +179,7 @@ namespace Turris.Tests
         [Test]
         public void SlotCompatibility_IsEnforced()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var ring = new ItemInstance(fx.Get<ItemDefinition>("ring_blood"));
             run.inventory.Add(ring);
             Assert.IsFalse(run.EquipFromInventory(ring, EquipSlot.Head));
@@ -191,7 +191,7 @@ namespace Turris.Tests
         [Test]
         public void TwoHandedWeapon_FreesOffHand()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var ga = new ItemInstance(fx.Get<ItemDefinition>("weapon_greataxe"));
             run.inventory.Add(ga);
             Assert.IsTrue(run.EquipFromInventory(ga, EquipSlot.MainHand));
@@ -212,7 +212,7 @@ namespace Turris.Tests
         [Test]
         public void HeavyLoad_WorsensDodge()
         {
-            var run = fx.NewRun("class_mage");
+            var run = fx.NewRun("legacy_mage");
             var light = BuildCalculator.Compute(run, fx.Cfg).dodge;
             foreach (var id in new[] { "body_plate", "weapon_axe", "shield_great", "feet_iron", "head_helm" })
             {
@@ -245,7 +245,7 @@ namespace Turris.Tests
         [Test]
         public void OffersItemBoonAndSpell()
         {
-            var run = fx.NewRun("class_knight");
+            var run = fx.NewRun("legacy_knight");
             var opts = RewardGenerator.Generate(run, BuildCalculator.Compute(run, fx.Cfg), Pools(), fx.Cfg, new System.Random(1));
             Assert.AreEqual(3, opts.Count);
             Assert.AreEqual(RewardKind.Item, opts[0].kind);
@@ -259,7 +259,7 @@ namespace Turris.Tests
             var seen = new HashSet<string>();
             for (int seed = 0; seed < 300; seed++)
             {
-                var run = fx.NewRun("class_mage");
+                var run = fx.NewRun("legacy_mage");
                 var opts = RewardGenerator.Generate(run, BuildCalculator.Compute(run, fx.Cfg), Pools(), fx.Cfg, new System.Random(seed));
                 seen.Add(opts[0].item.definition.id);
             }
@@ -271,7 +271,7 @@ namespace Turris.Tests
         [Test]
         public void SpellUpgrade_IncreasesPowerAndApplies()
         {
-            var run = fx.NewRun("class_mage");
+            var run = fx.NewRun("legacy_mage");
             var spell = run.knownSpells[0];
             float before = BuildCalculator.ComputeSpell(spell, BuildCalculator.Compute(run, fx.Cfg).stats, fx.Cfg.balance).power;
             new RewardOption { kind = RewardKind.UpgradeSpell, spellToUpgrade = spell }.Apply(run);
@@ -283,7 +283,7 @@ namespace Turris.Tests
         [Test]
         public void BuildTags_ComeFromGearNotClass()
         {
-            var run = fx.NewRun("class_mage");
+            var run = fx.NewRun("legacy_mage");
             var tagsBefore = run.CurrentTags(BuildCalculator.Compute(run, fx.Cfg));
             Assert.IsFalse(tagsBefore.HasFlag(BuildTag.Shield));
             var sh = new ItemInstance(fx.Get<ItemDefinition>("shield_heater"));
@@ -310,6 +310,22 @@ namespace Turris.Tests
             Assert.AreEqual(3, loaded.bestFloor);
             Assert.IsTrue(loaded.IsUnlocked("unlock_dagger"));
             StringAssert.Contains("\"version\": " + ProfileData.CurrentVersion, storage.Content);
+        }
+
+        [Test]
+        public void MigratesVersion2_WithDefaultVolumes()
+        {
+            var storage = new MemoryProfileStorage { Content = "{\"version\":2,\"ash\":7,\"masterVolume\":0,\"musicVolume\":0,\"sfxVolume\":0}" };
+            var p = ProfileSerializer.Load(storage, out _, out _);
+            Assert.AreEqual(ProfileData.CurrentVersion, p.version);
+            Assert.AreEqual(7, p.ash);
+            Assert.Greater(p.masterVolume, 0.5f, "Stary profil dostaje domyślną głośność");
+            Assert.Greater(p.musicVolume, 0.5f);
+            Assert.Greater(p.sfxVolume, 0.5f);
+            // Ustawienie użytkownika (także cisza) przetrwa zapis w nowej wersji.
+            p.musicVolume = 0f;
+            ProfileSerializer.Save(storage, p);
+            Assert.AreEqual(0f, ProfileSerializer.Load(storage, out _, out _).musicVolume);
         }
 
         [Test]
@@ -370,14 +386,14 @@ namespace Turris.Tests
         public void AshReward_ScalesWithFloorAndDifficulty_FirstClearBonusOnce()
         {
             var meta = new MetaService(fx.Cfg, new MemoryProfileStorage());
-            var run0 = fx.NewRun("class_knight", 0);
+            var run0 = fx.NewRun("legacy_knight", 0);
             int first = meta.AwardFloorClear(run0, 0);
             int again = meta.AwardFloorClear(run0, 0);
             Assert.Greater(first, again);
             int floor3 = meta.AwardFloorClear(run0, 2);
             Assert.Greater(floor3, again, "Wyższe piętro = więcej popiołu");
 
-            var run1 = fx.NewRun("class_knight", 1);
+            var run1 = fx.NewRun("legacy_knight", 1);
             meta.AwardFloorClear(run1, 2); // zużyj premię pierwszego ukończenia
             int t1 = meta.AwardFloorClear(run1, 2);
             int t0 = meta.AwardFloorClear(run0, 2);
@@ -393,12 +409,15 @@ namespace Turris.Tests
         public void LoadoutBudget_IsEnforced()
         {
             var meta = new MetaService(fx.Cfg, new MemoryProfileStorage());
-            var plan = fx.Plan("class_mage");
+            meta.DebugAddAsh(100);
+            Assert.IsTrue(meta.Purchase(fx.Get<UnlockDefinition>("unlock_ring_riposte")));
+            var plan = fx.Plan("class_knight");
             plan.extras.Add(fx.Get<UnlockDefinition>("unlock_axe"));
-            plan.extras.Add(fx.Get<UnlockDefinition>("unlock_bolt"));
-            Assert.IsTrue(meta.ValidateLoadout(plan, out _));
+            plan.extras.Add(fx.Get<UnlockDefinition>("unlock_ring_riposte"));
+            Assert.IsTrue(meta.ValidateLoadout(plan, out var ok), ok);
             plan.extras.Add(fx.Get<UnlockDefinition>("unlock_vigilance"));
             Assert.IsFalse(meta.ValidateLoadout(plan, out var reason), reason);
+            StringAssert.Contains("budżet", reason);
 
             var locked = fx.Plan("class_knight");
             locked.extras.Add(fx.Get<UnlockDefinition>("unlock_heal"));
@@ -420,27 +439,33 @@ namespace Turris.Tests
         }
 
         [Test]
-        public void KnightStartsWithPermanentlyUnlockedSpell()
+        public void KnightStartsWithOwnSkills_MageWithDefaultSpell()
         {
-            // Pocisk arkanów jest odblokowany domyślnie – każda postać ma go w kolekcji bez kosztu w budżecie.
+            // Pocisk arkanów jest odblokowany domyślnie, ale tylko dla maga – wojownik zaczyna z własnymi technikami.
             var meta = new MetaService(fx.Cfg, new MemoryProfileStorage());
             var plan = meta.LastPlan();
-            plan.classDef = fx.Get<ClassDefinition>("class_knight");
+            meta.SelectClass(plan, fx.Get<ClassDefinition>("class_knight"));
             Assert.AreEqual(0, plan.Cost);
             Assert.IsFalse(meta.LoadoutOptions.Any(u => u.kind == UnlockKind.Spell), "Umiejętności nie zajmują budżetu");
             var run = RunFactory.Create(plan, fx.Cfg, 1);
-            var bolt = run.FindSpell(fx.Get<SpellDefinition>("spell_bolt"));
+            Assert.IsNull(run.FindSpell(fx.Get<SpellDefinition>("spell_bolt")), "Wojownik nie zaczyna z czarem maga");
+            CollectionAssert.AreEquivalent(new[] { "hu_cleave", "skill_stomp" }, run.knownSpells.Select(s => s.definition.id).ToArray(),
+                "Skill startowy (Rozpłatanie) i Tąpnięcie");
+            Assert.AreEqual("hu_warcry", run.signatureSkill.definition.id, "Skill klasy pod osobnym przyciskiem");
+
+            meta.SelectClass(plan, fx.Get<ClassDefinition>("class_mage"));
+            var mageRun = RunFactory.Create(plan, fx.Cfg, 2);
+            Assert.IsNotNull(mageRun.FindSpell(fx.Get<SpellDefinition>("hu_nova_fire")), "Grymuar ognia daje Novę ognia");
+            var bolt = mageRun.FindSpell(fx.Get<SpellDefinition>("spell_bolt"));
             Assert.IsNotNull(bolt);
             Assert.IsTrue(bolt.permanent);
-            Assert.AreEqual(3, run.knownSpells.Count, "Rozpłatanie, Uderzenie tarczą i Pocisk arkanów");
-            Assert.IsTrue(run.skillSlots.All(s => s != null), "Trzy sloty wypełnione");
         }
 
         [Test]
         public void HarderDifficulty_ReducesFlasks()
         {
-            var easy = fx.NewRun("class_knight", 0);
-            var hard = fx.NewRun("class_knight", 2);
+            var easy = fx.NewRun("legacy_knight", 0);
+            var hard = fx.NewRun("legacy_knight", 2);
             Assert.AreEqual(easy.MaxHealthFlasks - 1, hard.MaxHealthFlasks);
         }
     }

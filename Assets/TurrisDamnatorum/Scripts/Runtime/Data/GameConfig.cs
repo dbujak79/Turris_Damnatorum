@@ -85,6 +85,19 @@ namespace Turris
         public float maxElementResist = 75f;
         [Tooltip("Czas kontroli (zamrożenie, spowolnienie) na bossach i elitach.")]
         public float bossControlMultiplier = 0.5f, eliteControlMultiplier = 0.7f;
+        [Tooltip("Zachwianie (ziemia, młoty): tyle warstw ogłusza; warstwa trwa staggerDuration, każda spowalnia ruch.")]
+        public int staggerStacksToStun = 3;
+        public float staggerDuration = 2.5f;
+        public float staggerSlow = 0.15f;
+        public float stunDuration = 0.8f;
+        [Tooltip("Po ogłuszeniu cel jest przez chwilę odporny na kolejne.")]
+        public float stunImmunity = 2f;
+        [Tooltip("Pęknięcie pancerza: za warstwę cel otrzymuje tyle więcej obrażeń fizycznych.")]
+        public float sunderPerStack = 0.04f;
+        public int sunderMaxStacks = 5;
+        public float sunderDuration = 4f;
+        [Tooltip("Wybuch żaru: ziemia w płonący cel – dodatkowy ogień za tę część wylądowanych obrażeń ziemi.")]
+        public float emberBurstShare = 0.5f;
 
         [Header("Tempo")]
         [Tooltip("Globalna szybkość rozgrywki (Time.timeScale w trakcie gry). 1 = czas rzeczywisty.")]
@@ -99,6 +112,22 @@ namespace Turris
         public float moveDeceleration = 60f;
         [Tooltip("Szybkość obrotu bohatera przy swobodnym ruchu (stopnie/s).")]
         public float playerTurnSpeed = 1080f;
+
+        [Header("Odczucie trafień (bez wstrząsów kamery)")]
+        [Tooltip("Hitstop: trafiona postać (i atakujący bronią) zatrzymuje się na chwilę – lekki cios.")]
+        public float hitstopLight = 0.05f;
+        [Tooltip("Hitstop ciężkiego ciosu, przełamania gardy i ciosu kończącego.")]
+        public float hitstopHeavy = 0.1f;
+        [Tooltip("Hitstop riposty.")]
+        public float hitstopRiposte = 0.15f;
+        [Tooltip("Hitstop bloku i parowania (obie strony).")]
+        public float hitstopBlock = 0.06f;
+        [Tooltip("Siła odchylenia ciała przy trafieniu (0 = bez reakcji, 1 = domyślnie).")]
+        public float hitReactStrength = 1f;
+        [Tooltip("Odrzut wroga przy lekkim i ciężkim ciosie (m). Bossy ×0,2, elity ×0,5, pancerz w zamachu ×0,3.")]
+        public float knockbackLight = 0.25f, knockbackHeavy = 0.7f;
+        [Tooltip("Odrzut bohatera po otrzymanym ciosie (m); blok – połowa.")]
+        public float playerKnockback = 0.4f;
 
         [Header("Unik")]
         public float dodgeStaminaCost = 18f;
@@ -116,6 +145,20 @@ namespace Turris
         public float heavyDodgeDistanceMult = 0.8f;
         public float heavyDodgeInvulnMult = 0.75f;
         public float heavyDodgeCostMult = 1.25f;
+
+        [Header("Obracanie wrogów (zachodzenie od tyłu)")]
+        [Tooltip("Mnożnik szybkości obrotu wroga w czasie uniku gracza i chwilę po nim – wróg „gubi” przetaczającego się gracza.")]
+        [Range(0, 1)] public float enemyTurnDuringDodge = 0.35f;
+        [Tooltip("Jak długo po uniku (s) wrogowie wciąż obracają się wolniej.")]
+        public float enemyTurnDodgeGrace = 0.4f;
+        [Tooltip("Mnożnik szybkości obrotu, gdy gracz jest za plecami wroga (ponad 100° od kierunku patrzenia).")]
+        [Range(0, 1)] public float enemyTurnBehind = 0.6f;
+
+        [Header("Tempo wrogów")]
+        [Tooltip("Globalny mnożnik szybkości poruszania się wszystkich wrogów.")]
+        public float enemyMoveSpeedMultiplier = 0.9f;
+        [Tooltip("Globalny mnożnik tempa ataków wrogów (zamach, cios, powrót). <1 = wolniejsze ataki.")]
+        public float enemyAttackSpeedMultiplier = 0.9f;
 
         [Header("Flaszki")]
         [Tooltip("Część maks. życia przywracana przez flaszkę życia.")]
@@ -136,6 +179,10 @@ namespace Turris
         public float moveSpeed = 5.2f;
         public float sprintMultiplier = 1.55f;
         public float guardMoveMultiplier = 0.55f;
+        [Tooltip("Obrót w bloku (stopnie/s) w stronę wroga, który zamachuje się lub uderza – blok zasłania kierunek ataku.")]
+        public float guardTurnSpeed = 1800f;
+        [Tooltip("Cios w blok z boku do tylu stopni od przodu bohatera: bohater obraca się do niego i blok jest ważny. Z większego kąta (plecy) – nie.")]
+        [Range(0f, 180f)] public float guardAutoTurnAngle = 120f;
 
         [Header("Budżet przygotowania")]
         public int loadoutBudget = 4;
@@ -162,6 +209,8 @@ namespace Turris
         public List<ClassDefinition> classes = new List<ClassDefinition>();
         public List<DifficultyDefinition> difficulties = new List<DifficultyDefinition>();
         public TowerDefinition tower;
+        [Tooltip("Pełny katalog demonów HU; dostępny w bestiariuszu i próbach, niezależnie od składu sześciu pięter.")]
+        public List<EnemyDefinition> enemyCatalog = new List<EnemyDefinition>();
         [Tooltip("Treść zawsze dostępna w puli nagród.")]
         public List<ItemDefinition> baseItemPool = new List<ItemDefinition>();
         public List<BoonDefinition> baseBoonPool = new List<BoonDefinition>();

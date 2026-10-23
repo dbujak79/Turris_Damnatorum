@@ -1,0 +1,145 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 636ee652052ecf443b59ebf79a72207a, type: 3}
+  m_Name: hu_morningstar2h
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ItemDefinition
+  id: hu_morningstar2h
+  displayName: "Morgenstern dwur\u0119czny"
+  description: "Wolny jak lawina i tak samo nie do zatrzymania. Kruszy pancerz. Wymaga Si\u0142y 16."
+  tags: 145
+  kind: 0
+  huSourceId: weapon.morningstar2h
+  huSourceHash: 6dec32bcfd0953c58432116100f31ed5974702bfb511f79cec3edbed9de654db
+  twoHanded: 1
+  weight: 10
+  requirements:
+  - attribute: 3
+    value: 16
+  modifiers: []
+  effects: []
+  weapon:
+    light:
+      name: Zamach
+      delivery: 0
+      damageType: 0
+      baseDamage: 117.5
+      windup: 0.24
+      active: 0.12
+      recovery: 0.89
+      cancelAfter: 0.3
+      reach: 2.3333333
+      radius: 1.1
+      lunge: 0.7
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 50
+      poiseDamage: 63
+      heavy: 0
+      staminaCost: 19
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      elementShare: 0
+      bonusVsFrozen: 0.5
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 5
+        stacks: 2
+        chance: 1
+      - kind: 0
+        stacks: 1
+        chance: 1
+      animation: 0
+    heavy:
+      name: Egzekucja
+      delivery: 0
+      damageType: 0
+      baseDamage: 199.75
+      windup: 1.1
+      active: 0.2
+      recovery: 0.9
+      cancelAfter: 0.4
+      reach: 2.8
+      radius: 1.1
+      lunge: 1
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 85
+      poiseDamage: 112
+      heavy: 1
+      staminaCost: 24.699999
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      elementShare: 0
+      bonusVsFrozen: 0.5
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 5
+        stacks: 2
+        chance: 1
+      - kind: 0
+        stacks: 1
+        chance: 1
+      animation: 0
+    lightComboLength: 2
+    strengthScaling: 1.8
+    dexterityScaling: 0.3
+    intelligenceScaling: 0
+    riposteMultiplier: 3
+    canBlock: 1
+    guard:
+      physicalReduction: 0.75
+      magicReduction: 0.2
+      stabilityMultiplier: 0.95
+      blockAngle: 110
+      staminaRegenMultiplier: 0.3
+    canParry: 0
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  shield:
+    guard:
+      physicalReduction: 1
+      magicReduction: 0.4
+      stabilityMultiplier: 0.7
+      blockAngle: 140
+      staminaRegenMultiplier: 0.3
+    canParry: 1
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  color: {r: 0.82, g: 0.83, b: 0.86, a: 1}
+  weaponModel: 11
+  shieldModel: 0
+  model: {fileID: 919132149155446097, guid: cde760ec83852074988ef615b96c9241, type: 3}
+  modelScale: 1
+  modelGripShift: 0
+  grantedSkill: {fileID: 0}

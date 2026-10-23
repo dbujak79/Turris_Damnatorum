@@ -77,6 +77,13 @@ namespace Turris
 
         public void RequestActivate() => activateRequested = true;
 
+        /// <summary>Ustawia fokus na kontrolce o danym id (np. domyślny wybór na ekranie) i przewija do niej.</summary>
+        public void FocusOn(int id)
+        {
+            Focus = id;
+            scrollToFocus = true;
+        }
+
         public void PushScroll(ScrollState s) => scrolls.Push(s);
         public void PopScroll() { if (scrolls.Count > 0) scrolls.Pop(); }
 
@@ -103,6 +110,9 @@ namespace Turris
 
         public bool IsFocused(int id) => NavMode && id == Focus;
 
+        /// <summary>Prostokąt (ekran) kontrolki z fokusem – do testów.</summary>
+        public Rect FocusRect => Focus >= 0 && Focus < rects.Count ? rects[Focus] : Rect.zero;
+
         /// <summary>Czy kontrolka o danym id została zatwierdzona padem w tej klatce (tylko gdy jest aktywna).</summary>
         public bool ConsumeActivation(int id)
         {
@@ -128,6 +138,17 @@ namespace Turris
         /// <summary>Wybór kontrolki w kierunku: odległość wzdłuż kierunku + kara za przesunięcie w poprzek.</summary>
         public static int FindInDirection(IList<Rect> rects, int from, Vector2 dir)
         {
+            // W poziomie najpierw kontrolki w tym samym wierszu (zachodzące w pionie), dopiero potem dowolne.
+            if (Mathf.Abs(dir.x) > 0.5f)
+            {
+                int sameRow = FindInDirection(rects, from, dir, true);
+                if (sameRow >= 0) return sameRow;
+            }
+            return FindInDirection(rects, from, dir, false);
+        }
+
+        static int FindInDirection(IList<Rect> rects, int from, Vector2 dir, bool sameRowOnly)
+        {
             Vector2 cur = rects[from].center;
             int best = -1;
             float bestScore = float.MaxValue;
@@ -137,6 +158,11 @@ namespace Turris
                 Vector2 d = rects[i].center - cur;
                 float along = Vector2.Dot(d, dir);
                 if (along <= 4f) continue;
+                // Kontrolka, której środek leży w obrysie bieżącej (np. przycisk nad szerokim „Wróć”), nie jest „obok” w tym kierunku.
+                var r = rects[from];
+                if (Mathf.Abs(dir.x) > 0.5f && rects[i].center.x >= r.xMin && rects[i].center.x <= r.xMax) continue;
+                if (Mathf.Abs(dir.y) > 0.5f && rects[i].center.y >= r.yMin && rects[i].center.y <= r.yMax) continue;
+                if (sameRowOnly && (rects[i].yMax < r.yMin || rects[i].yMin > r.yMax)) continue;
                 float across = Mathf.Abs(d.x * dir.y - d.y * dir.x);
                 float score = along + across * 2.5f;
                 if (score < bestScore) { bestScore = score; best = i; }

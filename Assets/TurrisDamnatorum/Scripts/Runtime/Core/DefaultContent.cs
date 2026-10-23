@@ -8,7 +8,7 @@ namespace Turris
     /// po czym wszystkie wartości można balansować w inspektorze bez zmian kodu.
     /// Ta sama fabryka jest używana w testach oraz jako awaryjny fallback, gdy scena nie ma przypisanej konfiguracji.
     /// </summary>
-    public static class DefaultContent
+    public static partial class DefaultContent
     {
         public class Bundle
         {
@@ -16,6 +16,23 @@ namespace Turris
             public readonly List<ScriptableObject> all = new List<ScriptableObject>();
             public readonly Dictionary<string, ContentDefinition> byId = new Dictionary<string, ContentDefinition>();
             public T Get<T>(string id) where T : ContentDefinition => (T)byId[id];
+            /// <summary>
+            /// Klasyczne zestawy Turris sprzed przeniesienia bohaterów z Hell Unleashed (legacy_knight/mage/rogue): tylko w pamięci,
+            /// do testów mechanik (ekwipunek, sloty, bronie). Nie trafiają do konfiguracji gry ani do assetów.
+            /// </summary>
+            public readonly List<ScriptableObject> legacy = new List<ScriptableObject>();
+        }
+
+        static void Legacy(ClassDefinition src, string id)
+        {
+            var c = ScriptableObject.CreateInstance<ClassDefinition>();
+            c.id = id; c.name = id; c.displayName = src.displayName; c.description = src.description;
+            c.toughness = src.toughness; c.strength = src.strength; c.dexterity = src.dexterity; c.intelligence = src.intelligence;
+            c.startingItems.AddRange(src.startingItems); c.alternativeWeapons.AddRange(src.alternativeWeapons);
+            c.startingSpells.AddRange(src.startingSpells); c.startingTalents.AddRange(src.startingTalents);
+            c.healthFlasks = src.healthFlasks; c.manaFlasks = src.manaFlasks; c.color = src.color;
+            bundle.byId[id] = c;
+            bundle.legacy.Add(c);
         }
 
         static Bundle bundle;
@@ -68,6 +85,144 @@ namespace Turris
                 followUpChance = followChance, hyperArmor = hyperArmor, minPhase = minPhase, eliteOnly = eliteOnly,
                 bossExtraOnly = bossExtraOnly, retreatAfter = retreatAfter,
             };
+        }
+
+        /// <summary>Demony z pierwszych trzech aren Hell Unleashed (modele i klipy przypisuje DemonAssetImport).</summary>
+        public class HuDemons { public EnemyDefinition imp, cultist, worm, minion, gatelord; }
+
+        /// <summary>
+        /// Chochlik (zawsze w jednym z żywiołów), kultysta, czerw (stado po 4), ożywiony nietoperz i Władca Bramy.
+        /// Liczby z Hell Unleashed: zdrowie i obrażenia ×2,5, odległości i prędkości z pikseli HU / 24, czasy bez zmian.
+        /// Specjały zwykłych demonów (od fali 4–9 w HU) znają na tych piętrach tylko złote elity (×7 zdrowia, ×1,6 obrażeń).
+        /// </summary>
+        static HuDemons HellUnleashedDemons(Bundle bundle)
+        {
+            EnemyDefinition Demon(string id, string name, string desc, string archetype, float hp, float poise, float speed, float height, int souls)
+            {
+                var d = ScriptableObject.CreateInstance<EnemyDefinition>();
+                d.id = id; d.name = id; d.displayName = name; d.description = desc; d.archetype = archetype;
+                d.maxHealth = hp; d.maxPoise = poise; d.poiseRegen = 25f; d.moveSpeed = speed; d.turnSpeed = 480f;
+                d.scale = height / 1.8f; d.soulReward = souls;
+                d.eliteHealthMultiplier = 7f; d.eliteDamageMultiplier = 1.6f;
+                d.color = new Color(0.6f, 0.2f, 0.15f);
+                bundle.all.Add(d); bundle.byId[id] = d;
+                return d;
+            }
+            var r = new HuDemons();
+
+            // Chochlik: szybki wręcz, dobiega i tnie pazurami. Złota elita: dwa szybkie cięcia (specjał od fali 9).
+            var imp = Demon("enemy_imp", "Ognisty chochlik", "Mały, szybki demon. Zawsze rodzi się w jednym z żywiołów: tnie nim i jest na niego odporny.", "Szybki (wręcz)", 55, 12, 3.24f, 1.3f, 10);
+            imp.preferredRange = 1.3f; imp.attackInterval = new Vector2(1.0f, 1.6f); imp.strafeChance = 0.3f; imp.evadeChance = 0.12f;
+            imp.attacks.Add(Entry(Atk("Pazury", 18, 0.3f, 0.12f, 0.25f, 1.55f, 0.6f, 0, 0.6f, 10, 12, tracking: 420f), 0, 1.9f, 3));
+            imp.attacks.Add(Entry(Atk("Dwa cięcia", 18, 0.55f, 0.12f, 0.3f, 1.8f, 0.7f, 0, 0.7f, 12, 14, tracking: 380f), 0, 2.1f, 1.5f, cooldown: 6, followUp: 2, followChance: 1f, eliteOnly: true));
+            imp.attacks.Add(Entry(Atk("Drugie cięcie", 21, 0.45f, 0.12f, 0.9f, 1.8f, 0.7f, 0, 0.7f, 12, 14, tracking: 300f), 0, 2.4f, 0));
+            imp.attacks[1].attack.animation = AttackAnim.Special;
+            imp.fireMultiplier = 0.75f; imp.frostMultiplier = 1.25f;
+
+            // Wariant żywiołu (Hell Unleashed: 60% ciosu w żywiole, własny żywioł +50% odporności, przeciwny −35%).
+            EnemyDefinition ImpOf(EnemyDefinition baseImp, string id, string name, Element el, StatusKind ailment, Color color)
+            {
+                var v = Object.Instantiate(baseImp);
+                v.id = id; v.name = id; v.displayName = name; v.color = color; v.element = el;
+                v.variants = new List<EnemyDefinition>();
+                foreach (var at in v.attacks) { at.attack.element = el; at.attack.elementShare = 0.6f; at.attack.statuses = new List<StatusApplication> { St(ailment) }; }
+                bundle.all.Add(v); bundle.byId[id] = v;
+                return v;
+            }
+            // Ognisty to sam chochlik (model imp) – HU nie ma chochlika bez żywiołu, a złota elita jest zwykłym, ognistym.
+            foreach (var at in imp.attacks) { at.attack.element = Element.Fire; at.attack.elementShare = 0.6f; at.attack.statuses.Add(St(StatusKind.Burn)); }
+            imp.element = Element.Fire; imp.fireMultiplier = 0.25f; imp.frostMultiplier = 1.6f;
+            var impFrost = ImpOf(imp, "enemy_imp_frost", "Wodny chochlik", Element.Frost, StatusKind.Chill, new Color(0.3f, 0.55f, 0.85f));
+            impFrost.fireMultiplier = 1.1f; impFrost.frostMultiplier = 0.75f;
+            var impStorm = ImpOf(imp, "enemy_imp_storm", "Chochlik wichru", Element.Lightning, StatusKind.Shock, new Color(0.6f, 0.7f, 0.95f));
+            impStorm.fireMultiplier = 0.75f; impStorm.frostMultiplier = 1.25f; impStorm.lightningMultiplier = 0.5f; impStorm.earthMultiplier = 1.35f;
+            var impEarth = ImpOf(imp, "enemy_imp_earth", "Kamienny chochlik", Element.Earth, StatusKind.Stagger, new Color(0.55f, 0.42f, 0.28f));
+            impEarth.fireMultiplier = 0.75f; impEarth.frostMultiplier = 1.25f; impEarth.earthMultiplier = 0.5f; impEarth.lightningMultiplier = 1.35f;
+            imp.element = Element.Fire;
+            imp.variants.AddRange(new[] { impFrost, impStorm, impEarth });
+            imp.variantChance = 0.75f; // każdy z czterech żywiołów po 25%
+            r.imp = imp;
+
+            // Kultysta: strzelec – trzyma dystans i ciska wolną kulą ognia (podpala). Elita: wachlarz pięciu pocisków.
+            var cultist = Demon("enemy_hu_cultist", "Kultysta", "Trzyma dystans i ciska kulami ognia, które podpalają. Wrażliwy na ciosy, odporny na ogień.", "Strzelec", 50, 15, 2.54f, 1.85f, 13);
+            cultist.preferredRange = 6.25f; cultist.retreatRange = 3.5f; cultist.attackInterval = new Vector2(1.6f, 2.4f); cultist.strafeChance = 0.6f; cultist.evadeChance = 0.08f;
+            var fireBall = Proj("Kula ognia", 20, 0.45f, 6.25f, recovery: 0.35f);
+            fireBall.element = Element.Fire; fireBall.statuses.Add(St(StatusKind.Burn));
+            cultist.attacks.Add(Entry(fireBall, 2, 9f, 3));
+            var volley = Proj("Wachlarz ognia", 15, 0.7f, 6.25f, 5, 25f, recovery: 0.5f);
+            volley.element = Element.Fire; volley.statuses.Add(St(StatusKind.Burn)); volley.animation = AttackAnim.Special;
+            cultist.attacks.Add(Entry(volley, 2, 10f, 2, cooldown: 5.2f, eliteOnly: true));
+            cultist.fireMultiplier = 0.7f;
+            r.cultist = cultist;
+
+            // Czerw: stado po 4 z jednego portalu. Elita: skok i wgryzienie (spowalnia, krwawienie; strząsa unik).
+            var worm = Demon("enemy_worm", "Czerw", "Blada larwa wychodząca stadem po cztery. Słaba, ale szybka; boi się ognia.", "Szybki (stado)", 35, 6, 3.67f, 0.6f, 4);
+            worm.preferredRange = 1.1f; worm.attackInterval = new Vector2(0.9f, 1.5f); worm.strafeChance = 0.2f;
+            worm.spawnCost = 2.5f; worm.packSize = 4;
+            worm.attacks.Add(Entry(Atk("Ugryzienie", 10, 0.3f, 0.1f, 0.25f, 1.33f, 0.6f, 0, 0.5f, 6, 8, tracking: 420f), 0, 1.6f, 3));
+            var latch = Entry(Atk("Wgryzienie", 13, 0.55f, 0.35f, 0.4f, 1.0f, 0.7f, 0, 0f, 8, 10, tracking: 360f), 1.5f, 6.25f, 2, cooldown: 6, eliteOnly: true);
+            latch.special = EnemySpecial.Latch; latch.specialDuration = 6f; latch.specialShare = 0.4f;
+            latch.attack.statuses.Add(St(StatusKind.Bleed)); latch.attack.animation = AttackAnim.Latch;
+            worm.attacks.Add(latch);
+            worm.fireMultiplier = 1.35f; worm.earthMultiplier = 0.8f;
+            r.worm = worm;
+
+            // Ożywiony nietoperz: sługa Władcy Bramy – nie daje dusz i ginie razem z nim.
+            var minion = Demon("enemy_minion", "Ożywiony nietoperz", "Sługa Władcy Bramy. Ginie razem z nim.", "Sługa", 35, 5, 4.0f, 1.0f, 0);
+            minion.isMinion = true; minion.preferredRange = 1.2f; minion.attackInterval = new Vector2(0.9f, 1.5f); minion.evadeChance = 0.1f;
+            minion.attacks.Add(Entry(Atk("Ukąszenie", 13, 0.3f, 0.1f, 0.2f, 1.4f, 0.6f, 0, 0.6f, 6, 8, tracking: 480f), 0, 1.8f, 3));
+            minion.fireMultiplier = 1.25f;
+            r.minion = minion;
+
+            // Władca Bramy: boss trzeciej areny. Serie cięć, salwa, szarża z płonącym śladem, kręgi ognia;
+            // od połowy życia skok z zamachem, piekielne kule i nietoperze; poniżej 30% – szał (tempo ×1,35).
+            var lord = Demon("enemy_gatelord", "Władca Bramy", "Strażnik wrót piekieł. Od połowy życia przyzywa nietoperze, poniżej 30% wpada w szał.", "Boss", 2500, 150, 2.3f, 3.8f, 250);
+            lord.isBoss = true; lord.maxStamina = 200; lord.physicalResist = 0.2f; lord.turnSpeed = 220f;
+            lord.preferredRange = 3.6f; lord.attackInterval = new Vector2(1.4f, 2.4f); lord.strafeChance = 0.3f; lord.riposteWindow = 2.0f;
+            lord.fireMultiplier = 0.7f; lord.frostMultiplier = 0.9f; lord.lightningMultiplier = 0.9f; lord.earthMultiplier = 0.9f;
+            AttackDefinition Fire(AttackDefinition a, float share, bool burn = false)
+            {
+                a.element = Element.Fire; a.elementShare = share;
+                if (burn) a.statuses.Add(St(StatusKind.Burn));
+                return a;
+            }
+            var la = lord.attacks;
+            la.Add(Entry(Fire(Atk("Cięcie bramy", 70, 0.75f, 0.15f, 0.4f, 4.3f, 1.6f, 0, 1.0f, 30, 30, tracking: 240f), 0.21f), 0, 4.6f, 3, followUp: 1, followChance: 1f, hyperArmor: true)); // 0
+            la.Add(Entry(Fire(Atk("Drugie cięcie", 70, 0.5f, 0.15f, 0.4f, 4.3f, 1.6f, 0, 1.0f, 30, 30, tracking: 240f), 0.21f), 0, 6f, 0, followUp: 2, followChance: 1f, hyperArmor: true)); // 1
+            la.Add(Entry(Fire(Atk("Cięcie w szale", 70, 0.5f, 0.15f, 0.4f, 4.3f, 1.6f, 0, 1.0f, 30, 30, parryable: false, tracking: 240f), 0.21f), 0, 6f, 0, followUp: 3, followChance: 1f, hyperArmor: true, minPhase: 2)); // 2
+            la.Add(Entry(Fire(Atk("Uderzenie w ziemię", 91, 0.95f, 0.15f, 1.4f, 4.0f, 2.0f, 0, 0.5f, 50, 50, heavy: true, parryable: false, tracking: 200f), 0.21f), 0, 6f, 0, hyperArmor: true)); // 3
+            var lordVolley = Proj("Salwa ognia", 35, 0.7f, 7.9f, 9, 50f, poise: 15, guardLoad: 18, recovery: 0.8f);
+            lordVolley.element = Element.Fire; lordVolley.animation = AttackAnim.Special;
+            la.Add(Entry(lordVolley, 4, 16, 1.5f, cooldown: 5)); // 4
+            la.Add(Entry(Fire(Atk("Ciężkie cięcie", 78, 1.35f, 0.18f, 0.3f, 4.4f, 1.7f, 0, 1.2f, 45, 45, heavy: true, tracking: 220f), 0.2f), 0, 4.6f, 1.5f, followUp: 6, followChance: 1f, hyperArmor: true)); // 5
+            la.Add(Entry(Atk("Pchnięcie", 65, 0.55f, 0.18f, 1.3f, 4.6f, 1.2f, 0, 2.0f, 35, 35, tracking: 260f), 0, 6f, 0, hyperArmor: true)); // 6
+            la[6].attack.animation = AttackAnim.Thrust;
+            var charge = Entry(Fire(Atk("Piekielna szarża", 65, 0.85f, 0.47f, 0.9f, 1.0f, 1.05f, 0, 0, 40, 40, heavy: true, parryable: false, type: DamageType.Magic, tracking: 260f), 0f, true), 4, 14, 1, cooldown: 4, hyperArmor: true); // 7
+            charge.special = EnemySpecial.Charge; charge.specialCount = 12.5f; charge.specialRadius = 2.9f; charge.specialDuration = 3f; charge.specialShare = 0.25f;
+            charge.attack.animation = AttackAnim.Special;
+            la.Add(charge);
+            var zones = Entry(Fire(Atk("Kręgi ognia", 60, 0.6f, 0.1f, 0.6f, 0, 2.33f, 0, 0, 30, 30, blockable: false, parryable: false, type: DamageType.Magic), 0f), 0, 18, 1, cooldown: 8); // 8
+            zones.special = EnemySpecial.FireZones; zones.specialCount = 4; zones.specialRadius = 2.33f; zones.specialDuration = 1.1f;
+            zones.attack.animation = AttackAnim.Special;
+            la.Add(zones);
+            var leap = Entry(Fire(Atk("Skok bramy", 90, 0.95f, 0.15f, 0.6f, 0, 3.25f, 0, 0, 50, 50, heavy: true, parryable: false, type: DamageType.Magic), 0f, true), 3, 12, 1.5f, cooldown: 6, followUp: 10, followChance: 1f, hyperArmor: true, minPhase: 1); // 9
+            leap.special = EnemySpecial.Leap; leap.specialRadius = 3.25f; leap.attack.animation = AttackAnim.Special;
+            la.Add(leap);
+            la.Add(Entry(Fire(Atk("Zamaszyste cięcie", 75, 0.6f, 0.15f, 1.6f, 0, 3.4f, 0, 0, 40, 40, parryable: false, type: DamageType.Magic, delivery: AttackDelivery.AreaAroundSelf), 0f, true), 0, 6f, 0, hyperArmor: true, minPhase: 1)); // 10
+            var orbs = Entry(Fire(Proj("Piekielne kule", 75, 0.5f, 6.7f, 1, 20f, poise: 30, guardLoad: 30, recovery: 0.6f), 0f, true), 3, 16, 1, cooldown: 6, minPhase: 1); // 11
+            orbs.special = EnemySpecial.Orbs; orbs.specialCount = 3; orbs.specialRadius = 2.75f; orbs.specialDuration = 3f; orbs.specialShare = 0.3f;
+            orbs.attack.animation = AttackAnim.Special;
+            la.Add(orbs);
+            var summon = Entry(Atk("Przywołanie", 0, 1.0f, 0.1f, 0.6f, 0, 0, 0, 0, 0, 0, type: DamageType.Magic, delivery: AttackDelivery.AreaAroundSelf), 0, 30, 0.8f, cooldown: 12, hyperArmor: true, minPhase: 1); // 12
+            summon.special = EnemySpecial.Summon; summon.specialCount = 3; summon.summon = minion; summon.summonMax = 8; summon.attack.animation = AttackAnim.Special;
+            la.Add(summon);
+            var pack = Entry(Atk("Wezwanie sfory", 0, 1.0f, 0.1f, 0.6f, 0, 0, 0, 0, 0, 0, type: DamageType.Magic, delivery: AttackDelivery.AreaAroundSelf), 0, 30, 0, hyperArmor: true); // 13
+            pack.special = EnemySpecial.Summon; pack.specialCount = 6; pack.summon = minion; pack.summonMax = 10; pack.attack.animation = AttackAnim.Special;
+            la.Add(pack);
+            lord.phases.Add(new EnemyPhase { healthThreshold = 0.5f, speedMultiplier = 1f, aggressionMultiplier = 1.15f, announcement = "Władca Bramy otwiera wrota – nadlatują nietoperze!", openingAttack = 13 });
+            lord.phases.Add(new EnemyPhase { healthThreshold = 0.3f, speedMultiplier = 1.35f, aggressionMultiplier = 1.35f, announcement = "Władca Bramy wpada w szał!" });
+            r.gatelord = lord;
+            return r;
         }
 
         public static Bundle Create()
@@ -500,6 +655,23 @@ namespace Turris
                 "Cięcie, które rozrywa rany: całe pozostałe krwawienie celu od razu, ×1,5.", BuildTag.Melee);
             rupture.arcAngle = 120f; rupture.amount = 1.5f; rupture.color = new Color(0.8f, 0.1f, 0.1f);
 
+            // ---- Umiejętności obszarowe klas (na fale wrogów): każda klasa zaczyna z jedną.
+            var stomp = Tech("skill_stomp", "Tąpnięcie", SpellKind.Quake, 26, 0.35f, 0.12f, 0.5f, 8f, 1.1f, 0f, 3.2f, 55,
+                "Uderzenie w ziemię wokół siebie: rani i łamie postawę wszystkich w kręgu – odpowiedź na okrążenie.", BuildTag.Melee);
+            stomp.color = new Color(0.85f, 0.7f, 0.45f);
+            stomp.levelFeatures.Add(new LevelFeature(2, LevelFeatureKind.RadiusBonus, 0.25f));
+            var fireRing = Spell("spell_firering", "Ognisty krąg", SpellKind.Nova, 24, 0.5f, 0.45f, 11, "Pierścień ognia wokół postaci: pali i podpala wszystkich w pobliżu.", BuildTag.None, 7f);
+            fireRing.attack = Atk("Ognisty krąg", 36, 0.5f, 0.1f, 0.45f, 0, 3.6f, 0, 0, 25, 25, type: DamageType.Magic, delivery: AttackDelivery.AreaAroundSelf);
+            fireRing.attack.parryable = false; fireRing.attack.element = Element.Fire; fireRing.attack.statuses.Add(St(StatusKind.Burn));
+            fireRing.color = new Color(1f, 0.45f, 0.12f);
+            fireRing.levelFeatures.Add(new LevelFeature(2, LevelFeatureKind.RadiusBonus, 0.25f));
+            var bladeFan = Tech("skill_bladefan", "Wachlarz ostrzy", SpellKind.Projectile, 24, 0.25f, 0.1f, 0.35f, 9f, 0.6f, 0f, 0.3f, 10,
+                "Obrót z rzutem dziesięciu noży dookoła – każdy może otworzyć ranę.", BuildTag.Agile);
+            bladeFan.attack.delivery = AttackDelivery.Projectile; bladeFan.attack.projectileCount = 10; bladeFan.attack.spreadAngle = 162f;
+            bladeFan.attack.projectileSpeed = 20f; bladeFan.attack.statuses.Add(St(StatusKind.Bleed, 1, 0.5f));
+            bladeFan.color = new Color(0.9f, 0.8f, 0.8f);
+            bladeFan.levelFeatures.Add(new LevelFeature(2, LevelFeatureKind.ExtraTargets, 4f));
+
             // ============================================================ WZMOCNIENIA / TALENTY
             BoonDefinition Boon(string id, string name, string desc, BuildTag tags, int maxStacks, params StatModifier[] mods)
             {
@@ -541,7 +713,7 @@ namespace Turris
             var tVigilance = Boon("talent_vigilance", "Czujność", "Talent startowy dostępny dla każdego.", BuildTag.Parry | BuildTag.Agile, 1, Flat(StatType.ParryWindow, 0.03f), Flat(StatType.MaxStamina, 10));
 
             // ============================================================ KLASY
-            var knight = Make<ClassDefinition>("class_knight", "Rycerz", "Miecz, tarcza i solidny pancerz. Techniki: Rozpłatanie i Uderzenie tarczą. Może później uczyć się czarów.");
+            var knight = Make<ClassDefinition>("class_knight", "Rycerz", "Miecz, tarcza i solidny pancerz. Może później uczyć się czarów.");
             knight.toughness = 12; knight.strength = 14; knight.dexterity = 12; knight.intelligence = 8;
             knight.startingItems.AddRange(new[] { sword, heater, chain });
             knight.startingSpells.AddRange(new[] { cleave, bash });
@@ -553,10 +725,11 @@ namespace Turris
             mage.startingSpells.AddRange(new[] { bolt, nova });
             mage.healthFlasks = 3; mage.manaFlasks = 3; mage.color = new Color(0.35f, 0.35f, 0.75f);
 
-            var rogue = Make<ClassDefinition>("class_rogue", "Łotrzyk", "Noże bliźniacze i skórznia. Zręczność: uchylenie, długi unik i szybkie ataki. Techniki: Wypad i Rzut nożami.");
+            var rogue = Make<ClassDefinition>("class_rogue", "Łotrzyk", "Noże bliźniacze albo łuk i skórznia. Zręczność – uchylenie, długi unik i szybkie ataki.");
             rogue.toughness = 10; rogue.strength = 10; rogue.dexterity = 16; rogue.intelligence = 10;
             rogue.startingItems.AddRange(new[] { knivesW, leather, rogueHood });
             rogue.startingSpells.AddRange(new[] { lunge, knives });
+            rogue.alternativeWeapons.Add(bow);
             rogue.healthFlasks = 3; rogue.manaFlasks = 1; rogue.color = new Color(0.25f, 0.42f, 0.3f);
 
             cfg.classes.Add(knight); cfg.classes.Add(mage); cfg.classes.Add(rogue);
@@ -678,31 +851,44 @@ namespace Turris
             foreach (var at in stormCultist.attacks) { at.attack.element = Element.Lightning; at.attack.statuses = new List<StatusApplication> { St(StatusKind.Shock, 1, 0.6f) }; }
             ghoul.variants.Add(fireGhoul); warden.variants.Add(frostWarden); heretic.variants.Add(stormCultist);
 
+            // ============================================================ DEMONY Z HELL UNLEASHED (areny 1–3)
+            var hu = HellUnleashedDemons(bundle);
+
             // ============================================================ ARENY I WIEŻA
-            // Rozmiary powiększone ×1,12 (≈ +25% powierzchni) pod dłuższe piętra z falami wrogów.
+            // Rozmiary powiększone ×1,12 (≈ +25% powierzchni) pod dłuższe piętra z falami wrogów,
+            // potem ×1,2 średnicy pod wrogów wychodzących z portali w różnych miejscach (uwaga użytkownika).
             var courtyard = Make<ArenaDefinition>("arena_courtyard", "Dziedziniec", "");
-            courtyard.circular = true; courtyard.size = 14.6f;
-            courtyard.pillars.AddRange(new[] { new Vector3(6.7f, 0, 6.7f), new Vector3(-6.7f, 0, 6.7f), new Vector3(6.7f, 0, -6.7f), new Vector3(-6.7f, 0, -6.7f) });
+            courtyard.circular = true; courtyard.size = 17.5f;
+            courtyard.pillars.AddRange(new[] { new Vector3(8.04f, 0, 8.04f), new Vector3(-8.04f, 0, 8.04f), new Vector3(8.04f, 0, -8.04f), new Vector3(-8.04f, 0, -8.04f) });
             var crypt = Make<ArenaDefinition>("arena_crypt", "Krypta", "");
-            crypt.circular = false; crypt.size = 24.6f;
-            crypt.pillars.AddRange(new[] { new Vector3(5.6f, 0, 0), new Vector3(-5.6f, 0, 0), new Vector3(5.6f, 0, 6.7f), new Vector3(-5.6f, 0, 6.7f), new Vector3(5.6f, 0, -6.7f), new Vector3(-5.6f, 0, -6.7f) });
+            crypt.circular = false; crypt.size = 29.5f;
+            crypt.pillars.AddRange(new[] { new Vector3(6.72f, 0, 0), new Vector3(-6.72f, 0, 0), new Vector3(6.72f, 0, 8.04f), new Vector3(-6.72f, 0, 8.04f), new Vector3(6.72f, 0, -8.04f), new Vector3(-6.72f, 0, -8.04f) });
             crypt.floorColor = new Color(0.2f, 0.2f, 0.24f); crypt.wallColor = new Color(0.28f, 0.28f, 0.33f); crypt.lightColor = new Color(0.75f, 0.8f, 1f);
             var summit = Make<ArenaDefinition>("arena_summit", "Szczyt", "");
-            summit.circular = true; summit.size = 19;
+            summit.circular = true; summit.size = 22.8f;
             summit.floorColor = new Color(0.28f, 0.2f, 0.2f); summit.wallColor = new Color(0.3f, 0.18f, 0.18f); summit.lightColor = new Color(1f, 0.6f, 0.5f); summit.fogColor = new Color(0.15f, 0.05f, 0.05f);
 
             var tower = Make<TowerDefinition>("tower_main", "Turris Damnatorum", "");
             tower.victoryAshBonus = 40;
             EnemyWave Wave(params EnemyDefinition[] e) { var w = new EnemyWave(); w.enemies.AddRange(e); return w; }
-            tower.floors.Add(new FloorDefinition { name = "I. Przedsionek", arena = courtyard, enemies = { ghoul }, statScale = 1.0f, isDuel = true, ashReward = 3,
-                extraWaves = { Wave(ghoul, archer), Wave(ghoul, ghoul) } });
-            tower.floors.Add(new FloorDefinition { name = "II. Skryptorium herezji", arena = crypt, enemies = { heretic }, statScale = 1.05f, isDuel = true, ashReward = 6, restAfter = true,
-                extraWaves = { Wave(ghoul, ghoul, archer), Wave(heretic, archer) } });
-            tower.floors.Add(new FloorDefinition { name = "III. Zbrojownia", arena = crypt, enemies = { ghoul, ghoul, heretic }, statScale = 0.9f, isDuel = false, ashReward = 10,
+            // Piętra I–III: pierwsze trzy areny Hell Unleashed – demony wychodzą z portali przez cały czas piętra
+            // (czas, budżet, odstęp grup i wagi składu jak fale 1–2), a trzecia arena to Władca Bramy.
+            PortalSpawning Portals(float duration, float budget, float interval, params (EnemyDefinition e, float w)[] comp)
+            {
+                var ps = new PortalSpawning { enabled = true, duration = duration, budget = budget, groupInterval = interval, minGroup = 1, maxGroup = 2 };
+                foreach (var c in comp) ps.composition.Add(new PortalEntry { enemy = c.e, weight = c.w });
+                return ps;
+            }
+            tower.floors.Add(new FloorDefinition { name = "I. Wrota Otchłani", arena = courtyard, statScale = 1.0f, isDuel = false, ashReward = 3,
+                portals = Portals(75f, 30f, 3.18f, (hu.imp, 3.85f)) });
+            tower.floors.Add(new FloorDefinition { name = "II. Kult Bramy", arena = crypt, statScale = 1.05f, isDuel = false, ashReward = 6,
+                portals = Portals(78f, 44f, 2.91f, (hu.imp, 3.7f), (hu.cultist, 4.5f), (hu.worm, 1.4f)) });
+            tower.floors.Add(new FloorDefinition { name = "III. Władca Bramy", arena = courtyard, enemies = { hu.gatelord }, statScale = 1.0f, isDuel = true, ashReward = 10, restAfter = true });
+            tower.floors.Add(new FloorDefinition { name = "IV. Zbrojownia", arena = crypt, enemies = { ghoul, ghoul, heretic }, statScale = 0.95f, isDuel = false, ashReward = 12,
                 extraWaves = { Wave(archer, archer, ghoul), Wave(ghoul, heretic, archer, ghoul), Wave(warden) } });
-            tower.floors.Add(new FloorDefinition { name = "IV. Brama Strażnika", arena = courtyard, enemies = { warden }, statScale = 1.12f, isDuel = true, ashReward = 15, restAfter = true,
+            tower.floors.Add(new FloorDefinition { name = "V. Brama Strażnika", arena = courtyard, enemies = { warden }, statScale = 1.12f, isDuel = true, ashReward = 15, restAfter = true,
                 extraWaves = { Wave(ghoul, ghoul, archer), Wave(heretic, archer, archer, ghoul), Wave(warden, archer) } });
-            tower.floors.Add(new FloorDefinition { name = "V. Szczyt Wieży", arena = summit, enemies = { boss }, statScale = 1.0f, isDuel = true, isBoss = true, ashReward = 30 });
+            tower.floors.Add(new FloorDefinition { name = "VI. Szczyt Wieży", arena = summit, enemies = { boss }, statScale = 1.0f, isDuel = true, isBoss = true, ashReward = 30 });
             cfg.tower = tower;
 
             // ============================================================ TRUDNOŚĆ
@@ -730,6 +916,7 @@ namespace Turris
                 pilgrimBelt, athleteBelt, scoutBoots, ironBoots, bloodRing, manaRing, strRing, intRing, parryAmulet, casterAmulet, bastionAmulet });
             cfg.baseBoonPool.AddRange(new[] { bIron, bVigor, bBreath, bWrath, bWell, bArcane, bBlood, bFlask, bManaFlask, bParry, bTitan, bMind, bAgile, bVamp, bAlch, bBulwark });
             // Umiejętności do zdobycia tymczasowo (na jedno podejście). Te z listy odblokowań dochodzą, gdy gracz dotrze na ich piętro.
+            cfg.baseSpellPool.AddRange(new[] { stomp, fireRing, bladeFan });
             cfg.baseSpellPool.AddRange(new[] { bolt, nova, enchant, cleave, bash, charge, fireball, frostCone, flameBlade, rend, lunge, knives,
                 spark, iceLance, chains, leapSlash, warcry, heavyThrow, fireArrow, frostArrow, volley });
             cfg.baseItemPool.AddRange(new[] { flameSword, frostAxe, serrated, mace, staffFire, staffFrost, emberRing, frostVein, furHelm, groundedChain, stormBoots, spearWeapon, knivesW, bow, leather });
@@ -794,6 +981,32 @@ namespace Turris
             Unlock("unlock_diff1", UnlockKind.Difficulty, d1, 20, 0, floor: 3);
             Unlock("unlock_diff2", UnlockKind.Difficulty, d2, 45, 0, floor: 5);
             Unlock("unlock_diff3", UnlockKind.Difficulty, d3, 80, 0, victory: 1);
+
+            // Umiejętności obszarowe klas – odblokowane od razu, każda klasa zaczyna ze swoją (trzeci slot).
+            Unlock("unlock_stomp", UnlockKind.Spell, stomp, 0, 0, true);
+            Unlock("unlock_firering", UnlockKind.Spell, fireRing, 0, 0, true);
+            Unlock("unlock_bladefan", UnlockKind.Spell, bladeFan, 0, 0, true);
+
+            // Na start podejścia: dodatki i stałe umiejętności ogólne albo przypisane do klasy (rycerz nie zaczyna z kulą ognia).
+            // Nagrody w trakcie podejścia nie są ograniczone klasą.
+            void ForClass(ClassDefinition c, params string[] ids)
+            {
+                foreach (var id in ids) cfg.unlocks.Find(u => u.id == id).classes.Add(c);
+            }
+            ForClass(knight, "unlock_stomp", "unlock_axe", "unlock_buckler", "unlock_greatshield", "unlock_greataxe", "unlock_stormhammer", "unlock_spellguard", "unlock_bloodriposte",
+                "unlock_cleave", "unlock_charge", "unlock_shieldbash", "unlock_whirlwind", "unlock_quake", "unlock_flameblade", "unlock_thunder", "unlock_counter", "unlock_execute");
+            ForClass(mage, "unlock_firering", "unlock_bolt", "unlock_scatter", "unlock_spear", "unlock_barrier", "unlock_fireball", "unlock_frostcone", "unlock_frostnova", "unlock_chain",
+                "unlock_burningground", "unlock_meteor", "unlock_storm", "unlock_bloodpact", "unlock_frostarmor", "unlock_staff_storm", "unlock_ashrobe");
+            ForClass(rogue, "unlock_bladefan", "unlock_dagger", "unlock_scythe", "unlock_bow", "unlock_butcher", "unlock_bloodriposte", "unlock_rend", "unlock_lunge", "unlock_knives",
+                "unlock_flurry", "unlock_rupture", "unlock_counter", "unlock_execute");
+
+            Legacy(knight, "legacy_knight"); Legacy(mage, "legacy_mage"); Legacy(rogue, "legacy_rogue");
+            // Bohaterowie z Hell Unleashed: typy bohatera zastępują dane Rycerza/Maga/Łotrzyka (te same id), dochodzi 12 specjalizacji.
+            AddHeroes(cfg, knight, mage, rogue, sword, greatAxe, dagger, bow, heater, chain, robe, leather, rogueHood);
+            HellEnemyCatalog.Add(cfg, bundle.all);
+            foreach (var definition in bundle.all) if (definition is ContentDefinition cd) bundle.byId[cd.id] = cd;
+            AddHellWeapons(cfg);
+            HellEncounters.ExtendTower(cfg, bundle.byId);
 
             var result = bundle;
             bundle = null;
