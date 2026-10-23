@@ -25,7 +25,36 @@ namespace Turris
         public static HellParticles Burst(Vector3 at, HellFxElement element, float radius = 1)
         {
             if (!FxLibrary.Enabled) return null;
-            return HellFxPool.Instance.Burst(element, at, Mathf.Max(0.1f, radius));
+            var fx = HellFxPool.Instance.Burst(element, at, Mathf.Max(0.1f, radius));
+            if (element == HellFxElement.Fire) FireAccent(at, radius);
+            return fx;
+        }
+
+        static HellParticleLayer[] fireFlash;
+        static readonly RaycastHit[] groundHits = new RaycastHit[8];
+
+        /// <summary>
+        /// Warstwy Turris nad wybuchem ognia HU: krótki błysk HDR w punkcie uderzenia (bloom) i ślad na ziemi –
+        /// zwęglenie ~2 promienie, żar ~1,2 promienia, który stygnie szybciej (wzorzec scorch + hot core).
+        /// </summary>
+        static void FireAccent(Vector3 at, float radius)
+        {
+            fireFlash ??= new[]
+            {
+                new HellParticleLayer("glow", new[] { new Color(1, 0.75f, 0.4f, 1), new Color(1, 0.5f, 0.15f, 0.7f), new Color(1, 0.25f, 0.04f, 0) },
+                    true, 1.6f, 2.0f, 0, 0, 0, Vector3.zero, 0.16f, 1, EmitRadius: 0.01f, Look: "glow_hot"),
+            };
+            var flash = HellParticles.Create("HU_FireFlash", fireFlash, true);
+            flash.transform.position = at; flash.SetScale(Mathf.Clamp(radius, 0.4f, 2.5f)); flash.Play();
+            if (radius < 0.6f) return;
+            // Najniższe trafienie w dół to podłoże (wyżej mogą być kolidery postaci w miejscu wybuchu).
+            int count = Physics.RaycastNonAlloc(at + Vector3.up * 0.2f, Vector3.down, groundHits, 3f, ~0, QueryTriggerInteraction.Ignore);
+            if (count == 0) return;
+            Vector3 ground = groundHits[0].point;
+            for (int i = 1; i < count; i++) if (groundHits[i].point.y < ground.y) ground = groundHits[i].point;
+            float scorch = radius * 2f;
+            FxLibrary.Decal(ground, HellVfxMaterials.Scorch(false), Color.white, scorch * 0.85f, scorch, 6f, 0, 0.45f);
+            FxLibrary.Decal(ground + Vector3.up * 0.002f, HellVfxMaterials.Scorch(true), Color.white, scorch * 0.6f, scorch * 0.6f, 1.6f, 0, 0.9f);
         }
 
         public static HellParticles Ambient(Transform parent, Vector3 offset, HellFxElement element, float radius, float duration = 0)

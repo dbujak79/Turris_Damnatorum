@@ -111,6 +111,7 @@ namespace Turris
 
             var r = go.GetComponent<ParticleSystemRenderer>();
             r.sharedMaterial = HellVfxMaterials.Sprite(e.sprite ?? (e.alpha ? "smoke" : e.stretch ? "spark" : "glow"), !e.alpha);
+            HellVfxMaterials.ApplyStreams(ps, r);
             if (e.flipbook > 0 || e.atlas.x > 0)
             {
                 var sheet = ps.textureSheetAnimation;
@@ -367,25 +368,15 @@ namespace Turris
         public static void Lightning(Vector3 from, Vector3 to, Color c)
         {
             if (!Enabled) return;
-            var go = new GameObject("Lightning");
-            var lr = go.AddComponent<LineRenderer>();
-            int n = Mathf.Clamp(Mathf.RoundToInt(Vector3.Distance(from, to) * 2.5f), 4, 24);
-            lr.positionCount = n + 1;
-            Vector3 side = Vector3.Cross((to - from).normalized, Vector3.up);
-            for (int i = 0; i <= n; i++)
-            {
-                float t = i / (float)n;
-                Vector3 p = Vector3.Lerp(from, to, t);
-                if (i > 0 && i < n) p += (side * Random.Range(-0.35f, 0.35f) + Vector3.up * Random.Range(-0.25f, 0.25f)) * Mathf.Sin(t * Mathf.PI);
-                lr.SetPosition(i, p);
-            }
-            lr.material = FxMaterials.Additive;
-            lr.startColor = lr.endColor = Color.Lerp(c, Color.white, 0.4f);
-            lr.startWidth = 0.16f; lr.endWidth = 0.08f;
-            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            Object.Destroy(go, 0.18f);
+            LightningBolt.Strike(from, to, c);
             HellFx.Crackle(to);
             HellFxPool.Instance.FlashLight((from + to) * 0.5f, c, 4f, 6f, 0.15f);
+            // Uderzenie z nieba w ziemię zostawia biało-niebieski, szybko stygnący ślad.
+            if (from.y - to.y > 4f && Physics.Raycast(to + Vector3.up * 0.3f, Vector3.down, out var hit, 1.5f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                Decal(hit.point, HellVfxMaterials.Scorch(false), Color.white, 0.9f, 1.1f, 3f, 0, 0.5f);
+                Decal(hit.point + Vector3.up * 0.002f, HellVfxMaterials.Scorch(true, bolt: true), Color.white, 0.8f, 0.8f, 0.7f, 0, 0.9f);
+            }
         }
 
         /// <summary>Podmuch mrozu w stożku przed postacią.</summary>

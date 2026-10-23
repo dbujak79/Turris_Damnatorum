@@ -2,7 +2,19 @@
 
 Aktualizacja: 2026-10-23 (migracja renderowania Built-in → URP 17.6 + Linear, gałąź `feature/urp-vfx-migration`). Opis gry, sterowania i architektury jest w [README.md](../README.md). Ten plik służy do przekazania pracy między sesjami.
 
-### Ostatnia sesja — 2026-10-23: migracja Built-in → URP + Linear
+### Ostatnia sesja — 2026-10-23: efekty AAA, krok 1 (uber-shader, ogień, błyskawica)
+
+Dziennik etapu: [EFEKTY_AAA.md](EFEKTY_AAA.md). Niezacommitowane (na `feature/urp-vfx-migration` po commicie migracji).
+- `Turris/HellParticle` jako uber-shader: jądro HDR, erozja z Custom Data, falowanie UV, płynny flipbook, miękkie
+  przecięcie z podłożem; profile per tekstura w `HellVfxMaterials`, strumienie w `ApplyStreams`. Receptury HU bez zmian.
+- Naprawa: renderer URP kopiował głębię po przezroczystych (`After Transparents`) – miękkie cząsteczki nie działały; teraz `After Opaques`.
+- Ogień: błysk HDR i ślad na ziemi (zwęglenie + stygnący żar, `Turris/FxScorch`). Błyskawica: `LightningBolt`
+  (poszarpany kanał, odgałęzienia, rdzeń HDR + niebieska otoczka, ponowne wyładowania, ślad uderzenia z nieba).
+- Nowy test-galeria `HellFxPlayTests.BurstSequence_WhenRequested` (sekwencje życia wybuchów i błyskawicy).
+- Testy: PlayMode 99 zaliczonych, 17 galerii pominiętych, 2 niezaliczone – te same, zależne od tempa klatek, co po migracji.
+  Koszt: +~0,3 ms przy 6 równoczesnych wybuchach ognia (1080p, edytor).
+
+### Poprzednia sesja — 2026-10-23: migracja Built-in → URP + Linear
 
 Pełny opis, inwentarz, wyniki i znane problemy: [MIGRACJA_URP.md](MIGRACJA_URP.md). Gałąź `feature/urp-vfx-migration`
 (niezacommitowana); migawka drzewa sprzed migracji: `refs/backup/pre-urp-worktree`.

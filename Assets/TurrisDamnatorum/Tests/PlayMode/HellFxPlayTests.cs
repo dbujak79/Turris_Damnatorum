@@ -129,13 +129,64 @@ namespace Turris.Tests
             finally { Object.Destroy(cameraGo); Object.Destroy(floor); Object.Destroy(lightGo); Object.Destroy(floorMaterial); }
         }
 
-        static void Shot(Camera camera,string path)
+        /// <summary>
+        /// Sekwencja życia wybuchu każdego żywiołu z kamery zbliżonej do rozgrywki (z góry, pod kątem):
+        /// seq_{żywioł}_{ms}.png. Do oceny warstw, jąder HDR, erozji, śladów na ziemi i dogasania.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator BurstSequence_WhenRequested()
         {
-            var previous=RenderTexture.active; var rt=new RenderTexture(1280,800,24); var texture=new Texture2D(1280,800,TextureFormat.RGB24,false);
+            string dir=System.Environment.GetEnvironmentVariable("TURRIS_SHOT_DIR");
+            if(string.IsNullOrEmpty(dir)) { Assert.Ignore("Ustaw TURRIS_SHOT_DIR, aby zapisać sekwencje wybuchów."); yield break; }
+            Directory.CreateDirectory(dir);
+            var cameraGo=new GameObject("HU_SeqCamera"); var camera=cameraGo.AddComponent<Camera>();
+            cameraGo.transform.position=new Vector3(0,7.5f,-6.5f); cameraGo.transform.LookAt(new Vector3(0,0.6f,0));
+            camera.clearFlags=CameraClearFlags.SolidColor; camera.backgroundColor=new Color(0.03f,0.025f,0.03f); camera.fieldOfView=40;
+            var floor=GameObject.CreatePrimitive(PrimitiveType.Cube); floor.transform.position=new Vector3(0,-0.5f,0); floor.transform.localScale=new Vector3(30,1,30);
+            var floorMaterial=new Material(Shader.Find(MaterialLibrary.LitShader)) { color=new Color(0.2f,0.19f,0.18f) };
+            floorMaterial.SetFloat("_Smoothness",0.15f); floor.GetComponent<Renderer>().sharedMaterial=floorMaterial;
+            RenderSettings.fog=false; RenderSettings.ambientMode=UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientLight=new Color(0.32f,0.3f,0.33f)*RenderingSetup.AmbientScale;
+            var lightGo=new GameObject("HU_SeqLight"); var light=lightGo.AddComponent<Light>(); light.type=LightType.Directional;
+            light.intensity=RenderingSetup.SunIntensity; light.shadows=LightShadows.Soft; lightGo.transform.rotation=Quaternion.Euler(50,-30,0);
+            var families=new[] { HellFxElement.Fire,HellFxElement.Ice,HellFxElement.Air,HellFxElement.Earth };
+            var times=new[] { 0.04f,0.12f,0.25f,0.5f,1f,2f,3.5f };
+            try
+            {
+                foreach(var family in families)
+                {
+                    HellFx.Impact(new Vector3(0,1,0),family,Color.white,2.2f);
+                    float start=Time.time;
+                    foreach(var t in times)
+                    {
+                        while(Time.time-start<t) yield return null;
+                        Shot(camera,Path.Combine(dir,$"seq_{family}_{Mathf.RoundToInt(t*1000):0000}.png"),640,400);
+                    }
+                    foreach(var fx in Object.FindObjectsByType<HellParticles>(FindObjectsInactive.Include)) if(fx!=null) Object.Destroy(fx.gameObject);
+                    foreach(var d in Object.FindObjectsByType<FxDecal>()) if(d!=null) Object.Destroy(d.gameObject);
+                    yield return null;
+                }
+                // Błyskawica: uderzenie z nieba w ziemię i łańcuch na wysokości piersi (życie ~0,28 s, ślad ~0,7 s).
+                var bolt=new Color(0.8f,0.85f,1f);
+                FxLibrary.Lightning(new Vector3(0.4f,8f,0.3f),new Vector3(0,0.05f,0),bolt);
+                FxLibrary.Lightning(new Vector3(-2.6f,1.2f,-0.4f),new Vector3(2.6f,1.2f,0.6f),bolt);
+                float boltStart=Time.time;
+                foreach(var t in new[] { 0.03f,0.08f,0.14f,0.2f,0.27f,0.4f,0.7f })
+                {
+                    while(Time.time-boltStart<t) yield return null;
+                    Shot(camera,Path.Combine(dir,$"seq_Bolt_{Mathf.RoundToInt(t*1000):0000}.png"),640,400);
+                }
+            }
+            finally { Object.Destroy(cameraGo); Object.Destroy(floor); Object.Destroy(lightGo); Object.Destroy(floorMaterial); }
+        }
+
+        static void Shot(Camera camera,string path,int width=1280,int height=800)
+        {
+            var previous=RenderTexture.active; var rt=new RenderTexture(width,height,24); var texture=new Texture2D(width,height,TextureFormat.RGB24,false);
             try
             {
                 camera.targetTexture=rt; camera.Render(); RenderTexture.active=rt;
-                texture.ReadPixels(new Rect(0,0,1280,800),0,0); texture.Apply(); File.WriteAllBytes(path,texture.EncodeToPNG());
+                texture.ReadPixels(new Rect(0,0,width,height),0,0); texture.Apply(); File.WriteAllBytes(path,texture.EncodeToPNG());
             }
             finally { camera.targetTexture=null; RenderTexture.active=previous; Object.Destroy(rt); Object.Destroy(texture); }
         }

@@ -17,19 +17,21 @@ namespace Turris
         internal readonly Vector3 Gravity;
         internal readonly int Amount, Flipbook;
         internal readonly Vector2Int Atlas;
+        /// <summary>Wariant wyglądu w uber-shaderze (HellVfxMaterials); null = profil tekstury.</summary>
+        internal readonly string Look;
 
         internal HellParticleLayer(string Sprite, Color[] Ramp, bool Additive, float SizeMin, float SizeMax,
             float SpeedMin, float SpeedMax, float Spread, Vector3 Gravity, float Lifetime, int Amount,
             bool AlignToVelocity = false, bool Grow = false, float Turbulence = 0, float Damping = 0,
             bool Rock = false, bool Upright = false, float EmitRadius = 0.2f, int Flipbook = 0,
-            bool FlipbookFromStart = false, bool Local = false, Vector2Int Atlas = default)
+            bool FlipbookFromStart = false, bool Local = false, Vector2Int Atlas = default, string Look = null)
         {
             this.Sprite = Sprite; this.Ramp = Ramp; this.Additive = Additive; this.SizeMin = SizeMin; this.SizeMax = SizeMax;
             this.SpeedMin = SpeedMin; this.SpeedMax = SpeedMax; this.Spread = Spread; this.Gravity = Gravity;
             this.Lifetime = Lifetime; this.Amount = Amount; this.AlignToVelocity = AlignToVelocity; this.Grow = Grow;
             this.Turbulence = Turbulence; this.Damping = Damping; this.Rock = Rock; this.Upright = Upright;
             this.EmitRadius = EmitRadius; this.Flipbook = Flipbook; this.FlipbookFromStart = FlipbookFromStart;
-            this.Local = Local; this.Atlas = Atlas;
+            this.Local = Local; this.Atlas = Atlas; this.Look = Look;
         }
     }
 
@@ -125,11 +127,15 @@ namespace Turris
                 sheet.enabled = true; sheet.numTilesX = x; sheet.numTilesY = y;
                 sheet.animation = ParticleSystemAnimationType.WholeSheet;
                 sheet.startFrame = l.FlipbookFromStart ? new ParticleSystem.MinMaxCurve(0) : new ParticleSystem.MinMaxCurve(0, 1);
-                sheet.frameOverTime = new ParticleSystem.MinMaxCurve(1, AnimationCurve.Linear(0, 0, 1, l.Flipbook > 0 ? 1 : 0));
+                // Jednorazowa eksplozja zwalnia pod koniec (szybki wybuch, wolne dogasanie); pętle płomieni grają równo.
+                sheet.frameOverTime = l.Flipbook > 0 && l.FlipbookFromStart
+                    ? new ParticleSystem.MinMaxCurve(1, new AnimationCurve(new Keyframe(0, 0, 0, 2.2f), new Keyframe(1, 1, 0.35f, 0)))
+                    : new ParticleSystem.MinMaxCurve(1, AnimationCurve.Linear(0, 0, 1, l.Flipbook > 0 ? 1 : 0));
                 sheet.cycleCount = 1;
             }
             var renderer = go.GetComponent<ParticleSystemRenderer>();
-            renderer.sharedMaterial = l.Rock ? HellVfxMaterials.Rock : HellVfxMaterials.Sprite(l.Sprite, l.Additive);
+            renderer.sharedMaterial = l.Rock ? HellVfxMaterials.Rock : HellVfxMaterials.Sprite(l.Sprite, l.Additive, l.Look);
+            if (!l.Rock) HellVfxMaterials.ApplyStreams(ps, renderer);
             renderer.shadowCastingMode = ShadowCastingMode.Off; renderer.receiveShadows = false;
             renderer.maxParticleSize = 2f;
             renderer.sortMode = ParticleSystemSortMode.Distance;
