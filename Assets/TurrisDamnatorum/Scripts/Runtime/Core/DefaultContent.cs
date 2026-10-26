@@ -660,11 +660,10 @@ namespace Turris
                 "Uderzenie w ziemię wokół siebie: rani i łamie postawę wszystkich w kręgu – odpowiedź na okrążenie.", BuildTag.Melee);
             stomp.color = new Color(0.85f, 0.7f, 0.45f);
             stomp.levelFeatures.Add(new LevelFeature(2, LevelFeatureKind.RadiusBonus, 0.25f));
-            var fireRing = Spell("spell_firering", "Ognisty krąg", SpellKind.Nova, 24, 0.5f, 0.45f, 11, "Pierścień ognia wokół postaci: pali i podpala wszystkich w pobliżu.", BuildTag.None, 7f);
-            fireRing.attack = Atk("Ognisty krąg", 36, 0.5f, 0.1f, 0.45f, 0, 3.6f, 0, 0, 25, 25, type: DamageType.Magic, delivery: AttackDelivery.AreaAroundSelf);
-            fireRing.attack.parryable = false; fireRing.attack.element = Element.Fire; fireRing.attack.statuses.Add(St(StatusKind.Burn));
-            fireRing.color = new Color(1f, 0.45f, 0.12f);
-            fireRing.levelFeatures.Add(new LevelFeature(2, LevelFeatureKind.RadiusBonus, 0.25f));
+            // Dawny Ognisty krąg był dubletem Novy ognia – teraz Ściana ognia ze skilli Turris na komponentach HU
+            // (przyjmuje pieczęcie: Fala ognia, Forteca ognia). Id zostaje – trzymają je odblokowania i profile.
+            var fireRing = FromHu(HuCatalog.Skill(TurrisSkills.FireWall));
+            fireRing.requirements.Add(Req(AttributeType.Intelligence, 11));
             var bladeFan = Tech("skill_bladefan", "Wachlarz ostrzy", SpellKind.Projectile, 24, 0.25f, 0.1f, 0.35f, 9f, 0.6f, 0f, 0.3f, 10,
                 "Obrót z rzutem dziesięciu noży dookoła – każdy może otworzyć ranę.", BuildTag.Agile);
             bladeFan.attack.delivery = AttackDelivery.Projectile; bladeFan.attack.projectileCount = 10; bladeFan.attack.spreadAngle = 162f;
@@ -1003,6 +1002,7 @@ namespace Turris
             Legacy(knight, "legacy_knight"); Legacy(mage, "legacy_mage"); Legacy(rogue, "legacy_rogue");
             // Bohaterowie z Hell Unleashed: typy bohatera zastępują dane Rycerza/Maga/Łotrzyka (te same id), dochodzi 12 specjalizacji.
             AddHeroes(cfg, knight, mage, rogue, sword, greatAxe, dagger, bow, heater, chain, robe, leather, rogueHood);
+            AddHellSkills(cfg);
             HellEnemyCatalog.Add(cfg, bundle.all);
             foreach (var definition in bundle.all) if (definition is ContentDefinition cd) bundle.byId[cd.id] = cd;
             AddHellWeapons(cfg);

@@ -169,6 +169,8 @@ namespace Turris
                     if (actions.Phase == ActionPhase.Startup)
                         face = LockTarget != null ? DirTo(LockTarget.transform.position) : (skill != null && !skill.IsSpell && intent.sqrMagnitude > 0.01f ? intent : (Vector3?)null);
                     if (combat.SkillMotion != Vector3.zero) { horizontal = combat.SkillMotion; steered = false; }
+                    else if (combat.SkillMoveMultiplier.HasValue && actions.Phase == ActionPhase.Active)
+                        horizontal = intent * speed * combat.SkillMoveMultiplier.Value; // młynek HU: sterowanie w trakcie wirowania
                     else if (skill != null && skill.kind == SpellKind.Whirlwind && actions.Phase == ActionPhase.Active)
                         horizontal = intent * speed * skill.moveMultiplier; // młynek: powolne sterowanie w trakcie wirowania
                     break;
@@ -190,6 +192,9 @@ namespace Turris
             // a po nich ruch płynnie przejmuje pęd zamiast zatrzymywać się w miejscu.
             if (steered)
             {
+                // Pęd po akcji (doskok 25 m/s) najwyżej z prędkością sprintu – inaczej hamowanie ślizgało bohatera o kilka metrów.
+                float carry = speed * b.sprintMultiplier;
+                if (planarVelocity.sqrMagnitude > carry * carry) planarVelocity = planarVelocity.normalized * carry;
                 bool braking = horizontal.sqrMagnitude < planarVelocity.sqrMagnitude || Vector3.Dot(horizontal, planarVelocity) < 0f;
                 float accel = braking ? b.moveDeceleration : b.moveAcceleration;
                 planarVelocity = accel > 0 ? Vector3.MoveTowards(planarVelocity, horizontal, accel * dt) : horizontal;

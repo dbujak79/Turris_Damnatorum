@@ -17,6 +17,8 @@ MonoBehaviour:
   description: "Katalizator: wzmacnia czary i regeneruje man\u0119. W zwarciu \u2013 s\u0142aby cios bez many."
   tags: 2
   kind: 0
+  huSourceId: 
+  huSourceHash: 
   twoHanded: 0
   weight: 3
   requirements: []
@@ -132,4 +134,6 @@ MonoBehaviour:
   model: {fileID: 919132149155446097, guid: 9531dea056089b14fa873464dc1f0f85, type: 3}
   modelScale: 1
   modelGripShift: 0
+  minFloor: 0
+  offerWeight: 1
   grantedSkill: {fileID: 0}

@@ -143,7 +143,7 @@
     },
     {
       "id": "skill.mage.brimstone_rain",
-      "targetId": "",
+      "targetId": "hu_brimstone_rain",
       "file": "src/Game/Content/Skills/mage_brimstone_rain.tres",
       "sha256": "39269caf662186dc24b3a6cbaa9a71bc4fb5cc5010f938c06a4f0d0abcac1951",
       "displayName": "Deszcz siarki",
@@ -320,7 +320,7 @@
     },
     {
       "id": "skill.mage.cyclone_eye",
-      "targetId": "",
+      "targetId": "hu_cyclone_eye",
       "file": "src/Game/Content/Skills/mage_cyclone_eye.tres",
       "sha256": "e7fa7cf9b6df5ad72782b101178df166f7cb7e2823e2ef10f8eead2005cd7c5f",
       "displayName": "Oko cyklonu",
@@ -466,7 +466,7 @@
     },
     {
       "id": "skill.mage.damned_chain",
-      "targetId": "",
+      "targetId": "hu_damned_chain",
       "file": "src/Game/Content/Skills/mage_damned_chain.tres",
       "sha256": "06615b824ab37b85d9b44d9d3f90e1927b0374b5bd270e8bed30b5189c38ebd7",
       "displayName": "Łańcuch potępionych",
@@ -596,10 +596,10 @@
     },
     {
       "id": "skill.mage.ember_ring",
-      "targetId": "",
+      "targetId": "hu_ember_ring",
       "file": "src/Game/Content/Skills/mage_ember_ring.tres",
       "sha256": "07902aeae3538463e9bd71671e434b7d7050aa176793fd3673c03c27b560046e",
-      "displayName": "skill.mage.ember_ring",
+      "displayName": "Krąg żaru",
       "fields": {
         "BasePrice": 42,
         "PriceGrowth": 1.6,
@@ -762,10 +762,10 @@
     },
     {
       "id": "skill.mage.frost_shard",
-      "targetId": "",
+      "targetId": "hu_frost_shard",
       "file": "src/Game/Content/Skills/mage_frost_shard.tres",
       "sha256": "f738abfb1c0013babab784a942cb84ef25ddecf764face2e2bbfbab1a205fa1d",
-      "displayName": "skill.mage.frost_shard",
+      "displayName": "Lodowy odłamek",
       "fields": {
         "BasePrice": 42,
         "PriceGrowth": 1.6,
@@ -935,7 +935,7 @@
     },
     {
       "id": "skill.mage.glacial_tear",
-      "targetId": "",
+      "targetId": "hu_glacial_tear",
       "file": "src/Game/Content/Skills/mage_glacial_tear.tres",
       "sha256": "b3c4585b099d6ad34f8a29e186546b952c1c3b87102fd3e7559447e83aa6e17d",
       "displayName": "Łza lodowca",
@@ -1120,7 +1120,7 @@
     },
     {
       "id": "skill.mage.infernal_orb",
-      "targetId": "",
+      "targetId": "hu_infernal_orb",
       "file": "src/Game/Content/Skills/mage_infernal_orb.tres",
       "sha256": "f78e317b54ff5951d8bdafbe2d2957cdf4a62ff8991295dc74a93181a58f71d0",
       "displayName": "Piekielna kula",
@@ -1336,7 +1336,7 @@
     },
     {
       "id": "skill.mage.stone_spikes",
-      "targetId": "",
+      "targetId": "hu_stone_spikes",
       "file": "src/Game/Content/Skills/mage_stone_spikes.tres",
       "sha256": "ad5ee28480cdb6466c81359d086ecc6ae9ef565acbbe1aa7900e8611700db066",
       "displayName": "Kamienne kolce",
@@ -1469,7 +1469,7 @@
     },
     {
       "id": "skill.mage.stone_ward",
-      "targetId": "",
+      "targetId": "hu_stone_ward",
       "file": "src/Game/Content/Skills/mage_stone_ward.tres",
       "sha256": "4bea336b4c8d1ea028f4a6b01e0f7ed962697ab597ed55cdc193b73ea0127f06",
       "displayName": "Kamienna osłona",
@@ -1573,7 +1573,7 @@
     },
     {
       "id": "skill.mage.tidal_wave",
-      "targetId": "",
+      "targetId": "hu_tidal_wave",
       "file": "src/Game/Content/Skills/mage_tidal_wave.tres",
       "sha256": "f3a34e09613596437ac57fcd0d4a38c293f2fefd15c9269d365df68da9629a5b",
       "displayName": "Fala przypływu",
@@ -1741,7 +1741,7 @@
     },
     {
       "id": "skill.mage.wind_step",
-      "targetId": "",
+      "targetId": "hu_wind_step",
       "file": "src/Game/Content/Skills/mage_wind_step.tres",
       "sha256": "060ef5688aeeb5953b898fb9fff10a7e14825358a35a9a3f9fd061fe1a805e3d",
       "displayName": "Krok wichru",
@@ -2343,7 +2343,7 @@
     },
     {
       "id": "skill.rogue.arrow_rain",
-      "targetId": "",
+      "targetId": "hu_arrow_rain",
       "file": "src/Game/Content/Skills/rogue_arrow_rain.tres",
       "sha256": "162ae50990314969f5ae2a5ae93dbfae816ff7f15cef49a9cbbca709f994227e",
       "displayName": "Deszcz strzał",
@@ -3090,7 +3090,7 @@
     },
     {
       "id": "skill.rogue.shadow_step",
-      "targetId": "",
+      "targetId": "hu_shadow_step",
       "file": "src/Game/Content/Skills/rogue_shadow_step.tres",
       "sha256": "d54ca6ec37042df9b2c082499ac6ddcaacc831bcf3dd68ba9ffd8c3b159c6d6a",
       "displayName": "Krok cienia",
@@ -3594,7 +3594,7 @@
     },
     {
       "id": "skill.rogue.sulfur_arrow",
-      "targetId": "",
+      "targetId": "hu_sulfur_arrow",
       "file": "src/Game/Content/Skills/rogue_sulfur_arrow.tres",
       "sha256": "ce945e688da35c34db79ffad2fed20b9718eddb890eb96f962c9c9dd1d9a38fe",
       "displayName": "Strzała siarkowa",
@@ -3767,10 +3767,10 @@
     },
     {
       "id": "skill.rogue.sulfur_bomb",
-      "targetId": "",
+      "targetId": "hu_sulfur_bomb",
       "file": "src/Game/Content/Skills/rogue_sulfur_bomb.tres",
       "sha256": "f6615db2327ae6605f74bc8d30115e4d0b6f79dd68f46b19f5b019139d7cc852",
-      "displayName": "skill.rogue.sulfur_bomb",
+      "displayName": "Bomba siarkowa",
       "fields": {
         "BasePrice": 42,
         "PriceGrowth": 1.6,
@@ -3932,7 +3932,7 @@
     },
     {
       "id": "skill.rogue.thorn_scatter",
-      "targetId": "",
+      "targetId": "hu_thorn_scatter",
       "file": "src/Game/Content/Skills/rogue_thorn_scatter.tres",
       "sha256": "53c6a998433eac3530de1442dfd7ffcfb031afb850378a67f74a46d028d1cd32",
       "displayName": "Garść cierni",
@@ -4163,7 +4163,7 @@
     },
     {
       "id": "skill.rogue.volley",
-      "targetId": "",
+      "targetId": "hu_volley",
       "file": "src/Game/Content/Skills/rogue_volley.tres",
       "sha256": "572d593513ee5a455a65d8747fd349b939d185e3e0d36d2c38abdb9914bf5e28",
       "displayName": "Salwa",
@@ -4318,7 +4318,7 @@
       "targetId": "hu_arrow_storm",
       "file": "src/Game/Content/Skills/sub_arrow_storm.tres",
       "sha256": "9990dd7973d0324abad38ab5ba598eb4d0614320f8dc5b21e24b33b99e9feb5c",
-      "displayName": "skill.sub.arrow_storm",
+      "displayName": "Burza strzał",
       "fields": {
         "BasePrice": 40,
         "PriceGrowth": 1.6,
@@ -4475,7 +4475,7 @@
       "targetId": "hu_aura_defiance",
       "file": "src/Game/Content/Skills/sub_aura_defiance.tres",
       "sha256": "d6a90ac2645878924e146e65b6db08f66ad2d5cfadfb0840beb2b7276b0bb997",
-      "displayName": "skill.aura.defiance",
+      "displayName": "Aura niezłomności",
       "fields": {
         "BasePrice": 45,
         "PriceGrowth": 1.6,
@@ -4586,7 +4586,7 @@
       "targetId": "hu_aura_holy_fire",
       "file": "src/Game/Content/Skills/sub_aura_holy_fire.tres",
       "sha256": "0f26bac18f1cb10478c79988055b9f6be8aaff4c26e2a965b640b4d0e1743b2f",
-      "displayName": "skill.aura.holy_fire",
+      "displayName": "Aura świętego ognia",
       "fields": {
         "BasePrice": 50,
         "PriceGrowth": 1.6,
@@ -4699,10 +4699,10 @@
     },
     {
       "id": "skill.aura.might",
-      "targetId": "",
+      "targetId": "hu_aura_might",
       "file": "src/Game/Content/Skills/sub_aura_might.tres",
       "sha256": "49f952874ac11888541bb75aa01c19497e7d4dca0fe68e497ed3de80290fe037",
-      "displayName": "skill.aura.might",
+      "displayName": "Aura męstwa",
       "fields": {
         "BasePrice": 45,
         "PriceGrowth": 1.6,
@@ -4795,10 +4795,10 @@
     },
     {
       "id": "skill.aura.purity",
-      "targetId": "",
+      "targetId": "hu_aura_purity",
       "file": "src/Game/Content/Skills/sub_aura_purity.tres",
       "sha256": "43e6114448bad1840cfea62f7676654e93d2a9af30ff6777db741c9963e6701e",
-      "displayName": "skill.aura.purity",
+      "displayName": "Aura czystości",
       "fields": {
         "BasePrice": 45,
         "PriceGrowth": 1.6,
@@ -4936,10 +4936,10 @@
     },
     {
       "id": "skill.aura.renewal",
-      "targetId": "",
+      "targetId": "hu_aura_renewal",
       "file": "src/Game/Content/Skills/sub_aura_renewal.tres",
       "sha256": "66d58e928acdb77bdf333782bda52131c0511e3b170332a55745fc8cd99e3a82",
-      "displayName": "skill.aura.renewal",
+      "displayName": "Aura odnowy",
       "fields": {
         "BasePrice": 45,
         "PriceGrowth": 1.6,
@@ -5059,10 +5059,10 @@
     },
     {
       "id": "skill.aura.zeal",
-      "targetId": "",
+      "targetId": "hu_aura_zeal",
       "file": "src/Game/Content/Skills/sub_aura_zeal.tres",
       "sha256": "3a214aeb6a528228162f1d8085fe632dd222ce3690fe0153db66ba2dbf83ddc4",
-      "displayName": "skill.aura.zeal",
+      "displayName": "Aura zapału",
       "fields": {
         "BasePrice": 45,
         "PriceGrowth": 1.6,
@@ -5173,7 +5173,7 @@
       "targetId": "hu_blade_dance",
       "file": "src/Game/Content/Skills/sub_blade_dance.tres",
       "sha256": "e6134e03bd59d0c10e6b7a6cd3f377e16e8a82fc3cc4d379dcbe4a645c8cf74d",
-      "displayName": "skill.sub.blade_dance",
+      "displayName": "Taniec ostrzy",
       "fields": {
         "BasePrice": 40,
         "PriceGrowth": 1.6,
@@ -5356,7 +5356,7 @@
       "targetId": "hu_death_mark",
       "file": "src/Game/Content/Skills/sub_death_mark.tres",
       "sha256": "d4be4a5e9379c0d32d1cc9d91b30a20ccf9b738ad978cd69b2eb56ae816e3ddb",
-      "displayName": "skill.sub.death_mark",
+      "displayName": "Znak śmierci",
       "fields": {
         "BasePrice": 40,
         "PriceGrowth": 1.6,
@@ -5527,7 +5527,7 @@
       "targetId": "hu_elemental_arrow",
       "file": "src/Game/Content/Skills/sub_elemental_arrow.tres",
       "sha256": "e406cdf1d6c2d10e2e1066e7057e5f7ebb7f99dea93be2739fd020fe63f1eb22",
-      "displayName": "skill.sub.elemental_arrow",
+      "displayName": "Strzała żywiołów",
       "fields": {
         "BasePrice": 40,
         "PriceGrowth": 1.6,
@@ -5752,7 +5752,7 @@
       "targetId": "hu_judgement",
       "file": "src/Game/Content/Skills/sub_judgement.tres",
       "sha256": "057f9d05e225a2dbd7379ef97a892494a4088321f409543530be1cef530a9e6a",
-      "displayName": "skill.sub.judgement",
+      "displayName": "Boski osąd",
       "fields": {
         "BasePrice": 40,
         "PriceGrowth": 1.6,
@@ -5911,7 +5911,7 @@
       "targetId": "hu_legion",
       "file": "src/Game/Content/Skills/sub_legion.tres",
       "sha256": "74e1814d409c27d904f258c4ffb2b44e9c931145bdd196e045f5d2b3e7277a99",
-      "displayName": "skill.sub.legion",
+      "displayName": "Legion",
       "fields": {
         "BasePrice": 40,
         "PriceGrowth": 1.6,
@@ -6054,7 +6054,7 @@
       "targetId": "hu_maelstrom",
       "file": "src/Game/Content/Skills/sub_maelstrom.tres",
       "sha256": "39911e7e4a39e32421aaf89b01f3565847fcdf1740ce2401b3c3209b9b678cee",
-      "displayName": "skill.sub.maelstrom",
+      "displayName": "Wir głębin",
       "fields": {
         "BasePrice": 40,
         "PriceGrowth": 1.6,
@@ -6237,7 +6237,7 @@
       "targetId": "hu_meteor",
       "file": "src/Game/Content/Skills/sub_meteor.tres",
       "sha256": "1e8aaead18a543c7c41a67b6d2d15a834610d6ea547c52279b97a2e936b730dd",
-      "displayName": "skill.sub.meteor",
+      "displayName": "Meteor",
       "fields": {
         "BasePrice": 40,
         "PriceGrowth": 1.6,
@@ -6434,7 +6434,7 @@
       "targetId": "hu_quake",
       "file": "src/Game/Content/Skills/sub_quake.tres",
       "sha256": "64f6c797b9bfcbbdd3ebc5a32fe64fcc91f5d7c0b476b51e1323b683c8cc74f9",
-      "displayName": "skill.sub.quake",
+      "displayName": "Trzęsienie ziemi",
       "fields": {
         "BasePrice": 40,
         "PriceGrowth": 1.6,
@@ -6565,7 +6565,7 @@
       "targetId": "hu_storm_cleave",
       "file": "src/Game/Content/Skills/sub_storm_cleave.tres",
       "sha256": "ad61d0c50a77e5abff6f15925a0f0b6a80a6ab5e83d3683e18c1e471ad427f52",
-      "displayName": "skill.sub.storm_cleave",
+      "displayName": "Cięcie burzy",
       "fields": {
         "BasePrice": 40,
         "PriceGrowth": 1.6,
@@ -6707,10 +6707,10 @@
     },
     {
       "id": "skill.summon.golem",
-      "targetId": "",
+      "targetId": "hu_summon_golem",
       "file": "src/Game/Content/Skills/sub_summon_golem.tres",
       "sha256": "e8742cef503a2ab2109df2d7df7c0d8b050c75c006421c354f9b969ce5cfb9fe",
-      "displayName": "skill.summon.golem",
+      "displayName": "Kościany golem",
       "fields": {
         "BasePrice": 55,
         "PriceGrowth": 1.6,
@@ -6885,10 +6885,10 @@
     },
     {
       "id": "skill.summon.hounds",
-      "targetId": "",
+      "targetId": "hu_summon_hounds",
       "file": "src/Game/Content/Skills/sub_summon_hounds.tres",
       "sha256": "d7fbbfa5a9ca1e8cca9a0aca44b65e697b70aaa6e5ef34d3efd0ff020cda1001",
-      "displayName": "skill.summon.hounds",
+      "displayName": "Sfora",
       "fields": {
         "BasePrice": 45,
         "PriceGrowth": 1.6,
@@ -7040,7 +7040,7 @@
       "targetId": "hu_summon_imps",
       "file": "src/Game/Content/Skills/sub_summon_imps.tres",
       "sha256": "f9f2b923a5555cc2b121c3d44d12375ea7ff1d23c4ce48dab4a0119e125f2a45",
-      "displayName": "skill.summon.imps",
+      "displayName": "Przyzwanie chochlików",
       "fields": {
         "BasePrice": 0,
         "PriceGrowth": 1.6,
@@ -7184,7 +7184,7 @@
       "targetId": "hu_tempest",
       "file": "src/Game/Content/Skills/sub_tempest.tres",
       "sha256": "bf65106c5f18d804a2692f23140386ec4981ac5efef935c51b8cc69044ee8ff1",
-      "displayName": "skill.sub.tempest",
+      "displayName": "Nawałnica",
       "fields": {
         "BasePrice": 40,
         "PriceGrowth": 1.6,
@@ -7328,7 +7328,7 @@
       "targetId": "hu_undying",
       "file": "src/Game/Content/Skills/sub_undying.tres",
       "sha256": "3718dfa76f52020fa2be6651653c28506dd389e4752035f743fbf69184cd04ce",
-      "displayName": "skill.sub.undying",
+      "displayName": "Nieśmiertelność",
       "fields": {
         "BasePrice": 40,
         "PriceGrowth": 1.6,
@@ -7483,10 +7483,10 @@
     },
     {
       "id": "skill.warrior.axe_throw",
-      "targetId": "",
+      "targetId": "hu_axe_throw",
       "file": "src/Game/Content/Skills/warrior_axe_throw.tres",
       "sha256": "4e29756d1c5adc43dae7ea8ea14dfad6a35cc689ec6884a2c7cbaed608d93fff",
-      "displayName": "skill.warrior.axe_throw",
+      "displayName": "Rzut toporem",
       "fields": {
         "BasePrice": 42,
         "PriceGrowth": 1.6,
@@ -7645,7 +7645,7 @@
     },
     {
       "id": "skill.warrior.breaker_wave",
-      "targetId": "",
+      "targetId": "hu_breaker_wave",
       "file": "src/Game/Content/Skills/warrior_breaker_wave.tres",
       "sha256": "8baef8012c489f21cd8542d2ef1270e69db99439c986d4297c4862fbb542d4d1",
       "displayName": "Fala przełamania",
@@ -7954,7 +7954,7 @@
     },
     {
       "id": "skill.warrior.executioners_fall",
-      "targetId": "",
+      "targetId": "hu_executioners_fall",
       "file": "src/Game/Content/Skills/warrior_executioners_fall.tres",
       "sha256": "f997167434540331a417954c0bcc4626aee3c88d9b0f94e88fdb1d56ba9571b6",
       "displayName": "Upadek kata",
@@ -8163,7 +8163,7 @@
     },
     {
       "id": "skill.warrior.infernal_charge",
-      "targetId": "",
+      "targetId": "hu_infernal_charge",
       "file": "src/Game/Content/Skills/warrior_infernal_charge.tres",
       "sha256": "5747d70c97a32ded14f69bd52267adfa55ee7bdc16eba7ab196b2780c2dbd4c9",
       "displayName": "Piekielna szarża",
@@ -8347,7 +8347,7 @@
     },
     {
       "id": "skill.warrior.quake",
-      "targetId": "",
+      "targetId": "hu_warrior_quake",
       "file": "src/Game/Content/Skills/warrior_quake.tres",
       "sha256": "6040789d3363ed8f1206362899bad356d579f46aaf2ca8c2103f04b4cf1f4e3c",
       "displayName": "Trzęsienie",
@@ -8466,7 +8466,7 @@
     },
     {
       "id": "skill.warrior.repel",
-      "targetId": "",
+      "targetId": "hu_repel",
       "file": "src/Game/Content/Skills/warrior_repel.tres",
       "sha256": "7f5f0f6ef9397e520dd474ceb40187d3da79c7a35f663b90892e8447dbcabb08",
       "displayName": "Odtrącenie",
@@ -8617,7 +8617,7 @@
     },
     {
       "id": "skill.warrior.slag_spray",
-      "targetId": "",
+      "targetId": "hu_slag_spray",
       "file": "src/Game/Content/Skills/warrior_slag_spray.tres",
       "sha256": "53f0d3832e7cd68454451700620286f67356ea655014622c0df6e8d8e6c1449e",
       "displayName": "Żużel",
@@ -8827,7 +8827,7 @@
     },
     {
       "id": "skill.warrior.storm_verdict",
-      "targetId": "",
+      "targetId": "hu_storm_verdict",
       "file": "src/Game/Content/Skills/warrior_storm_verdict.tres",
       "sha256": "8c6f4ebed4d0d2c9b4d80e499453622e65e23cda31a9e9596c696c2e1d4f13fa",
       "displayName": "Wyrok burzy",
@@ -9174,7 +9174,7 @@
     },
     {
       "id": "skill.warrior.whirlwind",
-      "targetId": "",
+      "targetId": "hu_whirlwind",
       "file": "src/Game/Content/Skills/warrior_whirlwind.tres",
       "sha256": "c76c05960075ac94e5485dc91c48ef23c4f10f8334249ff95fdf0592f1ae6dae",
       "displayName": "Młynek",
@@ -9481,10 +9481,10 @@
     },
     {
       "id": "weapon.bow.composite",
-      "targetId": "",
+      "targetId": "hu_bow_composite",
       "file": "src/Game/Content/Weapons/bow_composite.tres",
       "sha256": "77357d81c90e964ac7d029e87e4b933eb4af641f213b117ced9e5bc675aafb39",
-      "displayName": "weapon.bow.composite",
+      "displayName": "Łuk kompozytowy",
       "fields": {
         "AttacksPerSecond": 1.45,
         "WindupSeconds": 0.16,
@@ -9524,10 +9524,10 @@
     },
     {
       "id": "weapon.bow.recurve",
-      "targetId": "",
+      "targetId": "hu_bow_recurve",
       "file": "src/Game/Content/Weapons/bow_recurve.tres",
       "sha256": "2ac817ad447c72a4426c00ffebdd56426010f78db22bc48440bb076963bdec87",
-      "displayName": "weapon.bow.recurve",
+      "displayName": "Łuk refleksyjny",
       "fields": {
         "AttacksPerSecond": 1.5,
         "WindupSeconds": 0.16,
@@ -9610,10 +9610,10 @@
     },
     {
       "id": "weapon.dagger.kris",
-      "targetId": "",
+      "targetId": "hu_dagger_kris",
       "file": "src/Game/Content/Weapons/dagger_kris.tres",
       "sha256": "075c8a12e09ba2dd70bf05b1da42de55fce7b2cf79f31378cb41d9e048152d26",
-      "displayName": "weapon.dagger.kris",
+      "displayName": "Kris",
       "fields": {
         "AttacksPerSecond": 2.8,
         "WindupSeconds": 0.05,
@@ -9655,10 +9655,10 @@
     },
     {
       "id": "weapon.dagger.misericorde",
-      "targetId": "",
+      "targetId": "hu_dagger_misericorde",
       "file": "src/Game/Content/Weapons/dagger_misericorde.tres",
       "sha256": "11e3918d1c436f215c6403c74c95785f19cd71a40681673448140ebb5310186a",
-      "displayName": "weapon.dagger.misericorde",
+      "displayName": "Mizerykordia",
       "fields": {
         "AttacksPerSecond": 3,
         "WindupSeconds": 0.05,
@@ -9703,7 +9703,7 @@
       "targetId": "hu_poniard",
       "file": "src/Game/Content/Weapons/dagger_poniard.tres",
       "sha256": "73f29ce932e581033a0b7f4f3fd38d68f49e363f47217b3e9861cfb8a30bb305",
-      "displayName": "weapon.dagger.poniard",
+      "displayName": "Puginał",
       "fields": {
         "AttacksPerSecond": 2.8,
         "WindupSeconds": 0.05,
@@ -9793,7 +9793,7 @@
       "targetId": "hu_flail",
       "file": "src/Game/Content/Weapons/flail.tres",
       "sha256": "d84720136d8f029f96d7db67107f618b1b13f0346443e240c1c45427bee4abe2",
-      "displayName": "weapon.flail",
+      "displayName": "Korbacz",
       "fields": {
         "AttacksPerSecond": 1.25,
         "WindupSeconds": 0.16,
@@ -9840,7 +9840,7 @@
       "targetId": "hu_flail2h",
       "file": "src/Game/Content/Weapons/flail2h.tres",
       "sha256": "701707cdc8213cd2baa2112e1ce480262c872c157785d8c68f46e20108a8f7a4",
-      "displayName": "weapon.flail2h",
+      "displayName": "Cep bojowy",
       "fields": {
         "AttacksPerSecond": 0.78,
         "WindupSeconds": 0.26,
@@ -9888,7 +9888,7 @@
       "targetId": "hu_flail2h_iron",
       "file": "src/Game/Content/Weapons/flail2h_iron.tres",
       "sha256": "19706501b40dc1641459a6b76861455c67f8a083cde12119c806bd511aa0587f",
-      "displayName": "weapon.flail2h.iron",
+      "displayName": "Żelazny cep",
       "fields": {
         "AttacksPerSecond": 0.76,
         "WindupSeconds": 0.26,
@@ -9933,10 +9933,10 @@
     },
     {
       "id": "weapon.flail.knight",
-      "targetId": "",
+      "targetId": "hu_flail_knight",
       "file": "src/Game/Content/Weapons/flail_knight.tres",
       "sha256": "12eefe29f5b159a5e208ca7a749798439774ba96a060a2dfb328fe62985ccfda",
-      "displayName": "weapon.flail.knight",
+      "displayName": "Korbacz rycerski",
       "fields": {
         "AttacksPerSecond": 1.2,
         "WindupSeconds": 0.16,
@@ -9980,10 +9980,10 @@
     },
     {
       "id": "weapon.flail.spiked",
-      "targetId": "",
+      "targetId": "hu_flail_spiked",
       "file": "src/Game/Content/Weapons/flail_spiked.tres",
       "sha256": "78cb683350709c8e4d0af4bbea541ea060b2b85da820c80954dc304062951a05",
-      "displayName": "weapon.flail.spiked",
+      "displayName": "Kiścień",
       "fields": {
         "AttacksPerSecond": 1.25,
         "WindupSeconds": 0.16,
@@ -10031,7 +10031,7 @@
       "targetId": "hu_greataxe",
       "file": "src/Game/Content/Weapons/greataxe.tres",
       "sha256": "1108f2edfefb4f859d6909a113743a8889c85e3ef9e773c1a838523b96b006de",
-      "displayName": "weapon.greataxe",
+      "displayName": "Topór dwuręczny",
       "fields": {
         "AttacksPerSecond": 0.78,
         "WindupSeconds": 0.25,
@@ -10077,7 +10077,7 @@
       "targetId": "hu_greataxe_bardiche",
       "file": "src/Game/Content/Weapons/greataxe_bardiche.tres",
       "sha256": "47f46a5f811354fff2eccf093e503bf97c1078defb133bfa45e003f5fa3f9734",
-      "displayName": "weapon.greataxe.bardiche",
+      "displayName": "Berdysz",
       "fields": {
         "AttacksPerSecond": 0.74,
         "WindupSeconds": 0.25,
@@ -10123,7 +10123,7 @@
       "targetId": "hu_greataxe_bearded",
       "file": "src/Game/Content/Weapons/greataxe_bearded.tres",
       "sha256": "0e12cf80cff62c893bee1fc89638d301e60d22124b48e28600dd8c73ab2b57a9",
-      "displayName": "weapon.greataxe.bearded",
+      "displayName": "Topór brodaty",
       "fields": {
         "AttacksPerSecond": 0.76,
         "WindupSeconds": 0.25,
@@ -10211,10 +10211,10 @@
     },
     {
       "id": "weapon.greatsword.executioner",
-      "targetId": "",
+      "targetId": "hu_greatsword_executioner",
       "file": "src/Game/Content/Weapons/greatsword_executioner.tres",
       "sha256": "3bc72539b307c48f68b60535c403fbb56d7a964e46e3ac59a9dfe3a0c263fdb0",
-      "displayName": "weapon.greatsword.executioner",
+      "displayName": "Miecz katowski",
       "fields": {
         "AttacksPerSecond": 0.85,
         "WindupSeconds": 0.22,
@@ -10257,10 +10257,10 @@
     },
     {
       "id": "weapon.greatsword.flamberge",
-      "targetId": "",
+      "targetId": "hu_greatsword_flamberge",
       "file": "src/Game/Content/Weapons/greatsword_flamberge.tres",
       "sha256": "879284a5f2ef5c363c61f050b5632a9e3ec7cdaf4d16e016f21e60157c64d823",
-      "displayName": "weapon.greatsword.flamberge",
+      "displayName": "Flamberg",
       "fields": {
         "AttacksPerSecond": 0.8,
         "WindupSeconds": 0.22,
@@ -10432,7 +10432,7 @@
       "targetId": "hu_grimoire_summoning",
       "file": "src/Game/Content/Weapons/grimoire_summoning.tres",
       "sha256": "a392fdce5e93dbc138aa1e280d7754be9f795255076ffe7ce1ce63acfd377e33",
-      "displayName": "weapon.grimoire.summoning",
+      "displayName": "Grymuar przywołań",
       "fields": {
         "AttacksPerSecond": 1.0,
         "WindupSeconds": 0.12,
@@ -10513,10 +10513,10 @@
     },
     {
       "id": "weapon.morningstar",
-      "targetId": "",
+      "targetId": "hu_morningstar",
       "file": "src/Game/Content/Weapons/morningstar.tres",
       "sha256": "cc3bebc47b51ba21b6f73a5af7ed3dfdbd8625e1b81789febe4ce149e2d3a053",
-      "displayName": "weapon.morningstar",
+      "displayName": "Gwiazda zaranna",
       "fields": {
         "AttacksPerSecond": 1.35,
         "WindupSeconds": 0.14,
@@ -10564,7 +10564,7 @@
       "targetId": "hu_morningstar2h",
       "file": "src/Game/Content/Weapons/morningstar2h.tres",
       "sha256": "6dec32bcfd0953c58432116100f31ed5974702bfb511f79cec3edbed9de654db",
-      "displayName": "weapon.morningstar2h",
+      "displayName": "Wielka gwiazda zaranna",
       "fields": {
         "AttacksPerSecond": 0.8,
         "WindupSeconds": 0.24,
@@ -10613,7 +10613,7 @@
       "targetId": "hu_morningstar2h_runic",
       "file": "src/Game/Content/Weapons/morningstar2h_runic.tres",
       "sha256": "b7fdc63f3ccb68c30995868af5972cf0d071bfa257a43315a15fef5deebe27f8",
-      "displayName": "weapon.morningstar2h.runic",
+      "displayName": "Runiczna gwiazda zaranna",
       "fields": {
         "AttacksPerSecond": 0.78,
         "WindupSeconds": 0.24,
@@ -10659,10 +10659,10 @@
     },
     {
       "id": "weapon.morningstar.heavy",
-      "targetId": "",
+      "targetId": "hu_morningstar_heavy",
       "file": "src/Game/Content/Weapons/morningstar_heavy.tres",
       "sha256": "1c6c58079a2a910e2968ee3c930f237d3efb5096ddb32a6f28102a9a22011b0d",
-      "displayName": "weapon.morningstar.heavy",
+      "displayName": "Ciężka gwiazda zaranna",
       "fields": {
         "AttacksPerSecond": 1.3,
         "WindupSeconds": 0.14,
@@ -10928,7 +10928,7 @@
       "targetId": "hu_sword_broad",
       "file": "src/Game/Content/Weapons/sword_broad.tres",
       "sha256": "871e8c4e7a456c7c3267fe4158246fb354d3cb925552643af24c7052c6283e77",
-      "displayName": "weapon.sword.broad",
+      "displayName": "Miecz szeroki",
       "fields": {
         "AttacksPerSecond": 1.6,
         "WindupSeconds": 0.15,
@@ -10970,10 +10970,10 @@
     },
     {
       "id": "weapon.sword.broadsword",
-      "targetId": "",
+      "targetId": "hu_broadsword",
       "file": "src/Game/Content/Weapons/sword_broadsword.tres",
       "sha256": "80b4d3f068aa76ed4af137141d68cdf678dff4589d8fde0c6e6f0bc808659de4",
-      "displayName": "weapon.sword.broadsword",
+      "displayName": "Pałasz",
       "fields": {
         "AttacksPerSecond": 1.5,
         "WindupSeconds": 0.15,
@@ -11109,10 +11109,10 @@
     },
     {
       "id": "weapon.sword.sabre",
-      "targetId": "",
+      "targetId": "hu_sabre",
       "file": "src/Game/Content/Weapons/sword_sabre.tres",
       "sha256": "6273a8ecece3496b1152027a5dc7c214b838fe5ef75077a31aa795968f3679dc",
-      "displayName": "weapon.sword.sabre",
+      "displayName": "Szabla",
       "fields": {
         "AttacksPerSecond": 1.9,
         "WindupSeconds": 0.15,
@@ -11203,10 +11203,10 @@
     },
     {
       "id": "weapon.unique.dziewanna_bow",
-      "targetId": "",
+      "targetId": "hu_unique_dziewanna_bow",
       "file": "src/Game/Content/Weapons/unique_dziewanna_bow.tres",
       "sha256": "9438c88c0965c1a98ae4cdc794d1a16b1b6fbe7d58d6cdc3f1e6bc66bd6b35c3",
-      "displayName": "weapon.unique.dziewanna_bow",
+      "displayName": "Łuk Dziewanny",
       "fields": {
         "AttacksPerSecond": 1.6,
         "WindupSeconds": 0.16,
@@ -11253,10 +11253,10 @@
     },
     {
       "id": "weapon.unique.last_word",
-      "targetId": "",
+      "targetId": "hu_unique_last_word",
       "file": "src/Game/Content/Weapons/unique_last_word.tres",
       "sha256": "94baf8fc3c32cc18744927bcfa1216ae778a2786fb3cb420a0a4d11f6020af48",
-      "displayName": "weapon.unique.last_word",
+      "displayName": "Ostatnie słowo kata",
       "fields": {
         "AttacksPerSecond": 0.85,
         "WindupSeconds": 0.22,
@@ -11307,10 +11307,10 @@
     },
     {
       "id": "weapon.unique.penance",
-      "targetId": "",
+      "targetId": "hu_unique_penance",
       "file": "src/Game/Content/Weapons/unique_penance.tres",
       "sha256": "ba2ce223f55228db49aa026e46f91006c2b3cfa09e31d6bdfd0bef17ce73e3f5",
-      "displayName": "weapon.unique.penance",
+      "displayName": "Pokuta",
       "fields": {
         "AttacksPerSecond": 1.25,
         "WindupSeconds": 0.16,
@@ -11363,10 +11363,10 @@
     },
     {
       "id": "weapon.unique.perun_blade",
-      "targetId": "",
+      "targetId": "hu_unique_perun_blade",
       "file": "src/Game/Content/Weapons/unique_perun_blade.tres",
       "sha256": "6d0d20ef1164006ee1778cea1af943a9a815b5111e8bbaac20c73f375993354d",
-      "displayName": "weapon.unique.perun_blade",
+      "displayName": "Ostrze Peruna",
       "fields": {
         "AttacksPerSecond": 1.8,
         "WindupSeconds": 0.15,
@@ -11418,10 +11418,10 @@
     },
     {
       "id": "weapon.unique.svarog_hammer",
-      "targetId": "",
+      "targetId": "hu_unique_svarog_hammer",
       "file": "src/Game/Content/Weapons/unique_svarog_hammer.tres",
       "sha256": "794dbee67e8bda40e9971fb6b9c9b286bd0b2767f26b2385cd09c7b0feece758",
-      "displayName": "weapon.unique.svarog_hammer",
+      "displayName": "Młot Swaroga",
       "fields": {
         "AttacksPerSecond": 0.7,
         "WindupSeconds": 0.28,
@@ -11477,10 +11477,10 @@
     },
     {
       "id": "weapon.unique.szczerbiec",
-      "targetId": "",
+      "targetId": "hu_unique_szczerbiec",
       "file": "src/Game/Content/Weapons/unique_szczerbiec.tres",
       "sha256": "983a8f54994fd529bf19a21ad2d6bbe8d47773997d198c7b6ee470844990dae6",
-      "displayName": "weapon.unique.szczerbiec",
+      "displayName": "Szczerbiec",
       "fields": {
         "AttacksPerSecond": 1.7,
         "WindupSeconds": 0.15,
@@ -11531,10 +11531,10 @@
     },
     {
       "id": "weapon.unique.widows_lament",
-      "targetId": "",
+      "targetId": "hu_unique_widows_lament",
       "file": "src/Game/Content/Weapons/unique_widows_lament.tres",
       "sha256": "056a2b191c63c82cb4cd0b33ec2f62e681f79a1d91a751baaefa501caa31d59a",
-      "displayName": "weapon.unique.widows_lament",
+      "displayName": "Płacz wdowy",
       "fields": {
         "AttacksPerSecond": 3,
         "WindupSeconds": 0.05,
@@ -11767,7 +11767,7 @@
       "targetId": "hu_warhammer",
       "file": "src/Game/Content/Weapons/warhammer.tres",
       "sha256": "4446d1123bd3fd1bf81c696f2a937ccbe44cfb90e953ab611dbfd0518bf38451",
-      "displayName": "weapon.warhammer",
+      "displayName": "Młot bojowy",
       "fields": {
         "AttacksPerSecond": 0.7,
         "WindupSeconds": 0.28,
@@ -11815,7 +11815,7 @@
       "targetId": "hu_warhammer_runic",
       "file": "src/Game/Content/Weapons/warhammer_runic.tres",
       "sha256": "b62afc63f78691e55c63052af89f06dcd431cb4a49bce8b69dcbee346192f033",
-      "displayName": "weapon.warhammer.runic",
+      "displayName": "Młot runiczny",
       "fields": {
         "AttacksPerSecond": 0.66,
         "WindupSeconds": 0.28,
@@ -11863,7 +11863,7 @@
       "targetId": "hu_warhammer_siege",
       "file": "src/Game/Content/Weapons/warhammer_siege.tres",
       "sha256": "e30750978b599667f20ecde1c7463e9a4014beffe0e1331bcae9ffaccfb025ab",
-      "displayName": "weapon.warhammer.siege",
+      "displayName": "Młot oblężniczy",
       "fields": {
         "AttacksPerSecond": 0.68,
         "WindupSeconds": 0.28,

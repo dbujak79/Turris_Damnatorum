@@ -39,7 +39,9 @@ namespace Turris
     public static class HitQuery
     {
         static readonly Collider[] Buffer = new Collider[32];
-        static readonly List<IHitReceiver> Found = new List<IHitReceiver>();
+        /// <summary>Lista celów na każdy poziom zagnieżdżenia: trafienie może wywołać kolejne zapytanie (efekty „przy trafieniu”, wybuchy).</summary>
+        static readonly List<List<IHitReceiver>> FoundStack = new List<List<IHitReceiver>>();
+        static int depth;
 
         /// <summary>Kapsuła od <paramref name="from"/> do <paramref name="to"/>; każdy nowy wrogi cel trafiony raz na tracker.</summary>
         public static void Capsule(Vector3 from, Vector3 to, float radius, Faction attacker, HitTracker tracker, Action<IHitReceiver> onHit)
@@ -56,16 +58,23 @@ namespace Turris
 
         static void Deliver(int n, Faction attacker, HitTracker tracker, Action<IHitReceiver> onHit)
         {
-            Found.Clear();
+            if (depth == FoundStack.Count) FoundStack.Add(new List<IHitReceiver>());
+            var found = FoundStack[depth];
+            found.Clear();
             for (int i = 0; i < n; i++)
             {
                 var r = Buffer[i].GetComponentInParent<IHitReceiver>();
                 if (r == null || r.Faction == attacker || r.IsDead) continue;
-                if (Found.Contains(r)) continue;
-                Found.Add(r);
+                if (found.Contains(r)) continue;
+                found.Add(r);
             }
-            foreach (var r in Found)
-                if (tracker.TryRegister(r)) onHit(r);
+            depth++;
+            try
+            {
+                for (int i = 0; i < found.Count; i++)
+                    if (tracker.TryRegister(found[i])) onHit(found[i]);
+            }
+            finally { depth--; found.Clear(); }
         }
 
         /// <summary>Rozstrzyga trafienie i powiadamia obie strony. Zwraca wynik.</summary>

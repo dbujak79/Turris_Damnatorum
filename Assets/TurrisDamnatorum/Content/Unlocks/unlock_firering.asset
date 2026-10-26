@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: unlock_firering
   m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.UnlockDefinition
   id: unlock_firering
-  displayName: "Ognisty kr\u0105g"
-  description: "Pier\u015Bcie\u0144 ognia wok\xF3\u0142 postaci: pali i podpala wszystkich w pobli\u017Cu."
+  displayName: "\u015Aciana ognia"
+  description: "\u015Aciana ognia w poprzek drogi demon\xF3w: p\u0142onie kilka sekund i parzy oraz podpala wszystko, co przez ni\u0105 przejdzie.\nPoziom II: mocniej parzy.\nPoziom III: d\u0142u\u017Csza i p\u0142onie 5 s."
   tags: 0
   kind: 1
   target: {fileID: 11400000, guid: 4f510e5849cccbb45aab46eeda7ee079, type: 2}

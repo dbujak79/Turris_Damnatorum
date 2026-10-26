@@ -28,6 +28,10 @@ namespace Turris
         public bool isStatusTick;      // tyknięcie efektu – bez reakcji, postawy i drgnięcia
         public bool isReaction;        // obrażenia reakcji (roztrzaskanie, przeskok przewodzenia) – nie wywołują kolejnych reakcji
         public float bonusVsFrozen, bonusVsBleeding, executeBonus;
+        /// <summary>Premia przeciw wychłodzonym (HU: przeciw przemoczonym – Przewodnictwo, więź Burza).</summary>
+        public float bonusVsChilled;
+        /// <summary>Trafienie skilla odpalonego wyzwalaczem pieczęci – to, co zabije, nie odpala kolejnego wyzwalacza.</summary>
+        public bool huTriggered;
         public StatusModifiers mods;   // modyfikatory efektów z wyposażenia atakującego
         public WeaponModel weapon;     // zwykły cios bronią (Auto = nie broń: czar, technika, pocisk) – barwa trafienia i hitstop atakującego
         public float knockback;        // odrzut trafionego wroga (m); ujemny = przyciągnięcie do źródła

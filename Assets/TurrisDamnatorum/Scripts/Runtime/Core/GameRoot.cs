@@ -311,6 +311,7 @@ namespace Turris
             if (!IsEnemyTrial) Meta.RecordKill(e.Def);
             Run.souls += Mathf.RoundToInt(e.Def.soulReward * Run.difficulty.soulMultiplier * (e.IsElite ? 1.5f : 1f));
             Sfx.Ui(SoundId.SoulGain);
+            SealDrop(e);
             if (enemies.All(x => x == null || x.IsDead) && !Player.IsDead && !PortalsRunning)
             {
                 var floor = CurrentFloor;
@@ -395,6 +396,8 @@ namespace Turris
             Rewards = RewardGenerator.Generate(Run, Player.Build, Meta.BuildRewardPools(), config, rng);
             RerollUsed = false;
             ShopOffer = SoulShop.PickOffer(Run, Player.Build, Meta.BuildRewardPools(), rng, config.balance);
+            PruneGifts();
+            RollSealOffers();
             SetScreen(GameScreen.Reward);
         }
 

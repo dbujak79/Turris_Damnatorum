@@ -17,8 +17,10 @@ MonoBehaviour:
   description: "Wolniejszy zamach, szerszy \u0142uk, wy\u017Csze obra\u017Cenia i lekki odrzut. Wyklucza tarcz\u0119."
   tags: 145
   kind: 0
+  huSourceId: weapon.greatsword
+  huSourceHash: 4dc68aa6edc0aa9b20f4f614cb13ecd19a5b455e6c44b1d767c5d3761831e30f
   twoHanded: 1
-  weight: 10
+  weight: 9
   requirements:
   - attribute: 3
     value: 14
@@ -29,11 +31,11 @@ MonoBehaviour:
       name: Zamach
       delivery: 0
       damageType: 0
-      baseDamage: 100
-      windup: 0.58
-      active: 0.2
-      recovery: 0.65
-      cancelAfter: 0.3
+      baseDamage: 79.7
+      windup: 0.53223526
+      active: 0.1835294
+      recovery: 0.59647053
+      cancelAfter: 0.27529413
       reach: 2.7
       radius: 1.1
       lunge: 0.7
@@ -63,11 +65,11 @@ MonoBehaviour:
       name: Egzekucja
       delivery: 0
       damageType: 0
-      baseDamage: 170
-      windup: 1.1
-      active: 0.2
-      recovery: 0.9
-      cancelAfter: 0.4
+      baseDamage: 135.4
+      windup: 1.0094117
+      active: 0.1835294
+      recovery: 0.82588226
+      cancelAfter: 0.3670588
       reach: 2.8
       radius: 1.1
       lunge: 1
@@ -134,4 +136,6 @@ MonoBehaviour:
   model: {fileID: 919132149155446097, guid: 0930b95c4ec82b0409d15e15ca807881, type: 3}
   modelScale: 1.3
   modelGripShift: 0
+  minFloor: 0
+  offerWeight: 1
   grantedSkill: {fileID: 0}

@@ -9,7 +9,7 @@ namespace Turris
     /// <c>interval</c> sekund rani wszystkich wrogów w promieniu; aura obronna tylko pokazuje krąg – jej premie
     /// liczy build bohatera (<see cref="PlayerCombat"/>).
     /// </summary>
-    public class AuraEffect : MonoBehaviour
+    public partial class AuraEffect : MonoBehaviour
     {
         public static readonly List<AuraEffect> Active = new List<AuraEffect>();
         void OnEnable() => Active.Add(this);
@@ -44,18 +44,21 @@ namespace Turris
 
         void OnDestroy()
         {
+            if (banner != null) Util.DestroySafe(banner);
             if (particles != null) particles.StopAndRelease();
             if (ring != null) Util.DestroySafe(ring.gameObject);
         }
 
         public void Stop()
         {
+            if (banner != null) Util.DestroySafe(banner);
             if (particles != null) particles.StopAndRelease();
             Util.DestroySafe(gameObject);
         }
 
         void Update()
         {
+            if (huCast != null) { UpdateHu(Time.deltaTime); return; }
             if (makeHit == null) return;
             timer -= Time.deltaTime;
             if (timer > 0) return;

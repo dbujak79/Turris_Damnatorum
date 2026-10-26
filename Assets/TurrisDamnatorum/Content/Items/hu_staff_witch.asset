@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ItemDefinition
   id: hu_staff_witch
   displayName: "Kostur wied\u017Amy"
-  description: "Katalizator: wzmacnia czary i regeneruje man\u0119. W zwarciu \u2013 s\u0142aby cios bez many."
+  description: "Wolniejszy pocisk, kt\xF3ry eksploduje przy trafieniu. Wyklucza grymuar."
   tags: 2
   kind: 0
   huSourceId: weapon.staff
@@ -24,25 +24,19 @@ MonoBehaviour:
   requirements:
   - attribute: 5
     value: 14
-  modifiers:
-  - stat: 15
-    mode: 1
-    value: 15
-  - stat: 11
-    mode: 0
-    value: 0.8
+  modifiers: []
   effects: []
   weapon:
     light:
       name: Uderzenie kosturem
       delivery: 1
-      damageType: 0
-      baseDamage: 75
-      windup: 0.2
-      active: 0.12
-      recovery: 0.93
+      damageType: 1
+      baseDamage: 37.9
+      windup: 0.35
+      active: 0.14
+      recovery: 0.45
       cancelAfter: 0.2
-      reach: 0.9166667
+      reach: 2.3
       radius: 0.8
       lunge: 0.4
       tracking: 360
@@ -52,7 +46,7 @@ MonoBehaviour:
       guardLoad: 18
       poiseDamage: 14
       heavy: 0
-      staminaCost: 7
+      staminaCost: 14
       projectileSpeed: 7.9166665
       projectileCount: 1
       spreadAngle: 0
@@ -65,13 +59,13 @@ MonoBehaviour:
       statuses:
       - kind: 1
         stacks: 1
-        chance: 1
+        chance: 0.5
       animation: 7
     heavy:
       name: Zamach kosturem
       delivery: 1
-      damageType: 0
-      baseDamage: 127.5
+      damageType: 1
+      baseDamage: 58.5
       windup: 0.62
       active: 0.16
       recovery: 0.6
@@ -86,7 +80,7 @@ MonoBehaviour:
       guardLoad: 32
       poiseDamage: 30
       heavy: 1
-      staminaCost: 9.099999
+      staminaCost: 22
       projectileSpeed: 7.9166665
       projectileCount: 1
       spreadAngle: 0
@@ -136,10 +130,12 @@ MonoBehaviour:
       staminaCost: 15
       poiseDamage: 70
       angle: 150
-  color: {r: 0.45, g: 0.3, b: 0.2, a: 1}
+  color: {r: 1, g: 0.5, b: 0.15, a: 1}
   weaponModel: 6
   shieldModel: 0
   model: {fileID: 919132149155446097, guid: 8080232289e4e2d4fbc0a88de8165bc7, type: 3}
   modelScale: 1
   modelGripShift: 0
+  minFloor: 0
+  offerWeight: 1
   grantedSkill: {fileID: 0}

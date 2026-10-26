@@ -78,9 +78,9 @@ namespace Turris
             var result = new List<RewardOption>();
 
             // 1. Przedmiot
-            var itemDef = PickWeighted(pools.items, rng, b.rewardExplorationChance, i =>
+            var itemDef = PickWeighted(pools.items.Where(i => run.floorsCleared >= i.minFloor).ToList(), rng, b.rewardExplorationChance, i =>
             {
-                float w = 1f + 2f * Overlap(i.tags, tags);
+                float w = (1f + 2f * Overlap(i.tags, tags)) * Math.Max(0.05f, i.offerWeight);
                 if (run.equipment.Get(i.DefaultSlot) == null && !(i.kind == ItemKind.Ring && run.equipment.Get(EquipSlot.Ring2) != null)) w += 1.5f;
                 return w;
             });
@@ -99,7 +99,7 @@ namespace Turris
 
             // 3. Umiejętność: ulepszenie znanej lub nauka nowej
             var upgradable = run.knownSpells.Where(s => !s.IsMaxLevel).ToList();
-            var unknown = pools.spells.Where(s => run.FindSpell(s) == null && (s.requiredTags & tags) == s.requiredTags).ToList();
+            var unknown = pools.spells.Where(s => run.FindSpell(s) == null && (s.requiredTags & tags) == s.requiredTags && run.floorsCleared >= s.minFloor).ToList();
             bool learn = unknown.Count > 0 && (upgradable.Count == 0 || rng.NextDouble() < b.learnNewSpellChance);
             if (learn)
             {

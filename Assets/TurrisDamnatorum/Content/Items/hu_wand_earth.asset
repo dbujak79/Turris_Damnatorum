@@ -17,6 +17,8 @@ MonoBehaviour:
   description: "Wolny, ci\u0119\u017Cki kamie\u0144. Zachwiewa; pe\u0142ne zachwianie og\u0142usza."
   tags: 2
   kind: 0
+  huSourceId: weapon.wand.earth
+  huSourceHash: f4d163bf52d600c085ecae0f2e835825932052d09165033f0f2d90e0b3a751a1
   twoHanded: 0
   weight: 1
   requirements:
@@ -32,11 +34,11 @@ MonoBehaviour:
       name: "R\xF3\u017Cd\u017Cka ziemi"
       delivery: 1
       damageType: 1
-      baseDamage: 42
-      windup: 0.2
-      active: 0.1
-      recovery: 0.22
-      cancelAfter: 0.2
+      baseDamage: 40.1
+      windup: 0.32857144
+      active: 0.16428572
+      recovery: 0.3614286
+      cancelAfter: 0.32857144
       reach: 0
       radius: 0.3
       lunge: 0
@@ -66,11 +68,11 @@ MonoBehaviour:
       name: "R\xF3\u017Cd\u017Cka ziemi \u2013 pe\u0142na moc"
       delivery: 1
       damageType: 1
-      baseDamage: 92.4
-      windup: 0.6
-      active: 0.1
-      recovery: 0.4
-      cancelAfter: 0.2
+      baseDamage: 88.1
+      windup: 0.9857144
+      active: 0.16428572
+      recovery: 0.6571429
+      cancelAfter: 0.32857144
       reach: 0
       radius: 0.3
       lunge: 0
@@ -137,4 +139,6 @@ MonoBehaviour:
   model: {fileID: 919132149155446097, guid: 9531dea056089b14fa873464dc1f0f85, type: 3}
   modelScale: 1
   modelGripShift: 0
+  minFloor: 0
+  offerWeight: 1
   grantedSkill: {fileID: 0}

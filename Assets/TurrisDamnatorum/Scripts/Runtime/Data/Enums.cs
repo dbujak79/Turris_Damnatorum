@@ -113,6 +113,16 @@ namespace Turris
         BurnImmunity,         // >0: postać nie płonie
         BurningDamageBonus,   // +X% obrażeń, gdy postać płonie
         BleedingHitHeal,      // +X życia za trafienie bronią krwawiącego celu
+        // Moce unikatów Hell Unleashed (GearPowers):
+        CheatDeath,           // raz na piętro śmiertelny cios zostawia X maks. życia
+        CorpseExplosion,      // zabity wróg wybucha ogniem za X jego maks. życia (2,5 m)
+        EmberAura,            // wrogowie w promieniu 3 m płoną za X obrażeń na sekundę
+        Thorns,               // wróg trafiający wręcz dostaje X obrażeń fizycznych
+        WeaponChainLightning, // trafienie bronią przeskakuje na 2 wrogów za X obrażeń (błyskawica)
+        FrostWard,            // szansa X przy trafieniu bohatera: chłód wokół (3,2 m)
+        LowHealthDamage,      // poniżej 35% życia +X obrażeń (ułamek)
+        SoulHarvest,          // zabicie leczy X maks. życia
+        ProjectilePierce,     // strzały z broni przebijają X kolejnych wrogów
     }
 
     public enum HitOutcome { Ignored, Hit, Dodged, Parried, Blocked, GuardBroken }

@@ -17,8 +17,10 @@ MonoBehaviour:
   description: "Kr\xF3tki i bardzo szybki, ka\u017Cde ci\u0119cie krwawi. Wymaga Zr\u0119czno\u015Bci 10."
   tags: 41
   kind: 0
+  huSourceId: weapon.dagger
+  huSourceHash: e76054d637e2f4d0a00ebfc30b2f87f6b389cc69305a84e90b7a0d5559f8ed91
   twoHanded: 0
-  weight: 1.5
+  weight: 1
   requirements:
   - attribute: 4
     value: 10
@@ -29,7 +31,7 @@ MonoBehaviour:
       name: "Pchni\u0119cie"
       delivery: 0
       damageType: 0
-      baseDamage: 20
+      baseDamage: 17.5
       windup: 0.2
       active: 0.1
       recovery: 0.3
@@ -57,13 +59,13 @@ MonoBehaviour:
       statuses:
       - kind: 0
         stacks: 1
-        chance: 0.6
+        chance: 0.5
       animation: 0
     heavy:
       name: "Podw\xF3jne pchni\u0119cie"
       delivery: 0
       damageType: 0
-      baseDamage: 36
+      baseDamage: 31.5
       windup: 0.45
       active: 0.15
       recovery: 0.45
@@ -134,4 +136,6 @@ MonoBehaviour:
   model: {fileID: 919132149155446097, guid: 82708f6ea67578c4cbbf84714f11d4c3, type: 3}
   modelScale: 1
   modelGripShift: 0
+  minFloor: 0
+  offerWeight: 1
   grantedSkill: {fileID: 0}

@@ -201,6 +201,10 @@ namespace Turris
         public void RefreshBuild()
         {
             Run.SyncGrantedSkills(); // grymuar / sztylet do rzucania dają skill, dopóki są założone
+            Run.RefreshBonds();      // więzi pieczęci między skillami w ręce
+            foreach (var found in Run.newlyDiscovered)
+                CombatEvents.RaiseMessage($"ODKRYCIE: {(found.kind == SealKind.Bond ? "więź" : "zespolenie")} {found.name}", new Color(0.85f, 0.6f, 1f));
+            Run.newlyDiscovered.Clear();
             Build = BuildCalculator.Compute(Run, Config);
             Status.BurnImmune = Build.effects[PassiveEffectType.BurnImmunity] > 0;
             Health.SetMax(Build.MaxHealth, false);
@@ -299,6 +303,7 @@ namespace Turris
                     Sfx.Play(SoundId.Dodge, transform.position);
                     Stamina.Drain(d.staminaCost, B.staminaRegenDelay);
                     HeroDodgeStarted();
+                    HuTrigger("dodge");
                     return true;
                 }
                 case ActionType.Cast:
@@ -317,9 +322,11 @@ namespace Turris
                     if (!def.IsSpell && WeaponThrown) { CombatEvents.RaiseMessage("Broń jeszcze w locie", Color.gray); return true; }
                     if (!Actions.CanStart(ActionType.Cast)) return false;
                     if (!skill.instance.Ready) return false; // odnowienie – żądanie czeka w buforze
-                    bool free = def.IsSpell && FreeCasts > 0 && def.kind != SpellKind.BloodPact;
+                    float lifeCost = HuLifeCost(skill);
+                    if (lifeCost > 0f && Health.Current <= lifeCost) { CombatEvents.RaiseMessage("Za mało zdrowia", new Color(1f, 0.35f, 0.25f)); return true; }
+                    bool free = lifeCost > 0f || (def.IsSpell && FreeCasts > 0 && def.kind != SpellKind.BloodPact);
                     if (def.IsSpell && !free && Mana.Current + 0.01f < skill.manaCost) { CombatEvents.RaiseMessage("Za mało many", new Color(0.4f, 0.6f, 1f)); return true; }
-                    if (Stamina.Current <= 0) return false;
+                    if (lifeCost <= 0f && Stamina.Current <= 0) return false;
                     currentSpell = skill;
                     float castTime = ScaleStartup(def.castTime);
                     Actions.TryStart(ActionType.Cast, castTime, SkillActiveTime(def), ScaleRecovery(def.recovery), ScaleRecovery(def.cancelAfter));
@@ -329,10 +336,16 @@ namespace Turris
                     if (overloadThisCast) OverloadReady = false;
                     gatherFx = def.IsSpell ? HellFx.Gather(Hand, HellSkillFx.Family(def), castTime) : null;
                     if (def.IsSpell && castTime > 0.15f) Sfx.Play(SoundId.CastCharge, AimPoint, 0.8f, Mathf.Clamp(0.6f / castTime, 0.8f, 1.4f));
-                    if (free) FreeCasts--;
+                    if (lifeCost > 0f)
+                    {
+                        // Krew płacona prosto z puli: bez pancerza i osłony – i nigdy ostatnia kropla.
+                        Health.Drain(Mathf.Min(lifeCost, Health.Current - 1f));
+                        CombatEvents.RaiseWorldText(AimPoint + Vector3.up, "-" + lifeCost.ToString("0"), new Color(1f, 0.3f, 0.2f));
+                    }
+                    else if (free) FreeCasts--;
                     else if (def.IsSpell) Mana.TrySpend(skill.manaCost);
-                    castWasFree = free;
-                    Stamina.Drain(skill.staminaCost, B.staminaRegenDelay);
+                    castWasFree = free && lifeCost <= 0f;
+                    if (lifeCost <= 0f) Stamina.Drain(skill.staminaCost, B.staminaRegenDelay);
                     return true;
                 }
                 case ActionType.Flask:
@@ -371,6 +384,7 @@ namespace Turris
         /// <summary>Czas fazy aktywnej umiejętności: szarża i młynek trwają, reszta działa w jednej chwili.</summary>
         float SkillActiveTime(SpellDefinition def)
         {
+            if (currentSpell != null && currentSpell.Def == def && IsHu(currentSpell)) return HuActiveTime(currentSpell);
             switch (def.kind)
             {
                 case SpellKind.Charge:
@@ -430,6 +444,12 @@ namespace Turris
                     break;
                 case ActionType.Cast:
                     if (phase == ActionPhase.Active) { skillActiveStart = clock; FireSpell(currentSpell); }
+                    if (IsHu(currentSpell))
+                    {
+                        if (phase == ActionPhase.Recovery || phase == ActionPhase.Finished) { SkillMotion = Vector3.zero; huDash?.EndNow(); huDash = null; }
+                        if (phase == ActionPhase.Finished) { ConsumeOverload(); huSpin?.Stop(); huSpin = null; }
+                        break;
+                    }
                     if (phase == ActionPhase.Recovery && currentSpell != null && currentSpell.Def.kind == SpellKind.Dash) DashEnd(currentSpell);
                     if (phase == ActionPhase.Recovery && currentSpell != null && currentSpell.Def.kind == SpellKind.Whirlwind && currentSpell.Def.finalSlashShare > 0f)
                     {
@@ -526,6 +546,7 @@ namespace Turris
             if (refund > 0) Stamina.Restore(refund);
             PlaySkillSound(def);
             HellSkillFx.Cast(def, Hand.position, AimDirection());
+            if (IsHu(spell) && !def.IsAura) { FireHu(spell); return; }
             if (FireHeroSpell(spell)) return;
 
             switch (def.kind)
@@ -730,6 +751,7 @@ namespace Turris
         {
             var sk = currentSpell;
             if (sk == null) return;
+            if (IsHu(sk)) { HuActiveTick(); return; }
             var def = sk.Def;
             switch (def.kind)
             {
@@ -903,6 +925,7 @@ namespace Turris
         void PrepareOutgoing(ref HitData hit)
         {
             HeroOutgoing(ref hit);
+            GearOutgoing(ref hit);
             var st = Build.stats; var fx = Build.effects;
             if (hit.element != Element.None && hit.magic > 0) hit.magic *= 1f + st[Names.ElementDamageStat(hit.element)] / 100f;
             if (DamageBuffTime > 0) { float m = 1f + DamageBuffPct / 100f; hit.physical *= m; hit.magic *= m; }
@@ -951,7 +974,7 @@ namespace Turris
 
         void EndBarrier(bool broken)
         {
-            if (broken) { CombatEvents.RaiseMessage("Osłona rozbita", new Color(0.8f, 0.7f, 0.5f)); Sfx.Play(SoundId.Shatter, AimPoint, 0.6f); }
+            if (broken) { CombatEvents.RaiseMessage("Osłona rozbita", new Color(0.8f, 0.7f, 0.5f)); Sfx.Play(SoundId.Shatter, AimPoint, 0.6f); barrierBroken = true; }
             BarrierAmount = 0;
             BarrierTime = 0;
             if (barrierFx != null)
@@ -1000,6 +1023,7 @@ namespace Turris
             // Odnowienia umiejętności (całej kolekcji – przełożenie do innego slotu niczego nie zeruje) i osłona.
             foreach (var s in Run.knownSpells) s.Tick(dt * CooldownSpeed);
             HeroTick(dt);
+            GearTick(dt);
             if (BarrierTime > 0) { BarrierTime -= dt; if (BarrierTime <= 0) EndBarrier(false); }
             if (DamageBuffTime > 0) DamageBuffTime -= dt;
             if (FrostArmorTime > 0) FrostArmorTime -= dt;
@@ -1053,13 +1077,16 @@ namespace Turris
                 float angle = count == 1 ? 0 : Mathf.Lerp(-atk.spreadAngle, atk.spreadAngle, i / (float)(count - 1));
                 Vector3 dir = Quaternion.Euler(0, angle, 0) * aim.normalized;
                 var hit = HitData.FromAttack(atk, Build.WeaponDamage(atk), origin, this);
+                hit.weapon = HeldWeaponModel;
                 ApplyWeaponBuff(ref hit);
                 PrepareOutgoing(ref hit);
                 // Łuk – strzały; różdżka (pocisk magiczny) – świecący pocisk w barwie żywiołu.
                 bool arrow = atk.damageType == DamageType.Physical;
                 Color col = WeaponBuffTime > 0 ? WeaponBuffColor : arrow ? new Color(1f, 0.95f, 0.85f) : Names.ElementColor(atk.element);
+                int pierce = Mathf.RoundToInt(Build.effects[PassiveEffectType.ProjectilePierce]);
                 Projectile.Spawn(origin, dir, atk.projectileSpeed, hit, Faction.Player, this, col,
-                    arrow ? 0.12f : 0.18f, 3f, LockTarget, LockTarget != null ? (arrow ? 60f : 90f) : 0f, arrow);
+                    arrow ? 0.12f : 0.18f, 3f, LockTarget, LockTarget != null ? (arrow ? 60f : 90f) : 0f, arrow,
+                    new ProjectileOptions { pierce = pierce });
             }
         }
 
@@ -1129,6 +1156,7 @@ namespace Turris
         public void OnHitResolved(IHitReceiver target, in HitData hit, in HitResult result)
         {
             HeroOnHitResolved(target, hit, result);
+            if (result.outcome == HitOutcome.Hit || result.outcome == HitOutcome.GuardBroken) GearOnLanded(target, hit, result);
             if (hit.fromMeleeWeapon && (result.outcome == HitOutcome.Hit || result.outcome == HitOutcome.GuardBroken || result.outcome == HitOutcome.Blocked))
             {
                 float m = Build.effects[PassiveEffectType.ManaOnMeleeHit];
@@ -1144,6 +1172,8 @@ namespace Turris
             {
                 float h = Build.effects[PassiveEffectType.HealOnKill];
                 if (h > 0) Health.Restore(h);
+                GearOnKill(target);
+                if (!hit.huTriggered) HuTrigger("kill", target.Transform.position);
             }
         }
 
@@ -1194,6 +1224,7 @@ namespace Turris
             {
                 var hidden = new HitResult { outcome = HitOutcome.Dodged };
                 CombatEvents.RaiseHit(AimPoint, hidden, true);
+                HuTrigger("defend");
                 return hidden;
             }
 
@@ -1204,6 +1235,7 @@ namespace Turris
                 var miss = new HitResult { outcome = HitOutcome.Dodged };
                 CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.5f, "UCHYLENIE", new Color(0.7f, 0.95f, 1f));
                 CombatEvents.RaiseHit(AimPoint, miss, true);
+                HuTrigger("defend");
                 return miss;
             }
 
@@ -1238,8 +1270,10 @@ namespace Turris
                 if (BarrierAmount <= 0.01f) EndBarrier(true);
             }
 
+            if (r.healthDamage > 0 && TryCheatDeath(r.healthDamage)) r.healthDamage = 0f;
             Health.Drain(r.healthDamage);
             if (r.staminaDamage > 0) Stamina.Drain(r.staminaDamage, B.staminaRegenDelay);
+            GearOnStruck(hit, r);
 
             switch (r.outcome)
             {
@@ -1250,12 +1284,14 @@ namespace Turris
                     if (fx[PassiveEffectType.ParryRestoreMana] > 0) Mana.Restore(fx[PassiveEffectType.ParryRestoreMana]);
                     if (fx[PassiveEffectType.ParryHeal] > 0) Health.Restore(fx[PassiveEffectType.ParryHeal]);
                     CombatEvents.RaiseMessage("PAROWANIE!", new Color(1f, 0.95f, 0.5f));
+                    HuTrigger("defend");
                     break;
                 }
                 case HitOutcome.Blocked:
                 {
                     float m = Build.effects[PassiveEffectType.BlockManaGain];
                     if (m > 0) Mana.Restore(m);
+                    if (!hit.isStatusTick) HuTrigger("defend");
                     break;
                 }
                 case HitOutcome.GuardBroken:
@@ -1291,6 +1327,7 @@ namespace Turris
 
             CombatEvents.RaiseHit(AimPoint, r, true);
             if (Health.Current <= 0 && !IsDead) Die();
+            else if (!hit.isStatusTick && r.healthDamage > 0.01f && (r.outcome == HitOutcome.Hit || r.outcome == HitOutcome.GuardBroken)) HuTrigger("hurt");
             return r;
         }
 
@@ -1306,6 +1343,7 @@ namespace Turris
                 if (BarrierAmount <= 0.01f) EndBarrier(true);
             }
             if (dmg <= 0) return;
+            if (TryCheatDeath(dmg)) return;
             Health.Drain(dmg);
             CombatEvents.RaiseWorldText(AimPoint, $"{dmg:0}", Status.BleedStacks > 0 ? Names.StatusColor(StatusKind.Bleed) : Names.StatusColor(StatusKind.Burn));
             Sfx.Play(Status.BleedStacks > 0 ? SoundId.BleedTick : SoundId.BurnTick, AimPoint);
@@ -1320,6 +1358,7 @@ namespace Turris
             if (Immortal) { Health.SetCurrent(Health.Max); return; }
             Actions.Force(ActionType.Dead, 0f);
             statusFx.Clear();
+            HuClear();
             CombatEvents.RaiseMessage("POLEGŁEŚ", new Color(0.8f, 0.1f, 0.1f));
             Died?.Invoke();
         }

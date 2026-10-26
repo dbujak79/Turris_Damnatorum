@@ -16,6 +16,8 @@ namespace Turris
         public float power;            // czary: obrażenia / leczenie / premia; techniki: mnożnik obrażeń broni
         public bool requirementsMet;   // atrybuty (miękkie – obniżona skuteczność)
         public bool equipmentMet;      // wymagane wyposażenie (twarde – bez niego nie da się użyć)
+        /// <summary>Skill HU: mnożnik obrażeń z parametrów (cechy, moc czarów albo premia fizyczna, niespełnione wymagania); poziom jest w parametrach HU.</summary>
+        public float huScale = 1f;
         public SpellDefinition Def => instance.definition;
     }
 
@@ -203,6 +205,7 @@ namespace Turris
                 return new SpellRuntime
                 {
                     instance = s,
+                    huScale = scale * unmet,
                     manaCost = def.IsSpell ? def.manaCost * def.CostFactor(s.level) : 0f,
                     staminaCost = def.staminaCost * (def.IsSpell ? 1f : def.CostFactor(s.level)),
                     power = def.attack.baseDamage * scale * (1f + def.powerPerLevel * s.level) * unmet,

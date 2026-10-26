@@ -28,6 +28,10 @@ namespace Turris
         public float modelScale = 1f;
         [Tooltip("Przesunięcie chwytu wzdłuż drzewca (+Y modelu), m – np. młot trzymany wyżej.")]
         public float modelGripShift;
+        [Tooltip("Najwcześniej po tylu ukończonych piętrach przedmiot pojawia się w nagrodach.")]
+        public int minFloor;
+        [Tooltip("Względna waga w losowaniu nagród (unikaty rzadziej).")]
+        public float offerWeight = 1f;
         [Tooltip("Umiejętność, którą daje przedmiot, dopóki jest założony (np. grymuar – nova, sztylet do rzucania – rzut nożami).")]
         public SpellDefinition grantedSkill;
 

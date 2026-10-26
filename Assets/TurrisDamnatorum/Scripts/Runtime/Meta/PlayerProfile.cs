@@ -39,6 +39,9 @@ namespace Turris
         /// <summary>Bestiariusz: spotkani wrogowie i liczba zabitych (id wroga bazowego – warianty liczą się do niego).</summary>
         public List<BestiaryRecord> bestiary = new List<BestiaryRecord>();
 
+        /// <summary>Kodeks pieczęci: zespolenia i więzi obudzone kiedykolwiek (id). Niczego w podejściu nie wzmacnia.</summary>
+        public List<string> discoveredSeals = new List<string>();
+
         public bool IsUnlocked(string id) => unlocked.Contains(id);
     }
 

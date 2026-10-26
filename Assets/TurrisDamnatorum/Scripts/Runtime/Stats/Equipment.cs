@@ -142,14 +142,27 @@ namespace Turris
         int chargesSpent;
         float rechargeTimer;
 
-        public SpellInstance(SpellDefinition def, int level = 0) { definition = def; this.level = level; }
+        /// <summary>Pieczęcie skilla z Hell Unleashed (null dla skilli Turris). Kształt po pieczęciach wyznacza odnowienie, ładunki i działanie.</summary>
+        public readonly SealSet seals;
+
+        public SpellInstance(SpellDefinition def, int level = 0)
+        {
+            definition = def; this.level = level;
+            var hu = def != null ? def.HuData : null;
+            if (hu != null) seals = new SealSet(hu) { Level = () => Math.Min(this.level + 1, hu.MaxLevel), signature = hu.IsSignature };
+        }
         public string Name => level > 0 ? $"{definition.displayName} +{level}" : definition.displayName;
         public bool IsMaxLevel => level >= definition.maxLevel;
 
-        public int MaxCharges => definition.MaxCharges(level);
+        /// <summary>Najkrótsze odnowienie jako część odnowienia skilla bez pieczęci – niezależnie od pośpiechu, cech i pieczęci (HU: 0,4).</summary>
+        public const float CooldownFloor = 0.4f;
+
+        public int MaxCharges => seals != null ? seals.Shape.MaxCharges : definition.MaxCharges(level);
         public int Charges => Math.Max(0, MaxCharges - chargesSpent);
         public bool Ready => Charges > 0;
-        public float Cooldown => definition.CooldownAt(level);
+        public float Cooldown => seals != null
+            ? Math.Max(CooldownFloor * (float)HuSkillShape.Plain(seals.data, seals.Level()).Cooldown, (float)seals.Shape.Cooldown)
+            : definition.CooldownAt(level);
         /// <summary>Sekundy do odnowienia najbliższego ładunku (0 = wszystkie gotowe).</summary>
         public float RechargeRemaining => chargesSpent > 0 ? rechargeTimer : 0f;
         /// <summary>0..1 postęp odnawiania najbliższego ładunku (1 = gotowe).</summary>
@@ -173,6 +186,7 @@ namespace Turris
 
         public void Tick(float dt)
         {
+            if (chargesSpent > MaxCharges) chargesSpent = MaxCharges;
             if (chargesSpent <= 0) return;
             rechargeTimer -= dt;
             if (rechargeTimer > 0) return;

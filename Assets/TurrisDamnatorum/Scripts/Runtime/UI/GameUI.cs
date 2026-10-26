@@ -236,6 +236,7 @@ namespace Turris
                     root.ShowMainMenu();
                     break;
                 case GameScreen.Equipment:
+                    ShowSeals = false;
                     root.CloseEquipment();
                     break;
                 case GameScreen.Controls:
@@ -822,6 +823,7 @@ namespace Turris
                 GUI.color = Color.white;
                 GUI.Label(new Rect(r.x + 14, r.y + 4, r.width - 18, 30), head, rich);
                 GUI.Label(new Rect(r.x + 14, r.y + 34, r.width - 18, 28), sub, rich);
+                if (sk != null) DrawSealStamps(sk, r);
             }
         }
 
@@ -1102,7 +1104,7 @@ namespace Turris
                 : "Życie, mana i flaszki zostały odnowione.", label);
             GUILayout.Label($"Dusze: {run.souls}", label);
             GUILayout.Space(10);
-            Btn("Ekwipunek, umiejętności i statystyki", button, root.OpenEquipment, GUILayout.Height(54));
+            Btn("Ekwipunek, umiejętności i statystyki", button, () => { ShowSeals = false; root.OpenEquipment(); }, GUILayout.Height(54));
             if (run.attributePoints > 0)
             {
                 // Rozwój cechy: +1 za każde ukończone piętro.
@@ -1115,6 +1117,11 @@ namespace Turris
                         () => root.SpendAttributePoint(attr), GUILayout.Height(38));
                 }
             }
+
+            // Pod rozwojem cech – nie wyżej: GamepadPlayTests liczy pozycje przycisków od „Ekwipunek”.
+            GUILayout.Space(8);
+            Btn(run.sealGifts.Count > 0 ? $"Pieczęcie skilli – sakwa {run.sealPouch.Count}, DAR BOSSA w sklepie" : $"Pieczęcie skilli – sakwa {run.sealPouch.Count}", button,
+                () => { ShowSeals = true; root.OpenEquipment(); }, GUILayout.Height(46));
 
             if (root.AtRestPoint)
             {
@@ -1146,6 +1153,7 @@ namespace Turris
             GUILayout.Label($"Sklep dusz – masz {run.souls}", header);
             GUILayout.Label($"<size=15>Ceny rosną z każdym piętrem (teraz ×{SoulShop.Inflation(run, b):0.00}).</size>", label);
             BeginScroll(scrollB, 560);
+            DrawSealShopSection();
             var offer = root.ShopOffer;
             if (offer != null)
             {
@@ -1271,7 +1279,14 @@ namespace Turris
             var b = root.config.balance;
             // Podgląd statystyk liczony na bieżąco, by od razu pokazać efekt zmiany.
             var snap = BuildCalculator.Compute(run, root.config);
-            GUI.Label(new Rect(40, 20, W - 80, 50), "Ekwipunek", header);
+            GUI.Label(new Rect(40, 20, 400, 50), ShowSeals ? "Pieczęcie skilli" : "Ekwipunek", header);
+            BtnRect(new Rect(W - 640, 22, 280, 46), ShowSeals ? "Ekwipunek" : $"Pieczęcie (sakwa: {run.sealPouch.Count})", button, () => ShowSeals = !ShowSeals);
+            if (ShowSeals)
+            {
+                DrawSealManager();
+                BtnRect(new Rect(W - 300, H - 100, 260, 60), "Gotowe", button, () => { ShowSeals = false; root.CloseEquipment(); });
+                return;
+            }
 
             float colW = (W - 120) / 3f;
             // Sloty

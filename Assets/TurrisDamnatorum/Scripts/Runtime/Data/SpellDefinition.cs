@@ -113,6 +113,9 @@ namespace Turris
         [Tooltip("Dash: dystans doskoku (attack.reach) pokonywany w tym czasie; zatrzymuje się przy wrogu.")]
         public float dashTime = 0.16f;
 
+        [Tooltip("Najwcześniej po tylu ukończonych piętrach skill pojawia się w nagrodach i sklepie (HU: pierwsza fala w sklepie).")]
+        public int minFloor;
+
         [Header("Ulepszenia")]
         [Tooltip("Cechy dochodzące z poziomem (np. od +2 większy promień, od +4 płonąca ziemia).")]
         public List<LevelFeature> levelFeatures = new List<LevelFeature>();
@@ -122,6 +125,10 @@ namespace Turris
         public Color color = new Color(0.4f, 0.6f, 1f);
 
         public bool IsSpell => category == SkillCategory.Spell;
+
+        [NonSerialized] HuSkillData huData; [NonSerialized] bool huLooked;
+        /// <summary>Źródło skilla z Hell Unleashed (komponenty, poziomy, pieczęcie) albo null dla skilli Turris.</summary>
+        public HuSkillData HuData { get { if (!huLooked) { huLooked = true; huData = HuCatalog.ForTarget(id); } return huData; } }
 
         /// <summary>Suma wartości cechy dostępnej na danym poziomie.</summary>
         public float Feature(LevelFeatureKind k, int level)

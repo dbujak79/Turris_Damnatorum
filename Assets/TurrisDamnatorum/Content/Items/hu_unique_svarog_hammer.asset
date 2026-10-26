@@ -1,0 +1,164 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 636ee652052ecf443b59ebf79a72207a, type: 3}
+  m_Name: hu_unique_svarog_hammer
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ItemDefinition
+  id: hu_unique_svarog_hammer
+  displayName: "M\u0142ot Swaroga"
+  description: "Kowal bog\xF3w wci\u0105\u017C grzeje go swoim ogniem."
+  tags: 145
+  kind: 0
+  huSourceId: weapon.unique.svarog_hammer
+  huSourceHash: 794dbee67e8bda40e9971fb6b9c9b286bd0b2767f26b2385cd09c7b0feece758
+  twoHanded: 1
+  weight: 11
+  requirements:
+  - attribute: 3
+    value: 17
+  modifiers:
+  - stat: 24
+    mode: 0
+    value: 25
+  - stat: 21
+    mode: 0
+    value: 15.000001
+  - stat: 12
+    mode: 0
+    value: 18
+  effects:
+  - type: 21
+    value: 30
+  weapon:
+    light:
+      name: Zamach
+      delivery: 0
+      damageType: 0
+      baseDamage: 129.5
+      windup: 0.6462857
+      active: 0.22285715
+      recovery: 0.72428566
+      cancelAfter: 0.33428574
+      reach: 2.7
+      radius: 1.1
+      lunge: 0.7
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 50
+      poiseDamage: 63
+      heavy: 0
+      staminaCost: 26
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 1
+      elementShare: 0.3846154
+      bonusVsFrozen: 0.5
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 5
+        stacks: 2
+        chance: 0.5
+      - kind: 7
+        stacks: 1
+        chance: 0.5
+      - kind: 1
+        stacks: 1
+        chance: 0.5
+      animation: 0
+    heavy:
+      name: Egzekucja
+      delivery: 0
+      damageType: 0
+      baseDamage: 224.8
+      windup: 1.2257143
+      active: 0.22285715
+      recovery: 1.0028571
+      cancelAfter: 0.4457143
+      reach: 2.8
+      radius: 1.1
+      lunge: 1
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 85
+      poiseDamage: 112
+      heavy: 1
+      staminaCost: 38
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 1
+      elementShare: 0.3846154
+      bonusVsFrozen: 0.5
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 5
+        stacks: 2
+        chance: 1
+      - kind: 7
+        stacks: 1
+        chance: 1
+      - kind: 1
+        stacks: 1
+        chance: 1
+      animation: 0
+    lightComboLength: 2
+    strengthScaling: 1.8
+    dexterityScaling: 0.3
+    intelligenceScaling: 0
+    riposteMultiplier: 3
+    canBlock: 1
+    guard:
+      physicalReduction: 0.75
+      magicReduction: 0.2
+      stabilityMultiplier: 0.95
+      blockAngle: 110
+      staminaRegenMultiplier: 0.3
+    canParry: 0
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  shield:
+    guard:
+      physicalReduction: 1
+      magicReduction: 0.4
+      stabilityMultiplier: 0.7
+      blockAngle: 140
+      staminaRegenMultiplier: 0.3
+    canParry: 1
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  color: {r: 1, g: 0.5, b: 0.15, a: 1}
+  weaponModel: 11
+  shieldModel: 0
+  model: {fileID: 919132149155446097, guid: d64fc3b53740c074da46c750824d6457, type: 3}
+  modelScale: 0.85
+  modelGripShift: 0.24
+  minFloor: 1
+  offerWeight: 0.35
+  grantedSkill: {fileID: 0}

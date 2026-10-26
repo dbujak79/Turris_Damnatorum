@@ -47,7 +47,7 @@ namespace Turris
         {
             var tags = run.CurrentTags(snap);
             bool hard = b == null || b.spellRequirementsAreHard;
-            var candidates = pools.spells.Where(s => s != null && run.FindSpell(s) == null && (s.requiredTags & tags) == s.requiredTags
+            var candidates = pools.spells.Where(s => s != null && run.FindSpell(s) == null && (s.requiredTags & tags) == s.requiredTags && run.floorsCleared >= s.minFloor
                 && !(hard && s.IsSpell && !StatCalculator.RequirementsMet(s.requirements, snap.stats))).ToList();
             return candidates.Count == 0 ? null : candidates[rng.Next(candidates.Count)];
         }

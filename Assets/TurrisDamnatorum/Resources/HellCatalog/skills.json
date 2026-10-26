@@ -1,0 +1,3380 @@
+{
+ "skills": [
+  {
+   "id": "skill.explosion",
+   "targetId": "hu_nova_fire",
+   "sha256": "a233562665ae751897a7aa70cf5b57c5628604589f19b226b70b2f24dfb7b284",
+   "name": "Nova ognia",
+   "desc": "Pierścień ognia rozchodzi się od bohatera, idzie za nim i wybucha na pełnym promieniu. Podpala.",
+   "l2": "",
+   "l3": "",
+   "classId": "",
+   "element": 1,
+   "targeting": 0,
+   "tags": [
+    "area",
+    "fire",
+    "spell"
+   ],
+   "components": [
+    "Nova"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=3.5",
+      "damage.fire=26",
+      "radius=3.5",
+      "telegraph=0.45",
+      "follow=1",
+      "effect.Ignite=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=3.5",
+      "damage.fire=31.7",
+      "radius=3.5",
+      "telegraph=0.45",
+      "follow=1",
+      "effect.Ignite=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=3.5",
+      "damage.fire=37.4",
+      "radius=3.5",
+      "telegraph=0.45",
+      "follow=1",
+      "effect.Ignite=1",
+      "zone_seconds=2.5",
+      "zone_radius=3",
+      "zone_share=0.2",
+      "zone_interval=0.5"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.mage.brimstone_rain",
+   "targetId": "hu_brimstone_rain",
+   "sha256": "39269caf662186dc24b3a6cbaa9a71bc4fb5cc5010f938c06a4f0d0abcac1951",
+   "name": "Deszcz siarki",
+   "desc": "Mag otwiera nad wskazanym miejscem piekło: spada z niego grad płonącej siarki, każda bryła wybucha i podpala.",
+   "l2": "Poziom II: więcej siarki na większym obszarze.",
+   "l3": "Poziom III: większe i mocniejsze wybuchy.",
+   "classId": "mage",
+   "element": 1,
+   "targeting": 2,
+   "tags": [
+    "area",
+    "fire",
+    "spell"
+   ],
+   "components": [
+    "Barrage"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=11",
+      "range=10",
+      "damage.fire=19",
+      "strikes=10",
+      "strike_radius=1.4",
+      "spread=3.2",
+      "strike_delay=0.5",
+      "strike_interval=0.16",
+      "strike_size=1",
+      "effect.Ignite=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=11",
+      "range=10",
+      "damage.fire=19",
+      "strikes=14",
+      "strike_radius=1.4",
+      "spread=3.8",
+      "strike_delay=0.5",
+      "strike_interval=0.16",
+      "strike_size=1",
+      "effect.Ignite=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=11",
+      "range=10",
+      "damage.fire=24",
+      "strikes=14",
+      "strike_radius=1.8",
+      "spread=3.8",
+      "strike_delay=0.5",
+      "strike_interval=0.16",
+      "strike_size=1",
+      "effect.Ignite=1"
+     ]
+    }
+   ],
+   "minWave": 16,
+   "shop": true
+  },
+  {
+   "id": "skill.mage.cyclone_eye",
+   "targetId": "hu_cyclone_eye",
+   "sha256": "e7fa7cf9b6df5ad72782b101178df166f7cb7e2823e2ef10f8eead2005cd7c5f",
+   "name": "Oko cyklonu",
+   "desc": "Wir we wskazanym miejscu (mysz lub prawa gałka) przyciąga wrogów i rani ich w takt.",
+   "l2": "Poziom II: dłuższe działanie.",
+   "l3": "Poziom III: wir kończy się wybuchem, który odrzuca.",
+   "classId": "mage",
+   "element": 3,
+   "targeting": 2,
+   "tags": [
+    "area",
+    "air",
+    "spell"
+   ],
+   "components": [
+    "Vortex"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=9",
+      "range=9",
+      "damage.air=6",
+      "radius=2.8",
+      "duration_seconds=2.5",
+      "hit_interval=0.4",
+      "pull=3.5"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=9",
+      "range=9",
+      "damage.air=7",
+      "radius=2.8",
+      "duration_seconds=4",
+      "hit_interval=0.4",
+      "pull=3.5"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=9",
+      "range=9",
+      "damage.air=7",
+      "radius=2.8",
+      "duration_seconds=4",
+      "hit_interval=0.4",
+      "pull=3.5",
+      "burst_share=3",
+      "burst_knockback=3.5"
+     ]
+    }
+   ],
+   "minWave": 7,
+   "shop": true
+  },
+  {
+   "id": "skill.mage.damned_chain",
+   "targetId": "hu_damned_chain",
+   "sha256": "06615b824ab37b85d9b44d9d3f90e1927b0374b5bd270e8bed30b5189c38ebd7",
+   "name": "Łańcuch potępionych",
+   "desc": "Piorun skacze z dłoni maga do najbliższego wroga i dalej, od ciała do ciała. Przemoczonych razi jeszcze mocniej.",
+   "l2": "Poziom II: pięć przeskoków.",
+   "l3": "Poziom III: siedem przeskoków na dłuższym dystansie; trafieni się zachwiewają.",
+   "classId": "mage",
+   "element": 3,
+   "targeting": 1,
+   "tags": [
+    "area",
+    "air",
+    "spell"
+   ],
+   "components": [
+    "Chain"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=6",
+      "range=10",
+      "damage.air=40",
+      "chains=3",
+      "chain_range=4.5",
+      "chain_falloff=0.12"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=6",
+      "range=10",
+      "damage.air=48",
+      "chains=5",
+      "chain_range=4.5",
+      "chain_falloff=0.12"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=6",
+      "range=10",
+      "damage.air=48",
+      "chains=7",
+      "chain_range=5.5",
+      "chain_falloff=0.12",
+      "effect.Stagger=1"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": true
+  },
+  {
+   "id": "skill.mage.ember_ring",
+   "targetId": "hu_ember_ring",
+   "sha256": "07902aeae3538463e9bd71671e434b7d7050aa176793fd3673c03c27b560046e",
+   "name": "Krąg żaru",
+   "desc": "Pierścień żaru na ziemi: parzy, co w nim stoi, a każdy twój pocisk skilla, który przez niego przeleci, dostaje 50% jego obrażeń od ognia i podpala.",
+   "l2": "Poziom II: szerszy krąg, drugie gniazdo pieczęci.",
+   "l3": "Poziom III: krąg trwa dłużej i mocniej zaklina pociski, trzecie gniazdo.",
+   "classId": "mage",
+   "element": 1,
+   "targeting": 2,
+   "tags": [
+    "area",
+    "fire",
+    "spell",
+    "field"
+   ],
+   "components": [
+    "Zone",
+    "Infuse"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=10",
+      "range=9",
+      "damage.fire=8",
+      "zone_seconds=5",
+      "zone_radius=2.6",
+      "zone_share=1",
+      "zone_interval=0.5",
+      "infuse_share=0.5",
+      "effect.Ignite=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=10",
+      "range=9",
+      "damage.fire=10",
+      "zone_seconds=5",
+      "zone_radius=3.2",
+      "zone_share=1",
+      "zone_interval=0.5",
+      "infuse_share=0.5",
+      "effect.Ignite=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=10",
+      "range=9",
+      "damage.fire=10",
+      "zone_seconds=7",
+      "zone_radius=3.2",
+      "zone_share=1",
+      "zone_interval=0.5",
+      "infuse_share=0.7",
+      "effect.Ignite=1"
+     ]
+    }
+   ],
+   "minWave": 7,
+   "shop": true
+  },
+  {
+   "id": "skill.mage.frost_shard",
+   "targetId": "hu_frost_shard",
+   "sha256": "f738abfb1c0013babab784a942cb84ef25ddecf764face2e2bbfbab1a205fa1d",
+   "name": "Lodowy odłamek",
+   "desc": "Szybki odłamek lodu przebija dwa demony, moczy je i spowalnia.",
+   "l2": "Poziom II: przebija trzy demony, drugie gniazdo pieczęci.",
+   "l3": "Poziom III: dwa odłamki, trzecie gniazdo.",
+   "classId": "mage",
+   "element": 2,
+   "targeting": 1,
+   "tags": [
+    "projectile",
+    "water",
+    "spell"
+   ],
+   "components": [
+    "Projectile"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=4",
+      "damage.water=22",
+      "speed=18",
+      "projectile_radius=0.3",
+      "lifetime=0.8",
+      "pierce=2",
+      "ice=1",
+      "effect.Slow=1",
+      "effect.Soaked=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=4",
+      "damage.water=27",
+      "speed=18",
+      "projectile_radius=0.3",
+      "lifetime=0.8",
+      "pierce=3",
+      "ice=1",
+      "effect.Slow=1",
+      "effect.Soaked=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=4",
+      "damage.water=32",
+      "speed=18",
+      "projectile_radius=0.3",
+      "lifetime=0.8",
+      "pierce=3",
+      "ice=1",
+      "effect.Slow=1",
+      "effect.Soaked=1",
+      "count=2",
+      "spread_degrees=10"
+     ]
+    }
+   ],
+   "minWave": 7,
+   "shop": true
+  },
+  {
+   "id": "skill.mage.glacial_tear",
+   "targetId": "hu_glacial_tear",
+   "sha256": "b3c4585b099d6ad34f8a29e186546b952c1c3b87102fd3e7559447e83aa6e17d",
+   "name": "Łza lodowca",
+   "desc": "Z ciemności spada bryła lodu wielka jak głaz. Długa zapowiedź, ogromne obrażenia w szerokim kręgu; trafieni są przemoczeni i zwalniają — gotowi na piorun.",
+   "l2": "Poziom II: szerszy krąg i mocniejszy upadek.",
+   "l3": "Poziom III: lód pęka i rozsiewa odłamki w dwukrotnie szerszym kręgu.",
+   "classId": "mage",
+   "element": 2,
+   "targeting": 2,
+   "tags": [
+    "area",
+    "water",
+    "spell"
+   ],
+   "components": [
+    "Barrage"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=10",
+      "ice=1",
+      "range=11",
+      "damage.water=78",
+      "strikes=1",
+      "strike_radius=3",
+      "strike_delay=1.2",
+      "strike_size=3.2",
+      "effect.Slow=1",
+      "effect.Soaked=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=10",
+      "ice=1",
+      "range=11",
+      "damage.water=94",
+      "strikes=1",
+      "strike_radius=3.8",
+      "strike_delay=1.2",
+      "strike_size=3.2",
+      "effect.Slow=1",
+      "effect.Soaked=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=10",
+      "ice=1",
+      "range=11",
+      "damage.water=94",
+      "strikes=1",
+      "strike_radius=3.8",
+      "strike_delay=1.2",
+      "strike_size=3.2",
+      "effect.Slow=1",
+      "effect.Soaked=1",
+      "aftershock_share=0.4",
+      "aftershock_delay=0.5"
+     ]
+    }
+   ],
+   "minWave": 16,
+   "shop": true
+  },
+  {
+   "id": "skill.mage.infernal_orb",
+   "targetId": "hu_infernal_orb",
+   "sha256": "f78e317b54ff5951d8bdafbe2d2957cdf4a62ff8991295dc74a93181a58f71d0",
+   "name": "Piekielna kula",
+   "desc": "Duży pocisk ognia. Wybucha na pierwszym wrogu albo na końcu lotu i podpala. Ma pięć form (pieczęcie): kometę, rój iskier, toczący się żar, ognistą minę i słońce.",
+   "l2": "Poziom II: większy promień eksplozji, drugie gniazdo pieczęci.",
+   "l3": "Poziom III: więcej obrażeń, trzecie gniazdo pieczęci.",
+   "classId": "mage",
+   "element": 1,
+   "targeting": 1,
+   "tags": [
+    "projectile",
+    "area",
+    "fire",
+    "spell"
+   ],
+   "components": [
+    "Projectile",
+    "Explosion"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=6",
+      "damage.fire=34",
+      "speed=9",
+      "projectile_radius=0.45",
+      "lifetime=1.4",
+      "explosion_radius=2.2",
+      "explosion_share=1",
+      "effect.Ignite=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=6",
+      "damage.fire=40",
+      "speed=9",
+      "projectile_radius=0.45",
+      "lifetime=1.4",
+      "explosion_radius=3",
+      "explosion_share=1",
+      "effect.Ignite=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=6",
+      "damage.fire=48",
+      "speed=9",
+      "projectile_radius=0.45",
+      "lifetime=1.4",
+      "explosion_radius=3",
+      "explosion_share=1",
+      "effect.Ignite=1"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": true
+  },
+  {
+   "id": "skill.mage.overload",
+   "targetId": "hu_overload",
+   "sha256": "32b1e5015983150e57b9c06df427268aea4060a5e6d83047724c71cb860043eb",
+   "name": "Przeciążenie",
+   "desc": "Następny skill ze slotu zadaje +60% obrażeń i ma większy zasięg. Potem sloty przegrzewają się na 2,5 s.",
+   "l2": "",
+   "l3": "",
+   "classId": "mage",
+   "element": 0,
+   "targeting": 0,
+   "tags": [
+    "signature",
+    "spell"
+   ],
+   "components": [
+    "Overload"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=12",
+      "mana=20"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.mage.stone_spikes",
+   "targetId": "hu_stone_spikes",
+   "sha256": "ad5ee28480cdb6466c81359d086ecc6ae9ef565acbbe1aa7900e8611700db066",
+   "name": "Kamienne kolce",
+   "desc": "Po krótkiej zapowiedzi linia kolców wyrasta w kierunku celowania i zachwiewa.",
+   "l2": "Poziom II: szerszy pas kolców.",
+   "l3": "Poziom III: druga, opóźniona erupcja.",
+   "classId": "mage",
+   "element": 4,
+   "targeting": 1,
+   "tags": [
+    "area",
+    "earth",
+    "spell"
+   ],
+   "components": [
+    "Line"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=6",
+      "damage.earth=30",
+      "length=8",
+      "width=1.4",
+      "delay_seconds=0.45",
+      "effect.Stagger=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=6",
+      "damage.earth=35",
+      "length=8",
+      "width=2.4",
+      "delay_seconds=0.45",
+      "effect.Stagger=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=6",
+      "damage.earth=35",
+      "length=8",
+      "width=2.4",
+      "delay_seconds=0.45",
+      "effect.Stagger=1",
+      "second_delay=0.6",
+      "second_share=0.6"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": true
+  },
+  {
+   "id": "skill.mage.stone_ward",
+   "targetId": "hu_stone_ward",
+   "sha256": "4bea336b4c8d1ea028f4a6b01e0f7ed962697ab597ed55cdc193b73ea0127f06",
+   "name": "Kamienna osłona",
+   "desc": "Bariera pochłania ograniczoną sumę obrażeń. Nie jest blokiem tarczy; pochłonięte obrażenia nie zabierają dusz.",
+   "l2": "Poziom II: większa pojemność.",
+   "l3": "Poziom III: po zniszczeniu bariery fala odpychająca.",
+   "classId": "mage",
+   "element": 4,
+   "targeting": 0,
+   "tags": [
+    "defense",
+    "earth",
+    "spell"
+   ],
+   "components": [
+    "Barrier",
+    "Explosion"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=12",
+      "capacity=40",
+      "duration_seconds=6"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=12",
+      "capacity=65",
+      "duration_seconds=6"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=12",
+      "capacity=65",
+      "duration_seconds=6",
+      "damage.earth=22",
+      "explosion_radius=3",
+      "explosion_share=1",
+      "knockback=3"
+     ]
+    }
+   ],
+   "minWave": 7,
+   "shop": true
+  },
+  {
+   "id": "skill.mage.tidal_wave",
+   "targetId": "hu_tidal_wave",
+   "sha256": "f3a34e09613596437ac57fcd0d4a38c293f2fefd15c9269d365df68da9629a5b",
+   "name": "Fala przypływu",
+   "desc": "Szeroka fala przed magiem: obrażenia, odrzut, przemoczenie i spowolnienie. Każdy wróg raz na przejście.",
+   "l2": "Poziom II: większy zasięg fali.",
+   "l3": "Poziom III: fala wraca z połową obrażeń.",
+   "classId": "mage",
+   "element": 2,
+   "targeting": 1,
+   "tags": [
+    "area",
+    "water",
+    "spell"
+   ],
+   "components": [
+    "Wave"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=7",
+      "damage.water=26",
+      "range=6",
+      "width=4.5",
+      "speed=10",
+      "knockback=2",
+      "spread_degrees=40",
+      "effect.Soaked=1",
+      "effect.Slow=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=7",
+      "damage.water=30",
+      "range=8.5",
+      "width=4.5",
+      "speed=10",
+      "knockback=2",
+      "spread_degrees=40",
+      "effect.Soaked=1",
+      "effect.Slow=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=7",
+      "damage.water=34",
+      "range=8.5",
+      "width=4.5",
+      "speed=10",
+      "knockback=2",
+      "spread_degrees=40",
+      "effect.Soaked=1",
+      "effect.Slow=1",
+      "return_share=0.5"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": true
+  },
+  {
+   "id": "skill.mage.wind_step",
+   "targetId": "hu_wind_step",
+   "sha256": "060ef5688aeeb5953b898fb9fff10a7e14825358a35a9a3f9fd061fe1a805e3d",
+   "name": "Krok wichru",
+   "desc": "Krótki doskok w kierunku celowania, zostawia raniący ślad. Osobny od uniku, bez niewrażliwości.",
+   "l2": "Poziom II: dłuższy ślad.",
+   "l3": "Poziom III: drugi ładunek.",
+   "classId": "mage",
+   "element": 3,
+   "targeting": 1,
+   "tags": [
+    "movement",
+    "area",
+    "air",
+    "spell"
+   ],
+   "components": [
+    "Dash",
+    "Trail"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=5",
+      "charges=1",
+      "distance=4.5",
+      "dash_seconds=0.18",
+      "damage.air=16",
+      "trail_seconds=1.5",
+      "trail_width=1.2",
+      "trail_share=0.4",
+      "hit_interval=0.4"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=5",
+      "charges=1",
+      "distance=4.5",
+      "dash_seconds=0.18",
+      "damage.air=16",
+      "trail_seconds=2.5",
+      "trail_width=1.2",
+      "trail_share=0.4",
+      "hit_interval=0.4"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=5",
+      "charges=2",
+      "distance=4.5",
+      "dash_seconds=0.18",
+      "damage.air=16",
+      "trail_seconds=2.5",
+      "trail_width=1.2",
+      "trail_share=0.4",
+      "hit_interval=0.4"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": true
+  },
+  {
+   "id": "skill.nova.air",
+   "targetId": "hu_nova_air",
+   "sha256": "144a6dabd604026b6603d86d47be83ef9c4f561668d63b5f680f72f8b188e898",
+   "name": "Nova powietrza",
+   "desc": "Podmuch rozchodzi się od bohatera i na pełnym promieniu odrzuca wrogów.",
+   "l2": "",
+   "l3": "",
+   "classId": "",
+   "element": 3,
+   "targeting": 0,
+   "tags": [
+    "area",
+    "air",
+    "spell"
+   ],
+   "components": [
+    "Nova"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=3.5",
+      "damage.air=24",
+      "radius=3.5",
+      "telegraph=0.45",
+      "follow=1",
+      "knockback=2"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=3.5",
+      "damage.air=29.3",
+      "radius=3.5",
+      "telegraph=0.45",
+      "follow=1",
+      "knockback=2"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=3.5",
+      "damage.air=34.6",
+      "radius=3.5",
+      "telegraph=0.45",
+      "follow=1",
+      "knockback=2",
+      "vortex_seconds=2",
+      "vortex_radius=2.6",
+      "vortex_pull=4",
+      "vortex_interval=0.5",
+      "vortex_share=0.25"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.nova.earth",
+   "targetId": "hu_nova_earth",
+   "sha256": "7f432ffefb8cc411d8ed0403a1d2ac92272e33ff221b2ca79afbf54577c6f3cb",
+   "name": "Nova ziemi",
+   "desc": "Dwie fale ziemi jedna po drugiej, każda zachwiewa.",
+   "l2": "",
+   "l3": "",
+   "classId": "",
+   "element": 4,
+   "targeting": 0,
+   "tags": [
+    "area",
+    "earth",
+    "spell"
+   ],
+   "components": [
+    "Nova"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=4",
+      "damage.earth=14",
+      "radius=3.5",
+      "telegraph=0.45",
+      "follow=1",
+      "pulses=2",
+      "pulse_interval=0.3",
+      "effect.Stagger=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=4",
+      "damage.earth=17.1",
+      "radius=3.5",
+      "telegraph=0.45",
+      "follow=1",
+      "pulses=2",
+      "pulse_interval=0.3",
+      "effect.Stagger=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=4",
+      "damage.earth=20.2",
+      "radius=3.5",
+      "telegraph=0.45",
+      "follow=1",
+      "pulses=3",
+      "pulse_interval=0.3",
+      "effect.Stagger=1"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.nova.water",
+   "targetId": "hu_nova_water",
+   "sha256": "4d99ef333b78f2955a73a5b2d01cb43a6c4365d2b1964591d2b47ee7010589d9",
+   "name": "Nova wody",
+   "desc": "Fala wody rozchodzi się od bohatera i na pełnym promieniu przemacza i spowalnia.",
+   "l2": "",
+   "l3": "",
+   "classId": "",
+   "element": 2,
+   "targeting": 0,
+   "tags": [
+    "area",
+    "water",
+    "spell"
+   ],
+   "components": [
+    "Nova"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=4",
+      "damage.water=18",
+      "radius=3.5",
+      "telegraph=0.45",
+      "follow=1",
+      "effect.Soaked=1",
+      "effect.Slow=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=4",
+      "damage.water=22",
+      "radius=3.5",
+      "telegraph=0.45",
+      "follow=1",
+      "effect.Soaked=1",
+      "effect.Slow=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=4",
+      "damage.water=25.9",
+      "radius=3.5",
+      "telegraph=0.45",
+      "follow=1",
+      "effect.Soaked=1",
+      "effect.Slow=1",
+      "pulses=2",
+      "pulse_interval=0.5"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.rogue.arrow_rain",
+   "targetId": "hu_arrow_rain",
+   "sha256": "162ae50990314969f5ae2a5ae93dbfae816ff7f15cef49a9cbbca709f994227e",
+   "name": "Deszcz strzał",
+   "desc": "Grad strzał spada na wskazany obszar przez kilka sekund.",
+   "l2": "",
+   "l3": "",
+   "classId": "rogue",
+   "element": 0,
+   "targeting": 2,
+   "tags": [
+    "area",
+    "physical",
+    "projectile"
+   ],
+   "components": [
+    "Zone",
+    "Rain"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=9",
+      "damage.physical=32",
+      "range=10",
+      "zone_seconds=2.5",
+      "zone_interval=0.35",
+      "zone_radius=2.6",
+      "zone_share=1",
+      "stamina=18"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=9",
+      "damage.physical=40",
+      "range=10",
+      "zone_seconds=2.5",
+      "zone_interval=0.35",
+      "zone_radius=3.2",
+      "zone_share=1",
+      "stamina=18"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=9",
+      "damage.physical=48",
+      "range=10",
+      "zone_seconds=3.5",
+      "zone_interval=0.35",
+      "zone_radius=3.2",
+      "zone_share=1",
+      "stamina=18",
+      "effect.Slow=1"
+     ]
+    }
+   ],
+   "minWave": 16,
+   "shop": true
+  },
+  {
+   "id": "skill.rogue.blade_fan",
+   "targetId": "hu_blade_fan",
+   "sha256": "787eb065ca50f121d5dfc1c1e6b7948fc6159fa3527e8b21efbd27e48217b10a",
+   "name": "Wachlarz ostrzy",
+   "desc": "Pierścień ostrzy wokół łotrzyka; trafieni krwawią.",
+   "l2": "",
+   "l3": "",
+   "classId": "rogue",
+   "element": 0,
+   "targeting": 0,
+   "tags": [
+    "projectile",
+    "physical",
+    "area",
+    "signature"
+   ],
+   "components": [
+    "Projectile"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=12",
+      "damage.physical=18",
+      "count=14",
+      "spread_degrees=360",
+      "speed=16",
+      "projectile_radius=0.3",
+      "lifetime=0.55",
+      "effect.Bleed=1",
+      "stamina=15"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.rogue.cross_cut",
+   "targetId": "hu_cross_cut",
+   "sha256": "a1e5591a55bef5adee83f5f6d7fd68feb390acc90de25acb6ab044d908e64cbc",
+   "name": "Cięcie krzyżowe",
+   "desc": "Dwa szybkie cięcia przed siebie; nakłada dwie warstwy krwawienia.",
+   "l2": "",
+   "l3": "",
+   "classId": "rogue",
+   "element": 0,
+   "targeting": 1,
+   "tags": [
+    "melee",
+    "physical"
+   ],
+   "components": [
+    "Cone"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=5",
+      "damage.physical=34",
+      "range=2.6",
+      "arc_degrees=130",
+      "effect.Bleed=2",
+      "stamina=14"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=5",
+      "damage.physical=40",
+      "range=3",
+      "arc_degrees=130",
+      "effect.Bleed=2",
+      "stamina=14"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=5",
+      "damage.physical=46",
+      "range=3",
+      "arc_degrees=130",
+      "effect.Bleed=2",
+      "stamina=14",
+      "bonus_vs_bleeding=0.5"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": true
+  },
+  {
+   "id": "skill.rogue.knife_throw",
+   "targetId": "hu_knife_throw",
+   "sha256": "87dbbf55e723c813c6027e8c757131fe3c02393089698639f2cd193a69f62d73",
+   "name": "Rzut nożami",
+   "desc": "Trzy noże w wachlarzu; każdy zadaje krwawienie.",
+   "l2": "",
+   "l3": "",
+   "classId": "rogue",
+   "element": 0,
+   "targeting": 1,
+   "tags": [
+    "projectile",
+    "physical"
+   ],
+   "components": [
+    "Projectile"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=4",
+      "damage.physical=12",
+      "count=3",
+      "spread_degrees=20",
+      "speed=20",
+      "projectile_radius=0.3",
+      "lifetime=0.7",
+      "effect.Bleed=1",
+      "stamina=10"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=4",
+      "damage.physical=16",
+      "count=4",
+      "spread_degrees=20",
+      "speed=20",
+      "projectile_radius=0.3",
+      "lifetime=0.7",
+      "effect.Bleed=1",
+      "stamina=10"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=4",
+      "damage.physical=20",
+      "count=5",
+      "spread_degrees=28",
+      "speed=20",
+      "projectile_radius=0.3",
+      "lifetime=0.7",
+      "effect.Bleed=1",
+      "stamina=10"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.rogue.piercing_shot",
+   "targetId": "hu_piercing_shot",
+   "sha256": "5736ca7c529b22020eb94a4fe8f2727b5ad1b4680430ace4b7d94629cd441cf8",
+   "name": "Strzał przeszywający",
+   "desc": "Ciężka strzała przebija kolejnych wrogów w linii.",
+   "l2": "",
+   "l3": "",
+   "classId": "rogue",
+   "element": 0,
+   "targeting": 1,
+   "tags": [
+    "projectile",
+    "physical"
+   ],
+   "components": [
+    "Projectile"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=4",
+      "damage.physical=46",
+      "speed=24",
+      "projectile_radius=0.35",
+      "lifetime=0.9",
+      "pierce=4",
+      "stamina=14"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=4",
+      "damage.physical=54",
+      "speed=24",
+      "projectile_radius=0.35",
+      "lifetime=0.9",
+      "pierce=7",
+      "stamina=14"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=4",
+      "damage.physical=64",
+      "speed=24",
+      "projectile_radius=0.35",
+      "lifetime=0.9",
+      "pierce=7",
+      "stamina=14",
+      "effect.Bleed=2"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": true
+  },
+  {
+   "id": "skill.rogue.shadow_step",
+   "targetId": "hu_shadow_step",
+   "sha256": "d54ca6ec37042df9b2c082499ac6ddcaacc831bcf3dd68ba9ffd8c3b159c6d6a",
+   "name": "Krok cienia",
+   "desc": "Doskok do celu i cios, który rozcina wszystko wokół; rany krwawią.",
+   "l2": "",
+   "l3": "",
+   "classId": "rogue",
+   "element": 0,
+   "targeting": 1,
+   "tags": [
+    "movement",
+    "melee",
+    "physical"
+   ],
+   "components": [
+    "Dash",
+    "Explosion"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=7",
+      "distance=5.5",
+      "dash_seconds=0.18",
+      "stop_on_enemy=1",
+      "damage.physical=28",
+      "explosion_radius=1.8",
+      "explosion_share=1",
+      "effect.Bleed=1",
+      "stamina=12"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=7",
+      "distance=5.5",
+      "dash_seconds=0.18",
+      "stop_on_enemy=1",
+      "damage.physical=35",
+      "explosion_radius=2.3",
+      "explosion_share=1",
+      "effect.Bleed=1",
+      "stamina=12"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=5.5",
+      "distance=5.5",
+      "dash_seconds=0.18",
+      "stop_on_enemy=1",
+      "damage.physical=42",
+      "explosion_radius=2.3",
+      "explosion_share=1",
+      "effect.Bleed=2",
+      "stamina=12"
+     ]
+    }
+   ],
+   "minWave": 7,
+   "shop": true
+  },
+  {
+   "id": "skill.rogue.snare",
+   "targetId": "hu_snare",
+   "sha256": "cc60e4b51a7fbe32f645825fd7d10bdfba7b15a647c2c347b66dcafb0f29aaff",
+   "name": "Sidła",
+   "desc": "Rozrzucone kolce i linki: wrogowie w obszarze zwalniają i krwawią.",
+   "l2": "",
+   "l3": "",
+   "classId": "rogue",
+   "element": 0,
+   "targeting": 2,
+   "tags": [
+    "area",
+    "physical",
+    "defense"
+   ],
+   "components": [
+    "Zone"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=10",
+      "damage.physical=6",
+      "range=8",
+      "zone_seconds=4",
+      "zone_interval=0.5",
+      "zone_radius=2.2",
+      "zone_share=1",
+      "effect.Slow=1",
+      "stamina=12"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=10",
+      "damage.physical=6",
+      "range=8",
+      "zone_seconds=4",
+      "zone_interval=0.5",
+      "zone_radius=2.8",
+      "zone_share=1",
+      "effect.Slow=1",
+      "stamina=12",
+      "effect.Stagger=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=10",
+      "damage.physical=10",
+      "range=8",
+      "zone_seconds=6",
+      "zone_interval=0.5",
+      "zone_radius=2.8",
+      "zone_share=1",
+      "effect.Slow=1",
+      "stamina=12",
+      "effect.Stagger=1"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": true
+  },
+  {
+   "id": "skill.rogue.splinter_arrow",
+   "targetId": "hu_splinter_arrow",
+   "sha256": "105cf4b07b053c95fa158cfc7f93e680de33b1535f53c856cf9d988e973e4c8c",
+   "name": "Strzała rozszczepu",
+   "desc": "Nacięty grot pęka na pierwszym trafieniu i rozlatuje się na dwie drzazgi, które lecą dalej i ranią do krwi.",
+   "l2": "Poziom II: strzała przebija pierwszego wroga, zanim pęknie.",
+   "l3": "Poziom III: dwie strzały naraz.",
+   "classId": "rogue",
+   "element": 0,
+   "targeting": 1,
+   "tags": [
+    "projectile",
+    "physical"
+   ],
+   "components": [
+    "Projectile"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=5",
+      "damage.physical=34",
+      "speed=22",
+      "projectile_radius=0.3",
+      "lifetime=0.9",
+      "splits=1",
+      "effect.Bleed=1",
+      "stamina=12"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=5",
+      "damage.physical=40",
+      "speed=22",
+      "projectile_radius=0.3",
+      "lifetime=0.9",
+      "splits=1",
+      "effect.Bleed=1",
+      "stamina=12",
+      "pierce=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=5",
+      "damage.physical=40",
+      "speed=22",
+      "projectile_radius=0.3",
+      "lifetime=0.9",
+      "splits=1",
+      "effect.Bleed=1",
+      "stamina=12",
+      "pierce=1",
+      "count=2",
+      "spread_degrees=16"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": true
+  },
+  {
+   "id": "skill.rogue.sulfur_arrow",
+   "targetId": "hu_sulfur_arrow",
+   "sha256": "ce945e688da35c34db79ffad2fed20b9718eddb890eb96f962c9c9dd1d9a38fe",
+   "name": "Strzała siarkowa",
+   "desc": "Grot owinięty siarką: wybucha na pierwszym wrogu albo na końcu lotu i podpala wszystko wokół.",
+   "l2": "Poziom II: większy wybuch.",
+   "l3": "Poziom III: trzy strzały naraz.",
+   "classId": "rogue",
+   "element": 1,
+   "targeting": 1,
+   "tags": [
+    "projectile",
+    "area",
+    "fire"
+   ],
+   "components": [
+    "Projectile",
+    "Explosion"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=6",
+      "damage.fire=27",
+      "speed=22",
+      "projectile_radius=0.3",
+      "lifetime=0.8",
+      "explosion_radius=2.2",
+      "explosion_share=1",
+      "effect.Ignite=1",
+      "stamina=14"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=6",
+      "damage.fire=32",
+      "speed=22",
+      "projectile_radius=0.3",
+      "lifetime=0.8",
+      "explosion_radius=2.8",
+      "explosion_share=1",
+      "effect.Ignite=1",
+      "stamina=14"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=6",
+      "damage.fire=32",
+      "speed=22",
+      "projectile_radius=0.3",
+      "lifetime=0.8",
+      "explosion_radius=2.8",
+      "explosion_share=1",
+      "effect.Ignite=1",
+      "stamina=14",
+      "count=3",
+      "spread_degrees=24"
+     ]
+    }
+   ],
+   "minWave": 7,
+   "shop": true
+  },
+  {
+   "id": "skill.rogue.sulfur_bomb",
+   "targetId": "hu_sulfur_bomb",
+   "sha256": "f6615db2327ae6605f74bc8d30115e4d0b6f79dd68f46b19f5b019139d7cc852",
+   "name": "Bomba siarkowa",
+   "desc": "Rzucona łukiem bomba spada we wskazane miejsce i wybucha ogniem, podpalając.",
+   "l2": "Poziom II: większy wybuch, drugie gniazdo pieczęci.",
+   "l3": "Poziom III: silniejsze podpalenie, trzecie gniazdo.",
+   "classId": "rogue",
+   "element": 1,
+   "targeting": 2,
+   "tags": [
+    "area",
+    "fire",
+    "bomb"
+   ],
+   "components": [
+    "Fall",
+    "Explosion"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=6",
+      "range=8",
+      "damage.fire=34",
+      "fall_seconds=0.55",
+      "strike_size=0.7",
+      "explosion_radius=2.4",
+      "explosion_share=1",
+      "effect.Ignite=1",
+      "stamina=14"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=6",
+      "range=8",
+      "damage.fire=41",
+      "fall_seconds=0.55",
+      "strike_size=0.7",
+      "explosion_radius=2.9",
+      "explosion_share=1",
+      "effect.Ignite=1",
+      "stamina=14"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=6",
+      "range=8",
+      "damage.fire=48",
+      "fall_seconds=0.55",
+      "strike_size=0.7",
+      "explosion_radius=2.9",
+      "explosion_share=1",
+      "effect.Ignite=2",
+      "stamina=14"
+     ]
+    }
+   ],
+   "minWave": 7,
+   "shop": true
+  },
+  {
+   "id": "skill.rogue.thorn_scatter",
+   "targetId": "hu_thorn_scatter",
+   "sha256": "53c6a998433eac3530de1442dfd7ffcfb031afb850378a67f74a46d028d1cd32",
+   "name": "Garść cierni",
+   "desc": "Rzucony woreczek pęka i rozsiewa żelazne ciernie: pole rani i spowalnia każdego, kto po nim idzie.",
+   "l2": "Poziom II: większe i dłuższe pole.",
+   "l3": "Poziom III: głębsze rany.",
+   "classId": "rogue",
+   "element": 0,
+   "targeting": 1,
+   "tags": [
+    "projectile",
+    "area",
+    "physical"
+   ],
+   "components": [
+    "Projectile",
+    "Explosion",
+    "Zone"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=9",
+      "damage.physical=38",
+      "speed=12",
+      "projectile_radius=0.3",
+      "lifetime=0.6",
+      "explosion_radius=2.4",
+      "explosion_share=1",
+      "effect.Bleed=1",
+      "effect.Slow=1",
+      "zone_seconds=3",
+      "zone_radius=2.4",
+      "zone_interval=0.5",
+      "zone_share=0.3",
+      "stamina=16"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=9",
+      "damage.physical=38",
+      "speed=12",
+      "projectile_radius=0.3",
+      "lifetime=0.6",
+      "explosion_radius=2.4",
+      "explosion_share=1",
+      "effect.Bleed=1",
+      "effect.Slow=1",
+      "zone_seconds=4.5",
+      "zone_radius=3",
+      "zone_interval=0.5",
+      "zone_share=0.3",
+      "stamina=16"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=9",
+      "damage.physical=48",
+      "speed=12",
+      "projectile_radius=0.3",
+      "lifetime=0.6",
+      "explosion_radius=2.4",
+      "explosion_share=1",
+      "effect.Bleed=2",
+      "effect.Slow=1",
+      "zone_seconds=4.5",
+      "zone_radius=3",
+      "zone_interval=0.5",
+      "zone_share=0.3",
+      "stamina=16"
+     ]
+    }
+   ],
+   "minWave": 7,
+   "shop": true
+  },
+  {
+   "id": "skill.rogue.volley",
+   "targetId": "hu_volley",
+   "sha256": "572d593513ee5a455a65d8747fd349b939d185e3e0d36d2c38abdb9914bf5e28",
+   "name": "Salwa",
+   "desc": "Wachlarz strzał przed siebie.",
+   "l2": "",
+   "l3": "",
+   "classId": "rogue",
+   "element": 0,
+   "targeting": 1,
+   "tags": [
+    "projectile",
+    "physical",
+    "area"
+   ],
+   "components": [
+    "Projectile"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=6",
+      "damage.physical=30",
+      "count=5",
+      "spread_degrees=40",
+      "speed=20",
+      "projectile_radius=0.3",
+      "lifetime=0.8",
+      "stamina=16"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=6",
+      "damage.physical=30",
+      "count=7",
+      "spread_degrees=50",
+      "speed=20",
+      "projectile_radius=0.3",
+      "lifetime=0.8",
+      "stamina=16"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=6",
+      "damage.physical=38",
+      "count=9",
+      "spread_degrees=60",
+      "speed=20",
+      "projectile_radius=0.3",
+      "lifetime=0.8",
+      "stamina=16"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": true
+  },
+  {
+   "id": "skill.sub.arrow_storm",
+   "targetId": "hu_arrow_storm",
+   "sha256": "9990dd7973d0324abad38ab5ba598eb4d0614320f8dc5b21e24b33b99e9feb5c",
+   "name": "Burza strzał",
+   "desc": "Piętnaście strzał w szerokim wachlarzu; każda przebija pierwszego wroga.",
+   "l2": "",
+   "l3": "",
+   "classId": "rogue_archer",
+   "element": 0,
+   "targeting": 1,
+   "tags": [
+    "projectile",
+    "physical",
+    "area",
+    "signature"
+   ],
+   "components": [
+    "Projectile"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=12",
+      "damage.physical=15",
+      "count=15",
+      "spread_degrees=70",
+      "speed=22",
+      "projectile_radius=0.3",
+      "lifetime=0.9",
+      "pierce=1",
+      "stamina=15"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.aura.defiance",
+   "targetId": "hu_aura_defiance",
+   "sha256": "d6a90ac2645878924e146e65b6db08f66ad2d5cfadfb0840beb2b7276b0bb997",
+   "name": "Aura niezłomności",
+   "desc": "Aura: pancerz i redukcja obrażeń, dopóki jej nie zgasisz.",
+   "l2": "",
+   "l3": "",
+   "classId": "warrior_paladin",
+   "element": 4,
+   "targeting": 0,
+   "tags": [
+    "aura",
+    "defense"
+   ],
+   "components": [
+    "Aura"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "aura.flat.Armour=3",
+      "aura.flat.DamageReduction=0.03"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "aura.flat.Armour=5",
+      "aura.flat.DamageReduction=0.05"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "aura.flat.Armour=7",
+      "aura.flat.DamageReduction=0.07"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": true
+  },
+  {
+   "id": "skill.aura.holy_fire",
+   "targetId": "hu_aura_holy_fire",
+   "sha256": "0f26bac18f1cb10478c79988055b9f6be8aaff4c26e2a965b640b4d0e1743b2f",
+   "name": "Aura świętego ognia",
+   "desc": "Aura: co sekundę parzy demony wokół paladyna; na poziomie III podpala.",
+   "l2": "",
+   "l3": "",
+   "classId": "warrior_paladin",
+   "element": 1,
+   "targeting": 0,
+   "tags": [
+    "aura",
+    "fire",
+    "area",
+    "defense"
+   ],
+   "components": [
+    "Aura"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "pulse_interval=1",
+      "damage.fire=12"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "pulse_interval=1",
+      "damage.fire=17"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "pulse_interval=1",
+      "damage.fire=24",
+      "effect.Ignite=1"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": true
+  },
+  {
+   "id": "skill.aura.might",
+   "targetId": "hu_aura_might",
+   "sha256": "49f952874ac11888541bb75aa01c19497e7d4dca0fe68e497ed3de80290fe037",
+   "name": "Aura męstwa",
+   "desc": "Aura: +12% / 16% / 20% wszystkich obrażeń, dopóki jej nie zgasisz.",
+   "l2": "",
+   "l3": "",
+   "classId": "warrior_paladin",
+   "element": 0,
+   "targeting": 0,
+   "tags": [
+    "aura",
+    "defense"
+   ],
+   "components": [
+    "Aura"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "aura.pct.GlobalDamage=0.12"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "aura.pct.GlobalDamage=0.16"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "aura.pct.GlobalDamage=0.2"
+     ]
+    }
+   ],
+   "minWave": 16,
+   "shop": true
+  },
+  {
+   "id": "skill.aura.purity",
+   "targetId": "hu_aura_purity",
+   "sha256": "43e6114448bad1840cfea62f7676654e93d2a9af30ff6777db741c9963e6701e",
+   "name": "Aura czystości",
+   "desc": "Aura: odporność na ogień, wodę, powietrze i ziemię.",
+   "l2": "",
+   "l3": "",
+   "classId": "warrior_paladin",
+   "element": 3,
+   "targeting": 0,
+   "tags": [
+    "aura",
+    "defense"
+   ],
+   "components": [
+    "Aura"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "aura.flat.FireResistance=0.1",
+      "aura.flat.WaterResistance=0.1",
+      "aura.flat.AirResistance=0.1",
+      "aura.flat.EarthResistance=0.1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "aura.flat.FireResistance=0.14",
+      "aura.flat.WaterResistance=0.14",
+      "aura.flat.AirResistance=0.14",
+      "aura.flat.EarthResistance=0.14"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "aura.flat.FireResistance=0.18",
+      "aura.flat.WaterResistance=0.18",
+      "aura.flat.AirResistance=0.18",
+      "aura.flat.EarthResistance=0.18"
+     ]
+    }
+   ],
+   "minWave": 7,
+   "shop": true
+  },
+  {
+   "id": "skill.aura.renewal",
+   "targetId": "hu_aura_renewal",
+   "sha256": "66d58e928acdb77bdf333782bda52131c0511e3b170332a55745fc8cd99e3a82",
+   "name": "Aura odnowy",
+   "desc": "Aura: regeneracja zdrowia i co 4 s fala leczenia.",
+   "l2": "",
+   "l3": "",
+   "classId": "warrior_paladin",
+   "element": 2,
+   "targeting": 0,
+   "tags": [
+    "aura",
+    "defense"
+   ],
+   "components": [
+    "Aura"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "aura.flat.HealthRegen=2",
+      "pulse_interval=4",
+      "heal_pulse=0.02"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "aura.flat.HealthRegen=3",
+      "pulse_interval=4",
+      "heal_pulse=0.02"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "aura.flat.HealthRegen=4.5",
+      "pulse_interval=4",
+      "heal_pulse=0.03"
+     ]
+    }
+   ],
+   "minWave": 7,
+   "shop": true
+  },
+  {
+   "id": "skill.aura.zeal",
+   "targetId": "hu_aura_zeal",
+   "sha256": "3a214aeb6a528228162f1d8085fe632dd222ce3690fe0153db66ba2dbf83ddc4",
+   "name": "Aura zapału",
+   "desc": "Aura: szybsze ataki i szybszy krok.",
+   "l2": "",
+   "l3": "",
+   "classId": "warrior_paladin",
+   "element": 3,
+   "targeting": 0,
+   "tags": [
+    "aura",
+    "defense"
+   ],
+   "components": [
+    "Aura"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "aura.pct.AttackSpeed=0.1",
+      "aura.pct.MoveSpeed=0.05"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "aura.pct.AttackSpeed=0.14",
+      "aura.pct.MoveSpeed=0.07"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=1",
+      "stamina=0",
+      "radius=3.5",
+      "aura.pct.AttackSpeed=0.18",
+      "aura.pct.MoveSpeed=0.1"
+     ]
+    }
+   ],
+   "minWave": 16,
+   "shop": true
+  },
+  {
+   "id": "skill.sub.blade_dance",
+   "targetId": "hu_blade_dance",
+   "sha256": "e6134e03bd59d0c10e6b7a6cd3f377e16e8a82fc3cc4d379dcbe4a645c8cf74d",
+   "name": "Taniec ostrzy",
+   "desc": "Wir dwóch ostrzy przez 2,4 s - w biegu - zakończony szerokim cięciem.",
+   "l2": "",
+   "l3": "",
+   "classId": "warrior_dual",
+   "element": 0,
+   "targeting": 0,
+   "tags": [
+    "melee",
+    "area",
+    "physical",
+    "signature"
+   ],
+   "components": [
+    "Spin"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=12",
+      "damage.physical=12",
+      "radius=2.5",
+      "duration_seconds=2.4",
+      "hit_interval=0.2",
+      "move_multiplier=0.95",
+      "effect.Bleed=1",
+      "final_slash_share=2",
+      "final_radius=3",
+      "stamina=15",
+      "blades=2"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.sub.death_mark",
+   "targetId": "hu_death_mark",
+   "sha256": "d4be4a5e9379c0d32d1cc9d91b30a20ccf9b738ad978cd69b2eb56ae816e3ddb",
+   "name": "Znak śmierci",
+   "desc": "Doskok i cios, który rozcina wszystko wokół: trzy warstwy krwawienia, +40% przeciw krwawiącym.",
+   "l2": "",
+   "l3": "",
+   "classId": "rogue_assassin",
+   "element": 0,
+   "targeting": 1,
+   "tags": [
+    "movement",
+    "melee",
+    "physical",
+    "signature"
+   ],
+   "components": [
+    "Dash",
+    "Explosion"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=10",
+      "distance=6",
+      "dash_seconds=0.16",
+      "stop_on_enemy=1",
+      "damage.physical=55",
+      "explosion_radius=1.7",
+      "explosion_share=1",
+      "effect.Bleed=3",
+      "bonus_vs_bleeding=0.4",
+      "stamina=12"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.sub.elemental_arrow",
+   "targetId": "hu_elemental_arrow",
+   "sha256": "e406cdf1d6c2d10e2e1066e7057e5f7ebb7f99dea93be2739fd020fe63f1eb22",
+   "name": "Strzała żywiołów",
+   "desc": "Strzała z ognia i wiatru: wybucha przy trafieniu i zostawia płomień.",
+   "l2": "",
+   "l3": "",
+   "classId": "rogue_arcane_archer",
+   "element": 1,
+   "targeting": 1,
+   "tags": [
+    "projectile",
+    "area",
+    "fire",
+    "spell",
+    "signature"
+   ],
+   "components": [
+    "Projectile",
+    "Explosion",
+    "Zone"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=8",
+      "damage.fire=26",
+      "damage.air=18",
+      "speed=20",
+      "projectile_radius=0.4",
+      "lifetime=1.2",
+      "explosion_radius=2.6",
+      "explosion_share=1",
+      "effect.Ignite=1",
+      "zone_seconds=2.5",
+      "zone_radius=2.2",
+      "zone_share=0.2",
+      "zone_interval=0.5",
+      "mana=16"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.sub.judgement",
+   "targetId": "hu_judgement",
+   "sha256": "057f9d05e225a2dbd7379ef97a892494a4088321f409543530be1cef530a9e6a",
+   "name": "Boski osąd",
+   "desc": "Święty ogień wokół paladyna: obrażenia, odrzut, a paladyn odzyskuje 15% zdrowia.",
+   "l2": "",
+   "l3": "",
+   "classId": "warrior_paladin",
+   "element": 1,
+   "targeting": 0,
+   "tags": [
+    "area",
+    "fire",
+    "physical",
+    "defense",
+    "signature"
+   ],
+   "components": [
+    "Nova",
+    "Heal"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=16",
+      "damage.physical=24",
+      "damage.fire=24",
+      "radius=4",
+      "telegraph=0.1",
+      "knockback=2",
+      "effect.Stagger=1",
+      "heal=0.15",
+      "stamina=15"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.sub.legion",
+   "targetId": "hu_legion",
+   "sha256": "74e1814d409c27d904f258c4ffb2b44e9c931145bdd196e045f5d2b3e7277a99",
+   "name": "Legion",
+   "desc": "Przyzywa dwa widmowe ogary na 16 s; gryzą do krwi.",
+   "l2": "",
+   "l3": "",
+   "classId": "mage_summoner",
+   "element": 1,
+   "targeting": 0,
+   "tags": [
+    "summon",
+    "spell",
+    "signature"
+   ],
+   "components": [
+    "Summon"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=28",
+      "servant=1",
+      "count=2",
+      "duration_seconds=16",
+      "attack_interval=0.8",
+      "damage.physical=16",
+      "effect.Bleed=1",
+      "mana=25"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.sub.maelstrom",
+   "targetId": "hu_maelstrom",
+   "sha256": "39911e7e4a39e32421aaf89b01f3565847fcdf1740ce2401b3c3209b9b678cee",
+   "name": "Wir głębin",
+   "desc": "Trzy fale wody wokół maga: wciągają demony, moczą je i spowalniają.",
+   "l2": "",
+   "l3": "",
+   "classId": "mage_water",
+   "element": 2,
+   "targeting": 0,
+   "tags": [
+    "area",
+    "water",
+    "spell",
+    "signature"
+   ],
+   "components": [
+    "Nova"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=11",
+      "damage.water=30",
+      "radius=4.5",
+      "telegraph=0.2",
+      "follow=1",
+      "pulses=3",
+      "pulse_interval=0.45",
+      "effect.Soaked=1",
+      "effect.Slow=1",
+      "knockback=-0.8",
+      "mana=20"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.sub.meteor",
+   "targetId": "hu_meteor",
+   "sha256": "1e8aaead18a543c7c41a67b6d2d15a834610d6ea547c52279b97a2e936b730dd",
+   "name": "Meteor",
+   "desc": "Kamień z ognia spada we wskazane miejsce: wielki wybuch, podpalenie i płonąca ziemia.",
+   "l2": "",
+   "l3": "",
+   "classId": "mage_fire",
+   "element": 1,
+   "targeting": 2,
+   "tags": [
+    "area",
+    "fire",
+    "spell",
+    "signature"
+   ],
+   "components": [
+    "Explosion",
+    "Zone"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=12",
+      "range=11",
+      "damage.fire=70",
+      "explosion_radius=3.2",
+      "explosion_share=1",
+      "effect.Ignite=2",
+      "knockback=1.5",
+      "zone_seconds=4",
+      "zone_radius=3",
+      "zone_share=0.15",
+      "zone_interval=0.5",
+      "mana=20"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.sub.quake",
+   "targetId": "hu_quake",
+   "sha256": "64f6c797b9bfcbbdd3ebc5a32fe64fcc91f5d7c0b476b51e1323b683c8cc74f9",
+   "name": "Trzęsienie ziemi",
+   "desc": "Ziemia pęka wokół maga: obrażenia od ziemi i dwie warstwy zachwiania.",
+   "l2": "",
+   "l3": "",
+   "classId": "mage_earth",
+   "element": 4,
+   "targeting": 0,
+   "tags": [
+    "area",
+    "earth",
+    "spell",
+    "signature"
+   ],
+   "components": [
+    "Nova"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=13",
+      "damage.earth=48",
+      "radius=5",
+      "telegraph=0.35",
+      "effect.Stagger=2",
+      "knockback=2",
+      "mana=22"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.sub.storm_cleave",
+   "targetId": "hu_storm_cleave",
+   "sha256": "ad61d0c50a77e5abff6f15925a0f0b6a80a6ab5e83d3683e18c1e471ad427f52",
+   "name": "Cięcie burzy",
+   "desc": "Szerokie cięcie naładowane piorunem przed siebie: fizyczne i powietrze, odrzuca.",
+   "l2": "",
+   "l3": "",
+   "classId": "mage_battle",
+   "element": 3,
+   "targeting": 1,
+   "tags": [
+    "melee",
+    "area",
+    "air",
+    "spell",
+    "signature"
+   ],
+   "components": [
+    "Cone"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=9",
+      "damage.physical=24",
+      "damage.air=24",
+      "range=3.4",
+      "arc_degrees=160",
+      "knockback=1.5",
+      "effect.Stagger=1",
+      "mana=15"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.summon.golem",
+   "targetId": "hu_summon_golem",
+   "sha256": "e8742cef503a2ab2109df2d7df7c0d8b050c75c006421c354f9b969ce5cfb9fe",
+   "name": "Kościany golem",
+   "desc": "Powolny golem z kości na 18 s: ciężkie ciosy, odrzut, zachwianie. Na poziomie III dwa.",
+   "l2": "",
+   "l3": "",
+   "classId": "mage_summoner",
+   "element": 4,
+   "targeting": 0,
+   "tags": [
+    "summon",
+    "earth",
+    "physical",
+    "spell"
+   ],
+   "components": [
+    "Summon"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=18",
+      "servant=2",
+      "count=1",
+      "duration_seconds=18",
+      "attack_interval=1.6",
+      "damage.physical=22",
+      "damage.earth=10",
+      "effect.Stagger=1",
+      "knockback=1.2",
+      "mana=22"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=18",
+      "servant=2",
+      "count=1",
+      "duration_seconds=18",
+      "attack_interval=1.6",
+      "damage.physical=28",
+      "damage.earth=14",
+      "effect.Stagger=1",
+      "knockback=1.2",
+      "mana=22"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=18",
+      "servant=2",
+      "count=2",
+      "duration_seconds=22",
+      "attack_interval=1.6",
+      "damage.physical=28",
+      "damage.earth=14",
+      "effect.Stagger=1",
+      "knockback=1.2",
+      "mana=22"
+     ]
+    }
+   ],
+   "minWave": 16,
+   "shop": true
+  },
+  {
+   "id": "skill.summon.hounds",
+   "targetId": "hu_summon_hounds",
+   "sha256": "d7fbbfa5a9ca1e8cca9a0aca44b65e697b70aaa6e5ef34d3efd0ff020cda1001",
+   "name": "Sfora",
+   "desc": "Widmowe ogary na 12 s: szybkie, gryzą do krwi.",
+   "l2": "",
+   "l3": "",
+   "classId": "mage_summoner",
+   "element": 0,
+   "targeting": 0,
+   "tags": [
+    "summon",
+    "physical",
+    "spell"
+   ],
+   "components": [
+    "Summon"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=12",
+      "servant=1",
+      "count=2",
+      "duration_seconds=12",
+      "attack_interval=0.8",
+      "damage.physical=6",
+      "effect.Bleed=1",
+      "mana=16"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=12",
+      "servant=1",
+      "count=3",
+      "duration_seconds=12",
+      "attack_interval=0.8",
+      "damage.physical=8",
+      "effect.Bleed=1",
+      "mana=16"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=12",
+      "servant=1",
+      "count=3",
+      "duration_seconds=16",
+      "attack_interval=0.8",
+      "damage.physical=10",
+      "effect.Bleed=1",
+      "mana=16"
+     ]
+    }
+   ],
+   "minWave": 7,
+   "shop": true
+  },
+  {
+   "id": "skill.summon.imps",
+   "targetId": "hu_summon_imps",
+   "sha256": "f9f2b923a5555cc2b121c3d44d12375ea7ff1d23c4ce48dab4a0119e125f2a45",
+   "name": "Przyzwanie chochlików",
+   "desc": "Chochliki ognia na 12 s: trzymają dystans i plują ogniem. Odblokowuje grymuar przywołań.",
+   "l2": "",
+   "l3": "",
+   "classId": "mage_summoner",
+   "element": 1,
+   "targeting": 0,
+   "tags": [
+    "summon",
+    "fire",
+    "spell"
+   ],
+   "components": [
+    "Summon"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=10",
+      "servant=0",
+      "count=2",
+      "duration_seconds=12",
+      "attack_interval=1.1",
+      "damage.fire=12",
+      "mana=14"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=10",
+      "servant=0",
+      "count=3",
+      "duration_seconds=12",
+      "attack_interval=1.1",
+      "damage.fire=15",
+      "mana=14"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=10",
+      "servant=0",
+      "count=3",
+      "duration_seconds=15",
+      "attack_interval=1.1",
+      "damage.fire=19",
+      "mana=14",
+      "effect.Ignite=1"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.sub.tempest",
+   "targetId": "hu_tempest",
+   "sha256": "bf65106c5f18d804a2692f23140386ec4981ac5efef935c51b8cc69044ee8ff1",
+   "name": "Nawałnica",
+   "desc": "Burza nad wskazanym miejscem: pioruny biją przez 4 sekundy.",
+   "l2": "",
+   "l3": "",
+   "classId": "mage_air",
+   "element": 3,
+   "targeting": 2,
+   "tags": [
+    "area",
+    "air",
+    "spell",
+    "signature"
+   ],
+   "components": [
+    "Zone"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=13",
+      "range=11",
+      "damage.air=16",
+      "zone_seconds=4",
+      "zone_radius=3.6",
+      "zone_share=1",
+      "zone_interval=0.3",
+      "mana=22"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.sub.undying",
+   "targetId": "hu_undying",
+   "sha256": "3718dfa76f52020fa2be6651653c28506dd389e4752035f743fbf69184cd04ce",
+   "name": "Nieśmiertelność",
+   "desc": "Ryk, który odpycha demony. Przez 3 s żaden cios nie zabije berserkera (leczenie z kradzieży życia i zabójstw o połowę słabsze); wpada w szał.",
+   "l2": "",
+   "l3": "",
+   "classId": "warrior_berserker",
+   "element": 0,
+   "targeting": 0,
+   "tags": [
+    "area",
+    "physical",
+    "defense",
+    "signature"
+   ],
+   "components": [
+    "Nova",
+    "Undying"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=60",
+      "damage.physical=10",
+      "radius=3.4",
+      "telegraph=0.05",
+      "knockback=2.5",
+      "effect.Stagger=1",
+      "duration_seconds=3",
+      "fury=100",
+      "stamina=0"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.warrior.axe_throw",
+   "targetId": "hu_axe_throw",
+   "sha256": "4e29756d1c5adc43dae7ea8ea14dfad6a35cc689ec6884a2c7cbaed608d93fff",
+   "name": "Rzut toporem",
+   "desc": "Topór leci przez stado, tnąc każdego, i wraca do ręki - po drodze tnie jeszcze raz. Krwawienie.",
+   "l2": "Poziom II: mocniejszy rzut, drugie gniazdo pieczęci.",
+   "l3": "Poziom III: dwie warstwy krwawienia, trzecie gniazdo.",
+   "classId": "warrior",
+   "element": 0,
+   "targeting": 1,
+   "tags": [
+    "projectile",
+    "physical"
+   ],
+   "components": [
+    "Projectile"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=5",
+      "damage.physical=30",
+      "speed=14",
+      "projectile_radius=0.4",
+      "lifetime=0.7",
+      "pierce=99",
+      "return_flight=1",
+      "effect.Bleed=1",
+      "stamina=12"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=5",
+      "damage.physical=36",
+      "speed=14",
+      "projectile_radius=0.4",
+      "lifetime=0.7",
+      "pierce=99",
+      "return_flight=1",
+      "effect.Bleed=1",
+      "stamina=12"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=5",
+      "damage.physical=42",
+      "speed=14",
+      "projectile_radius=0.4",
+      "lifetime=0.7",
+      "pierce=99",
+      "return_flight=1",
+      "effect.Bleed=2",
+      "stamina=12"
+     ]
+    }
+   ],
+   "minWave": 7,
+   "shop": true
+  },
+  {
+   "id": "skill.warrior.breaker_wave",
+   "targetId": "hu_breaker_wave",
+   "sha256": "8baef8012c489f21cd8542d2ef1270e69db99439c986d4297c4862fbb542d4d1",
+   "name": "Fala przełamania",
+   "desc": "Szerokie cięcie posyła krótką falę: obrażenia od wody, odrzut i przemoczenie.",
+   "l2": "Poziom II: większy zasięg fali.",
+   "l3": "Poziom III: premia przeciw przemoczonym celom.",
+   "classId": "warrior",
+   "element": 2,
+   "targeting": 1,
+   "tags": [
+    "melee",
+    "area",
+    "water"
+   ],
+   "components": [
+    "Cone",
+    "Wave"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=7",
+      "damage.water=34",
+      "range=3.3",
+      "arc_degrees=170",
+      "wave_start=3.3",
+      "wave_range=4.5",
+      "width=3.4",
+      "spread_degrees=50",
+      "speed=11",
+      "knockback=2.2",
+      "effect.Soaked=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=7",
+      "damage.water=40",
+      "range=3.3",
+      "arc_degrees=170",
+      "wave_start=3.3",
+      "wave_range=6.5",
+      "width=3.4",
+      "spread_degrees=50",
+      "speed=11",
+      "knockback=2.2",
+      "effect.Soaked=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=7",
+      "damage.water=46",
+      "range=3.3",
+      "arc_degrees=170",
+      "wave_start=3.3",
+      "wave_range=6.5",
+      "width=3.4",
+      "spread_degrees=50",
+      "speed=11",
+      "knockback=2.2",
+      "effect.Soaked=1",
+      "bonus_vs_soaked=0.6"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": true
+  },
+  {
+   "id": "skill.warrior.cleave",
+   "targetId": "hu_cleave",
+   "sha256": "8733649179596c42fc75981b7fd09ede9db95f4c285109521f1185cef6525616",
+   "name": "Rozpłatanie",
+   "desc": "Ciężkie cięcie w stożku przed wojownikiem, nakłada krwawienie.",
+   "l2": "Poziom II: więcej warstw krwawienia.",
+   "l3": "Poziom III: premia przeciw krwawiącym celom.",
+   "classId": "warrior",
+   "element": 0,
+   "targeting": 1,
+   "tags": [
+    "melee",
+    "physical"
+   ],
+   "components": [
+    "Cone"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=5",
+      "damage.physical=34",
+      "range=3.2",
+      "arc_degrees=130",
+      "effect.Bleed=2"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=5",
+      "damage.physical=38",
+      "range=3.2",
+      "arc_degrees=130",
+      "effect.Bleed=3"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=5",
+      "damage.physical=38",
+      "range=3.2",
+      "arc_degrees=130",
+      "effect.Bleed=3",
+      "bonus_vs_bleeding=0.5"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": true
+  },
+  {
+   "id": "skill.warrior.executioners_fall",
+   "targetId": "hu_executioners_fall",
+   "sha256": "f997167434540331a417954c0bcc4626aee3c88d9b0f94e88fdb1d56ba9571b6",
+   "name": "Upadek kata",
+   "desc": "Kat wybija się w górę i spada na skazanych całym ciężarem: uderzenie zachwiewa wszystkich wokół, a krwawiących rani mocniej.",
+   "l2": "Poziom II: szerszy krąg i mocniejszy upadek.",
+   "l3": "Poziom III: miażdży pancerz; krwawiący dostają znacznie więcej.",
+   "classId": "warrior",
+   "element": 0,
+   "targeting": 1,
+   "tags": [
+    "melee",
+    "area",
+    "physical",
+    "movement"
+   ],
+   "components": [
+    "Dash",
+    "Explosion"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=9",
+      "distance=6",
+      "dash_seconds=0.42",
+      "leap_height=1.6",
+      "damage.physical=42",
+      "explosion_radius=2.4",
+      "explosion_share=1",
+      "knockback=1.2",
+      "effect.Stagger=1",
+      "bonus_vs_bleeding=0.3",
+      "stamina=16",
+      "stop_on_enemy=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=9",
+      "distance=6",
+      "dash_seconds=0.42",
+      "leap_height=1.6",
+      "damage.physical=50",
+      "explosion_radius=3",
+      "explosion_share=1",
+      "knockback=1.2",
+      "effect.Stagger=1",
+      "bonus_vs_bleeding=0.3",
+      "stamina=16",
+      "stop_on_enemy=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=9",
+      "distance=6",
+      "dash_seconds=0.42",
+      "leap_height=1.6",
+      "damage.physical=50",
+      "explosion_radius=3",
+      "explosion_share=1",
+      "knockback=1.2",
+      "effect.Stagger=1",
+      "bonus_vs_bleeding=0.8",
+      "stamina=16",
+      "stop_on_enemy=1",
+      "effect.Sunder=1"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": true
+  },
+  {
+   "id": "skill.warrior.infernal_charge",
+   "targetId": "hu_infernal_charge",
+   "sha256": "5747d70c97a32ded14f69bd52267adfa55ee7bdc16eba7ab196b2780c2dbd4c9",
+   "name": "Piekielna szarża",
+   "desc": "Szarża w kierunku celowania zakończona uderzeniem, które podpala. Zatrzymują ją ściany i wrogowie.",
+   "l2": "Poziom II: szersze uderzenie.",
+   "l3": "Poziom III: płonący ślad.",
+   "classId": "warrior",
+   "element": 1,
+   "targeting": 1,
+   "tags": [
+    "melee",
+    "area",
+    "fire",
+    "movement"
+   ],
+   "components": [
+    "Dash",
+    "Explosion",
+    "Trail"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=8",
+      "distance=6.5",
+      "dash_seconds=0.35",
+      "stop_on_enemy=1",
+      "damage.fire=38",
+      "explosion_radius=2",
+      "explosion_share=1",
+      "knockback=1.5",
+      "effect.Ignite=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=8",
+      "distance=6.5",
+      "dash_seconds=0.35",
+      "stop_on_enemy=1",
+      "damage.fire=38",
+      "explosion_radius=3",
+      "explosion_share=1",
+      "knockback=1.5",
+      "effect.Ignite=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=8",
+      "distance=6.5",
+      "dash_seconds=0.35",
+      "stop_on_enemy=1",
+      "damage.fire=38",
+      "explosion_radius=3",
+      "explosion_share=1",
+      "knockback=1.5",
+      "effect.Ignite=1",
+      "trail_seconds=2.5",
+      "trail_width=1.4",
+      "trail_share=0.2",
+      "hit_interval=0.5"
+     ]
+    }
+   ],
+   "minWave": 7,
+   "shop": true
+  },
+  {
+   "id": "skill.warrior.quake",
+   "targetId": "hu_warrior_quake",
+   "sha256": "6040789d3363ed8f1206362899bad356d579f46aaf2ca8c2103f04b4cf1f4e3c",
+   "name": "Trzęsienie",
+   "desc": "Uderzenie obszarowe wokół wojownika, zachwiewa.",
+   "l2": "Poziom II: większy promień.",
+   "l3": "Poziom III: druga, opóźniona fala.",
+   "classId": "warrior",
+   "element": 4,
+   "targeting": 0,
+   "tags": [
+    "melee",
+    "area",
+    "earth"
+   ],
+   "components": [
+    "Nova"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=8",
+      "damage.earth=34",
+      "radius=3.2",
+      "telegraph=0.2",
+      "effect.Stagger=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=8",
+      "damage.earth=34",
+      "radius=4.4",
+      "telegraph=0.2",
+      "effect.Stagger=1"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=8",
+      "damage.earth=34",
+      "radius=4.4",
+      "telegraph=0.2",
+      "effect.Stagger=1",
+      "pulses=2",
+      "pulse_interval=0.7"
+     ]
+    }
+   ],
+   "minWave": 7,
+   "shop": true
+  },
+  {
+   "id": "skill.warrior.repel",
+   "targetId": "hu_repel",
+   "sha256": "7f5f0f6ef9397e520dd474ceb40187d3da79c7a35f663b90892e8447dbcabb08",
+   "name": "Odtrącenie",
+   "desc": "Wojownik tupie i rozpycha się barkiem: każdy demon w promieniu metra odlatuje na dwa metry i pada na ziemię. Na bossów nie działa.",
+   "l2": "Poziom II: mocniejszy cios, demony leżą dłużej.",
+   "l3": "Poziom III: krótsze odnowienie, demony leżą 2 s.",
+   "classId": "warrior",
+   "element": 0,
+   "targeting": 0,
+   "tags": [
+    "melee",
+    "area",
+    "physical"
+   ],
+   "components": [
+    "Shove"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=8",
+      "spin=1",
+      "spin_seconds=0.3",
+      "damage.physical=14",
+      "shove_radius=1",
+      "shove_distance=3",
+      "down_seconds=1.2",
+      "stamina=14"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=8",
+      "spin=1",
+      "spin_seconds=0.3",
+      "damage.physical=22",
+      "shove_radius=1",
+      "shove_distance=3",
+      "down_seconds=1.6",
+      "stamina=14"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=6",
+      "spin=1",
+      "spin_seconds=0.3",
+      "damage.physical=22",
+      "shove_radius=1",
+      "shove_distance=3",
+      "down_seconds=2",
+      "stamina=14"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": true
+  },
+  {
+   "id": "skill.warrior.slag_spray",
+   "targetId": "hu_slag_spray",
+   "sha256": "53f0d3832e7cd68454451700620286f67356ea655014622c0df6e8d8e6c1449e",
+   "name": "Żużel",
+   "desc": "Uderzenie w rozgrzaną broń sypie przed siebie płonącym żużlem: każdy odprysk wybucha przy trafieniu i podpala.",
+   "l2": "Poziom II: więcej odprysków, szerszy wachlarz.",
+   "l3": "Poziom III: żużel zostaje na ziemi i pali dalej.",
+   "classId": "warrior",
+   "element": 1,
+   "targeting": 1,
+   "tags": [
+    "projectile",
+    "area",
+    "fire"
+   ],
+   "components": [
+    "Projectile",
+    "Explosion",
+    "Zone"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=7",
+      "damage.fire=24",
+      "count=6",
+      "spread_degrees=55",
+      "speed=16",
+      "projectile_radius=0.3",
+      "lifetime=0.5",
+      "explosion_radius=1.3",
+      "explosion_share=0.8",
+      "effect.Ignite=1",
+      "stamina=14"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=7",
+      "damage.fire=24",
+      "count=8",
+      "spread_degrees=65",
+      "speed=16",
+      "projectile_radius=0.3",
+      "lifetime=0.5",
+      "explosion_radius=1.3",
+      "explosion_share=0.8",
+      "effect.Ignite=1",
+      "stamina=14"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=7",
+      "damage.fire=24",
+      "count=8",
+      "spread_degrees=65",
+      "speed=16",
+      "projectile_radius=0.3",
+      "lifetime=0.5",
+      "explosion_radius=1.3",
+      "explosion_share=0.8",
+      "effect.Ignite=1",
+      "stamina=14",
+      "zone_seconds=2.5",
+      "zone_radius=1.3",
+      "zone_share=0.2",
+      "zone_interval=0.5"
+     ]
+    }
+   ],
+   "minWave": 7,
+   "shop": true
+  },
+  {
+   "id": "skill.warrior.storm_verdict",
+   "targetId": "hu_storm_verdict",
+   "sha256": "8c6f4ebed4d0d2c9b4d80e499453622e65e23cda31a9e9596c696c2e1d4f13fa",
+   "name": "Wyrok burzy",
+   "desc": "Wojownik wznosi broń, a niebo odpowiada: w wskazany obszar biją kolejne pioruny, każdy zachwiewa trafionych.",
+   "l2": "Poziom II: cztery pioruny, mocniejsze.",
+   "l3": "Poziom III: sześć piorunów w szybszym rytmie na większym obszarze.",
+   "classId": "warrior",
+   "element": 3,
+   "targeting": 2,
+   "tags": [
+    "area",
+    "air"
+   ],
+   "components": [
+    "Barrage"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=11",
+      "range=9",
+      "damage.air=46",
+      "strikes=3",
+      "strike_radius=1.8",
+      "spread=2.4",
+      "strike_delay=0.55",
+      "strike_interval=0.22",
+      "lightning=1",
+      "effect.Stagger=1",
+      "stamina=18"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=11",
+      "range=9",
+      "damage.air=54",
+      "strikes=4",
+      "strike_radius=1.8",
+      "spread=2.4",
+      "strike_delay=0.55",
+      "strike_interval=0.22",
+      "lightning=1",
+      "effect.Stagger=1",
+      "stamina=18"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=11",
+      "range=9",
+      "damage.air=54",
+      "strikes=6",
+      "strike_radius=1.8",
+      "spread=3",
+      "strike_delay=0.55",
+      "strike_interval=0.16",
+      "lightning=1",
+      "effect.Stagger=1",
+      "stamina=18"
+     ]
+    }
+   ],
+   "minWave": 16,
+   "shop": true
+  },
+  {
+   "id": "skill.warrior.warcry",
+   "targetId": "hu_warcry",
+   "sha256": "c31c806fec97bd1735a0afcf58a78e713ae1dea35f99453c759d6b14becffcce",
+   "name": "Okrzyk bojowy",
+   "desc": "Ryk, który odrzuca i zachwiewa demony wokół. Przez 5 s +20% redukcji obrażeń i +35 furii.",
+   "l2": "",
+   "l3": "",
+   "classId": "warrior",
+   "element": 0,
+   "targeting": 0,
+   "tags": [
+    "area",
+    "physical",
+    "signature"
+   ],
+   "components": [
+    "Nova",
+    "Warcry"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=14",
+      "damage.physical=8",
+      "radius=3.6",
+      "telegraph=0.05",
+      "knockback=2.5",
+      "effect.Stagger=1",
+      "reduction=0.2",
+      "duration_seconds=5",
+      "fury=35"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": false
+  },
+  {
+   "id": "skill.warrior.whirlwind",
+   "targetId": "hu_whirlwind",
+   "sha256": "c76c05960075ac94e5485dc91c48ef23c4f10f8334249ff95fdf0592f1ae6dae",
+   "name": "Młynek",
+   "desc": "Obracasz się w ruchu, raniąc wszystko dookoła w takt. Bez ataków podstawowych; garda przerywa.",
+   "l2": "Poziom II: dłuższe działanie.",
+   "l3": "Poziom III: końcowe mocne cięcie (nie po przerwaniu).",
+   "classId": "warrior",
+   "element": 0,
+   "targeting": 0,
+   "tags": [
+    "melee",
+    "area",
+    "physical"
+   ],
+   "components": [
+    "Spin"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=9",
+      "damage.physical=11",
+      "radius=2.2",
+      "duration_seconds=2",
+      "hit_interval=0.3",
+      "move_multiplier=0.75"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=9",
+      "damage.physical=11",
+      "radius=2.2",
+      "duration_seconds=3",
+      "hit_interval=0.3",
+      "move_multiplier=0.75"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=9",
+      "damage.physical=11",
+      "radius=2.2",
+      "duration_seconds=3",
+      "hit_interval=0.3",
+      "move_multiplier=0.75",
+      "final_slash_share=2.5",
+      "final_radius=2.8"
+     ]
+    }
+   ],
+   "minWave": 16,
+   "shop": true
+  },
+  {
+   "id": "skill.warrior.wind_slash",
+   "targetId": "hu_wind_slash",
+   "sha256": "1ad1ebd7caad76d196957a69b7d4956e1501369d2ddcb2c9c017f45aa191e271",
+   "name": "Cięcie wichru",
+   "desc": "Fala ostrza leci na dystans i przenika przez wrogów.",
+   "l2": "Poziom II: szersza fala.",
+   "l3": "Poziom III: druga fala o połowie obrażeń.",
+   "classId": "warrior",
+   "element": 3,
+   "targeting": 1,
+   "tags": [
+    "melee",
+    "projectile",
+    "air"
+   ],
+   "components": [
+    "Wave"
+   ],
+   "levels": [
+    {
+     "values": [
+      "cooldown=5",
+      "damage.air=32",
+      "range=10",
+      "width=1.6",
+      "speed=16",
+      "knockback=0.8"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=5",
+      "damage.air=32",
+      "range=10",
+      "width=2.8",
+      "speed=16",
+      "knockback=0.8"
+     ]
+    },
+    {
+     "values": [
+      "cooldown=5",
+      "damage.air=32",
+      "range=10",
+      "width=2.8",
+      "speed=16",
+      "knockback=0.8",
+      "extra_wave_share=0.5",
+      "extra_wave_delay=0.25"
+     ]
+    }
+   ],
+   "minWave": 1,
+   "shop": true
+  }
+ ]
+}

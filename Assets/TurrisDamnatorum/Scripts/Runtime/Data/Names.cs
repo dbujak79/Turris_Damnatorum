@@ -3,6 +3,9 @@ namespace Turris
     /// <summary>Polskie etykiety do interfejsu.</summary>
     public static class Names
     {
+        /// <summary>Poziom pieczęci zapisany rzymsko (I–III).</summary>
+        public static string Roman(int n) => n == 1 ? "I" : n == 2 ? "II" : n == 3 ? "III" : n.ToString();
+
         public static string Stat(StatType s)
         {
             switch (s)
@@ -253,6 +256,15 @@ namespace Turris
                 case PassiveEffectType.BurnImmunity: return "Odporność na podpalenie";
                 case PassiveEffectType.BurningDamageBonus: return $"Płonąc, zadajesz +{v:0}% obrażeń";
                 case PassiveEffectType.BleedingHitHeal: return $"Trafienie bronią krwawiącego celu: +{v:0} życia";
+                case PassiveEffectType.CheatDeath: return $"Raz na piętro śmiertelny cios zostawia {v * 100:0}% życia";
+                case PassiveEffectType.CorpseExplosion: return $"Zabity wróg wybucha ogniem za {v * 100:0}% swojego życia";
+                case PassiveEffectType.EmberAura: return $"Wrogowie w promieniu 3 m płoną: {v:0} obrażeń na sekundę";
+                case PassiveEffectType.Thorns: return $"Wróg trafiający wręcz dostaje {v:0} obrażeń";
+                case PassiveEffectType.WeaponChainLightning: return $"Trafienie bronią przeskakuje na 2 wrogów za {v * 100:0}% obrażeń";
+                case PassiveEffectType.FrostWard: return $"{v * 100:0}% szans: trafienie bohatera wychładza wrogów wokół";
+                case PassiveEffectType.LowHealthDamage: return $"Poniżej 35% życia: +{v * 100:0}% obrażeń";
+                case PassiveEffectType.SoulHarvest: return $"Zabicie wroga leczy {v * 100:0.#}% życia";
+                case PassiveEffectType.ProjectilePierce: return $"Strzały przebijają {v:0} wrogów";
             }
             return t.ToString();
         }

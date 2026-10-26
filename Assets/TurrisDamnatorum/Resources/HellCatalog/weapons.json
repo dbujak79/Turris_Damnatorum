@@ -35,7 +35,8 @@
       "RequiredDexterity": 12,
       "targetId": "hu_bow",
       "sha256": "6c7c637182ab0cb57571ac8bac61aacf8bbf66ce82536940977af5f473a0bf01",
-      "displayName": "Łuk myśliwski"
+      "displayName": "Łuk myśliwski",
+      "description": "Dwuręczny, strzały lecą daleko i szybko. Wymaga Zręczności 12."
     },
     {
       "AttacksPerSecond": 1.45,
@@ -72,9 +73,10 @@
       "SpriteKey": "icon.bow",
       "Gender": 0,
       "RequiredDexterity": 15,
-      "targetId": "",
+      "targetId": "hu_bow_composite",
       "sha256": "77357d81c90e964ac7d029e87e4b933eb4af641f213b117ced9e5bc675aafb39",
-      "displayName": "weapon.bow.composite"
+      "displayName": "Łuk kompozytowy",
+      "description": "Róg, drewno i ścięgno: strzała przebija pierwszego wroga. Wymaga Zręczności 15."
     },
     {
       "AttacksPerSecond": 1.5,
@@ -110,9 +112,10 @@
       "SpriteKey": "icon.bow",
       "Gender": 0,
       "RequiredDexterity": 13,
-      "targetId": "",
+      "targetId": "hu_bow_recurve",
       "sha256": "2ac817ad447c72a4426c00ffebdd56426010f78db22bc48440bb076963bdec87",
-      "displayName": "weapon.bow.recurve"
+      "displayName": "Łuk refleksyjny",
+      "description": "Wygięty jak u tatarskich łuczników: mocniejszy naciąg. Wymaga Zręczności 13."
     },
     {
       "AttacksPerSecond": 2.7,
@@ -152,7 +155,8 @@
       ],
       "targetId": "hu_dagger",
       "sha256": "e76054d637e2f4d0a00ebfc30b2f87f6b389cc69305a84e90b7a0d5559f8ed91",
-      "displayName": "Sztylet"
+      "displayName": "Sztylet",
+      "description": "Krótki i bardzo szybki, każde cięcie krwawi. Wymaga Zręczności 10."
     },
     {
       "AttacksPerSecond": 2.8,
@@ -191,9 +195,10 @@
       "OnHitEffects": [
         "Bleed|2"
       ],
-      "targetId": "",
+      "targetId": "hu_dagger_kris",
       "sha256": "075c8a12e09ba2dd70bf05b1da42de55fce7b2cf79f31378cb41d9e048152d26",
-      "displayName": "weapon.dagger.kris"
+      "displayName": "Kris",
+      "description": "Falista głownia; dwie warstwy krwawienia. Wymaga Zręczności 13."
     },
     {
       "AttacksPerSecond": 3,
@@ -232,9 +237,10 @@
       "OnHitEffects": [
         "Bleed"
       ],
-      "targetId": "",
+      "targetId": "hu_dagger_misericorde",
       "sha256": "11e3918d1c436f215c6403c74c95785f19cd71a40681673448140ebb5310186a",
-      "displayName": "weapon.dagger.misericorde"
+      "displayName": "Mizerykordia",
+      "description": "Sztylet łaski: wchodzi w szczelinę każdej zbroi. Wymaga Zręczności 15."
     },
     {
       "AttacksPerSecond": 2.8,
@@ -275,7 +281,8 @@
       ],
       "targetId": "hu_poniard",
       "sha256": "73f29ce932e581033a0b7f4f3fd38d68f49e363f47217b3e9861cfb8a30bb305",
-      "displayName": "weapon.dagger.poniard"
+      "displayName": "Puginał",
+      "description": "Krótki, prosty, zawsze pod ręką. Wymaga Zręczności 11."
     },
     {
       "AttacksPerSecond": 2.0,
@@ -316,7 +323,8 @@
       ],
       "targetId": "",
       "sha256": "358ed2c17771f36514aa5aca559463ecf4f89987b4ca93024c38d35d76365156",
-      "displayName": "Szabla próbna (debug)"
+      "displayName": "Szabla próbna (debug)",
+      "description": "Wariant danych pokazujący, że nowa broń nie wymaga kodu."
     },
     {
       "AttacksPerSecond": 1.25,
@@ -359,7 +367,8 @@
       ],
       "targetId": "hu_flail",
       "sha256": "d84720136d8f029f96d7db67107f618b1b13f0346443e240c1c45427bee4abe2",
-      "displayName": "weapon.flail"
+      "displayName": "Korbacz",
+      "description": "Kula na łańcuchu: szeroki zamach, zachwiewa. Wymaga Siły 12."
     },
     {
       "AttacksPerSecond": 0.78,
@@ -403,7 +412,8 @@
       ],
       "targetId": "hu_flail2h",
       "sha256": "701707cdc8213cd2baa2112e1ce480262c872c157785d8c68f46e20108a8f7a4",
-      "displayName": "weapon.flail2h"
+      "displayName": "Cep bojowy",
+      "description": "Dwuręczny korbacz na długim drzewcu: najszerszy zamach, dwa zachwiania. Wymaga Siły 15."
     },
     {
       "AttacksPerSecond": 0.76,
@@ -447,7 +457,8 @@
       ],
       "targetId": "hu_flail2h_iron",
       "sha256": "19706501b40dc1641459a6b76861455c67f8a083cde12119c806bd511aa0587f",
-      "displayName": "weapon.flail2h.iron"
+      "displayName": "Żelazny cep",
+      "description": "Okuty żelazem bijak na łańcuchu; rozbija szyki. Wymaga Siły 18."
     },
     {
       "AttacksPerSecond": 1.2,
@@ -488,9 +499,10 @@
       "OnHitEffects": [
         "Stagger"
       ],
-      "targetId": "",
+      "targetId": "hu_flail_knight",
       "sha256": "12eefe29f5b159a5e208ca7a749798439774ba96a060a2dfb328fe62985ccfda",
-      "displayName": "weapon.flail.knight"
+      "displayName": "Korbacz rycerski",
+      "description": "Najcięższy z korbaczy; po nim nikt nie wstaje szybko. Wymaga Siły 15."
     },
     {
       "AttacksPerSecond": 1.25,
@@ -532,9 +544,10 @@
         "Stagger",
         "Bleed"
       ],
-      "targetId": "",
+      "targetId": "hu_flail_spiked",
       "sha256": "78cb683350709c8e4d0af4bbea541ea060b2b85da820c80954dc304062951a05",
-      "displayName": "weapon.flail.spiked"
+      "displayName": "Kiścień",
+      "description": "Kolczasta kula: zachwiewa i rani do krwi. Wymaga Siły 13."
     },
     {
       "AttacksPerSecond": 0.78,
@@ -576,7 +589,8 @@
       ],
       "targetId": "hu_greataxe",
       "sha256": "1108f2edfefb4f859d6909a113743a8889c85e3ef9e773c1a838523b96b006de",
-      "displayName": "weapon.greataxe"
+      "displayName": "Topór dwuręczny",
+      "description": "Szerokie ostrze w kształcie półksiężyca: głębokie rany, dwa krwawienia. Wymaga Siły 16."
     },
     {
       "AttacksPerSecond": 0.74,
@@ -618,7 +632,8 @@
       ],
       "targetId": "hu_greataxe_bardiche",
       "sha256": "47f46a5f811354fff2eccf093e503bf97c1078defb133bfa45e003f5fa3f9734",
-      "displayName": "weapon.greataxe.bardiche"
+      "displayName": "Berdysz",
+      "description": "Ostrze długie jak ramię na drzewcu piechura. Wymaga Siły 20."
     },
     {
       "AttacksPerSecond": 0.76,
@@ -660,7 +675,8 @@
       ],
       "targetId": "hu_greataxe_bearded",
       "sha256": "0e12cf80cff62c893bee1fc89638d301e60d22124b48e28600dd8c73ab2b57a9",
-      "displayName": "weapon.greataxe.bearded"
+      "displayName": "Topór brodaty",
+      "description": "Długa broda ostrza zahacza tarcze i ściąga je w dół. Wymaga Siły 18."
     },
     {
       "AttacksPerSecond": 0.85,
@@ -701,7 +717,8 @@
       "RequiredStrength": 14,
       "targetId": "hu_greatsword",
       "sha256": "4dc68aa6edc0aa9b20f4f614cb13ecd19a5b455e6c44b1d767c5d3761831e30f",
-      "displayName": "Miecz dwuręczny"
+      "displayName": "Miecz dwuręczny",
+      "description": "Wolniejszy zamach, szerszy łuk, wyższe obrażenia i lekki odrzut. Wyklucza tarczę."
     },
     {
       "AttacksPerSecond": 0.85,
@@ -741,9 +758,10 @@
       "OnHitEffects": [
         "Bleed"
       ],
-      "targetId": "",
+      "targetId": "hu_greatsword_executioner",
       "sha256": "3bc72539b307c48f68b60535c403fbb56d7a964e46e3ac59a9dfe3a0c263fdb0",
-      "displayName": "weapon.greatsword.executioner"
+      "displayName": "Miecz katowski",
+      "description": "Płaski sztych - nie do walki, do wyroków. Wymaga Siły 17."
     },
     {
       "AttacksPerSecond": 0.8,
@@ -783,9 +801,10 @@
       "OnHitEffects": [
         "Bleed"
       ],
-      "targetId": "",
+      "targetId": "hu_greatsword_flamberge",
       "sha256": "879284a5f2ef5c363c61f050b5632a9e3ec7cdaf4d16e016f21e60157c64d823",
-      "displayName": "weapon.greatsword.flamberge"
+      "displayName": "Flamberg",
+      "description": "Falista głownia rozrywa rany. Wymaga Siły 19."
     },
     {
       "AttacksPerSecond": 1.0,
@@ -823,7 +842,8 @@
       "RequiredIntelligence": 12,
       "targetId": "hu_grimoire_fire",
       "sha256": "b94c20f090e90e1bf04b36bcb8ff45cd1e879ef91a5563e04fd0df41ce712b7d",
-      "displayName": "Grymuar ognia"
+      "displayName": "Grymuar ognia",
+      "description": "Odblokowuje Novę ognia. Wymaga wolnego slotu skilla."
     },
     {
       "AttacksPerSecond": 1.0,
@@ -861,7 +881,8 @@
       "RequiredIntelligence": 12,
       "targetId": "hu_grimoire_air",
       "sha256": "e56f33a1d592c4efdce8113757282f08078fa898916312df961e35c793f69bf5",
-      "displayName": "Grymuar powietrza"
+      "displayName": "Grymuar powietrza",
+      "description": "Odblokowuje Novę powietrza. Wymaga wolnego slotu skilla."
     },
     {
       "AttacksPerSecond": 1.0,
@@ -899,7 +920,8 @@
       "RequiredIntelligence": 12,
       "targetId": "hu_grimoire_earth",
       "sha256": "6b2edc7020ce6b599a1454943a915f654c9e356225170346e29972df8de34786",
-      "displayName": "Grymuar ziemi"
+      "displayName": "Grymuar ziemi",
+      "description": "Odblokowuje Novę ziemi. Wymaga wolnego slotu skilla."
     },
     {
       "AttacksPerSecond": 1.0,
@@ -937,7 +959,8 @@
       "RequiredIntelligence": 13,
       "targetId": "hu_grimoire_summoning",
       "sha256": "a392fdce5e93dbc138aa1e280d7754be9f795255076ffe7ce1ce63acfd377e33",
-      "displayName": "weapon.grimoire.summoning"
+      "displayName": "Grymuar przywołań",
+      "description": "Druga ręka: odblokowuje Przyzwanie chochlików. Wymaga Inteligencji 13."
     },
     {
       "AttacksPerSecond": 1.0,
@@ -975,7 +998,8 @@
       "RequiredIntelligence": 12,
       "targetId": "hu_grimoire_water",
       "sha256": "3f95b599d9359943c49c24569354085d495b0b9584fdf2dce12b8518e6227f10",
-      "displayName": "Grymuar wody"
+      "displayName": "Grymuar wody",
+      "description": "Odblokowuje Novę wody. Wymaga wolnego slotu skilla."
     },
     {
       "AttacksPerSecond": 1.35,
@@ -1017,9 +1041,10 @@
         "Stagger",
         "Bleed"
       ],
-      "targetId": "",
+      "targetId": "hu_morningstar",
       "sha256": "cc3bebc47b51ba21b6f73a5af7ed3dfdbd8625e1b81789febe4ce149e2d3a053",
-      "displayName": "weapon.morningstar"
+      "displayName": "Gwiazda zaranna",
+      "description": "Kolczasta kula na krótkiej szyi: zachwiewa i rani do krwi. Wymaga Siły 12."
     },
     {
       "AttacksPerSecond": 0.8,
@@ -1064,7 +1089,8 @@
       ],
       "targetId": "hu_morningstar2h",
       "sha256": "6dec32bcfd0953c58432116100f31ed5974702bfb511f79cec3edbed9de654db",
-      "displayName": "weapon.morningstar2h"
+      "displayName": "Wielka gwiazda zaranna",
+      "description": "Dwuręczna, na drzewcu jak włócznia: miażdży, zachwiewa dwa razy, rani. Wymaga Siły 16."
     },
     {
       "AttacksPerSecond": 0.78,
@@ -1109,7 +1135,8 @@
       ],
       "targetId": "hu_morningstar2h_runic",
       "sha256": "b7fdc63f3ccb68c30995868af5972cf0d071bfa257a43315a15fef5deebe27f8",
-      "displayName": "weapon.morningstar2h.runic"
+      "displayName": "Runiczna gwiazda zaranna",
+      "description": "Runy na kolcach płoną przy każdym trafieniu. Wymaga Siły 19."
     },
     {
       "AttacksPerSecond": 1.3,
@@ -1151,9 +1178,10 @@
         "Stagger",
         "Bleed"
       ],
-      "targetId": "",
+      "targetId": "hu_morningstar_heavy",
       "sha256": "1c6c58079a2a910e2968ee3c930f237d3efb5096ddb32a6f28102a9a22011b0d",
-      "displayName": "weapon.morningstar.heavy"
+      "displayName": "Ciężka gwiazda zaranna",
+      "description": "Więcej żelaza, dłuższe kolce. Wymaga Siły 14."
     },
     {
       "AttacksPerSecond": 1.0,
@@ -1190,7 +1218,8 @@
       "SkillId": "skill.rogue.knife_throw",
       "targetId": "hu_offdagger",
       "sha256": "1760a46fe467c8ae7d28f8145cb72b8a559a83f382ea13c4b8b40e4cb7af870c",
-      "displayName": "Sztylet do rzucania"
+      "displayName": "Sztylet do rzucania",
+      "description": "Druga ręka: odblokowuje Rzut nożami."
     },
     {
       "AttacksPerSecond": 1.0,
@@ -1224,7 +1253,8 @@
       "RequiredStrength": 10,
       "targetId": "hu_shield",
       "sha256": "49c11c3f40c0bf1ac5c4d27a8cfeae1f804e70549dc6d5edaf7956e4c2fe980e",
-      "displayName": "Tarcza"
+      "displayName": "Tarcza",
+      "description": "Blokuje jedno bezpośrednie trafienie na sekundę: pasywnie z szansą albo z gwarancją w gardzie (osobny przycisk). Nie chroni przed efektami okresowymi i podłożem. Poziomy II i III: blok wraca szybciej (0,92 / 0,85 s), szansa pasywna 17 / 19%."
     },
     {
       "AttacksPerSecond": 0.8,
@@ -1268,7 +1298,8 @@
       "RequiredIntelligence": 14,
       "targetId": "hu_staff",
       "sha256": "9d99ab22376e19c281df3fb6c531cabd5aae411d642fc0c9134965f498a78f6f",
-      "displayName": "Kostur dwuręczny"
+      "displayName": "Kostur dwuręczny",
+      "description": "Wolniejszy pocisk, który eksploduje przy trafieniu. Wyklucza grymuar."
     },
     {
       "AttacksPerSecond": 1.7,
@@ -1308,7 +1339,8 @@
       "RequiredStrength": 10,
       "targetId": "hu_sword",
       "sha256": "2ad9e334d6981131408c68b58b7468ddd4bda9a4904385f050180bcd10347998",
-      "displayName": "Miecz jednoręczny"
+      "displayName": "Miecz jednoręczny",
+      "description": "Kierunkowe cięcie łukiem. Obrażenia fizyczne, krwawienie."
     },
     {
       "AttacksPerSecond": 1.7,
@@ -1351,7 +1383,8 @@
       "RequiredStrength": 10,
       "targetId": "hu_sword_air",
       "sha256": "cd884b306a844dfdb940285da74df4fa7992e8b2c20e831b22e153054594fcf4",
-      "displayName": "Ostrze wichru"
+      "displayName": "Ostrze wichru",
+      "description": "Cięcie wiatrem i stalą: odpycha i rani do krwi."
     },
     {
       "AttacksPerSecond": 1.6,
@@ -1392,7 +1425,8 @@
       ],
       "targetId": "hu_sword_broad",
       "sha256": "871e8c4e7a456c7c3267fe4158246fb354d3cb925552643af24c7052c6283e77",
-      "displayName": "weapon.sword.broad"
+      "displayName": "Miecz szeroki",
+      "description": "Szeroka głownia, solidny jelec. Wymaga Siły 11."
     },
     {
       "AttacksPerSecond": 1.5,
@@ -1431,9 +1465,10 @@
       "OnHitEffects": [
         "Bleed"
       ],
-      "targetId": "",
+      "targetId": "hu_broadsword",
       "sha256": "80b4d3f068aa76ed4af137141d68cdf678dff4589d8fde0c6e6f0bc808659de4",
-      "displayName": "weapon.sword.broadsword"
+      "displayName": "Pałasz",
+      "description": "Ciężka, prosta głownia jazdy. Wymaga Siły 14."
     },
     {
       "AttacksPerSecond": 1.7,
@@ -1476,7 +1511,8 @@
       "RequiredStrength": 10,
       "targetId": "hu_sword_earth",
       "sha256": "9342bba452fb3afbf6ceee9826be7e14f440b64e281da17f1bc350cd372ac536",
-      "displayName": "Kamienny miecz"
+      "displayName": "Kamienny miecz",
+      "description": "Cięcie kamieniem i stalą: zachwiewa i rani do krwi."
     },
     {
       "AttacksPerSecond": 1.7,
@@ -1519,7 +1555,8 @@
       "RequiredStrength": 10,
       "targetId": "hu_sword_fire",
       "sha256": "8fbfe9ba142af8d7fef280f1fe6fac113a81bd1df01ee8579c78c0fbc5fb1108",
-      "displayName": "Płonący miecz"
+      "displayName": "Płonący miecz",
+      "description": "Cięcie ogniem i stalą: podpala i rani do krwi."
     },
     {
       "AttacksPerSecond": 1.9,
@@ -1559,9 +1596,10 @@
       "OnHitEffects": [
         "Bleed"
       ],
-      "targetId": "",
+      "targetId": "hu_sabre",
       "sha256": "6273a8ecece3496b1152027a5dc7c214b838fe5ef75077a31aa795968f3679dc",
-      "displayName": "weapon.sword.sabre"
+      "displayName": "Szabla",
+      "description": "Zakrzywiona, szybka, tnie jak brzytwa. Wymaga Siły 10 i Zręczności 12."
     },
     {
       "AttacksPerSecond": 1.7,
@@ -1605,7 +1643,8 @@
       "RequiredStrength": 10,
       "targetId": "hu_sword_water",
       "sha256": "ca052e346c837ca36f0ca66500fd1f0f66e53f1bf1e32d5ecc736639028e9a83",
-      "displayName": "Ostrze przypływu"
+      "displayName": "Ostrze przypływu",
+      "description": "Cięcie wodą i stalą: przemacza, spowalnia i rani do krwi."
     },
     {
       "AttacksPerSecond": 1.6,
@@ -1649,9 +1688,10 @@
       ],
       "Power": 5,
       "PowerValue": 0.35,
-      "targetId": "",
+      "targetId": "hu_unique_dziewanna_bow",
       "sha256": "9438c88c0965c1a98ae4cdc794d1a16b1b6fbe7d58d6cdc3f1e6bc66bd6b35c3",
-      "displayName": "weapon.unique.dziewanna_bow"
+      "displayName": "Łuk Dziewanny",
+      "description": "Bogini łowów nie chybia - i nie przebacza."
     },
     {
       "AttacksPerSecond": 0.85,
@@ -1699,9 +1739,10 @@
       ],
       "Power": 2,
       "PowerValue": 0.25,
-      "targetId": "",
+      "targetId": "hu_unique_last_word",
       "sha256": "94baf8fc3c32cc18744927bcfa1216ae778a2786fb3cb420a0a4d11f6020af48",
-      "displayName": "weapon.unique.last_word"
+      "displayName": "Ostatnie słowo kata",
+      "description": "Po nim nie ma już nic do powiedzenia."
     },
     {
       "AttacksPerSecond": 1.25,
@@ -1751,9 +1792,10 @@
       ],
       "Power": 4,
       "PowerValue": 25,
-      "targetId": "",
+      "targetId": "hu_unique_penance",
       "sha256": "ba2ce223f55228db49aa026e46f91006c2b3cfa09e31d6bdfd0bef17ce73e3f5",
-      "displayName": "weapon.unique.penance"
+      "displayName": "Pokuta",
+      "description": "Biczownicy smagali nią siebie. Ty smagasz innych."
     },
     {
       "AttacksPerSecond": 1.8,
@@ -1802,9 +1844,10 @@
       ],
       "Power": 5,
       "PowerValue": 0.5,
-      "targetId": "",
+      "targetId": "hu_unique_perun_blade",
       "sha256": "6d0d20ef1164006ee1778cea1af943a9a815b5111e8bbaac20c73f375993354d",
-      "displayName": "weapon.unique.perun_blade"
+      "displayName": "Ostrze Peruna",
+      "description": "Gromowładny wykuł je z pioruna, który chybił."
     },
     {
       "AttacksPerSecond": 0.7,
@@ -1857,9 +1900,10 @@
       ],
       "Power": 3,
       "PowerValue": 12,
-      "targetId": "",
+      "targetId": "hu_unique_svarog_hammer",
       "sha256": "794dbee67e8bda40e9971fb6b9c9b286bd0b2767f26b2385cd09c7b0feece758",
-      "displayName": "weapon.unique.svarog_hammer"
+      "displayName": "Młot Swaroga",
+      "description": "Kowal bogów wciąż grzeje go swoim ogniem."
     },
     {
       "AttacksPerSecond": 1.7,
@@ -1907,9 +1951,10 @@
       ],
       "Power": 1,
       "PowerValue": 0.3,
-      "targetId": "",
+      "targetId": "hu_unique_szczerbiec",
       "sha256": "983a8f54994fd529bf19a21ad2d6bbe8d47773997d198c7b6ee470844990dae6",
-      "displayName": "weapon.unique.szczerbiec"
+      "displayName": "Szczerbiec",
+      "description": "Miecz koronacyjny. Szczerba na głowni nie pozwala upaść królowi."
     },
     {
       "AttacksPerSecond": 3,
@@ -1956,9 +2001,10 @@
       ],
       "Power": 7,
       "PowerValue": 0.5,
-      "targetId": "",
+      "targetId": "hu_unique_widows_lament",
       "sha256": "056a2b191c63c82cb4cd0b33ec2f62e681f79a1d91a751baaefa501caa31d59a",
-      "displayName": "weapon.unique.widows_lament"
+      "displayName": "Płacz wdowy",
+      "description": "Każda rana nim zadana ma swoją żałobnicę."
     },
     {
       "AttacksPerSecond": 2.3,
@@ -1999,7 +2045,8 @@
       "RequiredIntelligence": 10,
       "targetId": "hu_wand_fire",
       "sha256": "cdce807c2121e812fce2bd32857ef61fe9b280e3928fc74caa578e4da5f99faa",
-      "displayName": "Różdżka ognia"
+      "displayName": "Różdżka ognia",
+      "description": "Szybki pojedynczy pocisk ognia, który podpala."
     },
     {
       "AttacksPerSecond": 2.3,
@@ -2039,7 +2086,8 @@
       "RequiredIntelligence": 10,
       "targetId": "hu_wand_air",
       "sha256": "2e96c6c41e904110e11e4bd5065e6e3aae5b6bf6efa6eadb3db897184b6c5c78",
-      "displayName": "Różdżka powietrza"
+      "displayName": "Różdżka powietrza",
+      "description": "Podmuch, który przeskakuje na kolejny cel i lekko odpycha."
     },
     {
       "AttacksPerSecond": 1.4,
@@ -2080,7 +2128,8 @@
       "RequiredIntelligence": 10,
       "targetId": "hu_wand_earth",
       "sha256": "f4d163bf52d600c085ecae0f2e835825932052d09165033f0f2d90e0b3a751a1",
-      "displayName": "Różdżka ziemi"
+      "displayName": "Różdżka ziemi",
+      "description": "Wolny, ciężki kamień. Zachwiewa; pełne zachwianie ogłusza."
     },
     {
       "AttacksPerSecond": 2.0,
@@ -2122,7 +2171,8 @@
       "RequiredIntelligence": 10,
       "targetId": "hu_wand_water",
       "sha256": "f4be9174027d4fdb45ecf0ca7b9ac4ed27f392f29a255edaafa968d1c934bcc0",
-      "displayName": "Różdżka wody"
+      "displayName": "Różdżka wody",
+      "description": "Pocisk wody, który przemacza i spowalnia."
     },
     {
       "AttacksPerSecond": 0.7,
@@ -2166,7 +2216,8 @@
       ],
       "targetId": "hu_warhammer",
       "sha256": "4446d1123bd3fd1bf81c696f2a937ccbe44cfb90e953ab611dbfd0518bf38451",
-      "displayName": "weapon.warhammer"
+      "displayName": "Młot bojowy",
+      "description": "Wolny jak lawina i tak samo nie do zatrzymania. Kruszy pancerz. Wymaga Siły 16."
     },
     {
       "AttacksPerSecond": 0.66,
@@ -2210,7 +2261,8 @@
       ],
       "targetId": "hu_warhammer_runic",
       "sha256": "b62afc63f78691e55c63052af89f06dcd431cb4a49bce8b69dcbee346192f033",
-      "displayName": "weapon.warhammer.runic"
+      "displayName": "Młot runiczny",
+      "description": "Runy na obuchu jęczą przy każdym ciosie. Wymaga Siły 20."
     },
     {
       "AttacksPerSecond": 0.68,
@@ -2254,7 +2306,8 @@
       ],
       "targetId": "hu_warhammer_siege",
       "sha256": "e30750978b599667f20ecde1c7463e9a4014beffe0e1331bcae9ffaccfb025ab",
-      "displayName": "weapon.warhammer.siege"
+      "displayName": "Młot oblężniczy",
+      "description": "Kuty na bramy, nie na ludzi. Wymaga Siły 18."
     }
   ]
 }

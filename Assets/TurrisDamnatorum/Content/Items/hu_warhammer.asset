@@ -17,8 +17,10 @@ MonoBehaviour:
   description: "Wolny jak lawina i tak samo nie do zatrzymania. Kruszy pancerz. Wymaga Si\u0142y 16."
   tags: 145
   kind: 0
+  huSourceId: weapon.warhammer
+  huSourceHash: 4446d1123bd3fd1bf81c696f2a937ccbe44cfb90e953ab611dbfd0518bf38451
   twoHanded: 1
-  weight: 10
+  weight: 11
   requirements:
   - attribute: 3
     value: 16
@@ -29,11 +31,11 @@ MonoBehaviour:
       name: Zamach
       delivery: 0
       damageType: 0
-      baseDamage: 112
-      windup: 0.58
-      active: 0.2
-      recovery: 0.65
-      cancelAfter: 0.3
+      baseDamage: 89.6
+      windup: 0.6462857
+      active: 0.22285715
+      recovery: 0.72428566
+      cancelAfter: 0.33428574
       reach: 2.7
       radius: 1.1
       lunge: 0.7
@@ -57,20 +59,20 @@ MonoBehaviour:
       statuses:
       - kind: 5
         stacks: 2
-        chance: 0.6
+        chance: 0.5
       - kind: 7
         stacks: 1
-        chance: 0.6
+        chance: 0.5
       animation: 0
     heavy:
       name: Egzekucja
       delivery: 0
       damageType: 0
-      baseDamage: 200
-      windup: 1.1
-      active: 0.2
-      recovery: 0.9
-      cancelAfter: 0.4
+      baseDamage: 160.1
+      windup: 1.2257143
+      active: 0.22285715
+      recovery: 1.0028571
+      cancelAfter: 0.4457143
       reach: 2.8
       radius: 1.1
       lunge: 1
@@ -140,4 +142,6 @@ MonoBehaviour:
   model: {fileID: 919132149155446097, guid: d64fc3b53740c074da46c750824d6457, type: 3}
   modelScale: 0.8
   modelGripShift: 0.24
+  minFloor: 0
+  offerWeight: 1
   grantedSkill: {fileID: 0}

@@ -1,8 +1,128 @@
 # Turris Damnatorum — stan prac i plan
 
+### Następna sesja — wdrożenie wojownika gotyckiego anime
+
+- [Konkretny plan integracji](PLAN_WDROZENIA_WOJOWNIKA_ANIME.md): dopasowanie kopii szkieletu, wagi, import Humanoid,
+  osobna definicja wyglądu, istniejące animacje/broń/VFX, celowane `class_knight.lookOverride`, testy i zrzuty w Unity.
+- **Sprawdzono istniejący rig wojownika z kopii w Turris:** 26 kości, komplet 22 sprawdzonych kości sterownika i gniazda obu dłoni.
+  Nadaje się jako baza po dopasowaniu ramion, kolan i stóp; nie ma kości palców dłoni. Raport i nakładki: `ArtSource/GothicAnimePoC/Warrior/rig-*`.
+- Na prośbę użytkownika **zwinięto palce obu dłoni w geometrii**. Do dalszej pracy używać `warrior-v2-grip.blend/fbx/glb`
+  w [katalogu źródeł](../ArtSource/GothicAnimePoC/Warrior/README.md); oryginalne `warrior-v1.*` zachowane.
+  Wersja v2: 1,8 m, stopy na podłożu, 45 832 trójkąty, tekstura 2K, nadal bez szkieletu i wag.
+- Oba eksporty v2 ponownie wczytane z teksturą; geometria poza dłońmi bez zmian po normalizacji.
+  Obejrzano model oraz zbliżenia obu chwytów, także z próbną rękojeścią 25 mm (walec tylko w podglądach).
+- Praca lokalna w Blenderze, **0 kolejnych kredytów Meshy**. Gry ani plików Hell Unleashed nie zmieniano;
+  Unity i testy animacji nowego modelu pozostają do wykonania w następnej sesji.
+
+### Ostatnia sesja — 2026-10-23/26: audyt skilli i pieczęci (pomiar na manekinach) i korekty
+
+- **Nowy test pomiarowy** `Tests/PlayMode/HuBenchPlayTests.cs` (port HU `--bench`): każdy skill (poziom III) i forma
+  na gromadzie i kolosie, plus 51 wsparć na 10 skillach testowych; jeden rzut, okno 6 s, timeScale 2, manekiny 1e7 HP,
+  obrażenia liczone z `CombatEvents.Impact` (trafienia, sługi, strefy, tyknięcia). Uruchamia się tylko, gdy istnieje
+  `TestResults/hu-bench` albo `TURRIS_BENCH_DIR`; zapis `bench.csv` (kolumny: rodzaj, skill, pieczęć, cele, obrażenia,
+  odnowienie, ładunki, na sekundę cyklu, skala, sprzęt, zasób, koszt, koszt życia [ułamek maks. HP], żywioł, komponenty).
+  Bohater: mag (techniki fizyczne liczone bronią maga – porównuj w obrębie rodzaju). Czas: ~10–15 min.
+- **Błąd gry znaleziony pomiarem i naprawiony:** `HitQuery.Deliver` używał jednej listy celów, a trafienie (impuls aury
+  → efekt „przy trafieniu”) wywoływało zagnieżdżone zapytanie → `InvalidOperationException`. Teraz lista na poziom
+  zagnieżdżenia (`Combat/HitSystem.cs`); test regresji `HitQueryTests.NestedQuery_InsideOnHit_KeepsOuterTargets` (EditMode, zaliczony).
+- **Przebieg 1** (`TestResults/hu-bench/bench_manekiny_zywiolowe.csv`, 642 wiersze) jest **przekłamany żywiołami**:
+  gromada to w 2/3 chochliki (ogień ×0,25, mróz ×1,6), kolos – osiłek (25% pancerza, ziemia ×0,7, błyskawice ×1,3).
+  Stąd np. konwersja na ogień ×0,49, na wodę ×1,72. Wstępne obserwacje (do potwierdzenia przebiegiem 2):
+  Barrage/Nova/Wave/Rain dominują na gromadzie (Łza lodowca 457/s vs mediana 78/s; na kolosie 40/s); formy: tornado
+  wiru ×3,9, sopel ×3,7, topór-deszcz ×3,0, mrugnięcie ×2,7; martwe: kuźnia pierścienia ×0,02, odpychające oko cyklonu
+  ×0,16, rój kul ×0,27; wsparcia: Brama piekieł ×2,6, Serce otchłani ×2,0, Wachlarz ×1,8; wyzwalacze ×0,7–0,8 (pomiar
+  nie wywołuje uników/zabójstw – nie oceniać), Ofiara krwi pokazuje koszt many 1,0 (kolumna kosztu nie odejmuje zamiany na życie).
+- **Przebieg 2 — GOTOWY** (2026-10-26, neutralne manekiny, `TestResults/hu-bench/bench.csv`, 642 wiersze; wyciszony –
+  `Tests/PlayMode/MuteDuringTests.cs` wycisza edytor na czas testów PlayMode, `TURRIS_TEST_SOUND=1` włącza dźwięk).
+  EditMode po poprawce `HitSystem`: **184/0/1**. Analiza: `python tools/balance/bench_report.py TestResults/hu-bench/bench.csv`.
+- **Wstępne wnioski (pomiar, nie granie):**
+  - Mediana DPS cyklu: gromada 96/s, kolos 27/s.
+  - **Dominacja: Aura świętego ognia** – 300/s gromada, 60/s kolos (2× mediany), bez kosztu rzutu (tylko rezerwacja 20%),
+    stale; forma **Sztandar** 615/90 – najlepsza w obu kontekstach. Główny kandydat do korekty.
+  - Najlepsze obszarowe: Deszcz strzał 359/51 (dobry też na kolosie – prawie bez słabości), Łza lodowca 320/40,
+    Fala przyboju 283/43. Najlepsze na pojedynczy cel: chochliki 95/s (sługi mimo skrócenia), salwa 79, przebijający strzał 64.
+  - Słabe (DPS; część to skille użytkowe): Rozpłatanie 19/s (wynik zależny od ustawienia – między przebiegami ×3,
+    niewiarygodny), Krzyżowe cięcie 23, Wachlarz ostrzy 19, Legion 24 (CD 28 s), Znak śmierci 28, Rzut toporem 42.
+  - Formy silne w obu kontekstach (≥1,6×): Kula błyskawic (łańcuch), Wyrok pojedynczy, Napalm i Lepka bomba, Bumerang
+    cięcia wiatru, Huragan. Martwe w obu (≤0,7×): Kuźnia pierścienia ×0,02 (prawdopodobnie użytkowa – działa przez ciosy
+    bronią, pomiar ich nie robi), Odpychające oko cyklonu, Smoła sideł, Gwiazda kolców, Mina siarkowa.
+  - Wsparcia (mediana): Brama piekieł ×2,6, Korona Welesa ×2,3, Serce otchłani ×2,0, Wachlarz ×1,9, Kaskada ×1,7;
+    wyzwalacze ×0,7–0,8 i Totem/Orbita/Wieczny płomień <1 – tego pomiaru nie da się ocenić (brak uników/zabójstw, ruchu).
+  - Odporności wrogów: na chochlikach skille ognia tracą ~57% (×0,43), wody zyskują ×1,45 – to celowe (chochliki
+    mają warianty żywiołów), ale warto sprawdzić, czy mag ognia nie jest karany na piętrach z ognistymi chochlikami.
+  - Ograniczenia: bohater testowy to mag (techniki fizyczne liczone jego bronią – zaniżone), okno 6 s, manekiny stoją.
+- **Raport:** [AUDYT_SKILLI_PIECZECI.md](AUDYT_SKILLI_PIECZECI.md). **Korekty wdrożone** (2026-10-26, `Seals/HuBalance.cs`,
+  nowe `SealPatches` – korekty pieczęci z opisem): Aura świętego ognia 24 → 14 (kolos 60 → 35/s), Sztandar ×1,25; sługi
+  ×0,4/×0,45/×0,6 (pomiar z oknem = odnowienie potwierdził 4–6× mediany); formy dominujące +1,5 s odnowienia; Mina
+  siarkowa 3 ładunki, Deszcz meteorów 80%.
+- Test pomiarowy: okno = jeden cykl odnowienia (6–20 s), kolumna `okno`; pliki: `bench_okno6s.csv` (stare okno),
+  `bench_po_aurze.csv` (po korekcie aury, przed sługami i formami).
+- Testy (MCP, edytor bez fokusu): EditMode **187/0/1** (nowe: `HolyFireAura_AndBanner_AreWeakened`,
+  `Summons_DamagePerSecond_StaysNearTwiceTheMedian`, `DominantForms_PayWithCooldown`, `HitQueryTests`); PlayMode `HuSkillCasterPlayTests` + `SealFlowPlayTests` + `HeroSkillPlayTests` **18/18**.
+- **Ściana ognia** (dawny Ognisty krąg – dublet Novy ognia u maga): skill Turris na komponentach HU
+  (`Seals/TurrisSkills.cs`, nowy komponent `Wall` → `HuWall` w `HuRuntimes.cs`), id `spell_firering` bez zmian
+  (odblokowania, profile). Ściana 7 m (III: 8 m) w poprzek celowania do 8 m, płonie 4 s (III: 5 s), parzy co 0,5 s
+  i podpala; odnowienie 9 s, 22 many. Formy: **Fala ognia** (rusza 3,5 m/s, płonie ¼ krócej), **Forteca ognia**
+  (pierścień 4 m wokół bohatera, +3 s odnowienia). Forma Kręgu żaru „Ściana ognia” → „Szereg kręgów”.
+  Asset odświeżony celowanym `OverwriteFromDefaults("spell_firering", "unlock_firering")`. EditMode **188/0/1**,
+  `HuSkillCasterPlayTests` 6/6, zrzuty `TestResults/hu-seals/spell_firering*.png` obejrzane.
+- **Następny krok:** granie (aura, sługi, formy na piętrach 1–6); opcjonalnie pomiar per klasa (techniki z właściwą bronią).
+
+### Poprzednia sesja — 2026-10-23: audyt balansu bohaterów, etap 4 (skille i bronie HU) i pieczęcie
+
+Szczegóły: [ETAP4_PIECZECIE.md](ETAP4_PIECZECIE.md).
+- **Audyt balansu bohaterów** (model DPS/EHP z danych): anomalie różdżki ziemi, stałych sług, darmowej aury i dwuręcznej
+  broni ×1,45 miecza. Korekty wdrożone razem z importem (niżej). Łotrzyk ze sztyletem nadal najsłabszy – do decyzji.
+- **Skille HU wykonywane z komponentów** (port `SkillCaster`/`SkillShape`): 61 skilli (32 nowe), 25 komponentów, jedno
+  źródło prawdy w parametrach HU (`Resources/HellCatalog/skills.json`, importer `tools/art/import_hu_catalog.py`).
+  Wcześniejsze 29 skilli HU przeszło na ten sam wykonawca (poziomy wg krzywych HU zamiast `powerPerLevel` Turris).
+- **Pieczęcie:** 186 (90 form, 51 wsparć z 11 demonicznymi, 22 zespolenia, 23 więzi), bezpieczniki HU (suma mnożników
+  ≤ +200%, kopie ≤ 1,5× i ≤ 24 zdarzenia, wyzwalacze co 1,5 s), sakwa, poziomy II–III, łup z elit, dar bossa,
+  oferty w sklepie dusz, zakładka „Pieczęcie” w ekwipunku, znaczki w HUD, przełączniki na poligonie, kodeks w profilu.
+- **Bronie:** 19 nowych (12 wariantów + 7 unikatów z mocami: ostatnia szansa, wybuch zwłok, aura żaru, ciernie, łańcuch
+  błyskawic, pakt krwi, przebicie). Wszystkie 47 broni HU przeliczone zasadą DPS (proporcja do miecza jak w HU; tempo
+  z ataków/s) – miecz bez zmian, dwuręczne 100 → 80–90, różdżka ziemi wolniejsza.
+- **Korekty balansu (jawne, `Seals/HuBalance.cs`):** sługi żyją ≤ odnowienie; aktywna aura rezerwuje 20% wytrzymałości
+  (Pobożność: 20/30% many jak HU); unikaty w nagrodach z wagą 0,35; skille z `MinWave` HU wchodzą od piętra 1/3.
+- **Poprawki przy okazji:** doskok po akcji ślizgał bohatera o ~5 m (pęd 25 m/s hamowany zwykłym opóźnieniem) – pęd po
+  akcji przycięty do prędkości sprintu; doskok HU przechodzi przez ciała wrogów; uderzenie na końcu doskoku nie ginie
+  przy wcześniejszym końcu akcji.
+- Assety: `TurrisSetup.SyncContent` (51 nowych), celowane `OverwriteFromDefaults` 28 broni HU, ponowne przypisanie modeli
+  (`HeroAssetImport.AssignContentAssets`, `HellMigrationImport.Run`). Bez `RunBatchForce`.
+- Testy (przez MCP, edytor bez fokusu): EditMode **183/0/1**; nowe `HuSealTests` (14), `HuContentTests` (13),
+  `HuSkillCasterPlayTests` (6, w tym 151 rzutów: każdy skill i forma zadaje obrażenia), `SealFlowPlayTests` (1).
+  Pełny PlayMode (bez fokusu): **109 zaliczonych, 4 niezaliczone, 18 pominiętych galerii**. Po poprawce: `FullFlow_WithGamepadOnly`
+  i `Sounds_FollowCombatAndFlow…` zaliczone osobno; zostają 2 znane testy zależne od fokusu (`Impact_Hitstop…`, `Demon_Walks…`).
+  Galeria: `TestResults/hu-seals` (16 skilli/form, sklep dusz, menedżer pieczęci) – obejrzana.
+- **Do oceny w graniu:** balans form i wsparć w Turris, ceny pieczęci, częstość łupów (6 pięter zamiast 30 fal),
+  rezerwacja aury, siła unikatów.
+
+### Koncepcje oprawy — 2026-10-23
+
+- Wytypowano [zakres PoC gotyckiego anime](POC_GOTYCKIE_ANIME.md): wojownik, miecz/tarcza,
+  trzy skille startowe, dziedziniec pierwszego piętra oraz chochlik z wariantami żywiołów.
+  Użytkownik ograniczył próbę do **jednego wojownika**. Wykonano jedną generację Meshy 7.1 (standard, 2K):
+  zadanie `01a16a0a-a6e5-77cc-81be-c97226baf934`, `SUCCEEDED`; rzeczywiste saldo API **159 → 129**, koszt **30 kredytów**.
+  [Pliki i raport](../ArtSource/GothicAnimePoC/Warrior/README.md): oryginalne GLB/FBX, tekstura, scena `.blend`, audyt JSON i trzy obejrzane rendery.
+  Oba formaty wczytane w osobnym Blenderze 5.2.2; tekstura 2048², jeden materiał, ~45,8 tys. trójkątów.
+  Brak rigu, wag i animacji; dłonie, szyja i łączenia płyt do czyszczenia, powtórzona klamra z tyłu do korekty.
+  Bez integracji z Unity i bez testów gry na tym etapie; bez zmian bieżącej postaci ani plików Hell Unleashed.
+  Gotowa [referencja dla Meshy](concepts/2026-10-23/meshy/warrior-reference-v1.png), przygotowana przez image_gen bez kredytów Meshy.
+  Osobny Meshy MCP 0.6.5 zainstalowany w lokalnym katalogu Codex; inicjalizacja i lista 28 narzędzi sprawdzone.
+  Klucz API użytkownik uzupełnił wyłącznie lokalnie w konfiguracji klienta; połączenie działa.
+  Bez płatnego rigowania, animacji i ponowień. Parametry w `warrior-job-v1.json` obok referencji.
+  Kolejny krok: [plan wdrożenia](PLAN_WDROZENIA_WOJOWNIKA_ANIME.md); obecny szkielet sprawdzony, lokalna wersja v2 ma zwinięte palce.
+- Przygotowano cztery propozycje na podstawie zrzutu gry: [gotyckie anime](concepts/2026-10-23/01-gotyckie_anime.png),
+  [malowana makieta](concepts/2026-10-23/02-malowana_makieta.png),
+  [mroczna rycina](concepts/2026-10-23/03-mroczna_rycina.png),
+  [graficzne low-poly](concepts/2026-10-23/04-graficzne_low_poly.png).
+  Wbudowany image_gen; obrazy, zrzut odniesienia i prompty w `docs/concepts/2026-10-23/`.
+  Użytkownik wybrał kierunek gotyckiego anime; zmiany wyglądu nie są jeszcze wdrożone w grze.
+  Priorytet użytkownika: łatwiejsze tworzenie assetów 3D przy atrakcyjnym wyglądzie; dopuszczona inspiracja anime.
+
 Aktualizacja: 2026-10-23 (migracja renderowania Built-in → URP 17.6 + Linear, gałąź `feature/urp-vfx-migration`). Opis gry, sterowania i architektury jest w [README.md](../README.md). Ten plik służy do przekazania pracy między sesjami.
 
-### Ostatnia sesja — 2026-10-23: poligon umiejętności, smuga ognia, krótsze stopy wojownika
+### Poprzednia sesja — 2026-10-23: poligon umiejętności, smuga ognia, krótsze stopy wojownika
 
 - **Poligon umiejętności** (wzorem `SkillRange.cs` z Hell Unleashed): przycisk w menu głównym pod „Odblokowania”
   (nie wyżej – `GamepadPlayTests.Unlocks…` liczy pozycje menu). Arena bez fal, manekiny bez AI

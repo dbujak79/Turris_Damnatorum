@@ -128,6 +128,9 @@ namespace Turris.Tests
             Assert.AreEqual(strength + 1, root.Run.attributes.strength, "A rozwija wybraną cechę");
             Assert.AreEqual(0, root.Run.attributePoints);
 
+            // Oferty pieczęci wydłużają kolumnę sklepu poniżej „Wejdź wyżej” (mają własny test: SealFlowPlayTests).
+            root.SealOffers.Clear(); root.Run.sealGifts.Clear();
+            yield return null;
             // W dół do "Wejdź wyżej".
             // Kolumna bohatera: typy, specjalizacje, broń i skill startowy – w dół aż do „Wróć” (nadmiarowe naciśnięcia zostają na dole).
             yield return PressTimes(GamepadButton.DpadDown, 14);

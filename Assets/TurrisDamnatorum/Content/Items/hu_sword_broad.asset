@@ -17,6 +17,8 @@ MonoBehaviour:
   description: "Szeroka g\u0142ownia, solidny jelec. Wymaga Si\u0142y 11."
   tags: 137
   kind: 0
+  huSourceId: weapon.sword.broad
+  huSourceHash: 871e8c4e7a456c7c3267fe4158246fb354d3cb925552643af24c7052c6283e77
   twoHanded: 0
   weight: 4
   requirements:
@@ -30,10 +32,10 @@ MonoBehaviour:
       delivery: 0
       damageType: 0
       baseDamage: 45
-      windup: 0.32
-      active: 0.14
-      recovery: 0.42
-      cancelAfter: 0.18
+      windup: 0.34
+      active: 0.14875
+      recovery: 0.44625
+      cancelAfter: 0.19125001
       reach: 2.2
       radius: 0.8
       lunge: 0.6
@@ -64,10 +66,10 @@ MonoBehaviour:
       delivery: 0
       damageType: 0
       baseDamage: 76
-      windup: 0.7
-      active: 0.18
-      recovery: 0.6
-      cancelAfter: 0.3
+      windup: 0.74375
+      active: 0.19125001
+      recovery: 0.63750005
+      cancelAfter: 0.31875002
       reach: 2.4
       radius: 0.9
       lunge: 0.9
@@ -134,4 +136,6 @@ MonoBehaviour:
   model: {fileID: 919132149155446097, guid: 0930b95c4ec82b0409d15e15ca807881, type: 3}
   modelScale: 1.05
   modelGripShift: 0
+  minFloor: 0
+  offerWeight: 1
   grantedSkill: {fileID: 0}

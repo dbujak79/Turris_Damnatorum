@@ -446,6 +446,13 @@ namespace Turris.EditorTools
             ["hu_grimoire_fire"] = ("mage_grimoire", 1f, 0f), ["hu_grimoire_water"] = ("mage_grimoire", 1f, 0f), ["hu_grimoire_air"] = ("mage_grimoire", 1f, 0f),
             ["hu_grimoire_earth"] = ("mage_grimoire", 1f, 0f), ["hu_grimoire_summoning"] = ("mage_grimoire", 1f, 0f),
             ["hu_bow"] = ("rogue_bow_rigged", 1f, 0f), ["hu_dagger"] = ("rogue_dagger", 1f, 0f), ["hu_poniard"] = ("rogue_dagger", 1f, 0f), ["hu_offdagger"] = ("rogue_dagger", 1f, 0f),
+            // Pozostałe bronie HU: warianty i unikaty rysowane modelem swojej bazy (jak WeaponVisual.VariantBases/UniqueBases w HU).
+            ["hu_sabre"] = ("knight_sword", 0.98f, 0f), ["hu_broadsword"] = ("knight_sword", 1.1f, 0f), ["hu_unique_szczerbiec"] = ("knight_sword", 1.05f, 0f), ["hu_unique_perun_blade"] = ("knight_sword", 1f, 0f),
+            ["hu_greatsword_executioner"] = ("knight_sword", 1.3f, 0f), ["hu_greatsword_flamberge"] = ("knight_sword", 1.35f, 0f), ["hu_unique_last_word"] = ("knight_sword", 1.32f, 0f),
+            ["hu_flail_spiked"] = ("flail", 1f, 0f), ["hu_flail_knight"] = ("flail", 1.1f, 0f), ["hu_unique_penance"] = ("flail", 1f, 0f),
+            ["hu_morningstar"] = ("morningstar", 1f, 0f), ["hu_morningstar_heavy"] = ("morningstar", 1.1f, 0f), ["hu_unique_svarog_hammer"] = ("warhammer", 0.85f, 0.24f),
+            ["hu_dagger_kris"] = ("rogue_dagger", 1f, 0f), ["hu_dagger_misericorde"] = ("rogue_dagger", 1.05f, 0f), ["hu_unique_widows_lament"] = ("rogue_dagger", 1f, 0f),
+            ["hu_bow_recurve"] = ("rogue_bow_rigged", 1f, 0f), ["hu_bow_composite"] = ("rogue_bow_rigged", 1.05f, 0f), ["hu_unique_dziewanna_bow"] = ("rogue_bow_rigged", 1.05f, 0f),
             // Bronie Turris z podobnym modelem – postać FBX trzyma je zamiast proceduralnych.
             ["weapon_longsword"] = ("knight_sword", 1f, 0f), ["weapon_flamesword"] = ("knight_sword", 1f, 0f), ["weapon_serratedsword"] = ("knight_sword", 1f, 0f),
             ["weapon_greataxe"] = ("greataxe", 1f, 0f), ["weapon_mace"] = ("morningstar", 1f, 0f), ["weapon_bow"] = ("rogue_bow_rigged", 1f, 0f), ["weapon_dagger"] = ("rogue_dagger", 1f, 0f),

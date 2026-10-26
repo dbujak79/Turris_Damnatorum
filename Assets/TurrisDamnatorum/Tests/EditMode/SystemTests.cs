@@ -470,3 +470,48 @@ namespace Turris.Tests
         }
     }
 }
+
+namespace Turris.Tests
+{
+    public class HitQueryTests
+    {
+        class Dummy : MonoBehaviour, IHitReceiver
+        {
+            public Faction Faction => Faction.Enemy;
+            public bool IsDead => false;
+            public Transform Transform => transform;
+            public Vector3 AimPoint => transform.position;
+            public HitResult ReceiveHit(HitData hit) => default;
+            public void OnAttackParried(float poiseDamage) { }
+            public void OnHitResolved(IHitReceiver target, in HitData hit, in HitResult result) { }
+        }
+
+        /// <summary>Trafienie może wywołać kolejne zapytanie (wybuch, efekt „przy trafieniu”) – zewnętrzne nie gubi celów ani nie rzuca wyjątku.</summary>
+        [Test]
+        public void NestedQuery_InsideOnHit_KeepsOuterTargets()
+        {
+            var made = new List<GameObject>();
+            try
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    go.transform.position = new Vector3(1000f + 2f * i, 0f, 1000f);
+                    go.AddComponent<Dummy>();
+                    made.Add(go);
+                }
+                Physics.SyncTransforms();
+                var outer = new List<IHitReceiver>();
+                int inner = 0;
+                HitQuery.Sphere(new Vector3(1002f, 0f, 1000f), 3f, Faction.Player, new HitTracker(), r =>
+                {
+                    outer.Add(r);
+                    HitQuery.Sphere(r.Transform.position, 0.6f, Faction.Player, new HitTracker(), _ => inner++);
+                });
+                Assert.AreEqual(3, outer.Distinct().Count(), "każdy cel zewnętrznego zapytania trafiony raz");
+                Assert.AreEqual(3, inner, "zagnieżdżone zapytania działają");
+            }
+            finally { foreach (var go in made) Object.DestroyImmediate(go); }
+        }
+    }
+}

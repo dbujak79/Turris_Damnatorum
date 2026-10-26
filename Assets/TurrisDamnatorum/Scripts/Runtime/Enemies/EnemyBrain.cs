@@ -841,6 +841,13 @@ namespace Turris
             }
         }
 
+        /// <summary>Powalenie (Odtrącenie): wróg leży przez podany czas (bossów odtrącenie nie dotyczy).</summary>
+        public void HuThrowDown(float seconds)
+        {
+            if (IsDead || Def.isBoss || seconds <= 0f) return;
+            if (Status.KnockDown(seconds, rules)) { Interrupt(State.Staggered, Status.StunRemaining); AnnounceControl(); }
+        }
+
         /// <summary>Napis i dźwięk po zamrożeniu albo ogłuszeniu.</summary>
         void AnnounceControl()
         {

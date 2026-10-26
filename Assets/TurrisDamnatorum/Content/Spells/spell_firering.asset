@@ -13,38 +13,38 @@ MonoBehaviour:
   m_Name: spell_firering
   m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
   id: spell_firering
-  displayName: "Ognisty kr\u0105g"
-  description: "Pier\u015Bcie\u0144 ognia wok\xF3\u0142 postaci: pali i podpala wszystkich w pobli\u017Cu."
+  displayName: "\u015Aciana ognia"
+  description: "\u015Aciana ognia w poprzek drogi demon\xF3w: p\u0142onie kilka sekund i parzy oraz podpala wszystko, co przez ni\u0105 przejdzie.\nPoziom II: mocniej parzy.\nPoziom III: d\u0142u\u017Csza i p\u0142onie 5 s."
   tags: 2
-  kind: 1
+  kind: 12
   category: 0
-  manaCost: 24
-  castTime: 0.5
-  recovery: 0.45
+  manaCost: 22
+  castTime: 0.25
+  recovery: 0.35
   cancelAfter: 0.2
-  staminaCost: 5
+  staminaCost: 0
   requirements:
   - attribute: 5
     value: 11
   requiredTags: 0
-  intelligenceScaling: 2.5
+  intelligenceScaling: 1
   attack:
-    name: "Ognisty kr\u0105g"
+    name: "\u015Aciana ognia"
     delivery: 2
     damageType: 1
-    baseDamage: 36
-    windup: 0.5
+    baseDamage: 25
+    windup: 0.25
     active: 0.1
-    recovery: 0.45
+    recovery: 0.35
     cancelAfter: 0.2
-    reach: 0
-    radius: 3.6
+    reach: 8
+    radius: 0
     lunge: 0
     tracking: 360
     blockable: 1
     parryable: 0
     dodgeable: 1
-    guardLoad: 25
+    guardLoad: 20
     poiseDamage: 25
     heavy: 0
     staminaCost: 0
@@ -53,30 +53,53 @@ MonoBehaviour:
     spreadAngle: 0
     explosionRadius: 0
     element: 1
-    elementShare: 0
+    elementShare: 1
     bonusVsFrozen: 0
     bonusVsBleeding: 0
     executeBonus: 0
-    statuses:
-    - kind: 1
-      stacks: 1
-      chance: 1
+    statuses: []
     animation: 0
-  amount: 60
+  amount: 25
   duration: 3
-  cooldown: 7
+  cooldown: 9
   charges: 1
   extraChargeAtLevel: 0
-  cooldownReductionPerLevel: 0.06
+  cooldownReductionPerLevel: 0
   weaponMultiplier: 1.5
   arcAngle: 150
   tickInterval: 0.35
   moveMultiplier: 0.5
-  levelFeatures:
-  - level: 2
-    kind: 1
-    value: 0.25
-  maxLevel: 4
-  powerPerLevel: 0.15
-  costReductionPerLevel: 0.06
-  color: {r: 1, g: 0.45, b: 0.12, a: 1}
+  flatDamage: 1
+  pulses: 1
+  pulseInterval: 0.45
+  telegraph: 0
+  followCaster: 0
+  knockback: 0
+  pierce: 0
+  split: 0
+  projectileLifetime: 0
+  fullExplosion: 0
+  zoneRadius: 0
+  zoneDuration: 0
+  zoneInterval: 0.5
+  zoneShare: 0
+  healPercent: 0
+  damageReductionBuff: 0
+  furyGain: 0
+  servant: 0
+  servantCount: 1
+  servantAttackInterval: 1
+  auraModifiers: []
+  finalSlashShare: 0
+  finalRadius: 0
+  waveWidth: 1.6
+  waveSpeed: 16
+  extraWaveShare: 0
+  extraWaveDelay: 0.25
+  dashTime: 0.16
+  minFloor: 0
+  levelFeatures: []
+  maxLevel: 2
+  powerPerLevel: 0
+  costReductionPerLevel: 0
+  color: {r: 1, g: 0.5, b: 0.15, a: 1}

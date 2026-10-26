@@ -17,6 +17,8 @@ MonoBehaviour:
   description: "Pocisk wody, kt\xF3ry wych\u0142adza i spowalnia."
   tags: 2
   kind: 0
+  huSourceId: weapon.wand.water
+  huSourceHash: f4be9174027d4fdb45ecf0ca7b9ac4ed27f392f29a255edaafa968d1c934bcc0
   twoHanded: 0
   weight: 1
   requirements:
@@ -32,11 +34,11 @@ MonoBehaviour:
       name: "R\xF3\u017Cd\u017Cka wody"
       delivery: 1
       damageType: 1
-      baseDamage: 25
-      windup: 0.2
-      active: 0.1
-      recovery: 0.22
-      cancelAfter: 0.2
+      baseDamage: 23.6
+      windup: 0.23
+      active: 0.115
+      recovery: 0.253
+      cancelAfter: 0.23
       reach: 0
       radius: 0.3
       lunge: 0
@@ -61,16 +63,19 @@ MonoBehaviour:
       - kind: 2
         stacks: 1
         chance: 0.5
+      - kind: 2
+        stacks: 1
+        chance: 0.5
       animation: 7
     heavy:
       name: "R\xF3\u017Cd\u017Cka wody \u2013 pe\u0142na moc"
       delivery: 1
       damageType: 1
-      baseDamage: 55
-      windup: 0.6
-      active: 0.1
-      recovery: 0.4
-      cancelAfter: 0.2
+      baseDamage: 51.8
+      windup: 0.69
+      active: 0.115
+      recovery: 0.46
+      cancelAfter: 0.23
       reach: 0
       radius: 0.3
       lunge: 0
@@ -92,6 +97,9 @@ MonoBehaviour:
       bonusVsBleeding: 0
       executeBonus: 0
       statuses:
+      - kind: 2
+        stacks: 1
+        chance: 1
       - kind: 2
         stacks: 1
         chance: 1
@@ -137,4 +145,6 @@ MonoBehaviour:
   model: {fileID: 919132149155446097, guid: 449418bab2f27f248901803dd28d2fba, type: 3}
   modelScale: 1
   modelGripShift: 0
+  minFloor: 0
+  offerWeight: 1
   grantedSkill: {fileID: 0}

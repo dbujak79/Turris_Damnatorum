@@ -7,7 +7,7 @@ namespace Turris
     /// Stan jednego podejścia. Wszystko tutaj przepada po śmierci
     /// (poza popiołem, który jest od razu dopisywany do profilu przy ukończeniu piętra).
     /// </summary>
-    public class RunState
+    public partial class RunState
     {
         public ClassDefinition startingClass;
         public ClassDefinition appearance;
@@ -84,6 +84,7 @@ namespace Turris
                 if (!s.fromItem || granted.Contains(s.definition)) continue;
                 int slot = SlotOf(s);
                 if (slot >= 0) skillSlots[slot] = null;
+                ReturnSealsOf(s);
                 knownSpells.RemoveAt(i);
                 changed = true;
             }
@@ -103,6 +104,7 @@ namespace Turris
             var known = FindSpell(def);
             if (known != null) { known.permanent |= permanent; return known; }
             var inst = new SpellInstance(def) { permanent = permanent };
+            AttachSeals(inst);
             knownSpells.Add(inst);
             int free = System.Array.IndexOf(skillSlots, null);
             if (free >= 0) skillSlots[free] = inst;

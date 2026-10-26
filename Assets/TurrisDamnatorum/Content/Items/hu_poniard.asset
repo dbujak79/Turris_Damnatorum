@@ -17,8 +17,10 @@ MonoBehaviour:
   description: "Kr\xF3tki, prosty, zawsze pod r\u0119k\u0105. Wymaga Zr\u0119czno\u015Bci 11."
   tags: 41
   kind: 0
+  huSourceId: weapon.dagger.poniard
+  huSourceHash: 73f29ce932e581033a0b7f4f3fd38d68f49e363f47217b3e9861cfb8a30bb305
   twoHanded: 0
-  weight: 1.5
+  weight: 1
   requirements:
   - attribute: 4
     value: 11
@@ -29,11 +31,11 @@ MonoBehaviour:
       name: "Pchni\u0119cie"
       delivery: 0
       damageType: 0
-      baseDamage: 22
-      windup: 0.2
-      active: 0.1
-      recovery: 0.3
-      cancelAfter: 0.1
+      baseDamage: 20
+      windup: 0.19285715
+      active: 0.09642857
+      recovery: 0.28928572
+      cancelAfter: 0.09642857
       reach: 1.7
       radius: 0.6
       lunge: 0.5
@@ -57,17 +59,17 @@ MonoBehaviour:
       statuses:
       - kind: 0
         stacks: 1
-        chance: 0.6
+        chance: 0.5
       animation: 0
     heavy:
       name: "Podw\xF3jne pchni\u0119cie"
       delivery: 0
       damageType: 0
-      baseDamage: 40
-      windup: 0.45
-      active: 0.15
-      recovery: 0.45
-      cancelAfter: 0.22
+      baseDamage: 36.3
+      windup: 0.43392858
+      active: 0.14464286
+      recovery: 0.43392858
+      cancelAfter: 0.21214285
       reach: 1.9
       radius: 0.6
       lunge: 0.8
@@ -134,4 +136,6 @@ MonoBehaviour:
   model: {fileID: 919132149155446097, guid: 82708f6ea67578c4cbbf84714f11d4c3, type: 3}
   modelScale: 1
   modelGripShift: 0
+  minFloor: 0
+  offerWeight: 1
   grantedSkill: {fileID: 0}

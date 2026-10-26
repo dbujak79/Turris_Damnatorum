@@ -1,0 +1,155 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 636ee652052ecf443b59ebf79a72207a, type: 3}
+  m_Name: hu_unique_penance
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ItemDefinition
+  id: hu_unique_penance
+  displayName: Pokuta
+  description: "Biczownicy smagali ni\u0105 siebie. Ty smagasz innych."
+  tags: 17
+  kind: 0
+  huSourceId: weapon.unique.penance
+  huSourceHash: ba2ce223f55228db49aa026e46f91006c2b3cfa09e31d6bdfd0bef17ce73e3f5
+  twoHanded: 0
+  weight: 5
+  requirements:
+  - attribute: 3
+    value: 13
+  modifiers:
+  - stat: 12
+    mode: 0
+    value: 24
+  - stat: 6
+    mode: 0
+    value: 60
+  - stat: 12
+    mode: 0
+    value: 10
+  - stat: 14
+    mode: 0
+    value: 15.000001
+  effects:
+  - type: 22
+    value: 62.5
+  weapon:
+    light:
+      name: "Ci\u0119cie"
+      delivery: 0
+      damageType: 0
+      baseDamage: 70
+      windup: 0.4352
+      active: 0.1904
+      recovery: 0.5712
+      cancelAfter: 0.24480002
+      reach: 2.2
+      radius: 0.96000004
+      lunge: 0.6
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 20
+      poiseDamage: 23.4
+      heavy: 0
+      staminaCost: 16
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 5
+        stacks: 1
+        chance: 0.5
+      animation: 0
+    heavy:
+      name: "Pot\u0119\u017Cne ci\u0119cie"
+      delivery: 0
+      damageType: 0
+      baseDamage: 119
+      windup: 0.952
+      active: 0.24480002
+      recovery: 0.81600004
+      cancelAfter: 0.40800002
+      reach: 2.4
+      radius: 1.08
+      lunge: 0.9
+      tracking: 360
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 45
+      poiseDamage: 52
+      heavy: 1
+      staminaCost: 28
+      projectileSpeed: 14
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses:
+      - kind: 5
+        stacks: 1
+        chance: 1
+      animation: 0
+    lightComboLength: 3
+    strengthScaling: 1.2
+    dexterityScaling: 1
+    intelligenceScaling: 0
+    riposteMultiplier: 3
+    canBlock: 1
+    guard:
+      physicalReduction: 0.6
+      magicReduction: 0.2
+      stabilityMultiplier: 1.2
+      blockAngle: 100
+      staminaRegenMultiplier: 0.3
+    canParry: 0
+    parry:
+      startup: 0.1
+      activeWindow: 0.16
+      recovery: 0.55
+      staminaCost: 16
+      poiseDamage: 65
+      angle: 140
+  shield:
+    guard:
+      physicalReduction: 1
+      magicReduction: 0.4
+      stabilityMultiplier: 0.7
+      blockAngle: 140
+      staminaRegenMultiplier: 0.3
+    canParry: 1
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  color: {r: 0.82, g: 0.83, b: 0.86, a: 1}
+  weaponModel: 10
+  shieldModel: 0
+  model: {fileID: 919132149155446097, guid: 31d40fbe5f88af742bc21bd9a4e3e82f, type: 3}
+  modelScale: 1
+  modelGripShift: 0
+  minFloor: 0
+  offerWeight: 0.35
+  grantedSkill: {fileID: 0}

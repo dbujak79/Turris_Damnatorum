@@ -96,6 +96,7 @@ namespace Turris
             // Premie sytuacyjne ataku: przeciw zamrożonym (rozbija lód) i krwawiącym.
             if (Frozen && hit.bonusVsFrozen > 0) m *= 1f + hit.bonusVsFrozen;
             if (bleeds.Count > 0 && hit.bonusVsBleeding > 0) m *= 1f + hit.bonusVsBleeding;
+            if ((ChillStacks > 0 || Frozen) && hit.bonusVsChilled > 0) m *= 1f + hit.bonusVsChilled;
             hit.physical *= m * (1f + SunderStacks * b.sunderPerStack);
             hit.magic *= m;
             if (hit.isReaction) return null;
@@ -235,6 +236,15 @@ namespace Turris
                     return false;
             }
             return false;
+        }
+
+        /// <summary>Powalenie (Odtrącenie HU): ogłuszenie na podany czas, z odpornością na kontrolę; bez progu zachwiania.</summary>
+        public bool KnockDown(float seconds, BalanceConfig b)
+        {
+            if (Stunned || stunImmunity > 0) return false;
+            stunTime = seconds * ControlMultiplier;
+            stunImmunity = stunTime + b.stunImmunity;
+            return true;
         }
 
         /// <summary>Ogłuszenie (jak zamrożenie bez lodu). Zwraca true, jeśli cel właśnie został ogłuszony.</summary>

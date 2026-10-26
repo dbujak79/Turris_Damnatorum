@@ -23,8 +23,9 @@ Nie zmieniano modeli, klipów ani żadnych plików Hell Unleashed. Ostatnia kont
 | Etap 1 — audyt i zgodność (P0) | Wdrożony; 29/61 skilli, 33/53 broni z jawnym mapowaniem i opisem różnic |
 | Etap 2 — animacje, broń i sylwetka (P1) | Wdrożony, wraz z korektami stopy i sztywnego noska; pozostaje ręczna ocena |
 | Etap 3 — demony i bossowie (P1) | Wdrożony; 34 definicje źródłowe, 37 modeli z wariantami, bestiariusz i próba walki |
-| Etap 4 — pozostałe 32 skille i runtime'y | Nierozpoczęty, poza zatwierdzonym zakresem |
-| Etapy 5–8 — pieczęcie, ekonomia, biomy, UI/audio/postęp | Plan dalszych prac, bez deklaracji pełnej migracji |
+| Etap 4 — pozostałe 32 skille i runtime'y | **Wdrożony 2026-10-23**: 61 skilli z komponentów HU, 19 nowych broni z mocami unikatów – [ETAP4_PIECZECIE.md](ETAP4_PIECZECIE.md) |
+| Etap 5 — pieczęcie | **Wdrożony 2026-10-23**: 186 pieczęci, sakwa, łupy, dar bossa, sklep dusz, kodeks w profilu |
+| Etapy 6–8 — ekonomia, biomy, UI/audio/postęp | Plan dalszych prac, bez deklaracji pełnej migracji |
 
 Najbliższe zadanie w obecnym zakresie: ręczna ocena pozy i chwytów, nowych pojedynków oraz balansu IV–V.
 Rozszerzenie zakresu o etap 4 wymaga nowego zlecenia użytkownika.

@@ -17,8 +17,10 @@ MonoBehaviour:
   description: "Kula na \u0142a\u0144cuchu: szeroki zamach, zachwiewa. Wymaga Si\u0142y 12."
   tags: 17
   kind: 0
+  huSourceId: weapon.flail
+  huSourceHash: d84720136d8f029f96d7db67107f618b1b13f0346443e240c1c45427bee4abe2
   twoHanded: 0
-  weight: 4
+  weight: 5
   requirements:
   - attribute: 3
     value: 12
@@ -30,10 +32,10 @@ MonoBehaviour:
       delivery: 0
       damageType: 0
       baseDamage: 50
-      windup: 0.32
-      active: 0.14
-      recovery: 0.42
-      cancelAfter: 0.18
+      windup: 0.4352
+      active: 0.1904
+      recovery: 0.5712
+      cancelAfter: 0.24480002
       reach: 2.2
       radius: 0.96000004
       lunge: 0.6
@@ -57,17 +59,17 @@ MonoBehaviour:
       statuses:
       - kind: 5
         stacks: 1
-        chance: 0.4
+        chance: 0.5
       animation: 0
     heavy:
       name: "Pot\u0119\u017Cne ci\u0119cie"
       delivery: 0
       damageType: 0
       baseDamage: 90
-      windup: 0.7
-      active: 0.18
-      recovery: 0.6
-      cancelAfter: 0.3
+      windup: 0.952
+      active: 0.24480002
+      recovery: 0.81600004
+      cancelAfter: 0.40800002
       reach: 2.4
       radius: 1.08
       lunge: 0.9
@@ -134,4 +136,6 @@ MonoBehaviour:
   model: {fileID: 919132149155446097, guid: 31d40fbe5f88af742bc21bd9a4e3e82f, type: 3}
   modelScale: 1
   modelGripShift: 0
+  minFloor: 0
+  offerWeight: 1
   grantedSkill: {fileID: 0}

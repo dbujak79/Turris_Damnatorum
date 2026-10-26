@@ -17,6 +17,8 @@ MonoBehaviour:
   description: "Druga r\u0119ka: odblokowuje Przyzwanie chochlik\xF3w. Wymaga Inteligencji 13."
   tags: 2
   kind: 9
+  huSourceId: 
+  huSourceHash: 
   twoHanded: 0
   weight: 1
   requirements:
@@ -131,4 +133,6 @@ MonoBehaviour:
   model: {fileID: 919132149155446097, guid: 917ffb90f53fdca4fa375d665a29418d, type: 3}
   modelScale: 1
   modelGripShift: 0
+  minFloor: 0
+  offerWeight: 1
   grantedSkill: {fileID: 11400000, guid: c2a23620070a5d542a482cd3353d4af4, type: 2}

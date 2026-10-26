@@ -11,6 +11,7 @@ namespace Turris
         {
             var range = root.Range;
             if (range == null) return;
+            DrawRangeSeals();
             // Do wysokości 740 – niżej HUD rysuje listę sterowania (H − 330).
             GUILayout.BeginArea(new Rect(W - 460, 120, 440, 620), box);
             GUILayout.Label("Poligon umiejętności", header);

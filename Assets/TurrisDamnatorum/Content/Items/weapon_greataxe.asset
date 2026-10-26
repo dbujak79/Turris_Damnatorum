@@ -17,6 +17,8 @@ MonoBehaviour:
   description: "Bro\u0144 dwur\u0119czna. Blokuje ca\u0142ym trzonem."
   tags: 145
   kind: 0
+  huSourceId: 
+  huSourceHash: 
   twoHanded: 1
   weight: 10
   requirements:
@@ -131,4 +133,6 @@ MonoBehaviour:
   model: {fileID: 919132149155446097, guid: 4fba84b94cb458743a5a4f4cf5c2b159, type: 3}
   modelScale: 1
   modelGripShift: 0
+  minFloor: 0
+  offerWeight: 1
   grantedSkill: {fileID: 0}

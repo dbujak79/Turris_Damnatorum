@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ItemDefinition
   id: hu_warhammer_siege
   displayName: "M\u0142ot obl\u0119\u017Cniczy"
-  description: "Wolny jak lawina i tak samo nie do zatrzymania. Kruszy pancerz. Wymaga Si\u0142y 16."
+  description: "Kuty na bramy, nie na ludzi. Wymaga Si\u0142y 18."
   tags: 145
   kind: 0
   huSourceId: weapon.warhammer.siege
@@ -31,12 +31,12 @@ MonoBehaviour:
       name: Zamach
       delivery: 0
       damageType: 0
-      baseDamage: 142.5
-      windup: 0.28
-      active: 0.12
-      recovery: 1.0705882
-      cancelAfter: 0.3
-      reach: 2.25
+      baseDamage: 113.5
+      windup: 0.66529405
+      active: 0.22941175
+      recovery: 0.7455881
+      cancelAfter: 0.34411764
+      reach: 2.7
       radius: 1.1
       lunge: 0.7
       tracking: 360
@@ -46,7 +46,7 @@ MonoBehaviour:
       guardLoad: 50
       poiseDamage: 63
       heavy: 0
-      staminaCost: 20
+      staminaCost: 26
       projectileSpeed: 14
       projectileCount: 1
       spreadAngle: 0
@@ -59,20 +59,20 @@ MonoBehaviour:
       statuses:
       - kind: 5
         stacks: 2
-        chance: 1
+        chance: 0.5
       - kind: 7
         stacks: 1
-        chance: 1
+        chance: 0.5
       animation: 0
     heavy:
       name: Egzekucja
       delivery: 0
       damageType: 0
-      baseDamage: 242.25
-      windup: 1.1
-      active: 0.2
-      recovery: 0.9
-      cancelAfter: 0.4
+      baseDamage: 197.1
+      windup: 1.2617646
+      active: 0.22941175
+      recovery: 1.0323528
+      cancelAfter: 0.4588235
       reach: 2.8
       radius: 1.1
       lunge: 1
@@ -83,7 +83,7 @@ MonoBehaviour:
       guardLoad: 85
       poiseDamage: 112
       heavy: 1
-      staminaCost: 26
+      staminaCost: 38
       projectileSpeed: 14
       projectileCount: 1
       spreadAngle: 0
@@ -142,4 +142,6 @@ MonoBehaviour:
   model: {fileID: 919132149155446097, guid: e2489c49d845da846a312d2759b97611, type: 3}
   modelScale: 1
   modelGripShift: 0
+  minFloor: 1
+  offerWeight: 1
   grantedSkill: {fileID: 0}

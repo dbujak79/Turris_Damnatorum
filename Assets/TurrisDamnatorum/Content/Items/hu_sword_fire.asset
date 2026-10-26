@@ -17,6 +17,8 @@ MonoBehaviour:
   description: "Ci\u0119cie ogniem i stal\u0105: podpala i rani do krwi."
   tags: 139
   kind: 0
+  huSourceId: weapon.sword.fire
+  huSourceHash: 8fbfe9ba142af8d7fef280f1fe6fac113a81bd1df01ee8579c78c0fbc5fb1108
   twoHanded: 0
   weight: 4
   requirements:
@@ -60,7 +62,7 @@ MonoBehaviour:
         chance: 0.5
       - kind: 1
         stacks: 1
-        chance: 0.35
+        chance: 0.5
       animation: 0
     heavy:
       name: "Pot\u0119\u017Cne ci\u0119cie"
@@ -140,4 +142,6 @@ MonoBehaviour:
   model: {fileID: 919132149155446097, guid: 0930b95c4ec82b0409d15e15ca807881, type: 3}
   modelScale: 1
   modelGripShift: 0
+  minFloor: 0
+  offerWeight: 1
   grantedSkill: {fileID: 0}

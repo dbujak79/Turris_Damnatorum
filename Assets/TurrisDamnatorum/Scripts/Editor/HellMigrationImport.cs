@@ -38,11 +38,6 @@ namespace Turris.EditorTools
                 ["hu_greataxe_bearded"] = "greataxe_hu_p1", ["hu_greataxe_bardiche"] = "greataxe_hu_p1", ["hu_warhammer_runic"] = "warhammer_hu_p1", ["hu_warhammer_siege"] = "warhammer_hu_p1",
             };
             var real = TurrisSetup.ContentOnDisk();
-            foreach (var id in models.Keys)
-                if (real.TryGetValue(id, out var value) && value is ItemDefinition newWeapon && string.IsNullOrEmpty(newWeapon.huSourceHash))
-                {
-                    HellWeaponCatalog.Apply(newWeapon); EditorUtility.SetDirty(newWeapon);
-                }
             foreach (var model in models.Values.Distinct().Concat(new[] { "greataxe_hu_p1", "warhammer_hu_p1" }))
                 HeroAssetImport.SetupModelMaterial($"Assets/TurrisDamnatorum/Models/Weapons/{model}/", model);
             foreach (var pair in models)

@@ -23,10 +23,20 @@ SKILLS = {
 }
 SKILLS.pop('skill.nova.fire')
 SKILLS['skill.explosion'] = 'hu_nova_fire'
+# Etap 4: pozostałe skille HU (wykonywane przez HuSkillCaster, z pieczęciami).
+SKILLS.update({f'skill.mage.{n}': f'hu_{n}' for n in 'brimstone_rain cyclone_eye damned_chain ember_ring frost_shard glacial_tear infernal_orb stone_spikes stone_ward tidal_wave wind_step'.split()})
+SKILLS.update({f'skill.rogue.{n}': f'hu_{n}' for n in 'arrow_rain shadow_step sulfur_arrow sulfur_bomb thorn_scatter volley'.split()})
+SKILLS.update({f'skill.aura.{n}': f'hu_aura_{n}' for n in 'might purity renewal zeal'.split()})
+SKILLS.update({f'skill.summon.{n}': f'hu_summon_{n}' for n in 'golem hounds'.split()})
+SKILLS.update({f'skill.warrior.{n}': f'hu_{n}' for n in 'axe_throw breaker_wave executioners_fall infernal_charge repel slag_spray storm_verdict whirlwind'.split()})
+SKILLS['skill.warrior.quake'] = 'hu_warrior_quake'
 WEAPONS = {f'weapon.{n}': f'hu_{n}' for n in 'sword greatsword greataxe warhammer flail shield bow dagger offdagger'.split()}
 WEAPONS.update({f'weapon.{n.replace("_", ".")}': f'hu_{n}' for n in 'sword_broad sword_fire sword_water sword_air sword_earth wand_water wand_air wand_earth grimoire_water grimoire_air grimoire_earth grimoire_summoning'.split()})
 WEAPONS.update({'weapon.wand': 'hu_wand_fire', 'weapon.grimoire': 'hu_grimoire_fire', 'weapon.dagger.poniard': 'hu_poniard'})
 WEAPONS.update({f'weapon.{n.replace("_", ".")}': f'hu_{n}' for n in 'flail2h flail2h_iron morningstar2h morningstar2h_runic staff greataxe_bearded greataxe_bardiche warhammer_runic warhammer_siege'.split()})
+WEAPONS.update({f'weapon.{n.replace("_", ".")}': f'hu_{n}' for n in 'bow_composite bow_recurve dagger_kris dagger_misericorde flail_knight flail_spiked greatsword_executioner greatsword_flamberge morningstar morningstar_heavy'.split()})
+WEAPONS.update({'weapon.sword.broadsword': 'hu_broadsword', 'weapon.sword.sabre': 'hu_sabre'})
+WEAPONS.update({f'weapon.unique.{n}': f'hu_unique_{n}' for n in 'dziewanna_bow last_word penance perun_blade svarog_hammer szczerbiec widows_lament'.split()})
 ENEMIES = {'enemy.imp': 'enemy_imp', 'enemy.cultist': 'enemy_hu_cultist', 'enemy.worm': 'enemy_worm', 'enemy.minion': 'enemy_minion', 'enemy.boss': 'enemy_gatelord'}
 
 
@@ -68,9 +78,52 @@ def ability(text):
     return {'name': name, 'argument': arg, 'parameters': parameters(tail.split(',')) if tail else [], 'raw': text}
 
 
+def strings_table():
+    names = {}
+    for p in sorted((SOURCE / 'src/Game/Scripts/Infrastructure').glob('Strings*.cs')):
+        names.update(re.findall(r'\["([^"\n]+)"\] = "([^"\n]*)"', p.read_text(encoding='utf-8-sig')))
+    return names
+
+
+def runtime_skills(catalog, names):
+    rows = []
+    for r in catalog['skills']:
+        f = r['fields']
+        key = f.get('NameKey', r['id'])[:-len('.name')] if f.get('NameKey', '').endswith('.name') else r['id']
+        rows.append({
+            'id': r['id'], 'targetId': r['targetId'], 'sha256': r['sha256'],
+            'name': names.get(key + '.name', r['id']), 'desc': names.get(key + '.desc', ''),
+            'l2': names.get(key + '.l2', ''), 'l3': names.get(key + '.l3', ''),
+            'classId': f.get('ClassId', ''), 'element': int(f.get('Element', 0)), 'targeting': int(f.get('Targeting', 0)),
+            'tags': f.get('Tags', []), 'components': f.get('Components', []),
+            # Jak HU ParseSkillLevels: pusty kolejny poziom kończy listę (skill klasy ma jeden poziom).
+            'levels': [{'values': [f"{p['key']}={p['value']:g}" for p in level]} for i, level in enumerate(r['levels'])
+                       if i == 0 or all(f.get(f'Level{j}') for j in range(2, i + 2))],
+            'minWave': int(f.get('MinWave', 1)), 'shop': bool(f.get('AvailableInShop', True)),
+        })
+    return {'skills': rows}
+
+
+def runtime_seals(names):
+    rows = []
+    for p in sorted((SOURCE / 'src/Game/Content/Seals').glob('*.tres')):
+        f = read_resource(p)
+        sid = f['Id']
+        rows.append({
+            'id': sid, 'sha256': sha(p), 'name': names.get(f.get('NameKey', ''), sid), 'desc': names.get(f.get('DescriptionKey', ''), ''),
+            'kind': int(f.get('Kind', 1)), 'skillId': f.get('SkillId', ''), 'classId': f.get('ClassId', ''), 'group': f.get('Group', ''),
+            'requiresComponents': f.get('RequiresComponents', []), 'requiresTags': f.get('RequiresTags', []),
+            'forbidsComponents': f.get('ForbidsComponents', []), 'forbidsTags': f.get('ForbidsTags', []),
+            'requiresTargeting': f.get('RequiresTargeting', ''), 'notOfElement': f.get('NotOfElement', ''),
+            'requiresSeals': f.get('RequiresSeals', []), 'ops': f.get('Ops', []), 'partnerOps': f.get('PartnerOps', []),
+            'lootOnly': bool(f.get('LootOnly', False)), 'basePrice': float(f.get('BasePrice', 45)), 'weight': float(f.get('Weight', 1)),
+            'shop': bool(f.get('AvailableInShop', True)),
+        })
+    return {'seals': rows}
+
+
 def generate():
-    strings = (SOURCE / 'src/Game/Scripts/Infrastructure/Strings.cs').read_text(encoding='utf-8-sig')
-    names = dict(re.findall(r'\["([^"\n]+)"\] = "([^"\n]*)"', strings))
+    names = strings_table()
     model_text = (SOURCE / 'src/Game/Scripts/World/EnemyActor.cs').read_text(encoding='utf-8-sig').split('public static (string Path, float Height) For')[1]
     models = {k: (model, float(height)) for k, model, height in re.findall(r'"(enemy\.[^"]+)" => \(ModelLibrary.Demon\("([^"]+)"\), ([\d.]+)f\)', model_text)}
     models.update({'enemy.imp': ('imp', 1.3), 'enemy.brute': ('brute', 2.4), 'enemy.boss': ('gatelord', 3.8)})
@@ -225,7 +278,10 @@ def main():
     (OUT / 'catalog.json').write_text(json.dumps(catalog, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
     runtime = {'enemies': [r['fields'] | {k: r[k] for k in ('targetId', 'model', 'height', 'sha256', 'displayName')} for r in catalog['enemies']]}
     (OUT / 'enemies.json').write_text(json.dumps(runtime, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
-    (OUT / 'weapons.json').write_text(json.dumps({'weapons': [r['fields'] | {k: r[k] for k in ('targetId', 'sha256', 'displayName')} for r in catalog['weapons']]}, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
+    names = strings_table()
+    (OUT / 'skills.json').write_text(json.dumps(runtime_skills(catalog, names), ensure_ascii=False, indent=1)+'\n', encoding='utf-8')
+    (OUT / 'seals.json').write_text(json.dumps(runtime_seals(names), ensure_ascii=False, indent=1)+'\n', encoding='utf-8')
+    (OUT / 'weapons.json').write_text(json.dumps({'weapons': [r['fields'] | {k: r[k] for k in ('targetId', 'sha256', 'displayName')} | {'description': names.get(r['fields'].get('DescriptionKey', ''), '')} for r in catalog['weapons']]}, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
     manifest = OUT / 'source_manifest.json'
     # Nigdy nie zastępuj punktu odniesienia po rozpoczęciu migracji.
     if not manifest.exists():

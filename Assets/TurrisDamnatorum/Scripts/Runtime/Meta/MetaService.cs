@@ -252,6 +252,7 @@ namespace Turris
             Profile.ash += ash;
             run.ashEarned += ash;
             Profile.bestFloor = Mathf.Max(Profile.bestFloor, floorIndex + 1);
+            RecordDiscoveries(run);
             Save();
             return ash;
         }
@@ -266,6 +267,13 @@ namespace Turris
             Profile.totalVictories++;
             Save();
             return ash;
+        }
+
+        /// <summary>Kodeks pieczęci: dopisuje zespolenia i więzi obudzone w podejściu.</summary>
+        public void RecordDiscoveries(RunState run)
+        {
+            if (Profile.discoveredSeals == null) Profile.discoveredSeals = new List<string>();
+            foreach (var id in run.WokenSeals) if (!Profile.discoveredSeals.Contains(id)) Profile.discoveredSeals.Add(id);
         }
 
         public void RecordReachedFloor(int floorIndex)
@@ -375,7 +383,7 @@ namespace Turris
                     else run.inventory.Add(off);
                 }
             }
-            if (plan.classDef.signatureSkill != null) run.signatureSkill = new SpellInstance(plan.classDef.signatureSkill) { permanent = true };
+            if (plan.classDef.signatureSkill != null) { run.signatureSkill = new SpellInstance(plan.classDef.signatureSkill) { permanent = true }; run.AttachSeals(run.signatureSkill); }
             run.SyncGrantedSkills();
             foreach (var t in plan.classDef.startingTalents) if (t != null) run.AddBoon(t);
             foreach (var u in plan.extras)

@@ -1,0 +1,137 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 636ee652052ecf443b59ebf79a72207a, type: 3}
+  m_Name: hu_bow_composite
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ItemDefinition
+  id: hu_bow_composite
+  displayName: "\u0141uk kompozytowy"
+  description: "R\xF3g, drewno i \u015Bci\u0119gno: strza\u0142a przebija pierwszego wroga. Wymaga Zr\u0119czno\u015Bci 15."
+  tags: 32
+  kind: 0
+  huSourceId: weapon.bow.composite
+  huSourceHash: 77357d81c90e964ac7d029e87e4b933eb4af641f213b117ced9e5bc675aafb39
+  twoHanded: 1
+  weight: 2
+  requirements:
+  - attribute: 4
+    value: 15
+  modifiers: []
+  effects:
+  - type: 27
+    value: 1
+  weapon:
+    light:
+      name: "Strza\u0142"
+      delivery: 1
+      damageType: 0
+      baseDamage: 47
+      windup: 0.33103445
+      active: 0.10344827
+      recovery: 0.33103445
+      cancelAfter: 0.12413792
+      reach: 0
+      radius: 0.3
+      lunge: 0
+      tracking: 540
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 14
+      poiseDamage: 10
+      heavy: 0
+      staminaCost: 10
+      projectileSpeed: 30
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses: []
+      animation: 0
+    heavy:
+      name: "Napi\u0119ty strza\u0142"
+      delivery: 1
+      damageType: 0
+      baseDamage: 112.8
+      windup: 0.8793103
+      active: 0.10344827
+      recovery: 0.46551722
+      cancelAfter: 0.20689654
+      reach: 0
+      radius: 0.3
+      lunge: 0
+      tracking: 540
+      blockable: 1
+      parryable: 1
+      dodgeable: 1
+      guardLoad: 35
+      poiseDamage: 35
+      heavy: 1
+      staminaCost: 22
+      projectileSpeed: 40
+      projectileCount: 1
+      spreadAngle: 0
+      explosionRadius: 0
+      element: 0
+      elementShare: 0
+      bonusVsFrozen: 0
+      bonusVsBleeding: 0
+      executeBonus: 0
+      statuses: []
+      animation: 0
+    lightComboLength: 3
+    strengthScaling: 0.5
+    dexterityScaling: 1.5
+    intelligenceScaling: 0
+    riposteMultiplier: 4
+    canBlock: 0
+    guard:
+      physicalReduction: 0.6
+      magicReduction: 0.2
+      stabilityMultiplier: 1.2
+      blockAngle: 100
+      staminaRegenMultiplier: 0.3
+    canParry: 0
+    parry:
+      startup: 0.06
+      activeWindow: 0.24
+      recovery: 0.45
+      staminaCost: 12
+      poiseDamage: 80
+      angle: 150
+  shield:
+    guard:
+      physicalReduction: 1
+      magicReduction: 0.4
+      stabilityMultiplier: 0.7
+      blockAngle: 140
+      staminaRegenMultiplier: 0.3
+    canParry: 1
+    parry:
+      startup: 0.08
+      activeWindow: 0.2
+      recovery: 0.5
+      staminaCost: 15
+      poiseDamage: 70
+      angle: 150
+  color: {r: 0.5, g: 0.35, b: 0.22, a: 1}
+  weaponModel: 15
+  shieldModel: 0
+  model: {fileID: 919132149155446097, guid: 128481bf6c892b045a907282ae1ca67f, type: 3}
+  modelScale: 1.05
+  modelGripShift: 0
+  minFloor: 1
+  offerWeight: 1
+  grantedSkill: {fileID: 0}

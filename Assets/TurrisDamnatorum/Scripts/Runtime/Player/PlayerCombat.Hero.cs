@@ -72,6 +72,8 @@ namespace Turris
             blinkFxRemaining = 0f;
             OverloadReady = false; OverheatTime = 0f; cryReduction = 0f; cryTime = 0f;
             pulses.Clear();
+            HuClear();
+            GearFloorStart();
             Run?.signatureSkill?.ResetCooldown();
             Servant.DismissAll();
             Ward = WardMax;
@@ -180,11 +182,21 @@ namespace Turris
                 var a = Auras[i];
                 if (a == null || a.Skill == null) continue;
                 float power = AuraPower(i);
-                foreach (var m in a.Skill.auraModifiers) Run.tempModifiers.Add(new StatModifier(m.stat, m.value * power, m.mode));
+                if (a.IsHu) Run.tempModifiers.AddRange(a.HuModifiers());
+                else foreach (var m in a.Skill.auraModifiers) Run.tempModifiers.Add(new StatModifier(m.stat, m.value * power, m.mode));
+                // Koszt aury: Pobożność rezerwuje manę (20% pierwsza, 30% druga – jak w HU); inne klasy po 20% wytrzymałości.
+                if (Trait == ClassTrait.Devotion) Run.tempModifiers.Add(new StatModifier(StatType.MaxMana, i == 0 ? -AuraManaReserveFirst : -AuraManaReserveSecond, ModifierMode.Percent));
+                else Run.tempModifiers.Add(new StatModifier(StatType.MaxStamina, -AuraStaminaReserve, ModifierMode.Percent));
             }
             if (Raging) Run.tempModifiers.Add(new StatModifier(StatType.AttackSpeed, RageAttackSpeed * 100f));
             if (Build != null) RefreshBuild();
         }
+
+        /// <summary>Rezerwacja zasobu przez aktywną aurę (%) – aura nie jest darmowa (audyt balansu).</summary>
+        public const float AuraManaReserveFirst = 20f, AuraManaReserveSecond = 30f, AuraStaminaReserve = 20f;
+
+        /// <summary>Forma aury HU zmieniła jej siłę (sztandar, tłum) – premie przeliczane od nowa.</summary>
+        public void AuraStrengthChanged() => UpdateTempModifiers();
 
         /// <summary>Moc aury: Pobożność – pierwsza ×1,2, druga ×0,75; bez niej ×1.</summary>
         float AuraPower(int index) => Trait != ClassTrait.Devotion ? 1f : index == 0 ? 1.2f : 0.75f;
@@ -338,6 +350,19 @@ namespace Turris
             int index = Auras.Count;
             float power = AuraPower(index);
             var def = sk.Def;
+            if (IsHu(sk))
+            {
+                var hu = AuraEffect.SpawnHu(this, sk, power);
+                Auras.Add(hu);
+                UpdateTempModifiers();
+                if (announce)
+                {
+                    HellFx.Shockwave(transform.position, HellSkillFx.Family(def), def.color, hu.Radius);
+                    Sfx.Play(SoundId.Enchant, AimPoint, 0.8f);
+                    CombatEvents.RaiseMessage(def.displayName, def.color);
+                }
+                return;
+            }
             float radius = def.attack.radius * Mathf.Sqrt(power);
             bool offensive = def.attack.baseDamage > 0f;
             var aura = AuraEffect.Spawn(transform, this, def, radius, def.tickInterval, offensive ? () =>
