@@ -32,6 +32,7 @@ namespace Turris
         public float actionTime;        // sekundy od rozpoczęcia akcji
         public float actionDuration;    // łączny czas akcji (dla akcji jednofazowych, np. drgnięcia)
         public float windupSeconds;     // atak: długość zapowiedzi (s) – demony prowadzą klip do szczytu i ciosu jak w Hell Unleashed
+        public float activeSeconds;     // gracz: długość okna trafienia do mapowania krótkich wycinków klipów
         public bool hasShield;
         public bool offhandAttack;
         public bool weaponGuard;        // blok bronią (brak tarczy)

@@ -1,20 +1,174 @@
 # Turris Damnatorum — stan prac i plan
 
-### Następna sesja — wdrożenie wojownika gotyckiego anime
+### Ostatnia sesja — 2026-10-26: ciągłość serii i paleta gotyckiego paladyna
 
-- [Konkretny plan integracji](PLAN_WDROZENIA_WOJOWNIKA_ANIME.md): dopasowanie kopii szkieletu, wagi, import Humanoid,
-  osobna definicja wyglądu, istniejące animacje/broń/VFX, celowane `class_knight.lookOverride`, testy i zrzuty w Unity.
-- **Sprawdzono istniejący rig wojownika z kopii w Turris:** 26 kości, komplet 22 sprawdzonych kości sterownika i gniazda obu dłoni.
-  Nadaje się jako baza po dopasowaniu ramion, kolan i stóp; nie ma kości palców dłoni. Raport i nakładki: `ArtSource/GothicAnimePoC/Warrior/rig-*`.
-- Na prośbę użytkownika **zwinięto palce obu dłoni w geometrii**. Do dalszej pracy używać `warrior-v2-grip.blend/fbx/glb`
-  w [katalogu źródeł](../ArtSource/GothicAnimePoC/Warrior/README.md); oryginalne `warrior-v1.*` zachowane.
-  Wersja v2: 1,8 m, stopy na podłożu, 45 832 trójkąty, tekstura 2K, nadal bez szkieletu i wag.
-- Oba eksporty v2 ponownie wczytane z teksturą; geometria poza dłońmi bez zmian po normalizacji.
-  Obejrzano model oraz zbliżenia obu chwytów, także z próbną rękojeścią 25 mm (walec tylko w podglądach).
-- Praca lokalna w Blenderze, **0 kolejnych kredytów Meshy**. Gry ani plików Hell Unleashed nie zmieniano;
-  Unity i testy animacji nowego modelu pozostają do wykonania w następnej sesji.
+- Odtworzony nienaturalny przeskok pomiędzy pierwszym a drugim ciosem: poprzednia poza była zamrażana,
+  przejście do odległej pozy trwało około 0,11 s, po czym krótki klip czekał w przygotowaniu. W nowych pomiarach
+  przy różnych chwilach przerwania pierwszego ciosu dłoń przemieszczała się do **28,19 cm/kl.**, barki do **28,42°/kl.**
+- Wyłącznie prywatne drugie cięcie paladyna ma `preparationBlendShare=1`: wejście rozłożone na zapowiedź,
+  poprzedni klip przez chwilę kontynuuje ruch z wygaszaną prędkością, a krótki wycinek łagodnie zaczyna zamach.
+  Pozostałe klipy zachowują wcześniejsze przenikanie. Wycinek nadal **18–24**, wczesny powrót do gardy,
+  tempo aktywnego cięcia **1,00×**; parametry walki i chwila trafienia bez zmian.
+- Nowa próba `FlailCombo_SecondHitHasContinuousPreparation` porównuje trzy momenty przejścia (25/55/90% regeneracji)
+  i mierzy dłoń, barki, biodra. Po poprawce: **10,07 cm/kl.**, zmiana kroku dłoni maks. **2,87 cm/kl.**,
+  barki **9,17°/kl.**, biodra **0,85 cm/kl.**; także sprawdzenie pełnej zapowiedzi w scenie `Main`.
+- Zbroja przybliżona do [wzoru użytkownika](../ArtSource/GothicAnimePoC/Paladin/reference-palette.png):
+  przygaszona ciepła stal, stare złoto obrzeży, ciepłe cienie zamiast błękitnych. Korekta palety w `AnimeMatte`
+  korzysta z istniejącej tekstury i UV, osobno rozpoznaje neutralne płyty i beżowe okucia, zachowuje burgund tkaniny.
+  Niższy udział światła otoczenia i limit światła głównego zapobiegają wybielaniu płyt na arenie. Materiał nadal matowy,
+  bez połysku i odbić; shader ma cztery przebiegi, bez błędów Direct3D12. Zrzuty z galerii i normalnej kamery gry obejrzane.
+- Próby obrazu potwierdzają zachowaną matowość, światła dodatkowe, ciepłą stal/złoto i ciemniejszy cień.
+  Poprzedni wygląd i pomiary w `TestResults/paladin-anime/before-transition-palette/`;
+  bieżący tor w `combo-transition.tsv`, galeria `combo-transition.png`, wygląd w `paladin-idle.png` i `paladin-game.png`.
+- Celowane **PlayMode 15/15** i pełne **EditMode 196/0/1** (pominięty warunkowy eksport WAV) przez MCP.
+  Wyniki `TestResults/paladin-anime/transition-palette-*.json`; bez pełnego PlayMode i buildu gracza.
+- Sumy SHA256 nadal **16/16 plików wojownika i 336/336 współdzielonych plików animacji bez zmian**.
+  Hell Unleashed bez zmian, bez operacji Meshy. Commit na prośbę użytkownika na `codex/paladin-gothic-anime`, bez pusha.
+  Następny krok: ocena wyczucia przejścia i palety w zwykłej grze.
 
-### Ostatnia sesja — 2026-10-23/26: audyt skilli i pieczęci (pomiar na manekinach) i korekty
+### Poprzednia poprawka — 2026-10-26: krótszy drugi cios i swobodny korbacz
+
+- Drugi lekki cios nowego paladyna kończy się wcześniej: prywatny `paladin_slash_left.fbx` obejmuje teraz
+  **klatki 18–24** zamiast 18–33. Wycięto końcówkę z unoszeniem ręki. Po końcu klipu warstwa akcji płynnie
+  wygasa do gardy, również przed zakończeniem logicznej regeneracji. Obrażenia, koszty i czasy akcji bez zmian.
+  Pomiar retargetowanego modelu w serii: dłoń maks. **1,285 m** (bark w gardzie 1,261 m), pod koniec wraca do gardy.
+- Odtworzone zwolnienie krótkiego cięcia przy wolniejszym korbaczu: około **0,70×** nagrania w próbie bazowej.
+  Mapowanie czasu korzysta z faktycznych czasów zapowiedzi/trafienia i nie rozciąga krótkiego cięcia.
+  Obecnie **1,00×**, także w serii uruchomionej przez `PlayerCombat` w prawdziwej scenie `Main`.
+  Pozostałe klipy zachowują dotychczasowe ustawienia; czasy faz przekazywane wyłącznie dla lekkich/mocnych ataków.
+- `HellFlailChain` oparty na HU `FlailChain`: 14 ogniw, Verlet w świecie, grawitacja 9,8, masa kuli 12,
+  12 iteracji ograniczeń i podkroki do 1/120 s. Aktualizacja po końcowej pozie dłoni/broni, także podczas hitstopu;
+  pauza zatrzymuje symulację. Bezwładność, reset przy teleportacji, ograniczenie długiej klatki i stałe długości kości.
+  Kula porusza istniejącą siatką poprzez obroty kości; rozszerzone granice renderera i `updateWhenOffscreen`.
+  `WeaponTip` podąża za kulą. Bez zapisu do modeli źródłowych ani Hell Unleashed.
+- Celowane **PlayMode 14/14** przez MCP: seria i wysokość dłoni, tempo korbacza, oba zestawy biegu,
+  matowy materiał, buty, niezależny ruch kuli i deformacja siatki, start w `Main` oraz cztery regresje wcześniejszych modeli.
+  Seria jednoręczna: biodra min. **0,764 m**, zmiana na klatkę maks. **2,8 cm**, cofnięcie podparcia maks. **1,8 cm**.
+  Niezależny ruch kuli **0,952 m**; galeria `combo-onehand.png`, `flail-chain-cycle.png` i `TestResults/flail/flail-*.png` obejrzana.
+  Wyniki: `TestResults/paladin-anime/flail-final-playmode.json`; pełnego PlayMode ani buildu gracza nie wykonywano.
+- Pełne **EditMode: 196 zaliczonych, 0 błędów, 1 pominięty** (warunkowy eksport WAV), w tym oba korbacze,
+  ciągłość długości łańcucha, bezwładność, pauza, długa klatka i teleport. Wynik w `flail-final-editmode.json`.
+- Sumy SHA256: **336/336 współdzielonych plików animacji i 16/16 plików wojownika bez zmian**.
+  Bez operacji Meshy, commita i pusha. Kolejny krok: ocena wyczucia krótszego ciosu podczas zwykłej walki.
+
+### Poprzednia poprawka — 2026-10-26: tempo korbacza i ruch kuli
+
+- Przy krótkim `paladin_slash_left` (0,5 s) wolniejszy korbacz rozciągał odcinek trafienia do około **0,77×**
+  tempa nagrania. `PlayerCombat.GetAnimState` przekazuje teraz rzeczywiste czasy zapowiedzi i okna trafienia.
+  `ClipAnimationDriver.NormalizedTime` dla krótkich wycinków z jawnym `strikeShare` zachowuje co najmniej tempo
+  nagrania: nadmiar zapowiedzi jest przygotowaniem, przejście przez cel ciągłe na granicy faz. Wynik **1,00×**.
+  Obrażenia, koszty i czasy akcji bez zmian. Pozostałe klipy zachowują dotychczasowe mapowanie.
+- Sprawdzony istniejący, niezacommitowany port `HellFlailChain` względem HU `FlailChain`: 14 ogniw,
+  symulacja Verlet w świecie, grawitacja, bezwładność ciężkiej kuli, ograniczenia długości, obroty kości.
+  Siatka reaguje na kości. Włączone `updateWhenOffscreen` na siatkach korbacza, aby przeliczać skórę i obrys
+  również poza obrysem spoczynkowym. Kod i pliki Hell Unleashed bez zmian.
+- `FlailPlayTests`: tempo i ciągłość krótkiego cięcia, korbacz w dłoni nowego paladyna, ugięcie siatki,
+  stała długość łańcucha i pauza. Galeria `TestResults/flail/flail-*.png` obejrzana.
+  **4/4 celowane PlayMode** (w tym regresje obu serii paladyna); pełny **EditMode 191/0/1** przez MCP.
+  To próby sterownika i uzbrojonego modelu; pełnego PlayMode ani buildu gracza nie wykonywano.
+
+### Poprzednia poprawka — 2026-10-26: przysiad podczas serii ataków paladyna
+
+- **Odtworzone:** w drugim lekkim ciosie zestawu jednoręcznego (`sword and shield slash (5)`) biodra paladyna
+  opadały z **0,888 do 0,496 m** — spadek **39,2 cm**, do **7,7 cm w klatce**. Głęboki przysiad pochodzi z klipu,
+  nie z korekty biegu ani kumulowania przesunięcia modelu. Seria dwuręczna bez tego problemu.
+- `PaladinAnimeImport.StandingComboSet`: osobny **`anim_paladin_anime_onehand.asset`** tylko dla nowego paladyna.
+  Drugie cięcie korzysta z lokalnej kopii `sword and shield slash (3)`, **klatki 18–33** (drugi, stojący zamach,
+  koniec przed cofnięciem nogi), zapisanej jako `Models/PoC/PaladinAnime/paladin_slash_left.fbx`.
+  Zsynchronizowane granice zamachu/trafienia i krzywa kroku z `RootT.z`. Parametry walki, obrażenia i czasy akcji bez zmian.
+  Pozostałe akcje, bieg/chód i zestaw dwuręczny zachowują dotychczasowe klipy.
+- Nowe próby `OneHandCombo_DoesNotDropIntoCrouch` i `TwoHandCombo_DoesNotDropIntoCrouch`:
+  seria różnych ciosów i powtarzanie tego samego cięcia, wysokość bioder, płynność przejść i cofnięcie podparcia.
+  Po zmianie seria jednoręczna min. **0,764 m**, spadek **12,5 cm**, zmiana na klatkę max **3,4 cm**;
+  dwuręczna spadek **14,9 cm** (bez podmiany). Arkusze `combo-onehand.png` i `combo-twohand.png`, pomiary TSV;
+  poprzednie wyniki i zrzuty w `TestResults/paladin-anime/before-combo-fix/`.
+- Pełne EditMode **191/0/1** przez MCP. Sumy SHA256: **336/336 współdzielonych plików animacji oraz 16/16 plików wojownika bez zmian**.
+  Bez zmian Hell Unleashed, operacji Meshy, commita i pusha.
+
+### Poprzednia poprawka — 2026-10-26: węższy tor biegu i ruch tułowia paladyna
+
+- Uwaga użytkownika po poprzedniej poprawce: bieg nadal sztywny, nogi zbyt szeroko, tułów nie pracuje.
+  Poprzednie pomiary dotyczyły kostki **względem biodra** i kości buta; nie oceniały szerokości względem osi ruchu ani pracy siatki tułowia.
+- **Tor stóp odniesiony teraz do osi ruchu postaci.** W biegu cel ±5,5 cm zamiast prowadzenia pod biodrami,
+  w chodzie ±8 cm; zachowana mała część bocznej trajektorii z klipu. W próbie podpora od osi maks. około **6,3 cm**
+  (wcześniej **12,86 cm** miecz/tarcza i **10,27 cm** broń dwuręczna).
+- Poluzowana korekta nóg: zachowana ograniczona praca płaszczyzny zgięcia kolana (do 3,6° z nagrania),
+  mała zmienność kierunku buta (do 4°) i łagodniejsze pochylenie stopy w wymachu. Stałe długości kości i sztywne buty zachowane.
+- **Przyczyna sztywnego tułowia:** `Spine` i `Spine1` miały łączną wagę **0**; siatka brzucha i klatki wisiała na `Spine2`.
+  Szkielet już niósł ruch, ale widoczna bryła pozostawała jednym blokiem. `rig_anime_paladin.py` rozkłada teraz wagi
+  na biodra, lędźwie i obie części klatki, z płynnymi przejściami. Praca siatki brzucha względem klatki w cyklu
+  **9,23° / 7,46°** dla obu zestawów. Nie dodawano sztucznego kołysania całej postaci ani zmieniano klipów współdzielonych.
+- Rozszerzone próby `PaladinAnimePlayTests`: tor stopy od środka postaci, obrót miednicy/barków,
+  rzeczywista praca **siatki** brzucha względem klatki i arkusze ośmiu faz cyklu z przodu oraz boku.
+  `PaladinAnimeTests` wykrywa teraz również nieużywane kości tułowia. Pełne EditMode **191/0/1** przez MCP.
+- Celowane PlayMode **7/7**: oba zestawy przy 5,2 i 8,06 m/s, rzeczywisty bieg w `Main`, galeria ośmiu stanów,
+  matowość i regresje dotychczasowych modeli. Tor podparcia maks. **6,28 / 6,16 cm** od osi; kolano od płaszczyzny
+  kroku maks. **2,29 / 2,15 cm**. Buty zachowują wymiary (<0,001 mm w galerii), kontrolowany kierunek do 4°;
+  długości ud i goleni stałe (<0,01 mm). Podpora w grze: przesunięcie na klatkę p95 **2,01 cm** przy 60 kl./s.
+  Arkusze cyklu obu zestawów oraz widok z normalnej kamery gry obejrzane. Wynik dotyczy edytora; bez buildu gracza i pełnego PlayMode.
+- Wyniki i obrazy: `TestResults/paladin-anime/fluid-*.json`, `run-feet-cycle*.png`, `run-twohand-cycle*.png`;
+  poprzedni tor i pomiary zachowane w `before-fluid-run/`. Wojownik: **16/16 plików nadal identycznych**, bez operacji Meshy,
+  zmian Hell Unleashed, commita i pusha. Matowy materiał pozostaje jak po poprzedniej poprawce.
+
+### Poprzednia poprawka — 2026-10-26: anatomia biegu paladyna anime i matowa zbroja
+
+- **Poprawiona przyczyna szerokiego kroku w modelu:** poza T obejmuje teraz pionowe nogi pod biodrami oraz płaskie,
+  skierowane do przodu buty. Importer aktualizuje zapamiętaną w meta pozę szkieletu z aktualnego FBX.
+  Jawne mapowanie Humanoid obejmuje **22 kości** (wcześniej automatyczne: 16, brak palców, barków i części kręgosłupa).
+  Brak `Left/RightToes` wyłączał wcześniej `CaptureRestFeet` i korekty stóp mimo formalnie poprawnego awatara.
+- **Błąd źródłowego retargetu potwierdzony pomiarem:** skręt lewej stopy w klipie biegu miecz/tarcza
+  `−2,71…−0,97` jednostki mięśnia Humanoid, skręt goleni `0,68…1,25`; zapisane cele IK odtwarzały wadliwą pozę
+  także po edycji samych krzywych mięśni. Sam test sztywności siatki buta nie wykrywał tego problemu.
+- `ClipAnimationDriver.AlignArmoredRunFeet`, **opcja `sagittalRunFeet` włączona wyłącznie w `visual_paladin_anime`**:
+  kostki pod biodrami, kolana zginają się do przodu w płaszczyźnie kroku, usunięty boczny skręt butów,
+  ograniczone zgięcie kostki; stałe długości segmentów zamiast rozciągania goleni przez Humanoid.
+  Zachowane cele wykroku/wysokości (w granicach zasięgu nóg), kadencja i dotychczasowe klipy; korekta wygasa przy akcjach całego ciała.
+  Bieg na skos uwzględnia obrót bioder; osobne klipy ruchu w tył/bokiem zachowują swoje prowadzenie.
+- **Matowa zbroja:** nowy `Shaders/AnimeMatte.shader`, przypisany tylko do materiału nowego paladyna.
+  Oświetlenie rozproszone w pasmach, cienie i światła dodatkowe Forward+, bez metalicznej BRDF, połysku i odbić otoczenia.
+  `TintSet` i statusy HU pozostają obsługiwane; moknięcie zmienia barwę, nie przywraca połysku.
+- **Weryfikacja MCP, Unity 6000.6.3f1 / URP / Linear / Direct3D12:** pełne EditMode **191/0/1**;
+  celowane PlayMode **7/7**: pięć prób paladyna oraz dwie regresje biegu dotychczasowych modeli/wojownika.
+  Shader wspierany, 0 komunikatów błędów kompilacji; przebiegi Forward, ShadowCaster, DepthOnly i DepthNormals.
+  Bieg **5,2 i 8,06 m/s**, oba zestawy broni, po 360 analizowanych klatek na zestaw:
+  kostka od biodra w bok maks. **1,60 cm / 1,39 cm**, kolano poza płaszczyzną <0,01 cm,
+  boczne odchylenie butów <0,01°, długości kości stałe (błąd numeryczny <0,01 mm).
+  Test materiału: różnica koloru przy zmianie widoku **0**, kontrola PBR **0,06275**; światło punktowe odbierane.
+  Rzeczywisty bieg paladyna sterowanego wirtualnym padem w `Main`: przesunięcie stopy podporowej na klatkę p95 **2,01 cm** przy 60 kl./s.
+- Obejrzane fazy z przodu i boku dla obu zestawów broni oraz `TestResults/paladin-anime/paladin-game-run.png`
+  z normalnej kamery gry. Raporty `final-editmode.json`, `final-playmode.json`, przebiegi `run-feet.tsv` i `run-twohand.tsv`.
+  **16 plików wojownika nadal identycznych bajtowo.** Hell Unleashed bez zmian; 0 operacji Meshy, bez commita/pusha.
+- Zakres dowodu: edytor i wskazane scenariusze; bez pełnego PlayMode, buildu gracza i pomiaru GPU.
+  Dalsza ocena: bieganie po nierównych płytach i przejścia ruch–walka w zwykłym graniu; przenikanie tabardu/naramienników w skrajnych pozach.
+
+### Wdrożenie — 2026-10-26: model gotyckiego anime jako paladyn
+
+- Branch **`codex/paladin-gothic-anime`**, utworzony z `main`; bez commita/pusha.
+  Aktualna decyzja użytkownika: **nowy model zastępuje wygląd paladyna, wojownika nie zmieniamy**.
+  [Raport, pliki i odtworzenie](../ArtSource/GothicAnimePoC/Paladin/README.md), [stan planu](PLAN_WDROZENIA_WOJOWNIKA_ANIME.md).
+- `tools/art/rig_anime_paladin.py`: źródło `warrior-v2-grip.blend`, kopia 26-kościowego szkieletu z modelu wojownika już w Turris,
+  dopasowanie stawów, wagi, wypieczenie pozy T. Źródłowe modele i Hell Unleashed bez zmian; 0 nowych kredytów Meshy.
+  Bone heat nie znalazł rozwiązania na siatce generatora; zastosowano jawne wagi regionów anatomicznych, ze sztywnym chwytem i butami.
+- Nowy FBX, mapa 2K i materiał: `Models/PoC/PaladinAnime/`; 45 832 trójkąty, jeden materiał ciała, Humanoid z własnym awatarem.
+  Plik roboczy: `ArtSource/GothicAnimePoC/Paladin/paladin_anime_rigged.blend`. Brak nieważonych wierzchołków.
+- `PaladinAnimeImport.Run` (menu **Turris → PoC → Włącz model anime dla paladyna**) tworzy `visual_paladin_anime.asset`
+  na wzorcu paladyna: obecne klipy i zestawy broni, `scale=1`, `footLength=1`, sztywne noski.
+  Zapisuje wyłącznie **`class_hu_paladin.lookOverride`**; oryginalne `visual_paladin` i `class_hu_paladin.visual` zachowane.
+  Broń, cechy, umiejętności, runtime animacji i balansu bez zmian. Powrót: wyczyścić lookOverride tylko paladyna.
+- **Weryfikacja przez MCP w otwartym Unity 6000.6.3f1 / URP / Linear:** EditMode **190 zaliczonych / 0 błędów / 1 pominięty**;
+  celowane PlayMode **2/2** (`PaladinAnimePlayTests`: start rzeczywistego podejścia paladynem i galeria ośmiu stanów).
+  Nowe `PaladinAnimeTests`: przypisanie tylko paladyna, zachowanie klipów, awatar, wagi, tekstura.
+  Spoczynek, bieg, blok, cięcia, unik, gest czaru i śmierci: maks. deformacja punktów buta względem kości ≈ **0,001 mm**;
+  chwyt i gniazdo również pozostają przy kości dłoni (wynik `TestResults/paladin-anime/grip.tsv`).
+- Galeria **`TestResults/paladin-anime` obejrzana**, także ujęcie z normalnej kamery pierwszej areny.
+  Pułapka: po ręcznym próbkowaniu animacji przed `Camera.Render` trzeba odczekać klatki aktualizacji skinningu;
+  inaczej obraz łączy poprzednią siatkę z nowym położeniem broni. Poprawiono galerię, nie było potrzeby zmieniać broni.
+- **Wojownik: 16 sprawdzonych plików identycznych bajtowo** (klasa, definicja, model i pliki towarzyszące), raporty sum w `TestResults/paladin-anime/warrior-*.json`.
+  Unity pozostawione w trybie edycji, scena `Main`, bez trwających testów. Nie wykonywano pełnego PlayMode ani buildu gracza.
+- Do oceny w graniu: spasowanie naramienników/tabardu przy skrajnych pozach i estetyka jasnej zbroi przy pochodniach;
+  dalsze malowanie/toon i pozostałe assety PoC to osobny etap. Wojownik nadal korzysta z dotychczasowego wyglądu.
+
+### Poprzednia sesja — 2026-10-23/26: audyt skilli i pieczęci (pomiar na manekinach) i korekty
 
 - **Nowy test pomiarowy** `Tests/PlayMode/HuBenchPlayTests.cs` (port HU `--bench`): każdy skill (poziom III) i forma
   na gromadzie i kolosie, plus 51 wsparć na 10 skillach testowych; jeden rzut, okno 6 s, timeScale 2, manekiny 1e7 HP,

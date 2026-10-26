@@ -16,6 +16,14 @@ namespace Turris
         [Range(0, 1)] public float windupEnd = 0.35f;
         [Tooltip("Koniec fazy aktywnej (moment po trafieniu).")]
         [Range(0, 1)] public float activeEnd = 0.55f;
+        [Tooltip("Część zarejestrowanego cięcia odtwarzana w fazie aktywnej. 0 = wspólny profil; krótki wycinek może wymagać pełnego cięcia.")]
+        [Range(0, 1)] public float strikeShare;
+        [Tooltip("Początek powrotu wizualnej pozy do gardy w fazie regeneracji (0 = dopiero po zakończeniu akcji).")]
+        [Range(0, 1)] public float recoveryFadeStart;
+        [Tooltip("Po zakończeniu krótkiego klipu od razu wracaj do gardy, także jeśli okno akcji jeszcze trwa.")]
+        public bool fadeWhenFinished;
+        [Tooltip("Część zapowiedzi przeznaczona na płynne wejście z nadal poruszającego się poprzedniego ciosu. 0 = dotychczasowe przenikanie zamrożonej pozy.")]
+        [Range(0,1)] public float preparationBlendShare;
         [Tooltip("Tylko górna połowa ciała (np. blok, picie, czar) – nogi animuje chód.")]
         public bool upperBodyOnly;
         [Tooltip("Klip zapętlony (np. trzymanie bloku, klęczenie).")]
@@ -40,6 +48,8 @@ namespace Turris
         public bool demon;
         [Tooltip("Sztywny stalowy nosek: palce zachowują pozę modelu względem stopy, także podczas biegu i ataków.")]
         public bool rigidBootToes;
+        [Tooltip("Korekta retargetu opancerzonego modelu: w ruchu do przodu kolana i sztywne buty prowadzone w płaszczyźnie kroku, stopy pod biodrami. Osobno dla modelu.")]
+        public bool sagittalRunFeet;
         [Tooltip("Długość stóp względem modelu (1 = bez zmian); skracana na siatce, podeszwa zostaje na ziemi.")]
         [Range(0.6f, 1.2f)] public float footLength = 1f;
         public Vector3 positionOffset;

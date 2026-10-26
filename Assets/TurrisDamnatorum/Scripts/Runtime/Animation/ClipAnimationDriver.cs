@@ -48,6 +48,7 @@ namespace Turris
             public float weight;      // udział warstwy nad ruchem
             public float mix = 1f;    // udział bieżącego klipu względem poprzedniego
             public float fade = 0.1f; // czas przenikania (s)
+            public float sampleSpeed, previousSpeed;
         }
         readonly ActionLayer[] actionLayers = new ActionLayer[3];
         ActionClip currentAction;
@@ -247,6 +248,11 @@ namespace Turris
         Quaternion restToeL, restToeR;
         Vector3 restToePosL, restToePosR, restToeScaleL, restToeScaleR;
         float restYawL, restYawR;
+        Quaternion restModelFootL, restModelFootR;
+        float restFootHeightL, restFootHeightR;
+        Quaternion restModelThighL, restModelThighR, restModelShinL, restModelShinR;
+        Vector3 restShinPositionL, restShinPositionR, restFootPositionL, restFootPositionR;
+        Vector3 restThighDirectionL, restThighDirectionR, restShinDirectionL, restShinDirectionR;
 
         bool FootFlat(Transform foot, Transform toe, out float yaw)
         {
@@ -270,6 +276,84 @@ namespace Turris
             restToeR = toeR.localRotation;
             restToePosL = toeL.localPosition; restToePosR = toeR.localPosition;
             restToeScaleL = toeL.localScale; restToeScaleR = toeR.localScale;
+            if (character != null && def.sagittalRunFeet)
+            {
+                restModelFootL = Quaternion.Inverse(character.rotation) * footL.rotation;
+                restModelFootR = Quaternion.Inverse(character.rotation) * footR.rotation;
+                restFootHeightL = footL.position.y - character.position.y;
+                restFootHeightR = footR.position.y - character.position.y;
+                restModelThighL = Quaternion.Inverse(character.rotation) * thighL.rotation;
+                restModelThighR = Quaternion.Inverse(character.rotation) * thighR.rotation;
+                restModelShinL = Quaternion.Inverse(character.rotation) * shinL.rotation;
+                restModelShinR = Quaternion.Inverse(character.rotation) * shinR.rotation;
+                restShinPositionL = shinL.localPosition; restShinPositionR = shinR.localPosition;
+                restFootPositionL = footL.localPosition; restFootPositionR = footR.localPosition;
+                restThighDirectionL = character.InverseTransformDirection(shinL.position - thighL.position).normalized;
+                restThighDirectionR = character.InverseTransformDirection(shinR.position - thighR.position).normalized;
+                restShinDirectionL = character.InverseTransformDirection(footL.position - shinL.position).normalized;
+                restShinDirectionR = character.InverseTransformDirection(footR.position - shinR.position).normalized;
+            }
+        }
+
+        /// <summary>Korekta wadliwych celów IK w przeniesionym biegu, włączana tylko dla wskazanego modelu.</summary>
+        void AlignArmoredRunFeet()
+        {
+            if (!def.sagittalRunFeet || !humanoid || footL == null || character == null) return;
+            float action = actionLayers[1] != null ? Smooth(actionLayers[1].weight) : 0f;
+            float weight = (loco.GetInputWeight(Walk) + loco.GetInputWeight(Run)) * (1f - action);
+            if (weight < 0.001f) return;
+            // Biodra mogą kierować krok na skos; klipy cofania, ruchu bokiem i pełne akcje pozostają bez korekty.
+            Quaternion frame = Quaternion.AngleAxis(legTwist, character.up) * character.rotation;
+            Vector3 right = frame * Vector3.right, forward = frame * Vector3.forward;
+            float scale = animator.transform.lossyScale.y;
+            float runShare = loco.GetInputWeight(Run) / Mathf.Max(0.001f, loco.GetInputWeight(Walk) + loco.GetInputWeight(Run));
+            float halfTrack = Mathf.Lerp(0.08f, 0.055f, runShare) * scale;
+            void Align(Transform thigh, Transform shin, Transform foot, Quaternion restThigh, Quaternion restShin, Quaternion restFoot,
+                Vector3 shinPosition, Vector3 footPosition, Vector3 thighDirection, Vector3 restShinDirection, float restHeight, float side)
+            {
+                Vector3 hip = thigh.position, ankle = foot.position;
+                Vector3 animatedKnee = shin.position;
+                // Humanoid rozciągał goleń o ponad 2 cm do błędnego celu IK. Pancerz zachowuje wymiary pozy wiązania.
+                shin.localPosition = Vector3.Lerp(shin.localPosition, shinPosition, weight);
+                foot.localPosition = Vector3.Lerp(foot.localPosition, footPosition, weight);
+                float upperLength = Vector3.Distance(hip, shin.position);
+                float lowerLength = Vector3.Distance(shin.position, foot.position);
+                // W biegu stopa ląduje bliżej osi ruchu niż biodro. Tor pod samym biodrem dawał szeroki, sztywny rozkrok.
+                float lateral = Vector3.Dot(ankle - character.position, right);
+                float residual = Mathf.Clamp(lateral - side * halfTrack, -0.04f * scale, 0.04f * scale) * 0.15f;
+                Vector3 target = ankle + right * (side * halfTrack + residual - lateral);
+                Vector3 toAnkle = target - hip;
+                float reach = Mathf.Clamp(toAnkle.magnitude, Mathf.Abs(upperLength - lowerLength) + 0.001f, (upperLength + lowerLength) * 0.999f);
+                Vector3 axis = toAnkle.normalized;
+                // Zachowujemy niewielką pracę kolana z nagrania; ograniczamy wadliwy retarget, zamiast zamrażać zawias.
+                Vector3 hint = Vector3.ProjectOnPlane(forward, axis).normalized;
+                if (hint.sqrMagnitude < 1e-6f) return;
+                Vector3 animatedHint = Vector3.ProjectOnPlane(animatedKnee - hip, axis);
+                if (animatedHint.sqrMagnitude > 1e-6f)
+                {
+                    float bendPlane = Mathf.Clamp(Vector3.SignedAngle(hint, animatedHint, axis), -12f, 12f) * 0.30f;
+                    hint = Quaternion.AngleAxis(bendPlane, axis) * hint;
+                }
+                float along = (upperLength * upperLength + reach * reach - lowerLength * lowerLength) / (2f * reach);
+                Vector3 knee = hip + axis * along + hint * Mathf.Sqrt(Mathf.Max(0f, upperLength * upperLength - along * along));
+                Quaternion upper = Quaternion.FromToRotation(frame * thighDirection, knee - hip) * frame * restThigh;
+                thigh.rotation = Quaternion.Slerp(thigh.rotation, upper, weight);
+                Vector3 shinDirection = hip + axis * reach - shin.position;
+                Quaternion lower = Quaternion.FromToRotation(frame * restShinDirection, shinDirection) * frame * restShin;
+                shin.rotation = Quaternion.Slerp(shin.rotation, lower, weight);
+                // W podporze płaska podeszwa; w wymachu but podąża za golenią z ograniczonym zgięciem kostki.
+                Vector3 localShin = Quaternion.Inverse(frame) * shinDirection.normalized;
+                float pitch = Mathf.Clamp(Vector3.SignedAngle(Vector3.down, localShin, Vector3.right) * 0.65f - 5f, -25f, 65f);
+                float lift = Mathf.InverseLerp(restHeight + 0.035f, restHeight + 0.20f, foot.position.y - character.position.y);
+                Vector3 heading = Vector3.ProjectOnPlane(hint, character.up);
+                float yaw = Mathf.Clamp(Vector3.SignedAngle(forward, heading, character.up), -4f, 4f);
+                var rotation = frame * Quaternion.AngleAxis(yaw, Vector3.up) * Quaternion.AngleAxis(pitch * Smooth(lift), Vector3.right) * restFoot;
+                foot.rotation = Quaternion.Slerp(foot.rotation, rotation, weight);
+            }
+            Align(thighL, shinL, footL, restModelThighL, restModelShinL, restModelFootL,
+                restShinPositionL, restFootPositionL, restThighDirectionL, restShinDirectionL, restFootHeightL, -1f);
+            Align(thighR, shinR, footR, restModelThighR, restModelShinR, restModelFootR,
+                restShinPositionR, restFootPositionR, restThighDirectionR, restShinDirectionR, restFootHeightR, 1f);
         }
 
         void MeasureFootYaw()
@@ -391,7 +475,32 @@ namespace Turris
                     bool melee = s.attack != AttackAnim.BowDraw && s.attack != AttackAnim.Cast;
                     float span = c.activeEnd - c.windupEnd;
                     float strike = melee ? Mathf.Max(0f, c.windupEnd - span * StrikeEarly) : c.windupEnd;
-                    float follow = melee ? c.windupEnd + span * StrikeShare : c.activeEnd;
+                    float share = c.strikeShare > 0f ? c.strikeShare : StrikeShare;
+                    float follow = melee ? c.windupEnd + span * share : c.activeEnd;
+                    // Krótki wycinek paladyna nie może zwalniać po założeniu wolniejszej broni (korbacza).
+                    // Nadmiar zapowiedzi to przygotowanie; sam zamach i przejście przez cel co najmniej w tempie nagrania.
+                    if (melee && c.strikeShare > 0f && clipLength < 0.75f && s.windupSeconds > 0f && s.activeSeconds > 0f)
+                    {
+                        follow = Mathf.Min(1f, Mathf.Max(follow, strike + s.activeSeconds / clipLength));
+                        if (s.phase == ActionPhase.Startup)
+                        {
+                            float preparation = Mathf.Max(0f,strike-(1f-q)*Mathf.Max(strike,s.windupSeconds/clipLength));
+                            if (c.preparationBlendShare > 0f && strike > 0f)
+                            {
+                                // Wyjście z przygotowania ma zerową prędkość na początku i tempo nagrania przy trafieniu.
+                                float u=preparation/strike;
+                                preparation=strike*u*u*(2f-u);
+                            }
+                            return preparation;
+                        }
+                        if (s.phase == ActionPhase.Active)
+                            return Mathf.Min(1f,strike + q*Mathf.Max(follow-strike,s.activeSeconds/clipLength));
+                        if (s.phase == ActionPhase.Recovery)
+                        {
+                            float seconds = Mathf.Max(0f, s.actionDuration - s.windupSeconds - s.activeSeconds);
+                            return Mathf.Min(1f, follow + q * Mathf.Max(1f - follow, seconds / clipLength));
+                        }
+                    }
                     switch (s.phase)
                     {
                         case ActionPhase.Startup: return Mathf.Lerp(0f, strike, q);
@@ -470,7 +579,7 @@ namespace Turris
             bool restart = clip != null && clip == currentAction && !clip.loop && norm < lastNorm - 0.25f;
             if (clip != currentAction || restart)
             {
-                SwapAction(clip, s.action, norm);
+                SwapAction(clip, s.action, norm,clip != null ? s.windupSeconds*clip.preparationBlendShare : 0f);
                 rootPeak = RootAt(clip, norm);
             }
             lastAction = s.action;
@@ -485,12 +594,24 @@ namespace Turris
             if (currentAction != null)
             {
                 var al = actionLayers[currentLayer];
-                al.cur.SetTime(norm * currentAction.clip.length);
+                float sample = norm*currentAction.clip.length;
+                al.sampleSpeed = dt > 0 ? Mathf.Max(0,(sample-(float)al.cur.GetTime())/dt) : 0f;
+                al.cur.SetTime(sample);
             }
             for (int l = 1; l <= 2; l++)
             {
                 var al = actionLayers[l];
+                // Przygotowanie wybranego ciosu zachowuje ruch wybrzmienia poprzednika zamiast go zamrażać.
+                // Wygładzona waga ma wtedy ciągłą prędkość na granicy ciosów.
+                if (al.previousSpeed > 0 && al.mix < 1f && al.prev.IsValid())
+                {
+                    al.previousSpeed *= Mathf.Exp(-18f*dt);
+                    al.prev.SetTime(Mathf.Min(al.prev.GetAnimationClip().length,(float)al.prev.GetTime()+al.previousSpeed*dt));
+                }
                 bool active = currentAction != null && currentLayer == l;
+                if (active && currentAction.recoveryFadeStart > 0f && s.phase == ActionPhase.Recovery && s.phaseProgress >= currentAction.recoveryFadeStart)
+                    active = false;
+                if (active && currentAction.fadeWhenFinished && norm >= 0.999f) active = false;
                 float rate = dt / Mathf.Max(0.01f, active ? al.fade : FadeOut);
                 al.weight = Mathf.MoveTowards(al.weight, active ? 1f : 0f, rate);
                 al.mix = Mathf.MoveTowards(al.mix, 1f, dt / Mathf.Max(0.01f, al.fade));
@@ -514,6 +635,7 @@ namespace Turris
             ApplyLegTwist();
             ApplyLegIK(dt);
             Body?.Apply(s, worldVelocity, dt);
+            AlignArmoredRunFeet();
             AnchorFeet(s, pendingAdvance - advanceBefore);
             lastAdvance = pendingAdvance - advanceBefore;
         }
@@ -529,17 +651,18 @@ namespace Turris
             return c ?? def.Find(action, attack);
         }
 
-        void SwapAction(ActionClip clip, AnimAction action, float norm)
+        void SwapAction(ActionClip clip, AnimAction action, float norm,float preparationDuration)
         {
             currentAction = clip;
             if (clip == null) return; // warstwa wygasa z zamrożonym ostatnim klipem
             int layer = clip.upperBodyOnly && humanoid ? 2 : 1;
             var al = actionLayers[layer];
-            al.fade = FadeInto(action, lastAction);
+            al.fade = Mathf.Max(FadeInto(action, lastAction),preparationDuration);
             bool visible = al.weight > 0.01f && al.curClip != null;
             // Poprzedni klip zostaje (zamrożony) na drugim wejściu i wygasa. Przy bardzo szybkiej zmianie zostaje ten,
             // który był bardziej widoczny.
             var keep = !visible ? default : (al.mix >= 0.5f ? al.cur : al.prev);
+            al.previousSpeed = preparationDuration > 0f && visible && al.mix >= 0.5f ? al.sampleSpeed : 0f;
             var drop = !visible ? al.prev : (al.mix >= 0.5f ? al.prev : al.cur);
             var dropOther = !visible ? al.cur : default;
             graph.Disconnect(al.mixer, 0);
@@ -565,7 +688,8 @@ namespace Turris
             {
                 bool urgent = IsUrgent(action);
                 float travel = HandTravel(next, layer, norm * clip.clip.length);
-                al.fade = Mathf.Clamp(travel / (urgent ? UrgentBlendHandSpeed : MaxBlendHandSpeed), al.fade, urgent ? UrgentMaxFade : MaxFade);
+                al.fade = Mathf.Clamp(travel / (urgent ? UrgentBlendHandSpeed : MaxBlendHandSpeed), al.fade,
+                    Mathf.Max(al.fade,urgent ? UrgentMaxFade : MaxFade));
             }
         }
 

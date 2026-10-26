@@ -1,0 +1,25 @@
+{
+  "source": "ArtSource\\GothicAnimePoC\\Warrior\\warrior-v2-grip.blend",
+  "rig_source": "Assets\\TurrisDamnatorum\\Models\\Heroes\\hero_warrior\\hero_warrior.fbx",
+  "output": "Assets\\TurrisDamnatorum\\Models\\PoC\\PaladinAnime\\paladin_anime.fbx",
+  "bones": 26,
+  "vertices": 39204,
+  "triangles": 45832,
+  "unweighted": 0,
+  "rigid_hand_vertices": 2324,
+  "rigid_boot_vertices": 3518,
+  "paid_operations": 0,
+  "weight_method": "anatomiczne regiony, sztywne segmenty, płynne przejścia przy stawach",
+  "slots": {
+    "HandSlot.R": [
+      -0.7878384590148926,
+      0.035000041127204895,
+      1.4449999332427979
+    ],
+    "HandSlot.L": [
+      0.7878384590148926,
+      0.0350000336766243,
+      1.445000171661377
+    ]
+  }
+}

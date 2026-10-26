@@ -1,0 +1,35 @@
+{
+  "outside_hands_max_displacement_m": 0.0,
+  "imports": [
+    {
+      "format": "fbx",
+      "meshes": 1,
+      "triangles": 45832,
+      "textures": [
+        {
+          "size": [
+            2048,
+            2048
+          ],
+          "has_data": true,
+          "packed": true
+        }
+      ]
+    },
+    {
+      "format": "glb",
+      "meshes": 1,
+      "triangles": 45832,
+      "textures": [
+        {
+          "size": [
+            2048,
+            2048
+          ],
+          "has_data": true,
+          "packed": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "task_id": "01a16a0a-a6e5-77cc-81be-c97226baf934",
+  "credits_before": 159,
+  "credits_after": 129,
+  "credits_spent": 30,
+  "imports": [
+    {
+      "format": "glb",
+      "meshes": 1,
+      "vertices": 39204,
+      "faces": 45832,
+      "triangles": 45832,
+      "face_sizes": {
+        "3": 45832
+      },
+      "materials": 1,
+      "uv_layers": [
+        1
+      ],
+      "armatures": 0,
+      "actions": 0,
+      "bounds_min": [
+        -0.9358069896697998,
+        -0.21944890916347504,
+        -0.9472651481628418
+      ],
+      "bounds_max": [
+        0.9444500207901001,
+        0.2207050919532776,
+        0.9367651343345642
+      ],
+      "dimensions": [
+        1.8802570104599,
+        0.4401540160179138,
+        1.8840303421020508
+      ],
+      "textures": [
+        {
+          "name": "Image_0",
+          "width": 2048,
+          "height": 2048,
+          "has_pixels": true,
+          "packed": true
+        }
+      ]
+    },
+    {
+      "format": "fbx",
+      "meshes": 1,
+      "vertices": 24673,
+      "faces": 23291,
+      "triangles": 45889,
+      "face_sizes": {
+        "4": 22582,
+        "3": 701,
+        "5": 8
+      },
+      "materials": 1,
+      "uv_layers": [
+        1
+      ],
+      "armatures": 0,
+      "actions": 0,
+      "bounds_min": [
+        -0.9358069896697998,
+        -0.21944907307624817,
+        -0.9472650289535522
+      ],
+      "bounds_max": [
+        0.9444500207901001,
+        0.2207050770521164,
+        0.9367650151252747
+      ],
+      "dimensions": [
+        1.8802570104599,
+        0.44015413522720337,
+        1.8840301036834717
+      ],
+      "textures": [
+        {
+          "name": "texture_0.png",
+          "width": 2048,
+          "height": 2048,
+          "has_pixels": true,
+          "packed": true
+        }
+      ]
+    }
+  ],
+  "presentation_height_m": 1.8,
+  "presentation_scale": 0.9553986561266848,
+  "renders": [
+    "warrior-v1-front.png",
+    "warrior-v1-three-quarter.png",
+    "warrior-v1-back.png"
+  ]
+}

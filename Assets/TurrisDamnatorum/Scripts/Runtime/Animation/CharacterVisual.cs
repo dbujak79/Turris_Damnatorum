@@ -28,6 +28,7 @@ namespace Turris
         CharacterVisualDefinition modelDef;
         HellBodySurface bodySurface;
         HellEquipmentPose equipmentPose;
+        HellFlailChain mainChain, offhandChain;
         public float GripError => equipmentPose != null ? equipmentPose.GripError : 0;
         public float BowDraw => equipmentPose != null ? equipmentPose.BowDraw : 0;
 
@@ -179,6 +180,8 @@ namespace Turris
             else if (look.weapon == WeaponModel.Knives) shieldObj = GearObject(shieldSocket, look.weaponItem, () => GearBuilder.Weapon(null, WeaponModel.Knives, look.weaponColor), out _);
             gearTint.Clear();
             equipmentPose = new HellEquipmentPose(Model.GetComponentInChildren<Animator>(), transform, look, ModelSet, weaponObj);
+            mainChain = HellFlailChain.Find(weaponObj);
+            offhandChain = HellFlailChain.Find(shieldObj);
             if (weaponObj != null) gearTint.Collect(weaponObj.GetComponentsInChildren<Renderer>());
         }
 
@@ -241,6 +244,7 @@ namespace Turris
             ModelSet = null;
             bodySurface = null;
             equipmentPose = null;
+            mainChain = offhandChain = null;
         }
 
         void OnDestroy() => Driver?.Dispose();
@@ -324,7 +328,7 @@ namespace Turris
                 float k = holdTotal > 0 ? Mathf.Clamp01(hold / holdTotal) : 0f;
                 if (shakeRoot != null && jitterAmp > 0f)
                     shakeRoot.localPosition = BaseOffset(shakeRoot) + transform.InverseTransformDirection(jitterDir) * (Mathf.Sin(hold * 190f) * jitterAmp * k);
-                if (hold > 0f) { lastPos = transform.position; return; }
+                if (hold > 0f) { lastPos = transform.position; UpdateChains(dt); return; }
                 hold = 0f;
             }
             if (shakeRoot != null && jitterAmp > 0f) { shakeRoot.localPosition = BaseOffset(shakeRoot); jitterAmp = 0f; }
@@ -348,6 +352,13 @@ namespace Turris
             }
             Driver.Tick(state, velocity, dt);
             if (Model != null) { PostPose(state, dt); equipmentPose?.Apply(state, weaponSocket, dt); CarryShield(); }
+            UpdateChains(dt);
+        }
+
+        void UpdateChains(float dt)
+        {
+            mainChain?.Update(dt,transform.position.y);
+            offhandChain?.Update(dt,transform.position.y);
         }
 
         // ------------------------------------------------------------------ Poprawki pozy modelu FBX
@@ -491,6 +502,6 @@ namespace Turris
             gearTint.SetGlow(c, intensity);
         }
 
-        public Vector3 WeaponTip => Rig != null ? Rig.WeaponTip : (weaponSocket != null ? weaponSocket.position + weaponSocket.up * weaponLength : transform.position + Vector3.up);
+        public Vector3 WeaponTip => mainChain != null ? mainChain.HeadTip : Rig != null ? Rig.WeaponTip : (weaponSocket != null ? weaponSocket.position + weaponSocket.up * weaponLength : transform.position + Vector3.up);
     }
 }

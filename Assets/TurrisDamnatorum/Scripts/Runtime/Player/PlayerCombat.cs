@@ -1374,6 +1374,8 @@ namespace Turris
                 phaseProgress = a.PhaseProgress,
                 actionTime = a.Elapsed,
                 actionDuration = a.FiniteDuration,
+                windupSeconds = a.Current == ActionType.LightAttack || a.Current == ActionType.HeavyAttack ? AttackWindup : 0f,
+                activeSeconds = a.Current == ActionType.LightAttack || a.Current == ActionType.HeavyAttack ? AttackActive : 0f,
                 dodgeDirection = DodgeDirection,
                 hitDirection = lastHitDir,
                 hitWeight = lastHitWeight,

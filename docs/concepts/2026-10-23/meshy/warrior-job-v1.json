@@ -1,0 +1,17 @@
+{
+  "file_path": "C:/GIT/Gry/Turris_Damnatorum/docs/concepts/2026-10-23/meshy/warrior-reference-v1.png",
+  "ai_model": "meshy-7.1",
+  "model_type": "standard",
+  "geometry_resolution": "standard",
+  "pose_mode": "t-pose",
+  "enable_pbr": false,
+  "topology": "quad",
+  "target_polycount": 20000,
+  "should_remesh": true,
+  "should_texture": true,
+  "texture_resolution": "2k",
+  "image_enhancement": false,
+  "texture_prompt": "Gothic anime knight. Broad clean ivory-silver steel plates, dark navy undergarment, muted burgundy waistcloth, sparse muted gold trim. Simple flat material colors, restrained broad highlights, minimal baked shadows. No extra equipment, ornaments, text, dirt, photorealistic scratches or weathering. Preserve the reference design and clear color boundaries.",
+  "target_formats": ["glb", "fbx"],
+  "response_format": "json"
+}

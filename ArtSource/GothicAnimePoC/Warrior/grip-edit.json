@@ -1,0 +1,15 @@
+{
+  "source": "warrior-v1.glb",
+  "output": "warrior-v2-grip",
+  "height_m": 1.8,
+  "changed_vertices": {
+    "left": 853,
+    "right": 879
+  },
+  "max_vertex_displacement_m": 0.1604272353153874,
+  "vertices": 39204,
+  "faces": 45832,
+  "armatures": 0,
+  "paid_operations": 0,
+  "description": "Palce zwinięte w stały chwyt; nowy eksport nadal wymaga szkieletu i wag."
+}
