@@ -1,5 +1,79 @@
 # Turris Damnatorum — stan prac i plan
 
+### Rozpłatanie: powalenie i odnowienie 4 s — 2026-10-27
+
+- Gra miała powalenie (`StatusEffects.KnockDown`, `EnemyBrain.HuThrowDown`, dotąd tylko komponent HU „Odtrącenie”).
+  Komponent `Cone` czyta teraz `down_seconds`: każdy zraniony wróg (trafienie lub przełamana garda) leży tyle sekund; bossy odporne,
+  elity krócej (mnożnik kontroli), potem standardowa odporność na ogłuszenie.
+- Rozpłatanie (`HuBalance`): `down_seconds=1`, odnowienie 3,5 → **4 s**, obrażenia 39/44/44 bez zmian. Opis skilla w assecie
+  i `DefaultContent`.
+- Testy: `TowerBalanceTests` (EditMode 31/31 w zestawie), nowy `HeroSkillPlayTests.Cleave_KnocksDownEnemies_ButNotBosses`;
+  PlayMode skille bohaterów + HU 18/18. Boty seria 4: tester 17/20, gracz 13/20, Rozpłatanie 9/16 (w szumie wobec 12/16).
+  Bez commita.
+
+### Piętro II −1 kultysta, Rozpłatanie szybsze, uniki botów — 2026-10-27
+
+- Piętro II: budżet portali 41, waga kultysty 3,7 – średnio 13,9 kultysty (start: 16,9), chochliki i czerwie bez zmian; asset,
+  `DefaultContent`, testy `DemonContentTests`/`TowerBalanceTests`.
+- Rozpłatanie: odnowienie 5 → 3,5 s (`HuBalance`, wszystkie poziomy); obrażenia +15% bez zmian.
+- `Projectile`: gettery tylko do odczytu (prędkość, strona, właściciel, promień, dodgeable/blockable) dla botów.
+- Boty: unik przed pociskiem z prawdziwego toru i chwili styku (wcześniej ok. 0,1 s za późno), uniki taktyczne (okrążenie, doskok),
+  telemetria uników: powód, odmowy gry z akcją, skuteczność; sekcja „Uniki” w raporcie. Trafienia płonącej ziemi po kuli ognia
+  nie są liczone jako nieudany unik.
+- Seria 3 (2 × 20): tester 17/20, gracz 14/20; uniki 18 / 40 na podejście, skuteczność wręcz 66% / 82%, pocisk 65% / 78%.
+  Rozpłatanie 12/16 zwycięstw (wcześniej 1/13). Raport: `docs/raporty_botow/RAPORT_WOJOWNIK.md`, dane `wojownik-v3/`.
+- Testy: EditMode treść wieży/HU 23/23. Bez commita.
+
+### Pomoc w celowaniu z HU, korekty po raporcie botów — 2026-10-27
+
+- **Pomoc w celowaniu** (port `HellUnleashed.Core.Combat.AimAssist` → `Combat/AimAssist.cs`): przy starcie ciosu najbliższy wróg
+  w stożku 28° wokół kierunku ruchu (bez ruchu – dowolny kierunek), zasięg broń + 1,5 m (min. 5 m); skille kierunkowe/na punkt –
+  stożek 35°, 12 m; skille „na siebie” bez zmian. Cel trzymany do końca akcji, obrót 1440°/s. `PlayerController.AssistTarget`,
+  `PlayerCombat.AssistTarget` (skille na punkt). Namierzanie ma pierwszeństwo i śledzi cel przez cały zamach. Przełącznik
+  w Ustawieniach, `PlayerProfile.aimAssist` (domyślnie wł.).
+- **Piętro II:** budżet portali 44 → 42, waga kultysty 4,5 → 4 – średnio 14,9 zamiast 16,9 kultysty, chochliki i czerwie bez zmian
+  (asset `tower_main` i `DefaultContent`).
+- **Piętra IV–V (bez bossów):** `HellEncounters` dodaje Taranowca (IV, fala 2) i Gargulca (V, fala 3); idempotentne; asset uzupełniony.
+- **Rozpłatanie +15%:** `HuBalance` – `skill.warrior.cleave` 39/44/44.
+- **Naprawiony NRE** po sparowaniu szarży (`EnemyBrain.Specials.cs`, `EnemyBrain.TickAttack`) – test regresji w `DemonPlayTests`.
+- Boty: szukają uśpionych wrogów (gargulec-posąg), telemetria odporna na przerwane podejście. Druga seria 2 × 20:
+  tester 10/20, gracz 13/20 (przed: 9 i 11) – `docs/raporty_botow/RAPORT_WOJOWNIK.md`, dane `wojownik-v2/`.
+- Testy: nowe `TowerBalanceTests` (EditMode 3/3), `AimAssistPlayTests` (4/4); PlayMode gfx: przepływ gry, czucie, scena Main, zasięg skilli,
+  przypisania zaliczone (przebieg 57 testów; jedyny błąd – EchoAndFan, naprawiony pomiarem), po poprawce celowanie + skille
+  bohaterów i HU **21/21**, demony i migracja **18/18** (2 pominięte galerie).
+  `HuSkillCasterPlayTests.Face()` mierzy z wyłączoną pomocą (porównanie rzutów w stałym kierunku). EditMode 200/203:
+  te same 2 „AnimeForward” co wcześniej + 1 pominięty WAV. Bez commita.
+
+### Gęstszy ogień ściany i fali ognia — 2026-10-27
+
+- Na prośbę użytkownika ok. **+30% ognia** w „Ścianie ognia” i jej formach (Fala ognia, Forteca ognia): płomienie co **0,73 m**
+  zamiast 0,95 m (`HuWall.FlameSpacing`), żar na ziemi ×1,3 (`GroundDensity`). Nowe `HellParticles.ScaleAmount` zagęszcza emisję
+  ponad limit `SetAmount` i podnosi `maxParticles`, żeby nadmiar nie przepadał. Inne efekty bez zmian.
+- Galeria `HuSkillCasterPlayTests.Gallery_SkillsAndForms_WhenRequested` (gfx) przed/po obejrzana:
+  `TestResults/firewall/before|after/spell_firering*.png` – ciągła zasłona płomieni zamiast osobnych kęp. Bez commita.
+
+### Boty grające — 2026-10-27: Wojownik, tester i gracz H&S/souls, 2 × 20 podejść
+
+- Nowe testy PlayMode `Tests/PlayMode/Bots/`: wspólny mózg `HeroBot` (percepcja zamachów z ludzkim czasem reakcji,
+  blok/parowanie/unik/wyjście z kręgu, ataki, riposta, leczenie, nagrody, cechy, kapliczka, sklep), bot klasowy `WarriorBot`,
+  osobowości `BotPersona` (tester QA, gracz H&S/souls-like z meta-progresją), telemetria i raport z wnioskami generowanymi regułami.
+  Uruchamianie wyłącznie z `TURRIS_BOT_DIR` (bez niej pomijane); `TURRIS_BOT_RUNS` – liczba podejść (domyślnie 20).
+- Zmiana w grze: `PlayerController.Driver` (`IPlayerDriver`) – zewnętrzne źródło ruchu/gardy/biegu – oraz `LockOn(EnemyBrain)`.
+  Bez sterownika zachowanie bez zmian.
+- Wyniki (scena `Main`, trudność 0, ok. 5 min wsadowo dla 40 podejść): tester 9/20, gracz 11/20 zwycięstw.
+  18/20 śmierci na piętrze 2 „Kult Bramy” (Kultysta – 31% otrzymanych obrażeń, 12/20 ostatnich ciosów);
+  Cięcie wichru 19/26 zwycięstw wobec Rozpłatania 1/14; finałowy Kasztelan pada w ~13 s (Władca Bramy 46 s);
+  zamachy hordy 0,31–0,33 s – za krótkie na parowanie; 15/20 śmierci z flaszką (brak okna 0,55 s pod ostrzałem).
+- Znaleziony błąd (nie poprawiony): NRE w `EnemyBrain.Specials.cs:119` po sparowaniu szarży (`current` zerowane w callbacku trafienia).
+  UX: czary bez wymaganej Inteligencji trafiają do slotów wojownika i są proponowane do ulepszenia.
+- Regresja: PlayMode (przepływ gry, odczucie biegu, scena Main, przypisania, zasięg skilli, skille bohaterów) **46/46**, 1 pominięty.
+  EditMode 197/200: 2 niezaliczone („AnimeForward” – materiały gotyckiej areny i awatar paladyna; shadery anime zmieniane równolegle,
+  niezwiązane z botami), 1 pominięty WAV. Pełny PlayMode `batch` (-nographics) kończy się natywnym crashem renderera cząsteczek
+  w `AnimeImpRigPlayTests.Shot` – test zrzutów wymaga trybu `gfx`/`window`.
+- Raport: [raporty_botow/RAPORT_WOJOWNIK.md](raporty_botow/RAPORT_WOJOWNIK.md), dane i tabele botów w `raporty_botow/wojownik/`.
+- Następne kroki: pary botów dla pozostałych klas (podklasa `HeroBot` + test), ewentualne poprawki balansu z rekomendacji.
+  Bez commita.
+
 ### Ostatnia sesja — 2026-10-26: ciągłość serii i paleta gotyckiego paladyna
 
 - Odtworzony nienaturalny przeskok pomiędzy pierwszym a drugim ciosem: poprzednia poza była zamrażana,

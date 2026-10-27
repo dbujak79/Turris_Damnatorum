@@ -2,6 +2,14 @@ using UnityEngine;
 
 namespace Turris
 {
+    /// <summary>Źródło sterowania zastępujące urządzenia wejścia (boty grające w testach). Ruch w układzie świata.</summary>
+    public interface IPlayerDriver
+    {
+        Vector3 MoveWorld { get; }
+        bool BlockHeld { get; }
+        bool SprintHeld { get; }
+    }
+
     /// <summary>Ruch względem kamery, namierzanie i ruch wynikający z akcji (wypad, unik).</summary>
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
@@ -35,6 +43,15 @@ namespace Turris
 
         public EnemyBrain LockTarget { get; private set; }
         public bool InputEnabled { get; set; } = true;
+        /// <summary>Pomoc w celowaniu z Hell Unleashed (<see cref="AimAssist"/>); namierzanie ma pierwszeństwo.</summary>
+        public bool AimAssistEnabled { get; set; } = true;
+        /// <summary>Wróg wybrany przez pomoc w celowaniu na czas bieżącego ciosu/skilla (null – brak lub namierzanie).</summary>
+        public EnemyBrain AssistTarget { get; private set; }
+        ActionType assistAction = ActionType.None;
+        /// <summary>Obrót do celu ciosu/skilla przy namierzaniu i pomocy w celowaniu (°/s) – HU przyciąga cel od razu.</summary>
+        const float AimTurnSpeed = 1440f;
+        /// <summary>Sterowanie zewnętrzne (boty testowe): gdy ustawione, zastępuje ruch, gardę i bieg z urządzeń wejścia.</summary>
+        public IPlayerDriver Driver { get; set; }
         public System.Action PauseRequested;
 
         void Awake()
@@ -77,7 +94,16 @@ namespace Turris
             combat.LockTarget = LockTarget;
 
             Vector3 intent = Vector3.zero;
-            if (InputEnabled && !combat.IsDead)
+            if (Driver != null)
+            {
+                if (InputEnabled && !combat.IsDead)
+                {
+                    intent = Driver.MoveWorld; intent.y = 0f;
+                    if (intent.sqrMagnitude > 1f) intent.Normalize();
+                    combat.SetBlockHeld(Driver.BlockHeld);
+                }
+            }
+            else if (InputEnabled && !combat.IsDead)
             {
                 Vector2 m = input.Move;
                 intent = cameraRig.FlatForward * m.y + cameraRig.FlatRight * m.x;
@@ -95,6 +121,9 @@ namespace Turris
 
             var actions = combat.Actions;
             var cur = actions.Current;
+            UpdateAimAssist(cur, intent);
+            // Namierzanie wygrywa z pomocą: z włączonym lock-onem cios i skill zawsze idą w namierzonego wroga.
+            EnemyBrain aimAt = LockTarget != null ? LockTarget : AssistTarget;
             // Chłód spowalnia ruch (zamrożenie zatrzymuje go przez wymuszone drgnięcie).
             float speed = b.moveSpeed * (1f + combat.Build.stats[StatType.MoveSpeed] / 100f) * combat.Status.MoveMultiplier(b);
             Vector3 horizontal = Vector3.zero;
@@ -117,7 +146,7 @@ namespace Turris
             switch (cur)
             {
                 case ActionType.None:
-                    sprint = InputEnabled && input.SprintHeld && intent.sqrMagnitude > 0.1f && combat.Stamina.Current > 0;
+                    sprint = InputEnabled && (Driver != null ? Driver.SprintHeld : input.SprintHeld) && intent.sqrMagnitude > 0.1f && combat.Stamina.Current > 0;
                     horizontal = intent * speed * (sprint ? b.sprintMultiplier : 1f);
                     if (settle > 0f) { horizontal = transform.forward * settle; steered = false; }
                     face = (LockTarget != null && !sprint) ? DirTo(LockTarget.transform.position) : (intent.sqrMagnitude > 0.01f ? intent : (Vector3?)null);
@@ -155,10 +184,12 @@ namespace Turris
                     if (clips != null && clips.StepsFromClips) horizontal = dt > 0f ? transform.forward * (clips.ConsumeAdvance() / dt) : Vector3.zero;
                     else if (actions.Elapsed < t && t > 0) horizontal = transform.forward * (atk.lunge / t);
                     steered = false;
-                    if (actions.Elapsed < combat.AttackWindup * 0.6f)
+                    // Z namierzaniem postać śledzi cel przez cały zamach; bez niego – jak dotąd przez 60% zamachu.
+                    if (actions.Elapsed < combat.AttackWindup * (LockTarget != null ? 1f : 0.6f))
                     {
-                        face = LockTarget != null ? DirTo(LockTarget.transform.position) : (intent.sqrMagnitude > 0.01f ? intent : (Vector3?)null);
+                        face = aimAt != null ? DirTo(aimAt.transform.position) : (intent.sqrMagnitude > 0.01f ? intent : (Vector3?)null);
                         faceSpeed = atk.tracking * Mathf.Max(0.1f, b.playerActionSpeed);
+                        if (aimAt != null) faceSpeed = Mathf.Max(faceSpeed, AimTurnSpeed);
                         smoothTurn = false;
                     }
                     break;
@@ -167,7 +198,10 @@ namespace Turris
                 {
                     var skill = combat.ActiveSkill?.Def;
                     if (actions.Phase == ActionPhase.Startup)
-                        face = LockTarget != null ? DirTo(LockTarget.transform.position) : (skill != null && !skill.IsSpell && intent.sqrMagnitude > 0.01f ? intent : (Vector3?)null);
+                    {
+                        face = aimAt != null ? DirTo(aimAt.transform.position) : (skill != null && !skill.IsSpell && intent.sqrMagnitude > 0.01f ? intent : (Vector3?)null);
+                        if (aimAt != null && (LockTarget != null || AssistTarget != null)) { faceSpeed = Mathf.Max(faceSpeed, AimTurnSpeed); smoothTurn = false; }
+                    }
                     if (combat.SkillMotion != Vector3.zero) { horizontal = combat.SkillMotion; steered = false; }
                     else if (combat.SkillMoveMultiplier.HasValue && actions.Phase == ActionPhase.Active)
                         horizontal = intent * speed * combat.SkillMoveMultiplier.Value; // młynek HU: sterowanie w trakcie wirowania
@@ -217,6 +251,51 @@ namespace Turris
         }
 
         float stepDistance;
+
+        /// <summary>
+        /// Pomoc w celowaniu jak w Hell Unleashed: na początku ciosu/skilla wybiera wroga w stożku wokół kierunku ruchu
+        /// (28° dla ciosu, 35° dla skilla), a gdy gracz nie wskazuje kierunku – najbliższego w dowolną stronę.
+        /// Zasięg: broń + 1,5 m (min. 5 m), skill – 12 m. Cel trzyma się do końca akcji (bez przeskakiwania).
+        /// </summary>
+        /// <summary>Skill, któremu kierunek coś zmienia (pocisk, stożek, fala, doskok, punkt). Skille „na siebie” – nie.</summary>
+        static bool Directional(SpellRuntime sk)
+        {
+            if (sk == null) return false;
+            if (sk.instance.seals != null) return sk.instance.seals.Shape.Targeting != HuTargeting.Self;
+            switch (sk.Def.kind)
+            {
+                case SpellKind.Nova: case SpellKind.Heal: case SpellKind.WeaponBuff: case SpellKind.Barrier: case SpellKind.Whirlwind:
+                case SpellKind.Warcry: case SpellKind.BloodPact: case SpellKind.FrostArmor: case SpellKind.Aura: case SpellKind.Summon:
+                case SpellKind.Overload: case SpellKind.Undying: case SpellKind.Storm:
+                    return false;
+                default: return true;
+            }
+        }
+
+        void UpdateAimAssist(ActionType cur, Vector3 intent)
+        {
+            if (cur != assistAction)
+            {
+                assistAction = cur;
+                AssistTarget = null;
+                if (AimAssistEnabled && LockTarget == null && combat.Build != null)
+                {
+                    bool explicitAim = intent.sqrMagnitude > 0.01f;
+                    Vector3 aim = explicitAim ? intent : transform.forward;
+                    if (cur == ActionType.LightAttack || cur == ActionType.HeavyAttack)
+                    {
+                        var atk = cur == ActionType.LightAttack ? combat.Build.weapon.light : combat.Build.weapon.heavy;
+                        AssistTarget = AimAssist.Select(transform.position, aim, EnemyBrain.All, AimAssist.MeleeRange(atk.reach),
+                            explicitAim ? AimAssist.ExplicitConeDegrees : 180f);
+                    }
+                    else if (cur == ActionType.Cast && Directional(combat.ActiveSkill))
+                        AssistTarget = AimAssist.Select(transform.position, aim, EnemyBrain.All, AimAssist.SkillRange,
+                            explicitAim ? AimAssist.SkillConeDegrees : 180f);
+                }
+            }
+            if (AssistTarget != null && (AssistTarget.IsDead || !AssistTarget.gameObject.activeInHierarchy)) AssistTarget = null;
+            combat.AssistTarget = AssistTarget;
+        }
 
         /// <summary>Kroki co długość kroku (dłuższy w biegu); cichsze przy powolnym ruchu i z podniesioną gardą.</summary>
         void TickFootsteps(bool steered, bool sprint, float dt)
@@ -274,6 +353,12 @@ namespace Turris
             if (LockTarget != null) { LockTarget = null; cameraRig.RecenterBehind(); return; }
             LockTarget = FindBest(null, 0);
             if (LockTarget == null) cameraRig.RecenterBehind();
+        }
+
+        /// <summary>Namierza wskazanego wroga (null – zdejmuje namierzanie).</summary>
+        public void LockOn(EnemyBrain target)
+        {
+            LockTarget = target != null && !target.IsDead ? target : null;
         }
 
         public void SwitchTarget(int dir)

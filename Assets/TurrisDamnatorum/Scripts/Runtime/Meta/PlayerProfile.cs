@@ -35,6 +35,8 @@ namespace Turris
         public float masterVolume = 0.8f, musicVolume = 0.7f, sfxVolume = 0.9f;
         /// <summary>Siła wibracji pada (0 = wyłączone). Nowe pole – starsze zapisy dostają wartość domyślną.</summary>
         public float rumbleStrength = 1f;
+        /// <summary>Pomoc w celowaniu (Hell Unleashed): cios i skill przyciągają się do wroga w stożku kierunku. Nowe pole – domyślnie wł.</summary>
+        public bool aimAssist = true;
 
         /// <summary>Bestiariusz: spotkani wrogowie i liczba zabitych (id wroga bazowego – warianty liczą się do niego).</summary>
         public List<BestiaryRecord> bestiary = new List<BestiaryRecord>();

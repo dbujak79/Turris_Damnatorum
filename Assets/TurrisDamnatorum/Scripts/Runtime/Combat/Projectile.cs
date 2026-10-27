@@ -43,6 +43,14 @@ namespace Turris
         int pierceLeft;
         float speedValue;
 
+        /// <summary>Odczyt dla obserwatorów (boty testowe): prędkość, strona, właściciel i czy unik przed pociskiem chroni.</summary>
+        public Vector3 Velocity => velocity;
+        public Faction Side => faction;
+        public IHitReceiver Owner => owner;
+        public float HitRadius => radius;
+        public bool Dodgeable => hit.dodgeable;
+        public bool Blockable => hit.blockable;
+
         /// <summary>Smuga za lecącym obiektem (strzała, rzucona broń).</summary>
         public static TrailRenderer AddTrail(GameObject go, Color c, float width, float time)
         {

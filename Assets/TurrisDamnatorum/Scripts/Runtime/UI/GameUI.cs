@@ -1201,6 +1201,9 @@ namespace Turris
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             VolumeControl("Wibracje", 3, prof.rumbleStrength);
+            GUILayout.Space(24);
+            GUILayout.Label("Pomoc w celowaniu", label, GUILayout.Width(220), GUILayout.Height(40));
+            Btn(prof.aimAssist ? "włączona" : "wyłączona", button, root.ToggleAimAssist, GUILayout.Width(180), GUILayout.Height(40));
             GUILayout.EndHorizontal();
             GUILayout.Space(8);
             GUILayout.Label("<size=15>Wybierz przycisk i naciśnij nowy klawisz, przycisk myszy lub pada (Esc – anuluj). Jeśli inna akcja miała ten przycisk, zamienią się miejscami. Zapis w profilu.</size>", label);

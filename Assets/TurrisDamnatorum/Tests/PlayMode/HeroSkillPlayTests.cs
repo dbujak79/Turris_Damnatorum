@@ -81,6 +81,27 @@ namespace Turris.Tests
         }
 
         [UnityTest]
+        public IEnumerator Cleave_KnocksDownEnemies_ButNotBosses()
+        {
+            var warrior = Hero("class_knight", 0, "hu_cleave");
+            var demon = Dummy(warrior, new Vector3(-0.6f, 0.05f, 1.8f));
+            var boss = Dummy(warrior, new Vector3(0.6f, 0.05f, 1.8f));
+            boss.Def.isBoss = true;
+            yield return new WaitForSeconds(1.1f); // koniec uśpienia po pojawieniu się
+            warrior.transform.rotation = Quaternion.identity;
+            int slot = Slot(warrior, "hu_cleave");
+            Assert.AreEqual(4f, warrior.Skill(slot).instance.Cooldown, 0.01f, "odnowienie Rozpłatania 4 s");
+            warrior.RequestSkill(slot);
+            float t = 0f;
+            while (demon.Health.Current >= 5000f && t < 1.5f) { t += Time.deltaTime; yield return null; }
+            Assert.Less(demon.Health.Current, 5000f, "Rozpłatanie trafia");
+            Assert.Less(boss.Health.Current, 5000f, "boss też dostaje obrażenia");
+            Assert.IsTrue(demon.Status.Stunned, "trafiony demon leży (powalenie)");
+            Assert.AreEqual(EnemyBrain.State.Staggered, demon.CurrentState);
+            Assert.IsFalse(boss.Status.Stunned, "bossa powalenie nie dotyczy");
+        }
+
+        [UnityTest]
         public IEnumerator Maelstrom_PulsesUseWaterParticles_WithFrostDamage()
         {
             var mage=Hero("class_hu_mage_water");

@@ -120,6 +120,7 @@ namespace Turris
             Controller = p.GetComponent<PlayerController>();
             Controller.cameraRig = CameraRig;
             Controller.PauseRequested += TogglePause;
+            Controller.AimAssistEnabled = Meta.Profile.aimAssist;
             CameraRig.target = p.transform;
             CameraRig.player = Controller;
             CameraRig.input = p.GetComponent<PlayerInputReader>();
@@ -531,6 +532,14 @@ namespace Turris
         public void SaveBindings()
         {
             Meta.Profile.bindingOverrides = Input.SaveOverrides();
+            Meta.Save();
+        }
+
+        /// <summary>Włącza/wyłącza pomoc w celowaniu (zapis w profilu).</summary>
+        public void ToggleAimAssist()
+        {
+            Meta.Profile.aimAssist = !Meta.Profile.aimAssist;
+            if (Controller != null) Controller.AimAssistEnabled = Meta.Profile.aimAssist;
             Meta.Save();
         }
 

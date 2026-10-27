@@ -40,6 +40,12 @@ namespace Turris
             new Patch { skill = "skill.aura.holy_fire", level = 1, values = new[] { "damage.fire=8" }, reason = "audyt skilli P1-a: stałe obrażenia bez kosztu akcji" },
             new Patch { skill = "skill.aura.holy_fire", level = 2, values = new[] { "damage.fire=11" }, reason = "audyt skilli P1-a: stałe obrażenia bez kosztu akcji" },
             new Patch { skill = "skill.aura.holy_fire", level = 3, values = new[] { "damage.fire=14" }, reason = "audyt skilli P1-a: stałe obrażenia bez kosztu akcji" },
+            // Raport botów Wojownika (docs/raporty_botow/RAPORT_WOJOWNIK.md): skill startowy Rozpłatanie wygrywał 1/14 podejść
+            // wobec 19/26 Cięcia wichru. Obrażenia +15% (34/38/38 → 39/44/44); po drugiej serii (nadal 1/13) odnowienie −30% (5 → 3,5 s);
+            // potem powalenie trafionych na 1 s (bossy odporne) w zamian za odnowienie 4 s.
+            new Patch { skill = "skill.warrior.cleave", level = 1, values = new[] { "damage.physical=39", "cooldown=4", "down_seconds=1" }, reason = "raport botów: Rozpłatanie 1/14 zwycięstw" },
+            new Patch { skill = "skill.warrior.cleave", level = 2, values = new[] { "damage.physical=44", "cooldown=4", "down_seconds=1" }, reason = "raport botów: Rozpłatanie 1/14 zwycięstw" },
+            new Patch { skill = "skill.warrior.cleave", level = 3, values = new[] { "damage.physical=44", "cooldown=4", "down_seconds=1" }, reason = "raport botów: Rozpłatanie 1/14 zwycięstw" },
         };
 
         /// <summary>Korekta pieczęci: nowa lista operacji i opis (zastępują dane HU w całości); nazwa – tylko gdy podana.</summary>

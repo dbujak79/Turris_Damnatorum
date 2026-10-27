@@ -64,6 +64,8 @@ namespace Turris
 
         /// <summary>Aktualny cel namierzania (ustawiany przez PlayerController).</summary>
         public EnemyBrain LockTarget { get; set; }
+        /// <summary>Wróg wybrany przez pomoc w celowaniu dla bieżącej akcji (ustawia PlayerController; null – brak).</summary>
+        public EnemyBrain AssistTarget { get; set; }
         /// <summary>Kierunek wejścia względem kamery (dla uniku).</summary>
         public Vector3 MoveIntent { get; set; }
 

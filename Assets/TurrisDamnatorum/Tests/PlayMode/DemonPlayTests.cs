@@ -257,6 +257,46 @@ namespace Turris.Tests
             Assert.AreEqual(0f, pc.Status.ExternalSlow, 1e-4f);
         }
 
+        /// <summary>
+        /// Sparowana szarża (Taranowiec) kończy atak w trakcie trafienia – wcześniej dalszy kod szarży czytał wyzerowany atak
+        /// (NullReferenceException w EnemyBrain.SpecialActive, znalezione przez boty). Wyjątek w logu oblewa test.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator ParriedCharge_EndsAttack_WithoutException()
+        {
+            var (pc, cfg) = Arena();
+            var b = cfg.balance;
+            var ram = Spawn(Load("enemy_hu_charger"), new Vector3(0, 0.05f, 4f), pc, b);
+            int charge = ram.Def.attacks.FindIndex(a => a.special == EnemySpecial.Charge);
+            Assert.GreaterOrEqual(charge, 0, "Taranowiec ma szarżę");
+            int parried = 0;
+            System.Action<IHitReceiver, HitData, HitResult> onImpact = (t, h, r) => { if (ReferenceEquals(t, pc) && r.outcome == HitOutcome.Parried) parried++; };
+            CombatEvents.Impact += onImpact;
+            try
+            {
+                yield return new WaitForSeconds(1.2f); // koniec uśpienia po pojawieniu się
+                for (int attempt = 0; attempt < 8 && parried == 0; attempt++)
+                {
+                    pc.RestoreAll();
+                    pc.transform.SetPositionAndRotation(new Vector3(0, 0.05f, 0), Quaternion.identity);
+                    ram.transform.SetPositionAndRotation(new Vector3(0, 0.05f, 4f), Quaternion.LookRotation(Vector3.back));
+                    yield return null;
+                    ram.DebugStartAttack(charge);
+                    float t = 0f;
+                    while (t < 2.5f && parried == 0)
+                    {
+                        if (pc.Actions.IsIdle) pc.Request(ActionType.Parry);
+                        t += Time.deltaTime;
+                        yield return null;
+                    }
+                    yield return new WaitForSeconds(0.5f);
+                }
+            }
+            finally { CombatEvents.Impact -= onImpact; }
+            Assert.Greater(parried, 0, "szarża sparowana");
+            yield return new WaitForSeconds(0.5f); // kilka klatek po sparowaniu – tu dawniej leciał wyjątek
+        }
+
         /// <summary>Władca Bramy: każdy atak specjalny działa; od połowy życia przyzywa nietoperze, które giną razem z nim.</summary>
         [UnityTest]
         public IEnumerator Gatelord_Specials_Work_BatsDieWithHim()

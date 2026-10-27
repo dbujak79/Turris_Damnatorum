@@ -19,7 +19,7 @@ namespace Turris.Tests
             CollectionAssert.AreEquivalent(new[] { "enemy_imp" }, f[0].portals.composition.Select(c => c.enemy.id));
             CollectionAssert.AreEquivalent(new[] { "enemy_imp", "enemy_hu_cultist", "enemy_worm" }, f[1].portals.composition.Select(c => c.enemy.id));
             Assert.AreEqual(75f, f[0].portals.duration); Assert.AreEqual(30f, f[0].portals.budget);
-            Assert.AreEqual(78f, f[1].portals.duration); Assert.AreEqual(44f, f[1].portals.budget);
+            Assert.AreEqual(78f, f[1].portals.duration); Assert.AreEqual(41f, f[1].portals.budget);
             Assert.AreEqual("enemy_gatelord", f[2].enemies.Single().id, "piętro III: Władca Bramy");
             Assert.IsFalse(f[2].isBoss, "Władca Bramy nie kończy podejścia");
             Assert.IsTrue(f[f.Count - 1].isBoss, "ostatnie piętro – boss Turris");

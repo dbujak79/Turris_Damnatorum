@@ -186,7 +186,7 @@ namespace Turris
             elementalArrow.attack.statuses.Add(St(StatusKind.Burn)); elementalArrow.attack.animation = AttackAnim.BowDraw;
 
             // ---- Skille startowe (do wyboru) i z broni
-            var cleaveHu = Hu("hu_cleave", "Rozpłatanie", SpellKind.Cone, false, 15, 5, 34, "Ciężkie cięcie w stożku przed wojownikiem, nakłada krwawienie.", new Color(1f, 0.78f, 0.45f), reach: 3.2f);
+            var cleaveHu = Hu("hu_cleave", "Rozpłatanie", SpellKind.Cone, false, 15, 5, 34, "Ciężkie cięcie w stożku przed wojownikiem: nakłada krwawienie i powala trafione demony na 1 s (bossy są odporne).", new Color(1f, 0.78f, 0.45f), reach: 3.2f);
             cleaveHu.arcAngle = 130f; cleaveHu.attack.statuses.Add(St(StatusKind.Bleed, 2));
             cleaveHu.levelFeatures.Add(new LevelFeature(1, LevelFeatureKind.ExtraStatusStacks, 1));
             var windSlash = Hu("hu_wind_slash", "Cięcie wichru", SpellKind.Wave, false, 15, 5, 32, "Fala ostrza leci na dystans i przenika przez wrogów.", StormC, global::Turris.Element.Lightning, 1f, reach: 10f);

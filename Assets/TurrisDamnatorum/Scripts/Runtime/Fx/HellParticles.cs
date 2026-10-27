@@ -174,13 +174,20 @@ namespace Turris
             main.startSizeZ = main.startSizeX;
         }
 
-        public void SetAmount(float ratio)
+        public void SetAmount(float ratio) => ApplyAmount(Mathf.Clamp01(ratio));
+
+        /// <summary>Zagęszcza (lub rozrzedza) bieżącą emisję o podany mnożnik – bez górnego limitu SetAmount.</summary>
+        public void ScaleAmount(float factor) => ApplyAmount(Mathf.Max(0f, amount * factor));
+
+        void ApplyAmount(float ratio)
         {
-            amount = Mathf.Clamp01(ratio);
+            amount = ratio;
             for (int i = 0; i < systems.Length; i++)
             {
                 var emission = systems[i].emission;
                 emission.rateOverTime = oneShot ? 0 : recipes[i].Amount * amount / recipes[i].Lifetime;
+                // Zagęszczenie ponad recepturę potrzebuje większego limitu, inaczej nadmiar cząsteczek przepada.
+                if (amount > 1f) { var main = systems[i].main; main.maxParticles = Mathf.Max(main.maxParticles, Mathf.CeilToInt(recipes[i].Amount * amount) + 8); }
                 if (oneShot) emission.SetBursts(new[] { new ParticleSystem.Burst(0, (short)Mathf.RoundToInt(recipes[i].Amount * amount)) });
             }
         }

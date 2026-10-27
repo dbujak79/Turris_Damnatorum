@@ -71,7 +71,10 @@ namespace Turris.Tests
             pc.transform.position = new Vector3(from.x, pc.transform.position.y, from.z);
             pc.transform.rotation = Quaternion.LookRotation(Vector3.forward);
             if (cc != null) cc.enabled = true;
-            pc.LockTarget = alive.OrderBy(e => Vector3.Distance(e.transform.position, pc.transform.position)).FirstOrDefault();
+            // Pomiary porównują rzuty wzdłuż tego samego kierunku – w środek gromady. Pomoc w celowaniu skierowałaby rzut
+            // w najbliższego wroga (inna liczba trafionych), a namierzanie i tak trzyma kontroler, nie pc.LockTarget.
+            root.Controller.AimAssistEnabled = false;
+            root.Controller.LockOn(null);
             pc.Health.SetCurrent(pc.Health.Max); pc.Mana.SetCurrent(pc.Mana.Max); pc.Stamina.SetCurrent(pc.Stamina.Max);
         }
 

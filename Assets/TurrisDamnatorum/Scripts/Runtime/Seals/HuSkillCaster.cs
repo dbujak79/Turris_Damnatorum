@@ -572,13 +572,16 @@ namespace Turris
             float range = cast.Length("range", 3f) * cast.area, arc = cast.P.GetF("arc_degrees", 120f);
             var hit = cast.Hit();
             Vector3 fwd = cast.direction;
+            // Powalenie (jak w Odtrąceniu): każdy zraniony wróg leży przez down_seconds; bossów nie dotyczy.
+            float down = cast.P.GetF("down_seconds");
             int hits = 0;
             HitQuery.Sphere(cast.origin + Vector3.up, range, Faction.Player, new HitTracker(), t =>
             {
                 Vector3 to = t.Transform.position - cast.origin; to.y = 0;
                 if (to.sqrMagnitude > 0.04f && Vector3.Angle(fwd, to) > arc * 0.5f) return;
                 var h = hit; h.sourcePosition = cast.origin;
-                HitQuery.Apply(pc, t, h, true); hits++;
+                var r = HitQuery.Apply(pc, t, h, true); hits++;
+                if (down > 0f && t is EnemyBrain e && !e.IsDead && (r.outcome == HitOutcome.Hit || r.outcome == HitOutcome.GuardBroken)) e.HuThrowDown(down);
             });
             HellFx.Cone(cast.origin + Vector3.up * 1.1f + fwd * 0.4f, fwd, cast.family, range, arc);
             if (!cast.copy) pc.HuSwing(true);

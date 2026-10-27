@@ -48,6 +48,8 @@ python tools/run_tests.py PlayMode window Turris.Tests.GamepadPlayTests   # filt
 
 Wyniki i log trafiają do `TestResults/`. Zmienna środowiskowa `TURRIS_SHOT_DIR=<katalog>` włącza galerie zrzutów (pozy postaci, areny, efekty, gra), a `TURRIS_SOUND_DIR=<katalog>` przy testach EditMode zapisuje wszystkie dźwięki i utwory jako pliki WAV do odsłuchu.
 
+**Boty grające** (`Tests/PlayMode/Bots/`) rozgrywają pełne podejścia na scenie `Main` jako tester QA i gracz H&S/souls-like, po czym piszą raport z wnioskami: `TURRIS_BOT_DIR=<katalog> TURRIS_BOT_RUNS=20 python tools/run_tests.py PlayMode batch Turris.Tests.Bots.WarriorBotPlaytests`. Bez `TURRIS_BOT_DIR` testy są pomijane. Raport dla Wojownika: [docs/raporty_botow/RAPORT_WOJOWNIK.md](docs/raporty_botow/RAPORT_WOJOWNIK.md).
+
 Bezpośrednio przez Unity:
 
 ```
@@ -79,6 +81,8 @@ W trybie `-batchmode` Unity nie wywołuje `OnGUI`, więc testy obsługi menu pad
 | Wybór nagrody | 1 / 2 / 3 | D-pad / gałka + A |
 | Szybki restart po śmierci | R | Y |
 | Zmiana przypisań i głośność | menu główne lub pauza → **Ustawienia** | to samo |
+
+**Pomoc w celowaniu** (jak w Hell Unleashed, domyślnie włączona; przełącznik w **Ustawieniach**): na początku ciosu postać przyciąga się do najbliższego wroga w stożku 28° wokół kierunku ruchu, a bez ruchu – do najbliższego w dowolną stronę (zasięg broni + 1,5 m, min. 5 m). Skille kierunkowe i na punkt zaginają się w stożku 35° (bez ruchu: najbliższy wróg do 12 m); skille „na siebie” nie. Z włączonym **namierzaniem** cios i skill zawsze idą w namierzonego wroga – przez cały zamach.
 | (dev) +100 popiołu w menu głównym | F9 | — |
 
 **Przypisania przycisków** można zmienić w menu **Ustawienia** (z menu głównego i z pauzy), osobno dla klawiatury z myszą i dla pada. Wybierz przycisk akcji i naciśnij nowy klawisz (Esc – anuluj); jeśli inna akcja miała ten przycisk, zamienią się miejscami. Układ zapisuje się w profilu, a podpowiedzi w HUD i pomocy pokazują bieżące przypisania.

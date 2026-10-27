@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
   id: hu_cleave
   displayName: "Rozp\u0142atanie"
-  description: "Ci\u0119\u017Ckie ci\u0119cie w sto\u017Cku przed wojownikiem, nak\u0142ada krwawienie."
+  description: "Ci\u0119\u017Ckie ci\u0119cie w sto\u017Cku przed wojownikiem: nak\u0142ada krwawienie i powala trafione demony na 1 s (bossy s\u0105 odporne)."
   tags: 1
   kind: 10
   category: 1

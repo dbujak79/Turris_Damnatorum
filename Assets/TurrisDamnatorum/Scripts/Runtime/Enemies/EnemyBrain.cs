@@ -468,6 +468,7 @@ namespace Turris
                 case ActionPhase.Active:
                     move = transform.forward * lungeSpeed * speed * LungeGate();
                     move += SpecialActive(a, speed, dt);
+                    if (current == null || CurrentState != State.Attacking) return Vector3.zero; // sparowana szarża przerwała atak
                     if (a.delivery == AttackDelivery.Melee && (current.special == EnemySpecial.None || current.special == EnemySpecial.Latch)) SweepMelee();
                     if (CurrentState != State.Attacking) return Vector3.zero; // uczepienie przejęło stan
                     if (attackT >= a.windup + a.active) { attackPhase = ActionPhase.Recovery; EndSpecialActive(); }

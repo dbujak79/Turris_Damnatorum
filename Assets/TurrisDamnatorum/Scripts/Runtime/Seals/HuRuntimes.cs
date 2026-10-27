@@ -561,7 +561,8 @@ namespace Turris
     /// </summary>
     public sealed class HuWall : IHuRuntime
     {
-        const float FlameSpacing = 0.95f, RingSegments = 12;
+        // Gęstość ognia ściany/fali: płomienie co 0,73 m (dawniej 0,95) i żar ×1,3 – ok. +30% ognia na metr.
+        const float FlameSpacing = 0.73f, RingSegments = 12, GroundDensity = 1.3f;
         readonly HuCast cast; readonly HitData hit; readonly Vector3 dir;
         readonly float seconds, interval, halfWidth, speed;
         readonly List<(Vector3 a, Vector3 b)> segments = new List<(Vector3, Vector3)>();
@@ -605,6 +606,7 @@ namespace Turris
             seg.transform.SetPositionAndRotation(HuWorld.Ground((a + b) * 0.5f), Quaternion.LookRotation(Vector3.Cross(HuWorld.FlatDir(a, b), Vector3.up)));
             var ground = HellFx.Ambient(seg.transform, Vector3.up * 0.08f, cast.family, 1f, seconds);
             ground?.SetBox(len * 0.5f, halfWidth);
+            if (cast.family == HellFxElement.Fire) ground?.ScaleAmount(GroundDensity);
             if (cast.family != HellFxElement.Fire) return;
             int flames = Mathf.Max(2, Mathf.RoundToInt(len / FlameSpacing));
             for (int i = 0; i < flames; i++)

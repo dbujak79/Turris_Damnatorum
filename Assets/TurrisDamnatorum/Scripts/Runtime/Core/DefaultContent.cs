@@ -881,7 +881,9 @@ namespace Turris
             tower.floors.Add(new FloorDefinition { name = "I. Wrota Otchłani", arena = courtyard, statScale = 1.0f, isDuel = false, ashReward = 3,
                 portals = Portals(75f, 30f, 3.18f, (hu.imp, 3.85f)) });
             tower.floors.Add(new FloorDefinition { name = "II. Kult Bramy", arena = crypt, statScale = 1.05f, isDuel = false, ashReward = 6,
-                portals = Portals(78f, 44f, 2.91f, (hu.imp, 3.7f), (hu.cultist, 4.5f), (hu.worm, 1.4f)) });
+                // Budżet 44 → 41 i waga kultysty 4,5 → 3,7: średnio o trzech kultystów mniej (ok. 13,9 zamiast 16,9),
+                // przy tej samej liczbie chochlików i czerwi – raport botów: piętro II zabijało w 18/20 śmierci.
+                portals = Portals(78f, 41f, 2.91f, (hu.imp, 3.7f), (hu.cultist, 3.7f), (hu.worm, 1.4f)) });
             tower.floors.Add(new FloorDefinition { name = "III. Władca Bramy", arena = courtyard, enemies = { hu.gatelord }, statScale = 1.0f, isDuel = true, ashReward = 10, restAfter = true });
             tower.floors.Add(new FloorDefinition { name = "IV. Zbrojownia", arena = crypt, enemies = { ghoul, ghoul, heretic }, statScale = 0.95f, isDuel = false, ashReward = 12,
                 extraWaves = { Wave(archer, archer, ghoul), Wave(ghoul, heretic, archer, ghoul), Wave(warden) } });

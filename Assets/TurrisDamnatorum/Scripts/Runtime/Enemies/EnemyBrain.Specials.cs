@@ -107,6 +107,8 @@ namespace Turris
                         var hit = HitData.FromAttack(a, a.baseDamage * DamageMult, transform.position, this);
                         HitQuery.Apply(this, r, hit, true);
                     });
+                    // Sparowana szarża kończy atak już w trakcie trafienia (OnAttackParried zeruje current) – dalej nie ma czego prowadzić.
+                    if (current == null || CurrentState != State.Attacking) return Vector3.zero;
                     chargeTrail += Vector3.Distance(Flat(chargeLast), Flat(pos));
                     chargeLast = pos;
                     if (chargeTrail >= 2f && current.specialDuration > 0f)

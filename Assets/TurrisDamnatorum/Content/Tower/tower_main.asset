@@ -51,7 +51,7 @@ MonoBehaviour:
     portals:
       enabled: 1
       duration: 78
-      budget: 44
+      budget: 41
       groupInterval: 2.91
       minGroup: 1
       maxGroup: 2
@@ -62,7 +62,7 @@ MonoBehaviour:
       - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
         weight: 3.7
       - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
-        weight: 4.5
+        weight: 3.7
       - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
         weight: 1.4
   - name: "III. W\u0142adca Bramy"
@@ -102,6 +102,7 @@ MonoBehaviour:
       - {fileID: 11400000, guid: 885fc90c41534d1408fdb3a251354b9a, type: 2}
       - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
       - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
+      - {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
     - enemies:
       - {fileID: 11400000, guid: 0f03c0977312be74c92e3e218d770a73, type: 2}
     statScale: 0.95
@@ -137,6 +138,7 @@ MonoBehaviour:
     - enemies:
       - {fileID: 11400000, guid: 0f03c0977312be74c92e3e218d770a73, type: 2}
       - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
+      - {fileID: 11400000, guid: 12c08c3be0aa8d447ae70b9eec8a18c8, type: 2}
     statScale: 1.12
     isDuel: 1
     isBoss: 0

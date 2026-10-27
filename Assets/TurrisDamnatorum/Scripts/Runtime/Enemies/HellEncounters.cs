@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Turris
 {
-    /// <summary>Wprowadzenie sprawdzonych archetypów na późniejszych piętrach, z zachowaniem liczby fal i przeciwników.</summary>
+    /// <summary>Wprowadzenie sprawdzonych archetypów na późniejszych piętrach (zachowana liczba fal) i wróg charakterystyczny pięter IV–V.</summary>
     public static class HellEncounters
     {
         public static void ExtendTower(GameConfig cfg, Dictionary<string, ContentDefinition> content)
@@ -29,6 +29,17 @@ namespace Turris
                 Replace(v.extraWaves[1].enemies, 0, "enemy_heretic", "enemy_hu_wraith");
                 Replace(v.extraWaves[1].enemies, 3, "enemy_ghoul", "enemy_hu_weaver");
             }
+
+            // Piętra od IV wzwyż (bez pięter z bossem): jeden dodatkowy wróg charakterystyczny dla piętra.
+            // Zbrojownia – Taranowiec w drugiej fali; Brama Strażnika – Gargulec obok Strażnika w ostatniej fali.
+            void AddSignature(FloorDefinition floor, int wave, string id)
+            {
+                if (floor.isBoss || wave >= floor.extraWaves.Count || !content.TryGetValue(id, out var value)) return;
+                var list = floor.extraWaves[wave].enemies;
+                if (!list.Exists(e => e != null && e.id == id)) list.Add((EnemyDefinition)value);
+            }
+            AddSignature(iv, 1, "enemy_hu_charger");
+            AddSignature(v, 2, "enemy_hu_gargoyle");
         }
     }
 }

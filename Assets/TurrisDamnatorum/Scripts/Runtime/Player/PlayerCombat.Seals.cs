@@ -55,6 +55,7 @@ namespace Turris
         public EnemyBrain HuAimTarget(float range, float angle, Vector3 origin, Vector3 dir)
         {
             if (LockTarget != null && !LockTarget.IsDead && HuWorld.Flat(LockTarget.transform.position, origin) <= range) return LockTarget;
+            if (AssistTarget != null && !AssistTarget.IsDead && HuWorld.Flat(AssistTarget.transform.position, origin) <= range) return AssistTarget;
             return HuWorld.AimTarget(origin, dir, range, angle);
         }
 
