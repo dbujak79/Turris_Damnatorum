@@ -434,7 +434,6 @@ namespace Turris
                     ambGain = 1f;
                     break;
                 }
-                case GameScreen.Reward:
                 case GameScreen.Intermission:
                     id = MusicId.Menu; gain = 0.6f; ambGain = 0.8f;
                     break;

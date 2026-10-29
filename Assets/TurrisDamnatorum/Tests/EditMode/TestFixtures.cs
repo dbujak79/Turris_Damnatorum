@@ -21,6 +21,14 @@ namespace Turris.Tests
 
         public RunState NewRun(string classId, int tier = 0) => RunFactory.Create(Plan(classId, tier), Cfg, 1234);
 
+        /// <summary>Czar wymaga fokusu (WeaponFamilies): różdżka ognia w ręce głównej.</summary>
+        public void GiveFocus(RunState run)
+        {
+            var wand = new ItemInstance(Get<ItemDefinition>("hu_wand_fire"));
+            run.inventory.Add(wand);
+            run.EquipFromInventory(wand, EquipSlot.MainHand);
+        }
+
         public PlayerCombat NewCombatant(RunState run)
         {
             var go = new GameObject("TestPlayer");

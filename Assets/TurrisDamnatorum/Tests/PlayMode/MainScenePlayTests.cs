@@ -41,7 +41,7 @@ namespace Turris.Tests
             Assert.AreEqual(3, root.config.classes.Count(c => c.parent == null), "Trzy typy bohatera");
             Assert.AreEqual(15, root.config.classes.Count, "…i dwanaście specjalizacji");
             Assert.IsTrue(root.config.classes.All(c => c.Visual != null), "Każda klasa ma model bohatera");
-            Assert.AreEqual(6, root.config.tower.floors.Count, "3 areny Hell Unleashed + 3 piętra Turris");
+            Assert.AreEqual(30, root.config.tower.floors.Count, "30 fal Hell Unleashed");
             Assert.AreEqual(GameScreen.MainMenu, root.Screen);
 
             var plan = new LoadoutPlan { classDef = root.config.classes[1], difficulty = root.config.difficulties[0] };
@@ -58,7 +58,7 @@ namespace Turris.Tests
                 yield return null;
             }
             Assert.Less(root.Player.Mana.Current, manaStart + 5f, "Czary zużywają manę");
-            Assert.IsTrue(root.Screen == GameScreen.Playing || root.Screen == GameScreen.Reward || root.Screen == GameScreen.Death);
+            Assert.IsTrue(root.Screen == GameScreen.Playing || root.Screen == GameScreen.Intermission || root.Screen == GameScreen.Death);
         }
 
         [UnityTest]
@@ -150,7 +150,6 @@ namespace Turris.Tests
 
             root.DebugCompleteFloorNow();
             yield return UiShot(Path.Combine(dir, "1f_reward_ui.png"));
-            root.ChooseReward(0);
             root.Run.souls = 420;
             yield return UiShot(Path.Combine(dir, "2a_intermission_shop_ui.png"));
             root.OpenEquipment();
@@ -158,13 +157,10 @@ namespace Turris.Tests
             root.CloseEquipment();
             root.NextFloor();
             root.DebugCompleteFloorNow();
-            root.ChooseReward(0);
             root.NextFloor();
             root.DebugCompleteFloorNow();
-            root.ChooseReward(0);
             root.NextFloor();
             root.DebugCompleteFloorNow();
-            root.ChooseReward(0);
             root.NextFloor();
             t = 0;
             root.Controller.ToggleLock();

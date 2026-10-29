@@ -30,7 +30,7 @@ namespace Turris
         public float unmetRequirementAttackSpeed = 0.8f;
         [Tooltip("Czar bez wymaganej Inteligencji nie może zostać rzucony.")]
         public bool spellRequirementsAreHard = true;
-        [Tooltip("Punkty cech po każdym ukończonym piętrze.")]
+        [Tooltip("Darmowe punkty cech po każdym ukończonym piętrze (Turris – cech nie kupuje się za dusze).")]
         public int attributePointsPerFloor = 1;
         [Tooltip("Obrona: redukcja = obrona / (obrona + stała).")]
         public float defenseConstant = 100f;
@@ -81,8 +81,29 @@ namespace Turris
         [Tooltip("Roztrzaskanie: błyskawica w zamrożony cel – wybuch wokół celu za tę część obrażeń trafienia.")]
         public float shatterShare = 0.8f;
         public float shatterRadius = 3f;
-        [Tooltip("Maksymalna odporność bohatera na żywioł.")]
-        public float maxElementResist = 75f;
+        [Tooltip("Maksymalna odporność bohatera na żywioł (HU balans 2.0: 65%).")]
+        public float maxElementResist = 65f;
+        [Tooltip("Odporność bohatera powyżej progu liczy się w tej części (HU: pełna do 40%, dalej połowa – 60% surowej to 50%).")]
+        public float resistSoftThreshold = 40f, resistSoftSlope = 0.5f;
+        [Tooltip("Redukcja obrażeń bohatera ze wszystkich źródeł (klasa, przedmioty, okrzyk, szał, więź): pełna do progu, dalej w tej części, nie więcej niż limit (HU: 25% / 0,5 / 45%).")]
+        public float damageReductionSoftThreshold = 25f, damageReductionSoftSlope = 0.5f, damageReductionCap = 45f;
+        [Tooltip("Obrona fizyczna bohatera zdejmuje najwyżej tyle ciosu (HU: pancerz zostawia min. 45%).")]
+        [Range(0, 1)] public float maxPhysicalReduction = 0.55f;
+        [Tooltip("Bezpośredni cios w bohatera zadaje co najmniej tę część surowych obrażeń (unik, parowanie, blok i osłona dalej zerują).")]
+        [Range(0, 1)] public float directHitMinimumDamage = 0.15f;
+        [Tooltip("Kradzież życia i życie za zabójstwo razem leczą najwyżej tę część maks. życia w ruchomej sekundzie (HU: 8%).")]
+        public float passiveHealingPerSecond = 0.08f;
+
+        /// <summary>Wartość do progu bez zmian, ponad nim w części <paramref name="slope"/>, nigdy ponad <paramref name="cap"/> (HU <c>BalanceConfig.SoftCap</c>).</summary>
+        public static float SoftCap(float value, float threshold, float slope, float cap) =>
+            Mathf.Min(cap, value <= threshold ? value : threshold + (value - threshold) * slope);
+
+        /// <summary>Skuteczna odporność bohatera na żywioł (%) z surowej: miękki próg i limit; ujemna (słabość) bez zmian, do −100%.</summary>
+        public float HeroResist(float raw) => raw <= 0f ? Mathf.Max(-100f, raw) : SoftCap(raw, resistSoftThreshold, resistSoftSlope, maxElementResist);
+
+        /// <summary>Skuteczna redukcja obrażeń bohatera (0–1) z sumy wszystkich źródeł (ułamek).</summary>
+        public float HeroDamageReduction(float raw) =>
+            SoftCap(Mathf.Max(0f, raw) * 100f, damageReductionSoftThreshold, damageReductionSoftSlope, damageReductionCap) / 100f;
         [Tooltip("Czas kontroli (zamrożenie, spowolnienie) na bossach i elitach.")]
         public float bossControlMultiplier = 0.5f, eliteControlMultiplier = 0.7f;
         [Tooltip("Zachwianie (ziemia, młoty): tyle warstw ogłusza; warstwa trwa staggerDuration, każda spowalnia ruch.")]
@@ -130,7 +151,8 @@ namespace Turris
         public float playerKnockback = 0.4f;
 
         [Header("Unik")]
-        public float dodgeStaminaCost = 18f;
+        [Tooltip("HU 26.10: unik droższy o 20% (18 → 21,6).")]
+        public float dodgeStaminaCost = 21.6f;
         public float dodgeDistance = 4.2f;
         public float dodgeInvulnStart = 0.04f;
         public float dodgeInvulnDuration = 0.28f;
@@ -187,15 +209,12 @@ namespace Turris
         [Header("Budżet przygotowania")]
         public int loadoutBudget = 4;
 
-        [Header("Nagrody")]
-        [Range(0, 1)] public float rewardExplorationChance = 0.3f;
-        [Range(0, 1)] public float learnNewSpellChance = 0.35f;
+        [Header("Kapliczka")]
         public int weaponUpgradeSoulCost = 150;
         [Header("Sklep dusz (między piętrami)")]
         [Tooltip("Ulepszenie umiejętności: koszt × (poziom + 1).")]
         public int skillUpgradeSoulCost = 60;
         public int skillOfferSoulCost = 110;
-        public int rewardRerollSoulCost = 40;
         [Tooltip("Wzrost cen za każde ukończone piętro po pierwszym.")]
         public float shopInflationPerFloor = 0.15f;
         public int flaskUpgradeSoulCost = 200;

@@ -1,0 +1,161 @@
+{
+    "title": "Piętro 9 · Królowa Topieli",
+    "note": "Wojownik · Tester QA · poległ 3× (podejście 20) · ostatni cios: Królowa Topieli: Królowa Topieli: Combo – Hit",
+    "created": "2026-10-28 18:39",
+    "classId": "class_knight",
+    "appearanceId": "",
+    "difficultyTier": 0,
+    "seed": 89636625,
+    "floorIndex": 8,
+    "floorsCleared": 8,
+    "souls": 47,
+    "ashEarned": 52,
+    "kills": 253,
+    "attributePoints": 0,
+    "toughness": 14,
+    "strength": 16,
+    "dexterity": 12,
+    "intelligence": 9,
+    "healthFlasks": 4,
+    "manaFlasks": 1,
+    "bonusHealthFlasks": 0,
+    "healthFraction": 1.0,
+    "manaFraction": 0.9189189076423645,
+    "equipment": [
+        {
+            "id": "hu_greatsword",
+            "level": 1,
+            "slot": 0
+        },
+        {
+            "id": "body_chainmail",
+            "level": 0,
+            "slot": 3
+        },
+        {
+            "id": "feet_iron",
+            "level": 0,
+            "slot": 6
+        }
+    ],
+    "inventory": [
+        {
+            "id": "hu_sword_fire",
+            "level": 2,
+            "slot": -1
+        },
+        {
+            "id": "feet_scout",
+            "level": 3,
+            "slot": -1
+        }
+    ],
+    "skills": [
+        {
+            "id": "hu_wind_slash",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_stomp",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_warcry",
+            "level": 2,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 2,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_executioners_fall",
+            "level": 2,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 0,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_repel",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_cleave",
+            "level": 0,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_lunge",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_aura_defiance",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_cross_cut",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 1,
+            "form": "",
+            "supports": []
+        }
+    ],
+    "signature": {
+        "id": "hu_warcry",
+        "level": 1,
+        "permanent": true,
+        "fromItem": false,
+        "slot": -1,
+        "form": "",
+        "supports": []
+    },
+    "boons": [
+        {
+            "id": "boon_breath",
+            "count": 1
+        },
+        {
+            "id": "boon_titan",
+            "count": 1
+        }
+    ],
+    "sealRanks": [],
+    "sealPouch": [
+        "seal.wide",
+        "seal.element.earth",
+        "seal.fuse"
+    ]
+}

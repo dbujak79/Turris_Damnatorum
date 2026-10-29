@@ -24,7 +24,7 @@ MonoBehaviour:
   cancelAfter: 0.2
   staminaCost: 5
   requirements: []
-  requiredTags: 0
+  requiredTags: 4096
   intelligenceScaling: 2.5
   attack:
     name: Atak

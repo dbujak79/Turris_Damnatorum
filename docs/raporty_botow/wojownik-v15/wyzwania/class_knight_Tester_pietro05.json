@@ -1,0 +1,111 @@
+{
+    "title": "Wojownik, piętro 5: V. Psiarnia Piekieł (Tester QA)",
+    "note": "Bot nie przeszedł piętra w 3 próbach (podejście 20); ostatni zabójca:  – .",
+    "created": "2026-10-28 15:19",
+    "classId": "class_knight",
+    "appearanceId": "",
+    "difficultyTier": 0,
+    "seed": 77647875,
+    "floorIndex": 4,
+    "floorsCleared": 4,
+    "souls": 7,
+    "ashEarned": 18,
+    "kills": 127,
+    "attributePoints": 0,
+    "toughness": 13,
+    "strength": 15,
+    "dexterity": 11,
+    "intelligence": 8,
+    "healthFlasks": 5,
+    "manaFlasks": 1,
+    "bonusHealthFlasks": 1,
+    "healthFraction": 1.0,
+    "manaFraction": 0.9117646813392639,
+    "equipment": [
+        {
+            "id": "body_chainmail",
+            "level": 0,
+            "slot": 3
+        }
+    ],
+    "inventory": [
+        {
+            "id": "hu_greatsword",
+            "level": 0,
+            "slot": -1
+        },
+        {
+            "id": "shield_buckler",
+            "level": 0,
+            "slot": -1
+        }
+    ],
+    "skills": [
+        {
+            "id": "hu_wind_slash",
+            "level": 2,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_stomp",
+            "level": 2,
+            "permanent": true,
+            "fromItem": false,
+            "slot": 1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_leapslash",
+            "level": 0,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 2,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_lunge",
+            "level": 0,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_warcry",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 0,
+            "form": "",
+            "supports": []
+        }
+    ],
+    "signature": {
+        "id": "hu_warcry",
+        "level": 0,
+        "permanent": true,
+        "fromItem": false,
+        "slot": -1,
+        "form": "",
+        "supports": []
+    },
+    "boons": [
+        {
+            "id": "boon_vampire",
+            "count": 1
+        }
+    ],
+    "sealRanks": [],
+    "sealPouch": [
+        "seal.ward",
+        "seal.charges",
+        "seal.relay"
+    ]
+}

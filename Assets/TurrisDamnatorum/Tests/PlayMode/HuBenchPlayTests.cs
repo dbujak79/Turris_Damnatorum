@@ -14,7 +14,7 @@ namespace Turris.Tests
     /// <summary>
     /// Tryb pomiaru skilli i pieczęci (port <c>--bench</c> z HU): jeden rzut w nieśmiertelne manekiny, łączne obrażenia
     /// w oknie jednego cyklu odnowienia (6–20 s) (trafienia, strefy, echa, sługi, podpalenie i krwawienie – z CombatEvents.Impact), koszt i odnowienie.
-    /// Zapis do TestResults/hu-bench/bench.csv; bez tego katalogu (albo TURRIS_BENCH_DIR) test jest pomijany.
+    /// Zapis do TURRIS_BENCH_DIR/bench.csv; bez tej zmiennej test jest pomijany (pomiar trwa do 90 minut).
     /// Ograniczenia jak w HU: manekiny nie robią uników, nie liczy się mobilność ani obrona; kształt gromady faworyzuje
     /// skille dookoła bohatera, kolos – pojedyncze uderzenia.
     /// </summary>
@@ -160,8 +160,7 @@ namespace Turris.Tests
         public IEnumerator Bench_SkillsFormsAndSupports_WhenRequested()
         {
             string dir = System.Environment.GetEnvironmentVariable("TURRIS_BENCH_DIR");
-            if (string.IsNullOrEmpty(dir) && Directory.Exists(Path.Combine("TestResults", "hu-bench"))) dir = Path.Combine("TestResults", "hu-bench");
-            if (string.IsNullOrEmpty(dir)) { Assert.Ignore("Utwórz TestResults/hu-bench albo ustaw TURRIS_BENCH_DIR."); yield break; }
+            if (string.IsNullOrEmpty(dir)) { Assert.Ignore("Pomiar na żądanie: ustaw TURRIS_BENCH_DIR."); yield break; }
             SceneManager.LoadScene("Main");
             yield return null; yield return null;
             root = Object.FindAnyObjectByType<GameRoot>();

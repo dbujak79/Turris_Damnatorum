@@ -39,6 +39,19 @@ namespace Turris
             Form(seals, sealsById, errors, "seal.form.wall.fortress", "Forteca ognia",
                 "Ogień zamyka się w pierścień wokół ciebie (promień 4 m) – demony muszą przejść przez płomienie. +3 s odnowienia.",
                 "@targeting=Self", "wall_ring=1", "wall_ring_radius=4", "cooldown+=3");
+
+            // Grzmot: powalenie jako pieczęć wsparcia (dotąd miały je tylko Rozpłatanie i Odtrącenie), więc kontrolę tłumu
+            // można dołożyć do dowolnego skilla zadającego obrażenia. Powalony demon przerywa atak i rzut pocisku;
+            // po powaleniu ma 2 s odporności na ogłuszenie, więc strefy nie trzymają go na ziemi bez końca.
+            var thunder = new HuSeal
+            {
+                id = "seal.turris.thunder", name = "Grzmot", kind = SealKind.Support, basePrice = 45f,
+                desc = "Trafienie powala demony na 0,7 s (bossy odporne; potem 2 s odporności na ogłuszenie). 85% obrażeń.",
+                forbidsComponents = new[] { "Aura", "Heal", "Undying", "Overload", "Barrier" },
+            };
+            thunder.ops = SealOp.ParseAll(new[] { "down_seconds+=0.7", "damage*=0.85" }, errors);
+            seals.Add(thunder);
+            sealsById[thunder.id] = thunder;
         }
 
         static void Form(List<HuSeal> seals, IDictionary<string, HuSeal> byId, List<string> errors, string id, string name, string desc, params string[] ops)

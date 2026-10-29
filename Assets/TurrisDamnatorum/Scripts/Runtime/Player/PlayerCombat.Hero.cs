@@ -240,8 +240,33 @@ namespace Turris
             if (!landed || hit.isStatusTick) return;
             if (hit.weapon != WeaponModel.Auto && hit.fromMeleeWeapon) AddFury(FuryPerHitDealt);
             float leech = Build.stats[StatType.LifeLeech] / 100f;
-            if (leech > 0f && result.healthDamage > 0f) Health.Restore(result.healthDamage * leech * (ImmortalTime > 0f ? 0.5f : 1f));
+            if (leech > 0f && result.healthDamage > 0f) PassiveHeal(result.healthDamage * leech * LeechWeight(hit));
             if (Trait == ClassTrait.Spellblade && hit.fromMeleeWeapon && hit.weapon != WeaponModel.Auto) Mana.Restore(2f);
+        }
+
+        // ------------------------------------------------------------------ Leczenie bierne (HU PassiveHealingWindow)
+
+        readonly Queue<(float time, float amount)> passiveHeals = new Queue<(float, float)>();
+        float passiveHealSum;
+
+        /// <summary>Współczynnik kradzieży życia wg rodzaju trafienia (HU): cios/pocisk 1, obszar 0,25, tyknięcie i reakcja 0.</summary>
+        static float LeechWeight(in HitData hit) => hit.isStatusTick || hit.isReaction ? 0f : hit.explosionRadius > 0f ? 0.25f : 1f;
+
+        /// <summary>
+        /// Kradzież życia, życie za zabójstwo i podobne – razem najwyżej <see cref="BalanceConfig.passiveHealingPerSecond"/> maks. życia
+        /// w ruchomej sekundzie; podczas nieśmiertelności połowa. Skille leczące są poza tym limitem. Zwraca faktycznie przywrócone życie.
+        /// </summary>
+        public float PassiveHeal(float amount)
+        {
+            if (amount <= 0f || IsDead) return 0f;
+            while (passiveHeals.Count > 0 && clock - passiveHeals.Peek().time >= 1f) passiveHealSum -= passiveHeals.Dequeue().amount;
+            if (ImmortalTime > 0f) amount *= 0.5f;
+            float give = Mathf.Min(amount, Health.Max * B.passiveHealingPerSecond - passiveHealSum);
+            if (give <= 0f) return 0f;
+            passiveHeals.Enqueue((clock, give));
+            passiveHealSum += give;
+            Health.Restore(give);
+            return give;
         }
 
         // ------------------------------------------------------------------ Przyjmowanie trafień
@@ -257,12 +282,14 @@ namespace Turris
             return false;
         }
 
-        /// <summary>Redukcja obrażeń: klasa, okrzyk, szał, więź dusz; potem arkanowa osłona i nieśmiertelność.</summary>
-        float HeroMitigate(float damage, bool statusTick)
+        /// <summary>
+        /// Redukcja obrażeń: klasa, okrzyk, szał, więź dusz – sumowane i przez miękki limit HU (pełna do 25%, dalej połowa, maks. 45%);
+        /// potem minimum bezpośredniego ciosu, arkanowa osłona i nieśmiertelność.
+        /// </summary>
+        float HeroMitigate(float damage, bool statusTick, float minimum = 0f)
         {
-            float dr = Build.stats[StatType.DamageReduction] / 100f + cryReduction + (Raging ? RageReduction : 0f);
-            if (Trait == ClassTrait.SoulBond) dr += Mathf.Min(SoulBondMax, SoulBondPerServant * Servant.Active.Count);
-            damage *= 1f - Mathf.Clamp(dr, 0f, 0.75f);
+            damage *= 1f - CurrentDamageReduction;
+            if (minimum > 0f && damage < minimum) damage = minimum;
             if (Trait == ClassTrait.ArcaneWard && damage > 0f)
             {
                 wardDelay = WardDelay;
@@ -273,6 +300,17 @@ namespace Turris
             if (ImmortalTime > 0f && damage >= Health.Current) damage = Mathf.Max(0f, Health.Current - 1f);
             if (!statusTick) { lastFightTime = clock; if (damage > 0f) AddFury(FuryPerHitTaken); }
             return damage;
+        }
+
+        /// <summary>Skuteczna redukcja obrażeń bohatera (0–1) ze wszystkich źródeł naraz.</summary>
+        public float CurrentDamageReduction
+        {
+            get
+            {
+                float dr = Build.stats[StatType.DamageReduction] / 100f + cryReduction + (Raging ? RageReduction : 0f);
+                if (Trait == ClassTrait.SoulBond) dr += Mathf.Min(SoulBondMax, SoulBondPerServant * Servant.Active.Count);
+                return B.HeroDamageReduction(dr);
+            }
         }
 
         bool HeroInvulnerable => blinkInvuln > 0f || DebugInvulnerable;
@@ -506,7 +544,7 @@ namespace Turris
             if (def.attack.element == Element.Earth) FxLibrary.Dust(center, r * 0.6f);
             if (def.zoneDuration > 0f && def.zoneRadius > 0f)
             {
-                var zh = h; zh.physical *= def.zoneShare; zh.magic *= def.zoneShare; zh.knockback = 0f; zh.poiseDamage *= 0.1f;
+                var zh = h; zh.physical *= def.zoneShare; zh.magic *= def.zoneShare; zh.knockback = 0f; zh.knockdown = 0f; zh.poiseDamage *= 0.1f;
                 DamageZone.Spawn(center, def.zoneRadius, def.zoneDuration, def.zoneInterval, zh, Faction.Player, this, def.color);
             }
             Sfx.Play(def.kind == SpellKind.Nova ? Sfx.ForElement(def.attack.element, SoundId.Shockwave) : SoundId.Shockwave, center, 0.8f);

@@ -1,0 +1,117 @@
+{
+    "title": "Wojownik, piętro 5: V. Psiarnia Piekieł (Tester QA)",
+    "note": "Bot nie przeszedł piętra w 3 próbach (podejście 18); ostatni zabójca:  – .",
+    "created": "2026-10-28 15:06",
+    "classId": "class_knight",
+    "appearanceId": "",
+    "difficultyTier": 0,
+    "seed": 76870093,
+    "floorIndex": 4,
+    "floorsCleared": 4,
+    "souls": 47,
+    "ashEarned": 18,
+    "kills": 123,
+    "attributePoints": 0,
+    "toughness": 13,
+    "strength": 15,
+    "dexterity": 11,
+    "intelligence": 8,
+    "healthFlasks": 4,
+    "manaFlasks": 1,
+    "bonusHealthFlasks": 0,
+    "healthFraction": 1.0,
+    "manaFraction": 0.9117646813392639,
+    "equipment": [
+        {
+            "id": "hu_sword",
+            "level": 1,
+            "slot": 0
+        },
+        {
+            "id": "hu_shield",
+            "level": 0,
+            "slot": 1
+        },
+        {
+            "id": "body_chainmail",
+            "level": 0,
+            "slot": 3
+        },
+        {
+            "id": "amulet_parry",
+            "level": 2,
+            "slot": 9
+        }
+    ],
+    "inventory": [
+        {
+            "id": "hu_grimoire_air",
+            "level": 1,
+            "slot": -1
+        }
+    ],
+    "skills": [
+        {
+            "id": "hu_wind_slash",
+            "level": 2,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_stomp",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_cleave",
+            "level": 0,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 2,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_lunge",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_warcry",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 0,
+            "form": "",
+            "supports": []
+        }
+    ],
+    "signature": {
+        "id": "hu_warcry",
+        "level": 0,
+        "permanent": true,
+        "fromItem": false,
+        "slot": -1,
+        "form": "",
+        "supports": []
+    },
+    "boons": [
+        {
+            "id": "talent_vigilance",
+            "count": 1
+        }
+    ],
+    "sealRanks": [],
+    "sealPouch": []
+}

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9713eabedc811e74eb31146a53f52ecf, type: 3}
+  m_Name: hu_perk_warrior_reflect
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.BoonDefinition
+  id: hu_perk_warrior_reflect
+  displayName: Odbicie
+  description: "Sparowany pocisk wroga zawraca i leci tam, sk\u0105d przylecia\u0142, jako tw\xF3j: \xD70,75 jego obra\u017Ce\u0144 na poziom."
+  tags: 0
+  maxStacks: 3
+  modifiers: []
+  effects:
+  - type: 45
+    value: 0.75
+  extraHealthFlasks: 0
+  extraManaFlasks: 0

@@ -1,0 +1,1180 @@
+{
+ "upgrades": [
+  {
+   "id": "upgrade.added.air",
+   "file": "added_air",
+   "sha256": "b3cd4bb9cc12eb8f6492c27ea1595432a842c69d45193787db5c6bdef88a7791",
+   "name": "Świszczące ostrze",
+   "desc": "+5 obrażeń od powietrza do ataku podstawowego.",
+   "Scope": 1,
+   "AttackTags": [],
+   "Modifiers": [
+    "AirDamage|Flat|5.0"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 4,
+   "BasePrice": 26,
+   "PriceGrowth": 1.55,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.added.earth",
+   "file": "added_earth",
+   "sha256": "5783bd36b03032fd1fc04404f55ceba636dc882fdfcb264fad5990fbbf1b5f89",
+   "name": "Kamienne ostrze",
+   "desc": "+5 obrażeń od ziemi do ataku podstawowego i zachwianie.",
+   "Scope": 1,
+   "AttackTags": [],
+   "Modifiers": [
+    "EarthDamage|Flat|5.0"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [
+    "Stagger"
+   ],
+   "RequiresAny": [],
+   "MaxLevel": 4,
+   "BasePrice": 28,
+   "PriceGrowth": 1.55,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.added.fire",
+   "file": "added_fire",
+   "sha256": "25cc0ff74e81c478d7a1394be79e97334b9fb98f66a86c9da22ef8b14127d7b7",
+   "name": "Płonące ostrze",
+   "desc": "+5 obrażeń od ognia do ataku podstawowego i podpalenie.",
+   "Scope": 1,
+   "AttackTags": [],
+   "Modifiers": [
+    "FireDamage|Flat|5.0"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [
+    "Ignite"
+   ],
+   "RequiresAny": [],
+   "MaxLevel": 4,
+   "BasePrice": 28,
+   "PriceGrowth": 1.55,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.added.water",
+   "file": "added_water",
+   "sha256": "6584cb6cf4f760f8fddbf263b2a8c7645bf9afa4b4cd83fc4e0510146c610842",
+   "name": "Mokre ostrze",
+   "desc": "+5 obrażeń od wody do ataku podstawowego i przemoczenie.",
+   "Scope": 1,
+   "AttackTags": [],
+   "Modifiers": [
+    "WaterDamage|Flat|5.0"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [
+    "Soaked"
+   ],
+   "RequiresAny": [],
+   "MaxLevel": 4,
+   "BasePrice": 28,
+   "PriceGrowth": 1.55,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.area",
+   "file": "area",
+   "sha256": "c45ced90beeb60129f8dff40e714c9bb8be55d3ad75f456f753072b16e0b0862",
+   "name": "Szeroki zasięg",
+   "desc": "+10% promienia ataków obszarowych na poziom (eksplozje, nove, strefy, wiry, szerokość fal). Większy promień, nie powierzchnia: +10% promienia to ok. +21% powierzchni. Nie zmienia zasięgu miecza ani kąta cięcia.",
+   "Scope": 0,
+   "AttackTags": [
+    "area"
+   ],
+   "Modifiers": [
+    "AreaSize|PercentAdditive|0.10"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 4,
+   "BasePrice": 24,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.armour",
+   "file": "armour",
+   "sha256": "3aeb1a8debf9cc3f9776c568ab5c008d2ff2da66c0d40a702495aad9d337be73",
+   "name": "Pancerz",
+   "desc": "+1,5 pancerza i +3% redukcji obrażeń. Pancerz odejmuje się od każdego ciosu, redukcja ścina jego część.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "Armour|Flat|1.5",
+    "DamageReduction|Flat|0.03"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 5,
+   "BasePrice": 24,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.warrior.armourbreak",
+   "file": "armourbreak",
+   "sha256": "e72a43e8e930f2a269aff594da25b4902d110d8af0e45a1d4c4e676960071a38",
+   "name": "Pęknięcie pancerza",
+   "desc": "Trafienia wręcz obniżają fizyczną odporność celu o 4 punkty na 4 s, do 20 punktów. Działa dla wszystkich atakujących.",
+   "Scope": 0,
+   "AttackTags": [
+    "melee"
+   ],
+   "Modifiers": [],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [
+    "Sunder"
+   ],
+   "RequiresAny": [],
+   "MaxLevel": 1,
+   "BasePrice": 34,
+   "PriceGrowth": 1.5,
+   "Weight": 0.9,
+   "ClassId": "warrior",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.attackspeed",
+   "file": "attackspeed",
+   "sha256": "c4ab7beabcf4985fa30effef58e969364be51d12926156637a58b028571bc171",
+   "name": "Szybkie ręce",
+   "desc": "+8% szybkości ataku podstawowego na poziom. Nie skraca odnowienia skilli.",
+   "Scope": 1,
+   "AttackTags": [],
+   "Modifiers": [
+    "AttackSpeed|PercentAdditive|0.08"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 5,
+   "BasePrice": 24,
+   "PriceGrowth": 1.5,
+   "Weight": 1.1,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.blockchance",
+   "file": "blockchance",
+   "sha256": "48c846cdcc88492933d83a4837aff1ed78c30d0f96d695280b56271661b9e807",
+   "name": "Wprawa tarczownika",
+   "desc": "+5 punktów procentowych szansy pasywnego bloku. Limit jednego bloku na sekundę zostaje.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "PassiveBlockChance|Flat|0.05"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 3,
+   "BasePrice": 26,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 2,
+   "RequiredTags": [
+    "shield"
+   ],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.blockcost",
+   "file": "blockcost",
+   "sha256": "9ed8a663a390a7fc4cf96c2052fc3139fc9bd63fbd51929e74c9475af09b551b",
+   "name": "Lekka tarcza",
+   "desc": "−15% kosztu kondycji przy bloku w gardzie.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "BlockCostReduction|PercentAdditive|0.15"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 3,
+   "BasePrice": 28,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 2,
+   "RequiredTags": [
+    "shield"
+   ],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.conversion.firewater",
+   "file": "conversion_fireice",
+   "sha256": "a48a8acb462846f999710fc06a5cf3c895f6f2f308126bf0f6cb859703c6d4e7",
+   "name": "Przemiana w parę",
+   "desc": "Całe obrażenia od ognia stają się obrażeniami od wody (suma bez zmian, bonusy ognia przestają działać na tę część).",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [],
+   "ModifierLevelTotals": [],
+   "Conversion": "Fire|Water|1.0",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 1,
+   "BasePrice": 45,
+   "PriceGrowth": 1.5,
+   "Weight": 0.7,
+   "ClassId": "mage",
+   "RequiredSlot": 3,
+   "RequiredTags": [
+    "fire"
+   ],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.cooldown",
+   "file": "cooldown",
+   "sha256": "f4f1927accd69699c200b3d086eb53874092bffa24f4a6afb85d3779c7fd883e",
+   "name": "Skupienie",
+   "desc": "−5% czasu odnowienia skilli na poziom. Nie dotyczy tarczy, uniku ani ataku podstawowego.",
+   "Scope": 0,
+   "AttackTags": [
+    "skill"
+   ],
+   "Modifiers": [
+    "SkillCooldownReduction|PercentAdditive|0.05"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 4,
+   "BasePrice": 28,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.damage.air",
+   "file": "damage_air",
+   "sha256": "2563e986d52324714898adeef58d17c357379c4e2ceafef9c9e786b0122f9dcf",
+   "name": "Wicher",
+   "desc": "+15% obrażeń od powietrza na poziom.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "AirDamage|PercentAdditive|0.15"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 5,
+   "BasePrice": 22,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.damage.earth",
+   "file": "damage_earth",
+   "sha256": "834b5cca2909207c10f818bed44a72f04b4abe51171257dac7e27f3464c078f4",
+   "name": "Skała",
+   "desc": "+15% obrażeń od ziemi na poziom.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "EarthDamage|PercentAdditive|0.15"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 5,
+   "BasePrice": 22,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.damage.fire",
+   "file": "damage_fire",
+   "sha256": "684c7e4f6b5d5ce3cdf44f8a3f7ac1dd7b4f7cd474905c237dfcec60624749b0",
+   "name": "Żar",
+   "desc": "+15% obrażeń od ognia na poziom.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "FireDamage|PercentAdditive|0.15"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 5,
+   "BasePrice": 22,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.damage.global",
+   "file": "damage_global",
+   "sha256": "b7dbec00b19784858eefe140072028f6c7b55932be8760d141c09ae5c51316c9",
+   "name": "Furia",
+   "desc": "+8% obrażeń wszystkich typów na poziom.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "GlobalDamage|PercentAdditive|0.08"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 5,
+   "BasePrice": 26,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.damage.physical",
+   "file": "damage_physical",
+   "sha256": "dcc15e723fe0280fb1737f9da0825aaa31ede7d294983b71045f354f683b6bc0",
+   "name": "Ostrze",
+   "desc": "+15% obrażeń fizycznych na poziom.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "PhysicalDamage|PercentAdditive|0.15"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 5,
+   "BasePrice": 22,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.damage.water",
+   "file": "damage_water",
+   "sha256": "2ea20609073fd908a46f472a023eeed2d445fc4720f8f0b0d7984b8f4a114820",
+   "name": "Nurt",
+   "desc": "+15% obrażeń od wody na poziom.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "WaterDamage|PercentAdditive|0.15"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 5,
+   "BasePrice": 22,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.warrior.deepwounds",
+   "file": "deepwounds",
+   "sha256": "753a547f4163d6d1865f6cede68b2fc52c4b0a33e92175f3c0b3558a33eece59",
+   "name": "Głębokie rany",
+   "desc": "Cięcia podstawowe nakładają krwawienie. +25% obrażeń krwawienia i +1 limit warstw na poziom.",
+   "Scope": 1,
+   "AttackTags": [
+    "melee"
+   ],
+   "Modifiers": [
+    "BleedDamage|PercentAdditive|0.25",
+    "BleedMaxStacks|Flat|1"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [
+    "Bleed"
+   ],
+   "RequiresAny": [],
+   "MaxLevel": 3,
+   "BasePrice": 30,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "warrior",
+   "RequiredSlot": 1,
+   "RequiredTags": [
+    "melee"
+   ],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.warrior.emberedge",
+   "file": "emberedge",
+   "sha256": "87551f00ef88367adf5434b991c165e9ca64b6066acdad2df54577e38c097abc",
+   "name": "Rozżarzona stal",
+   "desc": "50% obrażeń fizycznych miecza staje się ogniem (suma bez zmian).",
+   "Scope": 1,
+   "AttackTags": [
+    "melee"
+   ],
+   "Modifiers": [],
+   "ModifierLevelTotals": [],
+   "Conversion": "Physical|Fire|0.5",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 1,
+   "BasePrice": 36,
+   "PriceGrowth": 1.5,
+   "Weight": 0.7,
+   "ClassId": "warrior",
+   "RequiredSlot": 1,
+   "RequiredTags": [
+    "melee",
+    "physical"
+   ],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.evasion",
+   "file": "evasion",
+   "sha256": "95849d8d1cacf021e453b107c11e09e12339a5a307f09f5799458f8d74befc80",
+   "name": "Refleks",
+   "desc": "+4 punkty procentowe szansy, że cios lub pocisk wroga chybi. Nie chroni przed podłożem ani krwawieniem.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "Evasion|Flat|0.04"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 5,
+   "BasePrice": 24,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.warrior.executioner",
+   "file": "executioner",
+   "sha256": "70c4ac0cdd09acd325675b15323fba401b3c630a858db94d47f6382c230fe6c1",
+   "name": "Kat",
+   "desc": "+20% obrażeń na poziom przeciw celom poniżej 30% zdrowia (ataki i skille wręcz).",
+   "Scope": 0,
+   "AttackTags": [
+    "melee"
+   ],
+   "Modifiers": [
+    "ExecuteDamage|PercentAdditive|0.20"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 3,
+   "BasePrice": 30,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "warrior",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.warrior.heavyblows",
+   "file": "heavyblows",
+   "sha256": "49cc1afe864b8af31301acd04925807a654d3621cc008b1f5dda176725eb1ef9",
+   "name": "Ciężkie uderzenia",
+   "desc": "Ataki podstawowe odrzucają o 0,5 m na poziom.",
+   "Scope": 1,
+   "AttackTags": [
+    "melee"
+   ],
+   "Modifiers": [
+    "Knockback|Flat|0.5"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 3,
+   "BasePrice": 26,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "warrior",
+   "RequiredSlot": 1,
+   "RequiredTags": [
+    "melee"
+   ],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.maxhealth",
+   "file": "maxhealth",
+   "sha256": "c687b041c0b629ae026bb2331b94480aed09b473311e5780ca06878d8d6fe0af",
+   "name": "Twarda skóra",
+   "desc": "+10% maksymalnego zdrowia na poziom.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "MaxHealth|PercentAdditive|0.10"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 5,
+   "BasePrice": 20,
+   "PriceGrowth": 1.5,
+   "Weight": 1.2,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.maxstamina",
+   "file": "maxstamina",
+   "sha256": "9f0f5cbcb0d4af799fe30190146612aa11ba8788053a7b5517e26016c1ca8251",
+   "name": "Kondycja",
+   "desc": "+20% maksymalnej kondycji.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "MaxStamina|PercentAdditive|0.20"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 3,
+   "BasePrice": 24,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 2,
+   "RequiredTags": [
+    "shield"
+   ],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.meleerange",
+   "file": "meleerange",
+   "sha256": "d6752aef8a042b82375782249da32b29319f01bf14a30cd222bbc6ce3bcf08ba",
+   "name": "Długie ostrze",
+   "desc": "+10% zasięgu miecza na poziom (długość ostrza, nie kąt cięcia).",
+   "Scope": 1,
+   "AttackTags": [
+    "melee"
+   ],
+   "Modifiers": [
+    "MeleeRange|PercentAdditive|0.10"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 4,
+   "BasePrice": 26,
+   "PriceGrowth": 1.55,
+   "Weight": 1,
+   "ClassId": "warrior",
+   "RequiredSlot": 1,
+   "RequiredTags": [
+    "melee"
+   ],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.warrior.momentum",
+   "file": "momentum",
+   "sha256": "654fdf833b93042bad7e72594736c008c4956780b1450bca2dd3b101b0fa2e20",
+   "name": "Rozpęd",
+   "desc": "Każde celne cięcie z rzędu: +4% szybkości ataku na poziom (do 5 warstw). Pudło albo przerwa zeruje.",
+   "Scope": 1,
+   "AttackTags": [
+    "melee"
+   ],
+   "Modifiers": [
+    "MomentumAttackSpeed|PercentAdditive|0.04"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 3,
+   "BasePrice": 30,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "warrior",
+   "RequiredSlot": 1,
+   "RequiredTags": [
+    "melee"
+   ],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.movespeed",
+   "file": "movespeed",
+   "sha256": "cd48aae6925dd5b7932f4159606d1c2fbcb52022632178ddc44200ca9243c051",
+   "name": "Zwinność",
+   "desc": "+6% prędkości ruchu.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "MoveSpeed|PercentAdditive|0.06"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 4,
+   "BasePrice": 22,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.penetration.air",
+   "file": "penetration_air",
+   "sha256": "6f211d077bf910285929843964764e001e3433bd72be4a0088268b1e9a1987f6",
+   "name": "Przeszycie",
+   "desc": "Twoje ataki ignorują 5 punktów procentowych odporności na powietrze na poziom (nie poniżej zera).",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "AirPenetration|Flat|0.05"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 4,
+   "BasePrice": 26,
+   "PriceGrowth": 1.5,
+   "Weight": 0.9,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.penetration.earth",
+   "file": "penetration_earth",
+   "sha256": "97927f4a73cea69354f7584a7cffc05fa9367e4504339cb669d3802cd3d506d4",
+   "name": "Kruszenie",
+   "desc": "Twoje ataki ignorują 5 punktów procentowych odporności na ziemię na poziom (nie poniżej zera).",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "EarthPenetration|Flat|0.05"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 4,
+   "BasePrice": 26,
+   "PriceGrowth": 1.5,
+   "Weight": 0.9,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.penetration.fire",
+   "file": "penetration_fire",
+   "sha256": "65467c17fa59da6334e23748a44acb949f3e91536e8d2b1afd6d4254732f3534",
+   "name": "Przepalenie",
+   "desc": "Twoje ataki ignorują 5 punktów procentowych odporności na ogień na poziom (nie poniżej zera).",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "FirePenetration|Flat|0.05"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 4,
+   "BasePrice": 26,
+   "PriceGrowth": 1.5,
+   "Weight": 0.9,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.penetration.physical",
+   "file": "penetration_physical",
+   "sha256": "3fd089d1924c8f6b242a2a8b5caafaad1edd4797514c86d16673d9df0e69b5a8",
+   "name": "Przebijający cios",
+   "desc": "Twoje ataki ignorują 5 punktów procentowych odporności fizycznej na poziom (nie poniżej zera).",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "PhysicalPenetration|Flat|0.05"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 4,
+   "BasePrice": 26,
+   "PriceGrowth": 1.5,
+   "Weight": 0.9,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.penetration.water",
+   "file": "penetration_water",
+   "sha256": "314ac5173cf39dccd99409010d32c9d756c572b05778ea54043bc61b62acfcb4",
+   "name": "Rozmycie",
+   "desc": "Twoje ataki ignorują 5 punktów procentowych odporności na wodę na poziom (nie poniżej zera).",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "WaterPenetration|Flat|0.05"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 4,
+   "BasePrice": 26,
+   "PriceGrowth": 1.5,
+   "Weight": 0.9,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.pierce",
+   "file": "pierce",
+   "sha256": "c7d21cda9b2799a8a1dc525bfaa0c75e8a3ca12bfc76529868dcac661659e9e0",
+   "name": "Przebicie",
+   "desc": "Pocisk ataku podstawowego przelatuje przez 1 / 2 / 3 dodatkowe cele.",
+   "Scope": 1,
+   "AttackTags": [
+    "projectile"
+   ],
+   "Modifiers": [
+    "ProjectilePierce|Flat|1"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 3,
+   "BasePrice": 30,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "mage",
+   "RequiredSlot": 1,
+   "RequiredTags": [
+    "projectile"
+   ],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.warrior.reflect",
+   "file": "reflect",
+   "sha256": "d050873b640d2d91d4380a9bd005334600be160d28f0143461793fa4a9ec8ba0",
+   "name": "Odbicie",
+   "desc": "Sparowany pocisk wroga zawraca i leci tam, skąd przyleciał, jako twój: ×0,75 jego obrażeń na poziom.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "ParryReflect|Flat|0.75"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 3,
+   "BasePrice": 36,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "warrior",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.mage.residue",
+   "file": "residue",
+   "sha256": "afd3ea8204df0b17771874e34f483b27cd94ce461d6122340dab56d7a862cfa1",
+   "name": "Pozostałość żywiołu",
+   "desc": "Eksplozje pocisków zostawiają krótką raniącą strefę. Wymaga źródła eksplozji; strefy nie wywołują eksplozji.",
+   "Scope": 1,
+   "AttackTags": [
+    "projectile"
+   ],
+   "Modifiers": [
+    "ProjectileResidue|Flat|1"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [
+    "perk:upgrade.mage.unstable",
+    "tag:explosive"
+   ],
+   "MaxLevel": 1,
+   "BasePrice": 38,
+   "PriceGrowth": 1.5,
+   "Weight": 0.8,
+   "ClassId": "mage",
+   "RequiredSlot": 1,
+   "RequiredTags": [
+    "projectile"
+   ],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.resist.air",
+   "file": "resist_air",
+   "sha256": "a006cf5b1c9427cf5ff32f9805b72d24dd57c706f578b5d219ec7e16e7f16cda",
+   "name": "Hart wiatru",
+   "desc": "+5 punktów procentowych odporności na powietrze na poziom.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "AirResistance|Flat|0.05"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 5,
+   "BasePrice": 20,
+   "PriceGrowth": 1.5,
+   "Weight": 0.9,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.resist.earth",
+   "file": "resist_earth",
+   "sha256": "8999d1f4429f5f239651627735feaa1be1aa814ba6b0a4fc5811d3d9be3abace",
+   "name": "Zakorzenienie",
+   "desc": "+5 punktów procentowych odporności na ziemię na poziom.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "EarthResistance|Flat|0.05"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 5,
+   "BasePrice": 20,
+   "PriceGrowth": 1.5,
+   "Weight": 0.9,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.resist.fire",
+   "file": "resist_fire",
+   "sha256": "eaa04d8c9519307ef63cef1d44c395b55eaf0de6bdee1ee35ac3b1e03e0d30d2",
+   "name": "Hart ognia",
+   "desc": "+5 punktów procentowych odporności na ogień na poziom.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "FireResistance|Flat|0.05"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 5,
+   "BasePrice": 20,
+   "PriceGrowth": 1.5,
+   "Weight": 0.9,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.resist.physical",
+   "file": "resist_physical",
+   "sha256": "66c7a3112f43a6a7f20b107d79984145173f9de14981876d0d8dba1c5cdd0c6c",
+   "name": "Hart ciała",
+   "desc": "+5 punktów procentowych odporności fizycznej na poziom.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "PhysicalResistance|Flat|0.05"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 5,
+   "BasePrice": 20,
+   "PriceGrowth": 1.5,
+   "Weight": 0.9,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.resist.water",
+   "file": "resist_water",
+   "sha256": "c343f4082005ac39be974267d4f69102573171e104e8a90f190a6dabd08b9735",
+   "name": "Hart wody",
+   "desc": "+5 punktów procentowych odporności na wodę na poziom.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "WaterResistance|Flat|0.05"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 5,
+   "BasePrice": 20,
+   "PriceGrowth": 1.5,
+   "Weight": 0.9,
+   "ClassId": "",
+   "RequiredSlot": 0,
+   "RequiredTags": [],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.ricochet",
+   "file": "ricochet",
+   "sha256": "3116c4a29796f3b0ac194b963e95787acfb84d080a3a5d88a30bc46b086c3de9",
+   "name": "Rykoszet",
+   "desc": "Pocisk ataku podstawowego przeskakuje do 1 / 2 / 3 kolejnych celów, nigdy do już trafionego.",
+   "Scope": 1,
+   "AttackTags": [
+    "projectile"
+   ],
+   "Modifiers": [
+    "ProjectileRicochet|Flat|1"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 3,
+   "BasePrice": 32,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "mage",
+   "RequiredSlot": 1,
+   "RequiredTags": [
+    "projectile"
+   ],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.mage.splinter",
+   "file": "splinter",
+   "sha256": "cf31e06c0b0b7140ec80c92197c9d187490af22d17791a349654a55e45eb67f4",
+   "name": "Rozszczepienie",
+   "desc": "Atak podstawowy wystrzeliwuje łącznie 2 / 3 / 5 / 8 pocisków. Główny zadaje 100%, dodatkowe 40%. Przy 8 — pierścień co 45°.",
+   "Scope": 1,
+   "AttackTags": [
+    "projectile"
+   ],
+   "Modifiers": [
+    "ProjectileVolley|Flat|2,3,5,8"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 4,
+   "BasePrice": 34,
+   "PriceGrowth": 1.6,
+   "Weight": 1,
+   "ClassId": "mage",
+   "RequiredSlot": 1,
+   "RequiredTags": [
+    "projectile"
+   ],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.split",
+   "file": "split",
+   "sha256": "9a7e1c84c8662a6aef3b9a078427ad564e52ea3d677c8b0c3ec687bab4fea6b5",
+   "name": "Podział przy trafieniu",
+   "desc": "Pierwsze trafienie pocisku tworzy dwa słabsze pociski potomne. To inna mechanika niż Rozszczepienie.",
+   "Scope": 1,
+   "AttackTags": [
+    "projectile"
+   ],
+   "Modifiers": [
+    "ProjectileSplit|Flat|1"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 1,
+   "BasePrice": 40,
+   "PriceGrowth": 1.5,
+   "Weight": 0.7,
+   "ClassId": "mage",
+   "RequiredSlot": 1,
+   "RequiredTags": [
+    "projectile"
+   ],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.staminaregen",
+   "file": "staminaregen",
+   "sha256": "5ff54e6458c159e0c56a3175e3b6e38c33115084b1f7ab7fe4a84d3be2c4d0b0",
+   "name": "Oddech",
+   "desc": "+20% regeneracji kondycji.",
+   "Scope": 0,
+   "AttackTags": [],
+   "Modifiers": [
+    "StaminaRegen|PercentAdditive|0.20"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 3,
+   "BasePrice": 24,
+   "PriceGrowth": 1.5,
+   "Weight": 1,
+   "ClassId": "",
+   "RequiredSlot": 2,
+   "RequiredTags": [
+    "shield"
+   ],
+   "ForbiddenTags": []
+  },
+  {
+   "id": "upgrade.mage.unstable",
+   "file": "unstable",
+   "sha256": "5db9551d9a055256603188909a34ba2c01d5d0a02c5e87d8c21cc58648ae28dd",
+   "name": "Niestabilne pociski",
+   "desc": "Trafienie pociskiem wywołuje eksplozję za 30 / 45 / 60% obrażeń. Główny cel dostaje kontakt i eksplozję (razem 130 / 145 / 160%). Eksplozje nie wywołują kolejnych.",
+   "Scope": 1,
+   "AttackTags": [
+    "projectile"
+   ],
+   "Modifiers": [
+    "ProjectileExplosionShare|Flat|0.3,0.45,0.6"
+   ],
+   "ModifierLevelTotals": [],
+   "Conversion": "",
+   "OnHitEffects": [],
+   "RequiresAny": [],
+   "MaxLevel": 3,
+   "BasePrice": 34,
+   "PriceGrowth": 1.6,
+   "Weight": 1,
+   "ClassId": "mage",
+   "RequiredSlot": 1,
+   "RequiredTags": [
+    "projectile"
+   ],
+   "ForbiddenTags": []
+  }
+ ]
+}

@@ -4,6 +4,7 @@
     "references": [
         "TurrisDamnatorum.Runtime",
         "Unity.InputSystem",
+        "Unity.Collections",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

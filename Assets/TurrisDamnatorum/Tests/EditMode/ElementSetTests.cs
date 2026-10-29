@@ -177,8 +177,7 @@ namespace Turris.Tests
             var run = fx.NewRun("legacy_mage");
             var inst = run.LearnSpell(fireball);
             inst.level = 3;
-            var upgrade = new RewardOption { kind = RewardKind.UpgradeSpell, spellToUpgrade = inst };
-            StringAssert.Contains("nowa cecha", Describe.Reward(upgrade, run, null, fx.Cfg.balance), "Nagroda mówi, co realnie dochodzi");
+            StringAssert.Contains("nowa cecha", Describe.Upgrade(inst, null, fx.Cfg.balance), "Ulepszenie mówi, co realnie dochodzi");
         }
 
         [Test]

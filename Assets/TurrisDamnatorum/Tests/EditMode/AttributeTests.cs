@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Turris.Tests
 {
@@ -108,6 +109,7 @@ namespace Turris.Tests
         {
             var run = fx.NewRun("legacy_knight"); // Inteligencja 8
             var nova = run.LearnSpell(fx.Get<SpellDefinition>("spell_nova")); // wymaga 12
+            fx.GiveFocus(run); // czar wymaga fokusu
             var pc = fx.NewCombatant(run);
             pc.RequestSkill(run.SlotOf(nova));
             Assert.AreNotEqual(ActionType.Cast, pc.Actions.Current, "Bez Inteligencji czaru nie da się rzucić");
@@ -125,6 +127,7 @@ namespace Turris.Tests
             var run = fx.NewRun("legacy_knight");
             int str = run.attributes.strength;
             Assert.IsFalse(run.SpendAttributePoint(AttributeType.Strength), "Brak punktów");
+            Assert.AreEqual(1, B.attributePointsPerFloor, "jeden darmowy punkt za piętro");
             run.attributePoints = B.attributePointsPerFloor;
             Assert.IsTrue(run.SpendAttributePoint(AttributeType.Strength));
             Assert.AreEqual(str + 1, run.attributes.strength);

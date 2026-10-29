@@ -7,6 +7,8 @@ namespace Turris
     [CreateAssetMenu(menuName = "Turris/Arena", fileName = "Arena")]
     public class ArenaDefinition : ContentDefinition
     {
+        [Tooltip("Opcjonalny zestaw gotyckiego PoC. Puste pole zachowuje dotychczasowy generator i assety.")]
+        public GothicArenaSet gothicSet;
         [Tooltip("Styl dekoracji areny. Auto = na podstawie id.")]
         public ArenaStyle style = ArenaStyle.Auto;
         public bool circular = true;

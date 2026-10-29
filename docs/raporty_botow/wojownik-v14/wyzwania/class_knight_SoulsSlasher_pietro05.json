@@ -1,0 +1,150 @@
+{
+    "title": "Wojownik, piętro 5: V. Psiarnia Piekieł (Gracz H&S / souls-like)",
+    "note": "Bot nie przeszedł piętra w 3 próbach (podejście 4); ostatni zabójca:  – .",
+    "created": "2026-10-28 14:56",
+    "classId": "class_knight",
+    "appearanceId": "",
+    "difficultyTier": 0,
+    "seed": 76258843,
+    "floorIndex": 4,
+    "floorsCleared": 4,
+    "souls": 105,
+    "ashEarned": 18,
+    "kills": 117,
+    "attributePoints": 0,
+    "toughness": 14,
+    "strength": 16,
+    "dexterity": 10,
+    "intelligence": 7,
+    "healthFlasks": 4,
+    "manaFlasks": 1,
+    "bonusHealthFlasks": 0,
+    "healthFraction": 0.9659090638160706,
+    "manaFraction": 1.0,
+    "equipment": [
+        {
+            "id": "body_chainmail",
+            "level": 0,
+            "slot": 3
+        },
+        {
+            "id": "feet_scout",
+            "level": 2,
+            "slot": 6
+        }
+    ],
+    "inventory": [
+        {
+            "id": "hu_greatsword",
+            "level": 1,
+            "slot": -1
+        },
+        {
+            "id": "hu_shield",
+            "level": 1,
+            "slot": -1
+        }
+    ],
+    "skills": [
+        {
+            "id": "hu_wind_slash",
+            "level": 2,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_cleave",
+            "level": 1,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_charge",
+            "level": 2,
+            "permanent": true,
+            "fromItem": false,
+            "slot": 0,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_rend",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_lunge",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_counter",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_stomp",
+            "level": 1,
+            "permanent": true,
+            "fromItem": false,
+            "slot": 1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_shieldbash",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_breaker_wave",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 2,
+            "form": "",
+            "supports": []
+        }
+    ],
+    "signature": {
+        "id": "hu_warcry",
+        "level": 1,
+        "permanent": true,
+        "fromItem": false,
+        "slot": -1,
+        "form": "",
+        "supports": []
+    },
+    "boons": [
+        {
+            "id": "talent_vigilance",
+            "count": 1
+        }
+    ],
+    "sealRanks": [],
+    "sealPouch": [
+        "seal.demon.devil_pact"
+    ]
+}

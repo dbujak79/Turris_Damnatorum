@@ -1,0 +1,222 @@
+{
+    "title": "Wojownik, piętro 11: XI. Rzeźnia (Gracz H&S / souls-like)",
+    "note": "Bot nie przeszedł piętra w 3 próbach (podejście 20); ostatni zabójca:  – .",
+    "created": "2026-10-28 17:58",
+    "classId": "class_knight",
+    "appearanceId": "",
+    "difficultyTier": 0,
+    "seed": 87159984,
+    "floorIndex": 10,
+    "floorsCleared": 10,
+    "souls": 449,
+    "ashEarned": 75,
+    "kills": 310,
+    "attributePoints": 0,
+    "toughness": 16,
+    "strength": 20,
+    "dexterity": 10,
+    "intelligence": 7,
+    "healthFlasks": 5,
+    "manaFlasks": 1,
+    "bonusHealthFlasks": 0,
+    "healthFraction": 0.9680851101875305,
+    "manaFraction": 1.0,
+    "equipment": [
+        {
+            "id": "hu_greatsword",
+            "level": 1,
+            "slot": 0
+        },
+        {
+            "id": "body_chainmail",
+            "level": 4,
+            "slot": 3
+        },
+        {
+            "id": "belt_athlete",
+            "level": 3,
+            "slot": 5
+        },
+        {
+            "id": "ring_riposte",
+            "level": 0,
+            "slot": 7
+        },
+        {
+            "id": "ring_embers",
+            "level": 1,
+            "slot": 8
+        }
+    ],
+    "inventory": [
+        {
+            "id": "body_chainmail",
+            "level": 0,
+            "slot": -1
+        },
+        {
+            "id": "belt_pilgrim",
+            "level": 3,
+            "slot": -1
+        },
+        {
+            "id": "body_chainmail",
+            "level": 1,
+            "slot": -1
+        }
+    ],
+    "skills": [
+        {
+            "id": "hu_cleave",
+            "level": 2,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_cleave",
+            "level": 4,
+            "permanent": true,
+            "fromItem": false,
+            "slot": 1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_charge",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_whirlwind",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_rend",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_lunge",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_flurry",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_counter",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_execute",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_rupture",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_stomp",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_shieldbash",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_breaker_wave",
+            "level": 2,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 2,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_wind_slash",
+            "level": 2,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 0,
+            "form": "",
+            "supports": []
+        }
+    ],
+    "signature": {
+        "id": "hu_warcry",
+        "level": 2,
+        "permanent": true,
+        "fromItem": false,
+        "slot": -1,
+        "form": "",
+        "supports": []
+    },
+    "boons": [
+        {
+            "id": "talent_bloodriposte",
+            "count": 1
+        },
+        {
+            "id": "talent_survivor",
+            "count": 1
+        }
+    ],
+    "sealRanks": [],
+    "sealPouch": [
+        "seal.leap",
+        "seal.form.cleave.round",
+        "seal.homing",
+        "seal.blood"
+    ]
+}

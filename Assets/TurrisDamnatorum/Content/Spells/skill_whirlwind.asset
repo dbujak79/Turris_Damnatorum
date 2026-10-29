@@ -26,7 +26,7 @@ MonoBehaviour:
   requirements:
   - attribute: 3
     value: 12
-  requiredTags: 0
+  requiredTags: 1536
   intelligenceScaling: 0
   attack:
     name: "M\u0142ynek"

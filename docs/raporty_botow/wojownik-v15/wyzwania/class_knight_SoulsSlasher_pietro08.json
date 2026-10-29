@@ -1,0 +1,163 @@
+{
+    "title": "Wojownik, piętro 8: VIII. Zatopione Krużganki (Gracz H&S / souls-like)",
+    "note": "Bot nie przeszedł piętra w 3 próbach (podejście 19); ostatni zabójca:  – .",
+    "created": "2026-10-28 15:13",
+    "classId": "class_knight",
+    "appearanceId": "",
+    "difficultyTier": 0,
+    "seed": 77268625,
+    "floorIndex": 7,
+    "floorsCleared": 7,
+    "souls": 39,
+    "ashEarned": 42,
+    "kills": 213,
+    "attributePoints": 0,
+    "toughness": 15,
+    "strength": 18,
+    "dexterity": 10,
+    "intelligence": 7,
+    "healthFlasks": 4,
+    "manaFlasks": 1,
+    "bonusHealthFlasks": 0,
+    "healthFraction": 0.9670329689979553,
+    "manaFraction": 0.8612962961196899,
+    "equipment": [
+        {
+            "id": "hu_sword",
+            "level": 1,
+            "slot": 0
+        },
+        {
+            "id": "hu_shield",
+            "level": 0,
+            "slot": 1
+        },
+        {
+            "id": "body_chainmail",
+            "level": 0,
+            "slot": 3
+        },
+        {
+            "id": "ring_riposte",
+            "level": 0,
+            "slot": 7
+        }
+    ],
+    "inventory": [],
+    "skills": [
+        {
+            "id": "hu_cleave",
+            "level": 2,
+            "permanent": true,
+            "fromItem": false,
+            "slot": 0,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_cleave",
+            "level": 4,
+            "permanent": true,
+            "fromItem": false,
+            "slot": 1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_charge",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_shieldbash",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_rend",
+            "level": 2,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_lunge",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_counter",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_stomp",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_breaker_wave",
+            "level": 2,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 2,
+            "form": "",
+            "supports": []
+        }
+    ],
+    "signature": {
+        "id": "hu_warcry",
+        "level": 0,
+        "permanent": true,
+        "fromItem": false,
+        "slot": -1,
+        "form": "",
+        "supports": []
+    },
+    "boons": [
+        {
+            "id": "talent_bloodriposte",
+            "count": 1
+        },
+        {
+            "id": "talent_vigilance",
+            "count": 1
+        },
+        {
+            "id": "boon_arcane",
+            "count": 1
+        },
+        {
+            "id": "talent_spellguard",
+            "count": 1
+        },
+        {
+            "id": "boon_manawell",
+            "count": 1
+        }
+    ],
+    "sealRanks": [],
+    "sealPouch": []
+}

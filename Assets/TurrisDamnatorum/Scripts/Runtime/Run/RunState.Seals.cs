@@ -26,6 +26,10 @@ namespace Turris
         /// <summary>Id zespoleń i więzi obudzonych w tym podejściu (kodeks).</summary>
         public IEnumerable<string> WokenSeals => wokenThisRun;
 
+        /// <summary>Poziomy posiadanych pieczęci (zapis stanu podejścia).</summary>
+        public IReadOnlyDictionary<string, int> SealRanks => sealRanks;
+        public void SetSealRank(string id, int rank) { if (!string.IsNullOrEmpty(id) && rank > 1) sealRanks[id] = rank; }
+
         public int SealRank(HuSeal seal) => seal != null && sealRanks.TryGetValue(seal.id, out int r) ? r : 1;
 
         /// <summary>Skille, które przyjmują pieczęcie, w kolejności: sloty, skill klasy, reszta kolekcji.</summary>

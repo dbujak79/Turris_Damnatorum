@@ -43,9 +43,45 @@ namespace Turris
             // Raport botów Wojownika (docs/raporty_botow/RAPORT_WOJOWNIK.md): skill startowy Rozpłatanie wygrywał 1/14 podejść
             // wobec 19/26 Cięcia wichru. Obrażenia +15% (34/38/38 → 39/44/44); po drugiej serii (nadal 1/13) odnowienie −30% (5 → 3,5 s);
             // potem powalenie trafionych na 1 s (bossy odporne) w zamian za odnowienie 4 s.
-            new Patch { skill = "skill.warrior.cleave", level = 1, values = new[] { "damage.physical=39", "cooldown=4", "down_seconds=1" }, reason = "raport botów: Rozpłatanie 1/14 zwycięstw" },
-            new Patch { skill = "skill.warrior.cleave", level = 2, values = new[] { "damage.physical=44", "cooldown=4", "down_seconds=1" }, reason = "raport botów: Rozpłatanie 1/14 zwycięstw" },
-            new Patch { skill = "skill.warrior.cleave", level = 3, values = new[] { "damage.physical=44", "cooldown=4", "down_seconds=1" }, reason = "raport botów: Rozpłatanie 1/14 zwycięstw" },
+            // Seria 5 (skille przypisane do broni, cel: wiele skilli w użyciu): Rozpłatanie miało 41,8 obr./s odnowienia, Cięcie wichru 30,4,
+            // a pozostałe skille wojownika 7–19 – gracz nie wymieniał startowych. Cel dla wszystkich: ok. 24–28 obr./s odnowienia.
+            // Rozpłatanie: 32/36/36, odnowienie 5 s, powalenie zostaje (~27).
+            new Patch { skill = "skill.warrior.cleave", level = 1, values = new[] { "damage.physical=32", "cooldown=5", "down_seconds=1" }, reason = "raport botów, seria 5: skill startowy za mocny" },
+            new Patch { skill = "skill.warrior.cleave", level = 2, values = new[] { "damage.physical=36", "cooldown=5", "down_seconds=1" }, reason = "raport botów, seria 5: skill startowy za mocny" },
+            new Patch { skill = "skill.warrior.cleave", level = 3, values = new[] { "damage.physical=36", "cooldown=5", "down_seconds=1" }, reason = "raport botów, seria 5: skill startowy za mocny" },
+            // Cięcie wichru: 32 → 28/30/30 (~27, poziomy coś dają).
+            new Patch { skill = "skill.warrior.wind_slash", level = 1, values = new[] { "damage.air=28" }, reason = "raport botów, seria 5: skill startowy za mocny" },
+            new Patch { skill = "skill.warrior.wind_slash", level = 2, values = new[] { "damage.air=30" }, reason = "raport botów, seria 5: skill startowy za mocny" },
+            new Patch { skill = "skill.warrior.wind_slash", level = 3, values = new[] { "damage.air=30" }, reason = "raport botów, seria 5: skill startowy za mocny" },
+            // Fala przełamania: 34,9 → ~27 (obrażenia −12%, odnowienie 7 → 8 s).
+            new Patch { skill = "skill.warrior.breaker_wave", level = 1, values = new[] { "damage.water=30", "cooldown=8" }, reason = "raport botów, seria 5: ponad celem" },
+            new Patch { skill = "skill.warrior.breaker_wave", level = 2, values = new[] { "damage.water=35", "cooldown=8" }, reason = "raport botów, seria 5: ponad celem" },
+            new Patch { skill = "skill.warrior.breaker_wave", level = 3, values = new[] { "damage.water=40", "cooldown=8" }, reason = "raport botów, seria 5: ponad celem" },
+            // Upadek kata: 18,6 → ~26 (obrażenia +10%, odnowienie 9 → 7 s).
+            new Patch { skill = "skill.warrior.executioners_fall", level = 1, values = new[] { "damage.physical=46", "cooldown=7" }, reason = "raport botów, seria 5: poniżej celu" },
+            new Patch { skill = "skill.warrior.executioners_fall", level = 2, values = new[] { "damage.physical=54", "cooldown=7" }, reason = "raport botów, seria 5: poniżej celu" },
+            new Patch { skill = "skill.warrior.executioners_fall", level = 3, values = new[] { "damage.physical=54", "cooldown=7" }, reason = "raport botów, seria 5: poniżej celu" },
+            // Piekielna szarża: 19,1 → ~26 (obrażenia 38 → 42, odnowienie 8 → 6,5 s).
+            new Patch { skill = "skill.warrior.infernal_charge", level = 1, values = new[] { "damage.fire=42", "cooldown=6.5" }, reason = "raport botów, seria 5: poniżej celu" },
+            new Patch { skill = "skill.warrior.infernal_charge", level = 2, values = new[] { "damage.fire=42", "cooldown=6.5" }, reason = "raport botów, seria 5: poniżej celu" },
+            new Patch { skill = "skill.warrior.infernal_charge", level = 3, values = new[] { "damage.fire=42", "cooldown=6.5" }, reason = "raport botów, seria 5: poniżej celu" },
+            // Trzęsienie: 16,6 → ~26 (obrażenia 34 → 40, odnowienie 8 → 6 s).
+            new Patch { skill = "skill.warrior.quake", level = 1, values = new[] { "damage.earth=40", "cooldown=6" }, reason = "raport botów, seria 5: poniżej celu" },
+            new Patch { skill = "skill.warrior.quake", level = 2, values = new[] { "damage.earth=40", "cooldown=6" }, reason = "raport botów, seria 5: poniżej celu" },
+            new Patch { skill = "skill.warrior.quake", level = 3, values = new[] { "damage.earth=40", "cooldown=6" }, reason = "raport botów, seria 5: poniżej celu" },
+            // Młynek: 7,1 → ~22 (obrażenia obrotu 11 → 23, odnowienie 9 → 6 s).
+            new Patch { skill = "skill.warrior.whirlwind", level = 1, values = new[] { "damage.physical=23", "cooldown=6" }, reason = "raport botów, seria 5: daleko poniżej celu" },
+            new Patch { skill = "skill.warrior.whirlwind", level = 2, values = new[] { "damage.physical=23", "cooldown=6" }, reason = "raport botów, seria 5: daleko poniżej celu" },
+            new Patch { skill = "skill.warrior.whirlwind", level = 3, values = new[] { "damage.physical=23", "cooldown=6" }, reason = "raport botów, seria 5: daleko poniżej celu" },
+            // Seria mag-zywioly-v1: Mag powietrza najsłabszy (6/10 i 3/10 przy 8/8/8 innych żywiołów). Ginie od pocisków,
+            // a jego skill klasy Nawałnica jako jedyny skill klasy żywiołu nie kontroluje (Trzęsienie zachwiewa, Wir ciągnie,
+            // Meteor odrzuca). Powietrze = odrzut i powalenie: burza powala na 0,5 s (odporność 2 s → ok. co 2,5 s),
+            // Nova powietrza po odrzucie powala na 0,6 s – mag ma chwilę oddechu, strzelcy przerywają rzut.
+            // Powalenie kosztuje obrażenia (jak pieczęć Grzmot): oba skille −10%.
+            new Patch { skill = "skill.sub.tempest", level = 0, values = new[] { "down_seconds=0.5", "damage.air=14.4" }, reason = "seria mag-zywioly-v1: mag powietrza bez kontroli" },
+            new Patch { skill = "skill.nova.air", level = 1, values = new[] { "down_seconds=0.6", "damage.air=21.6" }, reason = "seria mag-zywioly-v1: mag powietrza bez kontroli" },
+            new Patch { skill = "skill.nova.air", level = 2, values = new[] { "down_seconds=0.6", "damage.air=26.4" }, reason = "seria mag-zywioly-v1: mag powietrza bez kontroli" },
+            new Patch { skill = "skill.nova.air", level = 3, values = new[] { "down_seconds=0.6", "damage.air=31.1" }, reason = "seria mag-zywioly-v1: mag powietrza bez kontroli" },
         };
 
         /// <summary>Korekta pieczęci: nowa lista operacji i opis (zastępują dane HU w całości); nazwa – tylko gdy podana.</summary>

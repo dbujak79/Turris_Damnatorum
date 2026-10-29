@@ -15,7 +15,7 @@ namespace Turris.Tests
         SpellDefinition S(string id) => fx.Get<SpellDefinition>(id);
 
         [Test]
-        public void Knight_DoesNotStartWithMageSpells_EvenWhenUnlocked()
+        public void BoughtSpell_IsForEveryClass_ButNeedsFocus_DefaultKitStaysWithClass()
         {
             var meta = new MetaService(fx.Cfg, new MemoryProfileStorage());
             meta.DebugAddAsh(200);
@@ -25,8 +25,10 @@ namespace Turris.Tests
             var knight = fx.Plan("class_knight");
             meta.FillSkills(knight);
             var run = RunFactory.Create(knight, fx.Cfg, 1);
-            Assert.IsNull(run.FindSpell(S("spell_fireball")), "Kula ognia to umiejętność maga");
-            Assert.IsNull(run.FindSpell(S("spell_bolt")), "Pocisk arkanów (domyślny) – też tylko mag");
+            var fireball = run.FindSpell(S("spell_fireball"));
+            Assert.IsNotNull(fireball, "Kupiona kula ognia trafia do kolekcji każdej klasy (skille należą do broni, nie do klas)");
+            Assert.Less(run.SlotOf(fireball), 0, "…ale rycerz z mieczem nie dostaje jej do slotu – czar wymaga fokusu");
+            Assert.IsNull(run.FindSpell(S("spell_bolt")), "Pocisk arkanów to domyślny zestaw maga – zostaje przy klasie");
             Assert.IsNotNull(run.FindSpell(S("spell_heal")), "Leczenie jest ogólne");
 
             var mage = fx.Plan("class_mage");
@@ -42,24 +44,25 @@ namespace Turris.Tests
             var meta = new MetaService(fx.Cfg, new MemoryProfileStorage());
             meta.DebugAddAsh(300);
             foreach (var id in new[] { "unlock_staff_storm", "unlock_ring_riposte", "unlock_bow", "unlock_dagger", "unlock_buckler" })
-                if (!meta.IsUnlocked(U(id))) { meta.RecordReachedFloor(4); Assert.IsTrue(meta.Purchase(U(id)), id); }
+                if (!meta.IsUnlocked(U(id))) { meta.RecordReachedFloor(29); Assert.IsTrue(meta.Purchase(U(id)), id); }
 
             var knight = meta.LoadoutOptionsFor(Class("class_knight")).ToList();
             CollectionAssert.Contains(knight, U("unlock_axe"));
             CollectionAssert.Contains(knight, U("unlock_buckler"));
             CollectionAssert.Contains(knight, U("unlock_ring_riposte"), "Pierścień – ogólny");
             CollectionAssert.Contains(knight, U("unlock_vigilance"), "Talent ogólny");
-            CollectionAssert.DoesNotContain(knight, U("unlock_staff_storm"));
-            CollectionAssert.DoesNotContain(knight, U("unlock_dagger"));
+            CollectionAssert.Contains(knight, U("unlock_staff_storm"), "Kupiona broń – dla każdej klasy (wymagania ma broń)");
+            CollectionAssert.Contains(knight, U("unlock_dagger"));
+            CollectionAssert.DoesNotContain(knight, U("unlock_ashrobe"), "Szata maga – dodatek klasowy");
 
             var rogue = meta.LoadoutOptionsFor(Class("class_rogue")).ToList();
             CollectionAssert.Contains(rogue, U("unlock_dagger"));
-            CollectionAssert.DoesNotContain(rogue, U("unlock_axe"));
+            CollectionAssert.DoesNotContain(rogue, U("unlock_axe"), "Topór to domyślny zestaw rycerza");
 
             // Specjalizacja dostaje dodatki swojego typu bohatera (paladyn – jak wojownik).
             var paladin = meta.LoadoutOptionsFor(Class("class_hu_paladin")).ToList();
             CollectionAssert.Contains(paladin, U("unlock_axe"));
-            CollectionAssert.DoesNotContain(paladin, U("unlock_staff_storm"));
+            CollectionAssert.DoesNotContain(paladin, U("unlock_ashrobe"));
 
             // Każde odblokowanie (poza trudnością) jest albo ogólne, albo dostępne dla co najmniej jednej klasy.
             foreach (var u in fx.Cfg.unlocks.Where(x => x.kind != UnlockKind.Difficulty))

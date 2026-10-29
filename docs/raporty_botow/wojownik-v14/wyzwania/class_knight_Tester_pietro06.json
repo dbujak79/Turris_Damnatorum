@@ -1,0 +1,126 @@
+{
+    "title": "Wojownik, piętro 6: VI. Pan Sfory (Tester QA)",
+    "note": "Bot nie przeszedł piętra w 3 próbach (podejście 20); ostatni zabójca:  – .",
+    "created": "2026-10-28 15:07",
+    "classId": "class_knight",
+    "appearanceId": "",
+    "difficultyTier": 0,
+    "seed": 76899687,
+    "floorIndex": 5,
+    "floorsCleared": 5,
+    "souls": 18,
+    "ashEarned": 25,
+    "kills": 160,
+    "attributePoints": 0,
+    "toughness": 13,
+    "strength": 16,
+    "dexterity": 11,
+    "intelligence": 8,
+    "healthFlasks": 4,
+    "manaFlasks": 1,
+    "bonusHealthFlasks": 0,
+    "healthFraction": 1.0,
+    "manaFraction": 1.0,
+    "equipment": [
+        {
+            "id": "hu_greatsword",
+            "level": 1,
+            "slot": 0
+        },
+        {
+            "id": "body_chainmail",
+            "level": 0,
+            "slot": 3
+        },
+        {
+            "id": "feet_scout",
+            "level": 3,
+            "slot": 6
+        }
+    ],
+    "inventory": [
+        {
+            "id": "body_grounded",
+            "level": 0,
+            "slot": -1
+        }
+    ],
+    "skills": [
+        {
+            "id": "hu_wind_slash",
+            "level": 2,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_stomp",
+            "level": 1,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_aura_defiance",
+            "level": 0,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_leapslash",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 2,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_charge",
+            "level": 0,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_repel",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 0,
+            "form": "",
+            "supports": []
+        }
+    ],
+    "signature": {
+        "id": "hu_warcry",
+        "level": 0,
+        "permanent": true,
+        "fromItem": false,
+        "slot": -1,
+        "form": "",
+        "supports": []
+    },
+    "boons": [
+        {
+            "id": "boon_breath",
+            "count": 1
+        }
+    ],
+    "sealRanks": [],
+    "sealPouch": [
+        "seal.element.water",
+        "seal.harden",
+        "seal.demon.eternal_flame",
+        "seal.tremor"
+    ]
+}

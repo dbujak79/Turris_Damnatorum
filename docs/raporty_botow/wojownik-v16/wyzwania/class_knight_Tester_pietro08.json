@@ -1,0 +1,147 @@
+{
+    "title": "Wojownik, piętro 8: VIII. Zatopione Krużganki (Tester QA)",
+    "note": "Bot nie przeszedł piętra w 3 próbach (podejście 12); ostatni zabójca:  – .",
+    "created": "2026-10-28 18:03",
+    "classId": "class_knight",
+    "appearanceId": "",
+    "difficultyTier": 0,
+    "seed": 87461078,
+    "floorIndex": 7,
+    "floorsCleared": 7,
+    "souls": 78,
+    "ashEarned": 42,
+    "kills": 206,
+    "attributePoints": 0,
+    "toughness": 14,
+    "strength": 16,
+    "dexterity": 12,
+    "intelligence": 8,
+    "healthFlasks": 4,
+    "manaFlasks": 1,
+    "bonusHealthFlasks": 0,
+    "healthFraction": 1.0,
+    "manaFraction": 1.0,
+    "equipment": [
+        {
+            "id": "hu_greatsword",
+            "level": 1,
+            "slot": 0
+        },
+        {
+            "id": "body_chainmail",
+            "level": 0,
+            "slot": 3
+        }
+    ],
+    "inventory": [
+        {
+            "id": "hu_flail",
+            "level": 1,
+            "slot": -1
+        },
+        {
+            "id": "hu_unique_widows_lament",
+            "level": 3,
+            "slot": -1
+        },
+        {
+            "id": "body_grounded",
+            "level": 1,
+            "slot": -1
+        }
+    ],
+    "skills": [
+        {
+            "id": "hu_wind_slash",
+            "level": 2,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_stomp",
+            "level": 1,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_lunge",
+            "level": 0,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 2,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_charge",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_repel",
+            "level": 2,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_leapslash",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 0,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_aura_holy_fire",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        }
+    ],
+    "signature": {
+        "id": "hu_warcry",
+        "level": 0,
+        "permanent": true,
+        "fromItem": false,
+        "slot": -1,
+        "form": "",
+        "supports": []
+    },
+    "boons": [
+        {
+            "id": "boon_titan",
+            "count": 1
+        },
+        {
+            "id": "boon_ironskin",
+            "count": 1
+        }
+    ],
+    "sealRanks": [
+        {
+            "id": "seal.element.earth",
+            "count": 2
+        }
+    ],
+    "sealPouch": [
+        "seal.trigger.dodge",
+        "seal.element.earth"
+    ]
+}

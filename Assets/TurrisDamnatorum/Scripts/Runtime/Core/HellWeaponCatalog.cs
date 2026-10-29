@@ -24,6 +24,9 @@ namespace Turris
             public float DamagePhysical, DamageFire, DamageWater, DamageAir, DamageEarth, StaminaCost, Load, PowerValue;
             public float WindupSeconds = 0.12f, RecoverySeconds = 0.1f, Range = 48, AttacksPerSecond = 1, ProjectileSpeed = 420, ExplosionRadius;
             public bool AvailableInShop = true;
+            /// <summary>Ekonomia HU (etap 6): cena bazowa, wzrost ceny poziomu i ostatni poziom broni.</summary>
+            public float BasePrice = 25f, PriceGrowth = 1.6f;
+            public int MaxLevel = 5;
             public string[] OnHitEffects = Array.Empty<string>(), Modifiers = Array.Empty<string>(), Tags = Array.Empty<string>();
             public float TotalDamage => DamagePhysical + DamageFire + DamageWater + DamageAir + DamageEarth;
             public float HuDps => TotalDamage * AttacksPerSecond;

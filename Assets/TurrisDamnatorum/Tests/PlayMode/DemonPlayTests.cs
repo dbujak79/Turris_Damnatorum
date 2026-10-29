@@ -139,6 +139,7 @@ namespace Turris.Tests
             var v = e.GetComponent<CharacterVisual>();
             var src = new StubAnimSource();
             v.Init(src);
+            v.enabled = false; // Próba steruje Tick ręcznie; LateUpdate nie może dopisywać drugiego kroku bez ruchu.
             var drv = (DemonAnimationDriver)v.Driver;
             for (int i = 0; i < 60; i++) { e.transform.position += Vector3.forward * def.moveSpeed / 60f; v.Tick(1f / 60f); yield return null; }
             Assert.Greater(drv.WalkWeight, 0.8f, "w ruchu gra klip chodu");
@@ -200,6 +201,7 @@ namespace Turris.Tests
             var plan = new LoadoutPlan { classDef = Warrior(cfg), difficulty = cfg.difficulties[0] };
             var pc = p.GetComponent<PlayerCombat>();
             pc.Init(RunFactory.Create(plan, cfg, 7), cfg);
+            pc.DebugNoPassiveBlock = true; // trafienia demonów mają lądować deterministycznie
             p.GetComponent<PlayerVisuals>().Refresh();
             Assert.IsTrue(p.GetComponent<CharacterVisual>().UsesModel, "bohater z modelem FBX");
             p.transform.position = new Vector3(0, 0.05f, 0);
@@ -420,7 +422,7 @@ namespace Turris.Tests
 
             root.DebugKillAllEnemies();
             yield return new WaitForSeconds(1.8f);
-            Assert.AreEqual(GameScreen.Reward, root.Screen, "po zabiciu wszystkich piętro ukończone");
+            Assert.AreEqual(GameScreen.Intermission, root.Screen, "po zabiciu wszystkich piętro ukończone (HU: od razu sklep)");
         }
 
         static Vector3 Flat(Vector3 v) { v.y = 0f; return v; }

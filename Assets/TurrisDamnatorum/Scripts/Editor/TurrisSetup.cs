@@ -148,6 +148,14 @@ namespace Turris.EditorTools
                         changed = true;
                     }
                     break;
+                case BoonDefinition src when target is BoonDefinition dst:
+                    // Perki HU: efekty mechaniki (np. efekt trafienia Płonącego ostrza) dodane po utworzeniu assetu.
+                    if (dst.effects.Count == 0 && src.effects.Count > 0)
+                    {
+                        dst.effects = new System.Collections.Generic.List<PassiveEffect>(src.effects);
+                        changed = true;
+                    }
+                    break;
                 case SpellDefinition src when target is SpellDefinition dst:
                     changed |= FillAttack(src.attack, dst.attack);
                     if ((dst.levelFeatures == null || dst.levelFeatures.Count == 0) && src.levelFeatures.Count > 0)
@@ -271,6 +279,34 @@ namespace Turris.EditorTools
         {
             Run(true);
             EditorApplication.Exit(0);
+        }
+
+        /// <summary>
+        /// Wieża 30 pięter (fale Hell Unleashed, <see cref="HellTower"/>): nadpisuje wyłącznie asset wieży, reszta treści bez zmian.
+        /// Arena pierwszego piętra z assetu zostaje (np. gotycki dziedziniec ustawiony ręcznie).
+        /// -executeMethod Turris.EditorTools.TurrisSetup.RebuildTowerBatch
+        /// </summary>
+        public static void RebuildTowerBatch()
+        {
+            RebuildTower();
+            EditorApplication.Exit(0);
+        }
+
+        [MenuItem("Turris/Przebuduj wieżę (fale Hell Unleashed)")]
+        public static void RebuildTower()
+        {
+            const string path = ContentDir + "/Tower/tower_main.asset";
+            var tower = AssetDatabase.LoadAssetAtPath<TowerDefinition>(path);
+            var firstArena = tower != null && tower.floors.Count > 0 ? tower.floors[0].arena : null;
+            OverwriteFromDefaults("tower_main");
+            tower = AssetDatabase.LoadAssetAtPath<TowerDefinition>(path);
+            if (tower != null && firstArena != null && tower.floors.Count > 0)
+            {
+                tower.floors[0].arena = firstArena;
+                EditorUtility.SetDirty(tower);
+                AssetDatabase.SaveAssets();
+            }
+            Debug.Log($"[Turris] Wieża: {tower?.floors.Count} pięter");
         }
 
         static void Run(bool overwrite)

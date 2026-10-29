@@ -24,7 +24,7 @@ MonoBehaviour:
   cancelAfter: 0.2
   staminaCost: 18
   requirements: []
-  requiredTags: 0
+  requiredTags: 512
   intelligenceScaling: 0
   attack:
     name: Rozdarcie ran

@@ -80,8 +80,16 @@ namespace Turris
         public List<EnemyDefinition> enemies = new List<EnemyDefinition>();
         [Tooltip("Kolejne fale po pierwszej (enemies). Piętro kończy się po pokonaniu ostatniej.")]
         public List<EnemyWave> extraWaves = new List<EnemyWave>();
-        [Tooltip("Umiarkowane skalowanie życia i obrażeń przeciwników.")]
+        [Tooltip("Skalowanie życia przeciwników (i obrażeń, gdy damageScale < 0).")]
         public float statScale = 1f;
+        [Tooltip("Skalowanie obrażeń przeciwników (fala HU: DamageMultiplier). Ujemne – jak statScale.")]
+        public float damageScale = -1f;
+        [Tooltip("Skalowanie prędkości ruchu przeciwników (fala HU: SpeedMultiplier).")]
+        public float speedScale = 1f;
+        [Tooltip("Mnożnik dusz za demony (fala HU: SoulRewardMultiplier).")]
+        public float soulScale = 1f;
+
+        public float DamageScale => damageScale >= 0f ? damageScale : statScale;
         public bool isDuel = true;
         public bool isBoss;
         [Tooltip("Po piętrze gracz trafia do kapliczki odpoczynku.")]

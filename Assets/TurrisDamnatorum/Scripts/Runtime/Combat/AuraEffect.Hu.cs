@@ -120,7 +120,7 @@ namespace Turris
             if (p.TotalDamage > 0)
             {
                 var hit = huCast.Hit(pulsePower);
-                hit.knockback = 0f;
+                hit.knockback = 0f; hit.knockdown = 0f;
                 if (HuWorld.HitCircle(hero, Center, Radius, hit) > 0 && FxLibrary.Enabled) HellFx.Shockwave(Center, huCast.family, huCast.color, Radius);
             }
             int enemies = p.On("heal_per_enemy") ? CountInside() : enemiesInside;

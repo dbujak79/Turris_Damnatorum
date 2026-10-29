@@ -46,10 +46,43 @@ namespace Turris
             {
                 if (classDef == null) return null;
                 if (GearSkill != null) return GearSkill;
-                if (startingSkill != null && classDef.startingSkillChoices.Contains(startingSkill)) return startingSkill;
+                var usable = UsableStartingChoices.ToList();
+                if (startingSkill != null && usable.Contains(startingSkill)) return startingSkill;
+                if (usable.Count > 0) return usable[0];
                 return classDef.startingSkillChoices.Count > 0 ? classDef.startingSkillChoices[0] : null;
             }
         }
+
+        /// <summary>Ręce na starcie: dodatek z bronią lub drugą ręką zastępuje broń zestawu (jak w <see cref="RunFactory.Create"/>).</summary>
+        public (ItemDefinition main, ItemDefinition off) StartingHands
+        {
+            get
+            {
+                ItemDefinition main = Weapon, off = OffHand;
+                foreach (var u in extras)
+                {
+                    if (!(u.target is ItemDefinition i)) continue;
+                    if (i.IsWeapon) { main = i; if (i.twoHanded) off = null; }
+                    else if (i.IsShield || i.kind == ItemKind.OffHand) off = i;
+                }
+                return (main, off);
+            }
+        }
+
+        /// <summary>
+        /// Skille startowe, które działają z bronią zestawu, ale przestaną działać z bronią z dodatków (np. kostur zamiast miecza
+        /// przy Cięciu wichru) – ekran przygotowania ostrzega przed takim wyborem.
+        /// </summary>
+        public List<SpellDefinition> SkillsBlockedByExtras()
+        {
+            var (main, off) = StartingHands;
+            if (main == Weapon && off == OffHand) return new List<SpellDefinition>();
+            return StartingSkills.Where(s => WeaponFamilies.Usable(s, Weapon, OffHand) && !WeaponFamilies.Usable(s, main, off)).ToList();
+        }
+
+        /// <summary>Skille startowe klasy, których można użyć z bronią zestawu (skill wymaga rodzaju broni, nie klasy).</summary>
+        public IEnumerable<SpellDefinition> UsableStartingChoices => classDef == null ? Enumerable.Empty<SpellDefinition>()
+            : classDef.startingSkillChoices.Where(s => s != null && WeaponFamilies.Usable(s, Weapon, OffHand));
         public readonly List<UnlockDefinition> extras = new List<UnlockDefinition>();
         /// <summary>Umiejętności odblokowane na stałe – trafiają do kolekcji każdego podejścia (poza budżetem).</summary>
         public readonly List<SpellDefinition> permanentSkills = new List<SpellDefinition>();
@@ -58,8 +91,10 @@ namespace Turris
         public int Cost => extras.Sum(e => e.loadoutCost);
 
         /// <summary>Umiejętności dostępne na starcie: klasowe i odblokowane na stałe (bez powtórzeń).</summary>
+        /// Najpierw te, których można użyć z bronią zestawu – one wypełniają puste sloty.
         public IEnumerable<SpellDefinition> StartingSkills =>
-            (classDef != null ? classDef.startingSpells : new List<SpellDefinition>()).Concat(new[] { OpeningSkill }).Concat(permanentSkills).Where(s => s != null).Distinct();
+            (classDef != null ? classDef.startingSpells : new List<SpellDefinition>()).Concat(new[] { OpeningSkill }).Concat(permanentSkills).Where(s => s != null).Distinct()
+                .OrderBy(s => WeaponFamilies.Usable(s, Weapon, OffHand) ? 0 : 1);
 
         /// <summary>Wkłada umiejętność do slotu (jeśli była w innym – zamiana miejscami).</summary>
         public void AssignSlot(SpellDefinition skill, int slot)
@@ -183,7 +218,8 @@ namespace Turris
             {
                 string id = i < Profile.skillSlots.Count ? Profile.skillSlots[i] : null;
                 var s = string.IsNullOrEmpty(id) ? null : available.FirstOrDefault(x => x.id == id);
-                plan.skillSlots[i] = s != null && System.Array.IndexOf(plan.skillSlots, s) < 0 ? s : null;
+                // Zapamiętany skill wraca do slotu tylko, gdy broń zestawu na niego pozwala.
+                plan.skillSlots[i] = s != null && System.Array.IndexOf(plan.skillSlots, s) < 0 && WeaponFamilies.Usable(s, plan.Weapon, plan.OffHand) ? s : null;
             }
         }
 

@@ -6,7 +6,8 @@ namespace Turris
     /// <summary>Buduje areny i postacie z prymitywów (placeholdery, brak zależności od assetów).</summary>
     public static class WorldBuilder
     {
-        public static GameObject BuildArena(ArenaDefinition a, Transform parent) => ArenaBuilder.Build(a, parent);
+        public static GameObject BuildArena(ArenaDefinition a, Transform parent) =>
+            a.gothicSet!=null ? GothicArenaBuilder.Build(a,parent) : ArenaBuilder.Build(a,parent);
 
         public static float SpawnRadius(ArenaDefinition a) => a.circular ? a.size * 0.6f : a.size * 0.35f;
 

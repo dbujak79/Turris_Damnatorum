@@ -23,11 +23,11 @@ namespace Turris
             }
             switch (key)
             {
-                case "imp":
+                case "visual_imp_fire_anime": case "imp":
                     Flame("hand.R", new Vector3(-0.05f,0.07f,0.03f),0.45f);
                     Flame("tail3", new Vector3(0,0.12f,0),0.28f); break;
                 case "cultist": Flame("hand.R",new Vector3(-0.05f,0.07f,0.03f),0.3f); break;
-                case "imp_water":
+                case "visual_imp_water_anime": case "imp_water":
                     var water = HellFx.Ambient(model, Vector3.up * 0.4f, HellFxElement.Water,0.2f);
                     water.SetAmount(0.25f); water.SetScale(0.4f); break;
                 case "imp_air": Trail("hand.R",HellFxElement.Air,0.4f); break;

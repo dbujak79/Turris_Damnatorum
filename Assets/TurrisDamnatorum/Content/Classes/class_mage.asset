@@ -61,7 +61,7 @@ MonoBehaviour:
   - stat: 20
     mode: 0
     value: 5.357143
-  lookOverride: {fileID: 0}
+  lookOverride: {fileID: 11400000, guid: 43f25104e30fca44496ce42c126953fe, type: 2}
   toughness: 10
   strength: 7
   dexterity: 11

@@ -48,7 +48,8 @@ namespace Turris.Tests.Bots
                         persona = p, name = "Tester QA",
                         description = "Metodyczny tester: przechodzi wieżę poprawnie, ale ~30% ciosów przyjmuje celowo każdą możliwą reakcją " +
                                       "(blok, parowanie, unik, wyjście z kręgu, brak reakcji), rotuje zestawy broni i skille startowe, " +
-                                      "używa każdej akcji i pilnuje niezmienników reguł. Bez meta-progresji (stała linia bazowa).",
+                                      "używa każdej akcji i pilnuje niezmienników reguł. Kupuje każdą ofertę sklepu dusz i co piętro wkłada do slotu " +
+                                      "najmniej sprawdzony skill z kolekcji. Bez meta-progresji (stała linia bazowa).",
                         reaction = 0.30f, reactionJitter = 0.08f, timingError = 0.06f, parryChance = 0.35f, aggression = 0.75f,
                         flaskThreshold = 0.35f, lowStamina = 0.15f, comboMin = 2, comboMax = 4, experimentRate = 0.30f,
                         metaProgression = false, skillEagerness = 1f,
@@ -59,6 +60,8 @@ namespace Turris.Tests.Bots
                         persona = p, name = "Gracz H&S / souls-like",
                         description = "Doświadczony gracz Dark Souls i Diablo: namierza, paruje zwykłe ciosy, unika czerwonych, karze odsłonięcia " +
                                       "seriami 2–3 ciosów, ripostuje, szaleje skillami przy grupach, pilnuje wytrzymałości. " +
+                                      "Kupuje oferty sklepu i nowe skille, gdy zapowiadają się lepiej niż najsłabszy w slocie albo dają atak z dystansu; " +
+                                      "układa sloty według obrażeń na sekundę odnowienia z własnych podejść, nowe skille próbuje z ciekawości. " +
                                       "Między podejściami wydaje popiół i wybiera zestaw, który mu najlepiej idzie.",
                         reaction = 0.20f, reactionJitter = 0.06f, timingError = 0.045f, parryChance = 0.65f, aggression = 0.55f,
                         flaskThreshold = 0.42f, lowStamina = 0.25f, comboMin = 2, comboMax = 3, experimentRate = 0f,

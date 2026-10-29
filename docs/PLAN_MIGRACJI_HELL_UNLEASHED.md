@@ -24,6 +24,8 @@ Nie zmieniano modeli, klipów ani żadnych plików Hell Unleashed. Ostatnia kont
 | Etap 2 — animacje, broń i sylwetka (P1) | Wdrożony, wraz z korektami stopy i sztywnego noska; pozostaje ręczna ocena |
 | Etap 3 — demony i bossowie (P1) | Wdrożony; 34 definicje źródłowe, 37 modeli z wariantami, bestiariusz i próba walki |
 | Etap 4 — pozostałe 32 skille i runtime'y | **Wdrożony 2026-10-23**: 61 skilli z komponentów HU, 19 nowych broni z mocami unikatów – [ETAP4_PIECZECIE.md](ETAP4_PIECZECIE.md) |
+| Etap 6 — przedmioty, affixy, łupy, ekonomia | **Wdrożony 2026-10-28, uzupełniony 2026-10-29**: wszystkie 46 perków, łup na ziemi, dojrzewanie dusz, cechy za dusze, 3 oferty skilli, sklep zamiast ekranu nagrody, balans HU 2.0 z 26.10 – szczegóły w PROGRESS.md |
+| Reżyser ataków HU (commit 2026-10-26) | **Wdrożony 2026-10-28** – `Enemies/AttackDirector.cs` |
 | Etap 5 — pieczęcie | **Wdrożony 2026-10-23**: 186 pieczęci, sakwa, łupy, dar bossa, sklep dusz, kodeks w profilu |
 | Etapy 6–8 — ekonomia, biomy, UI/audio/postęp | Plan dalszych prac, bez deklaracji pełnej migracji |
 

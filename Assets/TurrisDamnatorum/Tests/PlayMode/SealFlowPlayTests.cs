@@ -40,7 +40,6 @@ namespace Turris.Tests
         static string ShotDir()
         {
             string dir = System.Environment.GetEnvironmentVariable("TURRIS_SHOT_DIR");
-            if (string.IsNullOrEmpty(dir) && Directory.Exists(Path.Combine("TestResults", "hu-seals"))) dir = Path.Combine("TestResults", "hu-seals");
             return Application.isBatchMode ? null : dir;
         }
 
@@ -76,8 +75,7 @@ namespace Turris.Tests
 
             root.DebugCompleteFloorNow();
             yield return null;
-            Assert.AreEqual(GameScreen.Reward, root.Screen);
-            root.ChooseReward(0);
+            Assert.AreEqual(GameScreen.Intermission, root.Screen, "HU: po piętrze od razu sklep");
             yield return null;
             Assert.AreEqual(GameScreen.Intermission, root.Screen);
             Assert.Greater(root.SealOffers.Count, 0, "sklep dusz ma oferty pieczęci");
@@ -104,6 +102,8 @@ namespace Turris.Tests
             var split = HuCatalog.Seal("seal.split");
             if (run.sealPouch.Contains(split))
             {
+                // Zakupy i dar mogły zająć gniazda albo zmienić formę (oferty zależą od losowania) – zwolnij skill przed wstawieniem z sakwy.
+                foreach (var s in orb.seals.All.ToList()) root.RemoveSeal(orb, s); // forma z zakupu może nie przyjmować rozszczepu
                 root.InsertSeal(orb, split);
                 yield return null;
                 Assert.IsTrue(orb.seals.All.Contains(split), "pieczęć z sakwy w skillu");

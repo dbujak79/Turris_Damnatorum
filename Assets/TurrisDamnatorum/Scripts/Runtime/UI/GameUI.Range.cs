@@ -57,7 +57,7 @@ namespace Turris
                     string cost = def.IsSpell ? $"mana {sk.manaCost:0}" : $"wytrzymałość {sk.staminaCost:0}";
                     string element = def.attack != null && def.attack.element != Element.None ? $" · {def.attack.element}" : "";
                     GUILayout.Label($"odnowienie {sk.instance.Cooldown:0.#} s · ładunki {sk.instance.MaxCharges} · {cost}{element}", small);
-                    if (!sk.equipmentMet) GUILayout.Label($"<color=#ff8866>Wymaga wyposażenia: {def.requiredTags} – tym bohaterem się nie użyje.</color>", small);
+                    if (!sk.equipmentMet) GUILayout.Label($"<color=#ff8866>{Names.Requirement(def.requiredTags)} – z obecną bronią się nie użyje.</color>", small);
                     else if (!sk.requirementsMet) GUILayout.Label("<color=#ffcc66>Za niskie atrybuty – obniżona skuteczność.</color>", small);
                 }
             }

@@ -24,7 +24,7 @@ MonoBehaviour:
   cancelAfter: 0.2
   staminaCost: 14
   requirements: []
-  requiredTags: 0
+  requiredTags: 256
   intelligenceScaling: 0
   attack:
     name: "Strza\u0142a siarkowa"
@@ -95,7 +95,7 @@ MonoBehaviour:
   extraWaveShare: 0
   extraWaveDelay: 0.25
   dashTime: 0.16
-  minFloor: 1
+  minFloor: 6
   levelFeatures: []
   maxLevel: 2
   powerPerLevel: 0

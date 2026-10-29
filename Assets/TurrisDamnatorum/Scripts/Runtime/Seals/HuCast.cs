@@ -34,7 +34,8 @@ namespace Turris
             direction.y = 0; this.direction = direction.sqrMagnitude > 1e-6f ? direction.normalized : Vector3.forward;
             this.target = target;
             this.power = power; this.relayed = relayed; this.copy = copy; this.triggered = triggered;
-            area = (1f + (power - 1f) / 3f) * Mathf.Max(0.1f, P.GetF("area_scale", 1f));
+            area = (1f + (power - 1f) / 3f) * Mathf.Max(0.1f, P.GetF("area_scale", 1f))
+                   * (1f + (caster != null && caster.Build != null ? caster.Build.effects[PassiveEffectType.AreaSize] / 100f : 0f)); // Szeroki zasięg (perk HU)
             bool ice = P.On("ice");
             family = ice ? HellFxElement.Ice : FamilyFor(shape.Element, spell.Def);
             color = ice ? new Color(0.6f, 0.9f, 1f) : ColorFor(shape.Element, spell.Def.color);

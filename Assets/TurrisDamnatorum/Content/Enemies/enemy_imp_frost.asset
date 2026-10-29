@@ -242,9 +242,9 @@ MonoBehaviour:
   scale: 0.7222222
   rigStyle: 0
   weaponModel: 0
-  visual: {fileID: 11400000, guid: 463981049a1e5e24c80fe0c150543b9f, type: 2}
+  visual: {fileID: 11400000, guid: 1745da9a10b7f804e9cab4194436c396, type: 2}
   spawnCost: 1
   packSize: 1
-  eliteHealthMultiplier: 7
-  eliteDamageMultiplier: 1.6
+  eliteHealthMultiplier: 4.5
+  eliteDamageMultiplier: 1.45
   isMinion: 0

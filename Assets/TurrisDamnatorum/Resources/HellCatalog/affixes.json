@@ -1,0 +1,2831 @@
+{
+ "affixes": [
+  {
+   "id": "affix.accuracy.t1",
+   "file": "accuracy_t1",
+   "sha256": "92ba5a3b887e17d9d4c0c790454367e807eaf82806e3ff3dcba88f6843e0b3a0",
+   "name": "Sokoła",
+   "Kind": 1,
+   "Group": "accuracy",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.6,
+   "Categories": [
+    "Weapon",
+    "Hands",
+    "Head",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "Accuracy|Flat|0.03|0.05"
+   ]
+  },
+  {
+   "id": "affix.accuracy.t2",
+   "file": "accuracy_t2",
+   "sha256": "9839cccb25e1ae923cfb732a6f7dce9558751c10b7b1539c8064c80996fa5029",
+   "name": "Orła",
+   "Kind": 1,
+   "Group": "accuracy",
+   "Tier": 2,
+   "MinWave": 10,
+   "Weight": 0.6,
+   "Categories": [
+    "Weapon",
+    "Hands",
+    "Head",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "Accuracy|Flat|0.06|0.09"
+   ]
+  },
+  {
+   "id": "affix.air_add.t1",
+   "file": "air_add_t1",
+   "sha256": "7a1187cbb6e7d36095ae3249836f2bcc8f04e6c9d4f8e99f798a7b4dfa8240d1",
+   "name": "affix.air_add.t1",
+   "Kind": 0,
+   "Group": "air_add",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon",
+    "Ring",
+    "Amulet",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "AirDamage|Flat|2|4"
+   ]
+  },
+  {
+   "id": "affix.air_add.t2",
+   "file": "air_add_t2",
+   "sha256": "aa395791ce88327b6383bea8c8623a16bc55410b11729d1ef2256074dcc0823b",
+   "name": "affix.air_add.t2",
+   "Kind": 0,
+   "Group": "air_add",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon",
+    "Ring",
+    "Amulet",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "AirDamage|Flat|5|8"
+   ]
+  },
+  {
+   "id": "affix.air_add.t3",
+   "file": "air_add_t3",
+   "sha256": "ded6f82a8a3d4c5a84cc90158999040fe838e865c6c4254fcfc361842066362a",
+   "name": "affix.air_add.t3",
+   "Kind": 0,
+   "Group": "air_add",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon",
+    "Ring",
+    "Amulet",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "AirDamage|Flat|9|14"
+   ]
+  },
+  {
+   "id": "affix.air_pct.t1",
+   "file": "air_pct_t1",
+   "sha256": "931cc9d0c1efd706615cfd7238c9ee21a0521e3ca769ff47dd6ff75047c76bed",
+   "name": "affix.air_pct.t1",
+   "Kind": 0,
+   "Group": "air_pct",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet",
+    "Ring",
+    "Head",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "AirDamage|PercentAdditive|0.08|0.12"
+   ]
+  },
+  {
+   "id": "affix.air_pct.t2",
+   "file": "air_pct_t2",
+   "sha256": "e3adea84c198d3752f55e20d1310d00d9fc5deac561c08caed518fabb78f4d76",
+   "name": "affix.air_pct.t2",
+   "Kind": 0,
+   "Group": "air_pct",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet",
+    "Ring",
+    "Head",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "AirDamage|PercentAdditive|0.13|0.18"
+   ]
+  },
+  {
+   "id": "affix.air_pct.t3",
+   "file": "air_pct_t3",
+   "sha256": "f78243a1e6781c537fc99faab213bc2c0c08689f917ba420554ed31508068195",
+   "name": "affix.air_pct.t3",
+   "Kind": 0,
+   "Group": "air_pct",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet",
+    "Ring",
+    "Head",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "AirDamage|PercentAdditive|0.19|0.26"
+   ]
+  },
+  {
+   "id": "affix.air_res.t1",
+   "file": "air_res_t1",
+   "sha256": "be78eec28805d3ff6662bc209bcd8fc09d17f57ca67f644e38f3352383db4e5a",
+   "name": "Wichru",
+   "Kind": 1,
+   "Group": "air_res",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "AirResistance|Flat|0.06|0.1"
+   ]
+  },
+  {
+   "id": "affix.air_res.t2",
+   "file": "air_res_t2",
+   "sha256": "a54ab222bd862310bb46c15804c192dc6d28d86da8ba01a542b5f49b5db6b3c0",
+   "name": "Burzy",
+   "Kind": 1,
+   "Group": "air_res",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "AirResistance|Flat|0.11|0.16"
+   ]
+  },
+  {
+   "id": "affix.air_res.t3",
+   "file": "air_res_t3",
+   "sha256": "a4628c047986ad13918bf5f655dff4f27bac24384c18c622a9f384870b9582e5",
+   "name": "Zawieruchy",
+   "Kind": 1,
+   "Group": "air_res",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "AirResistance|Flat|0.17|0.24"
+   ]
+  },
+  {
+   "id": "affix.all_res.t1",
+   "file": "all_res_t1",
+   "sha256": "51361b0a338177b88b8b6970e21c019e775d0138d5bb626cf7cda6dc35b8587c",
+   "name": "Pryzmatu",
+   "Kind": 1,
+   "Group": "all_res",
+   "Tier": 1,
+   "MinWave": 6,
+   "Weight": 0.5,
+   "Categories": [
+    "Amulet",
+    "Ring",
+    "Body",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "FireResistance|Flat|0.03|0.05",
+    "WaterResistance|Flat|0.03|0.05",
+    "AirResistance|Flat|0.03|0.05",
+    "EarthResistance|Flat|0.03|0.05"
+   ]
+  },
+  {
+   "id": "affix.all_res.t2",
+   "file": "all_res_t2",
+   "sha256": "d892ea3be4fa40a661ae9ad2cbf614d3ed2a588dd7eb631c662de90f12ac49de",
+   "name": "Tęczy",
+   "Kind": 1,
+   "Group": "all_res",
+   "Tier": 2,
+   "MinWave": 15,
+   "Weight": 0.5,
+   "Categories": [
+    "Amulet",
+    "Ring",
+    "Body",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "FireResistance|Flat|0.06|0.08",
+    "WaterResistance|Flat|0.06|0.08",
+    "AirResistance|Flat|0.06|0.08",
+    "EarthResistance|Flat|0.06|0.08"
+   ]
+  },
+  {
+   "id": "affix.area.t1",
+   "file": "area_t1",
+   "sha256": "0021f624479e39083d66ef09b3bf4690ca1cb7546c83c7b7b9f9a531f917e1cf",
+   "name": "affix.area.t1",
+   "Kind": 0,
+   "Group": "area",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.6,
+   "Categories": [
+    "Amulet",
+    "Head",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "AreaSize|PercentAdditive|0.05|0.08"
+   ]
+  },
+  {
+   "id": "affix.area.t2",
+   "file": "area_t2",
+   "sha256": "e1a3434847dca3fee36fbebe24b24abd171f494eea6899e748b79917add14231",
+   "name": "affix.area.t2",
+   "Kind": 0,
+   "Group": "area",
+   "Tier": 2,
+   "MinWave": 10,
+   "Weight": 0.6,
+   "Categories": [
+    "Amulet",
+    "Head",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "AreaSize|PercentAdditive|0.09|0.13"
+   ]
+  },
+  {
+   "id": "affix.armour.t1",
+   "file": "armour_t1",
+   "sha256": "1425aebc6abc84f63ba7f6b8d72d83bf7c2aaa7b7087fc8f046c074d3834e896",
+   "name": "affix.armour.t1",
+   "Kind": 0,
+   "Group": "armour",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Offhand"
+   ],
+   "RequiredTags": [
+    "light",
+    "medium",
+    "heavy",
+    "shield"
+   ],
+   "Ranges": [
+    "Armour|Flat|1|2"
+   ]
+  },
+  {
+   "id": "affix.armour.t2",
+   "file": "armour_t2",
+   "sha256": "90048dce973230b475c4f15ed7d4c09775c874194245eefe91c8636ca5bd9901",
+   "name": "affix.armour.t2",
+   "Kind": 0,
+   "Group": "armour",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Offhand"
+   ],
+   "RequiredTags": [
+    "light",
+    "medium",
+    "heavy",
+    "shield"
+   ],
+   "Ranges": [
+    "Armour|Flat|3|4"
+   ]
+  },
+  {
+   "id": "affix.armour.t3",
+   "file": "armour_t3",
+   "sha256": "96a32cc46f32a18e8f33f485e9ec178f515691639f1d880ad40c856637bc0b80",
+   "name": "affix.armour.t3",
+   "Kind": 0,
+   "Group": "armour",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Offhand"
+   ],
+   "RequiredTags": [
+    "light",
+    "medium",
+    "heavy",
+    "shield"
+   ],
+   "Ranges": [
+    "Armour|Flat|5|7"
+   ]
+  },
+  {
+   "id": "affix.attack_speed.t1",
+   "file": "attack_speed_t1",
+   "sha256": "3185d5085fd6b50f972096daf6a04ba0fbced6cd1ab1f7689b2e475eea50a3ca",
+   "name": "affix.attack_speed.t1",
+   "Kind": 0,
+   "Group": "attack_speed",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.9,
+   "Categories": [
+    "Weapon",
+    "Hands",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "AttackSpeed|PercentAdditive|0.04|0.06"
+   ]
+  },
+  {
+   "id": "affix.attack_speed.t2",
+   "file": "attack_speed_t2",
+   "sha256": "6a23f7378dd6875b4e47a4c36f2f09c0af1c5fcf157511a777cf271620f942bd",
+   "name": "affix.attack_speed.t2",
+   "Kind": 0,
+   "Group": "attack_speed",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.9,
+   "Categories": [
+    "Weapon",
+    "Hands",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "AttackSpeed|PercentAdditive|0.07|0.1"
+   ]
+  },
+  {
+   "id": "affix.attack_speed.t3",
+   "file": "attack_speed_t3",
+   "sha256": "7dd76f2f3cd7c0d851d13fb31ad0294eb238533f7744be2fdf2b7cccea3845c2",
+   "name": "affix.attack_speed.t3",
+   "Kind": 0,
+   "Group": "attack_speed",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.9,
+   "Categories": [
+    "Weapon",
+    "Hands",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "AttackSpeed|PercentAdditive|0.11|0.15"
+   ]
+  },
+  {
+   "id": "affix.bleed.t1",
+   "file": "bleed_t1",
+   "sha256": "2aabead0899029deb2b82f2e1f80c9f3c21c67b8537bab49c12c707b63fbef24",
+   "name": "affix.bleed.t1",
+   "Kind": 0,
+   "Group": "bleed",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Hands"
+   ],
+   "RequiredTags": [
+    "melee",
+    "light",
+    "medium",
+    "heavy"
+   ],
+   "Ranges": [
+    "BleedDamage|PercentAdditive|0.15|0.25"
+   ]
+  },
+  {
+   "id": "affix.bleed.t2",
+   "file": "bleed_t2",
+   "sha256": "f2e54fb619a04408d0145ef132a5de994291193d3d9a0f385cbf8d39d98f18fb",
+   "name": "affix.bleed.t2",
+   "Kind": 0,
+   "Group": "bleed",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Hands"
+   ],
+   "RequiredTags": [
+    "melee",
+    "light",
+    "medium",
+    "heavy"
+   ],
+   "Ranges": [
+    "BleedDamage|PercentAdditive|0.26|0.4"
+   ]
+  },
+  {
+   "id": "affix.bleed.t3",
+   "file": "bleed_t3",
+   "sha256": "34ba6cf3461853f38fd4362b44274a1cfbcfe8a23f58cd2a8183276443193ff5",
+   "name": "affix.bleed.t3",
+   "Kind": 0,
+   "Group": "bleed",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Hands"
+   ],
+   "RequiredTags": [
+    "melee",
+    "light",
+    "medium",
+    "heavy"
+   ],
+   "Ranges": [
+    "BleedDamage|PercentAdditive|0.41|0.6"
+   ]
+  },
+  {
+   "id": "affix.block.t1",
+   "file": "block_t1",
+   "sha256": "53c8621b7ea70e6ab2776d517d76b7c3bb1f2f2f9c581caaa2bc08ac810c94f6",
+   "name": "affix.block.t1",
+   "Kind": 0,
+   "Group": "block",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 1,
+   "Categories": [
+    "Offhand"
+   ],
+   "RequiredTags": [
+    "shield"
+   ],
+   "Ranges": [
+    "PassiveBlockChance|Flat|0.04|0.06"
+   ]
+  },
+  {
+   "id": "affix.block.t2",
+   "file": "block_t2",
+   "sha256": "412c1b0c80a2e84433a1cd850b1e75d982861dff4b5f122ac14a3becede9d503",
+   "name": "affix.block.t2",
+   "Kind": 0,
+   "Group": "block",
+   "Tier": 2,
+   "MinWave": 10,
+   "Weight": 1,
+   "Categories": [
+    "Offhand"
+   ],
+   "RequiredTags": [
+    "shield"
+   ],
+   "Ranges": [
+    "PassiveBlockChance|Flat|0.07|0.1"
+   ]
+  },
+  {
+   "id": "affix.cooldown.t1",
+   "file": "cooldown_t1",
+   "sha256": "ac24c375a902d614165277ade89059e765262de643e9407a17e020a4d602b8fe",
+   "name": "Natchnienia",
+   "Kind": 1,
+   "Group": "cooldown",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.7,
+   "Categories": [
+    "Head",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "SkillCooldownReduction|PercentAdditive|0.03|0.05"
+   ]
+  },
+  {
+   "id": "affix.cooldown.t2",
+   "file": "cooldown_t2",
+   "sha256": "55b843c00dbb256b33e211443c1e842001d72cbb3de26af8954e34fe1418a67b",
+   "name": "Wizji",
+   "Kind": 1,
+   "Group": "cooldown",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.7,
+   "Categories": [
+    "Head",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "SkillCooldownReduction|PercentAdditive|0.06|0.08"
+   ]
+  },
+  {
+   "id": "affix.cooldown.t3",
+   "file": "cooldown_t3",
+   "sha256": "f30685c3c2a6a8d39350bf46931d98ffa33f1ad963739b6442ded16a3084da8e",
+   "name": "Proroctwa",
+   "Kind": 1,
+   "Group": "cooldown",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.7,
+   "Categories": [
+    "Head",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "SkillCooldownReduction|PercentAdditive|0.09|0.12"
+   ]
+  },
+  {
+   "id": "affix.earth_add.t1",
+   "file": "earth_add_t1",
+   "sha256": "81b0b9bbd012f8f1127ba42bb9e4602fcf6e9dc3f67ebf8f5ac32bf67a5e9905",
+   "name": "affix.earth_add.t1",
+   "Kind": 0,
+   "Group": "earth_add",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon",
+    "Ring",
+    "Amulet",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "EarthDamage|Flat|2|4"
+   ]
+  },
+  {
+   "id": "affix.earth_add.t2",
+   "file": "earth_add_t2",
+   "sha256": "d95a27ab7db17ec681cfbd35cbe8a90e0ef8eced89b7011b219422bf3c7467ac",
+   "name": "affix.earth_add.t2",
+   "Kind": 0,
+   "Group": "earth_add",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon",
+    "Ring",
+    "Amulet",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "EarthDamage|Flat|5|8"
+   ]
+  },
+  {
+   "id": "affix.earth_add.t3",
+   "file": "earth_add_t3",
+   "sha256": "d77762807069bee09fd96c36cd4fa75cd90aa7aa038f7434a932e41008a27d3a",
+   "name": "affix.earth_add.t3",
+   "Kind": 0,
+   "Group": "earth_add",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon",
+    "Ring",
+    "Amulet",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "EarthDamage|Flat|9|14"
+   ]
+  },
+  {
+   "id": "affix.earth_pct.t1",
+   "file": "earth_pct_t1",
+   "sha256": "c0552d8eca201dbd9225f6a5ffb96357c8d1df6567ee22cf9a33757f1b23e338",
+   "name": "affix.earth_pct.t1",
+   "Kind": 0,
+   "Group": "earth_pct",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet",
+    "Ring",
+    "Head",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "EarthDamage|PercentAdditive|0.08|0.12"
+   ]
+  },
+  {
+   "id": "affix.earth_pct.t2",
+   "file": "earth_pct_t2",
+   "sha256": "fdee32a637c3cf6465638bdee649bd5d9c53230c0967ec8cd5808d5e0736e191",
+   "name": "affix.earth_pct.t2",
+   "Kind": 0,
+   "Group": "earth_pct",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet",
+    "Ring",
+    "Head",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "EarthDamage|PercentAdditive|0.13|0.18"
+   ]
+  },
+  {
+   "id": "affix.earth_pct.t3",
+   "file": "earth_pct_t3",
+   "sha256": "3e94b0ac896bc9487ec44746f8d6e7a24a85304aedd0c5086b2a433bd7313596",
+   "name": "affix.earth_pct.t3",
+   "Kind": 0,
+   "Group": "earth_pct",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet",
+    "Ring",
+    "Head",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "EarthDamage|PercentAdditive|0.19|0.26"
+   ]
+  },
+  {
+   "id": "affix.earth_res.t1",
+   "file": "earth_res_t1",
+   "sha256": "e692493184b7bf7d3ba1a9b09763db0a1fd7f9904190fc1887946204b1b98dee",
+   "name": "Skały",
+   "Kind": 1,
+   "Group": "earth_res",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "EarthResistance|Flat|0.06|0.1"
+   ]
+  },
+  {
+   "id": "affix.earth_res.t2",
+   "file": "earth_res_t2",
+   "sha256": "9a381cafd15a6fa778b593f9a0d76cb383733742eedaffd51f2b0c067e0a57a6",
+   "name": "Góry",
+   "Kind": 1,
+   "Group": "earth_res",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "EarthResistance|Flat|0.11|0.16"
+   ]
+  },
+  {
+   "id": "affix.earth_res.t3",
+   "file": "earth_res_t3",
+   "sha256": "fc2e6b1aa53d8a03212ec74a39030221a65d5619e6779d209172b7200fb50b0e",
+   "name": "Tytana",
+   "Kind": 1,
+   "Group": "earth_res",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "EarthResistance|Flat|0.17|0.24"
+   ]
+  },
+  {
+   "id": "affix.evasion.t1",
+   "file": "evasion_t1",
+   "sha256": "26fa852ad3f27f6cd7bbb3b39a2fa4f48c6aa098efe2bedaabdb89d2572eb868",
+   "name": "affix.evasion.t1",
+   "Kind": 0,
+   "Group": "evasion",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.8,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "Evasion|Flat|0.02|0.03"
+   ]
+  },
+  {
+   "id": "affix.evasion.t2",
+   "file": "evasion_t2",
+   "sha256": "0093bd6c1fdcb2d6ed45716815b34145f1f3ae8841f76ee4611131b0b4e18f00",
+   "name": "affix.evasion.t2",
+   "Kind": 0,
+   "Group": "evasion",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.8,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "Evasion|Flat|0.035|0.05"
+   ]
+  },
+  {
+   "id": "affix.evasion.t3",
+   "file": "evasion_t3",
+   "sha256": "b1ee347bb0b93d1b4c828d964234e9da546bbfc9d772934c9b2986e418b5afc8",
+   "name": "affix.evasion.t3",
+   "Kind": 0,
+   "Group": "evasion",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.8,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "Evasion|Flat|0.055|0.07"
+   ]
+  },
+  {
+   "id": "affix.execute.t1",
+   "file": "execute_t1",
+   "sha256": "0fe7ac636e8f9707c50921c89bd9158e06c79ebd8dcf1880c290f90b9597eec2",
+   "name": "affix.execute.t1",
+   "Kind": 0,
+   "Group": "execute",
+   "Tier": 1,
+   "MinWave": 4,
+   "Weight": 0.5,
+   "Categories": [
+    "Weapon"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "ExecuteDamage|PercentAdditive|0.15|0.25"
+   ]
+  },
+  {
+   "id": "affix.execute.t2",
+   "file": "execute_t2",
+   "sha256": "16cb046163037c80d29564aeb5ae9c8913368999f21a1b4a70d4127fccf07684",
+   "name": "affix.execute.t2",
+   "Kind": 0,
+   "Group": "execute",
+   "Tier": 2,
+   "MinWave": 14,
+   "Weight": 0.5,
+   "Categories": [
+    "Weapon"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "ExecuteDamage|PercentAdditive|0.26|0.4"
+   ]
+  },
+  {
+   "id": "affix.fire_add.t1",
+   "file": "fire_add_t1",
+   "sha256": "b8e5e2acab7fb65e2ed90511c6962ec1b4673e24a92a2e113239eefd49e5fd4a",
+   "name": "affix.fire_add.t1",
+   "Kind": 0,
+   "Group": "fire_add",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon",
+    "Ring",
+    "Amulet",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "FireDamage|Flat|2|4"
+   ]
+  },
+  {
+   "id": "affix.fire_add.t2",
+   "file": "fire_add_t2",
+   "sha256": "09de7cfbcd1adb0aad614ecbc21fe32a96cff3efb94d57d270eba3f16a6b867e",
+   "name": "affix.fire_add.t2",
+   "Kind": 0,
+   "Group": "fire_add",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon",
+    "Ring",
+    "Amulet",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "FireDamage|Flat|5|8"
+   ]
+  },
+  {
+   "id": "affix.fire_add.t3",
+   "file": "fire_add_t3",
+   "sha256": "fce6f478c3d11620eb3d6ff84bf8d1779bff941c22f03af7da5e68ac07e91301",
+   "name": "affix.fire_add.t3",
+   "Kind": 0,
+   "Group": "fire_add",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon",
+    "Ring",
+    "Amulet",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "FireDamage|Flat|9|14"
+   ]
+  },
+  {
+   "id": "affix.fire_pct.t1",
+   "file": "fire_pct_t1",
+   "sha256": "b5ca7a679f7196f6c83bc3ecb4740ae5d6cc05b32bbd78b87af29b1dc204133e",
+   "name": "affix.fire_pct.t1",
+   "Kind": 0,
+   "Group": "fire_pct",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet",
+    "Ring",
+    "Head",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "FireDamage|PercentAdditive|0.08|0.12"
+   ]
+  },
+  {
+   "id": "affix.fire_pct.t2",
+   "file": "fire_pct_t2",
+   "sha256": "4453c78cb28db821141396070dc0bf603c362b80946799277b11119d0d3e5b20",
+   "name": "affix.fire_pct.t2",
+   "Kind": 0,
+   "Group": "fire_pct",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet",
+    "Ring",
+    "Head",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "FireDamage|PercentAdditive|0.13|0.18"
+   ]
+  },
+  {
+   "id": "affix.fire_pct.t3",
+   "file": "fire_pct_t3",
+   "sha256": "100a01067d0d3a20068b1f45aa20cf84778ef4a985f15e6251aaa4fb94ae66dd",
+   "name": "affix.fire_pct.t3",
+   "Kind": 0,
+   "Group": "fire_pct",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet",
+    "Ring",
+    "Head",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "FireDamage|PercentAdditive|0.19|0.26"
+   ]
+  },
+  {
+   "id": "affix.fire_res.t1",
+   "file": "fire_res_t1",
+   "sha256": "8d3c18508e09226bbf8d07584e702cd861e0e0fa106a30861f51afc9d27841d6",
+   "name": "Popiołu",
+   "Kind": 1,
+   "Group": "fire_res",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "FireResistance|Flat|0.06|0.1"
+   ]
+  },
+  {
+   "id": "affix.fire_res.t2",
+   "file": "fire_res_t2",
+   "sha256": "224b24433181a0d74a692cb26c1919373afe96921c06dc8a27715791444ea831",
+   "name": "Salamandry",
+   "Kind": 1,
+   "Group": "fire_res",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "FireResistance|Flat|0.11|0.16"
+   ]
+  },
+  {
+   "id": "affix.fire_res.t3",
+   "file": "fire_res_t3",
+   "sha256": "46b1723f06c584d749264a732b622e87258b7524bb1089a144a94c53552dacfb",
+   "name": "Feniksa",
+   "Kind": 1,
+   "Group": "fire_res",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "FireResistance|Flat|0.17|0.24"
+   ]
+  },
+  {
+   "id": "affix.global_pct.t1",
+   "file": "global_pct_t1",
+   "sha256": "57157785c9fa668e16d547ec9ed4175790f5737d716525e2fca38376d6e7f9b9",
+   "name": "affix.global_pct.t1",
+   "Kind": 0,
+   "Group": "global_pct",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "GlobalDamage|PercentAdditive|0.05|0.08"
+   ]
+  },
+  {
+   "id": "affix.global_pct.t2",
+   "file": "global_pct_t2",
+   "sha256": "e3ba7692f7e0a0fceec5837e9801646fdca2c359c7c6b48819f12eebd518bd71",
+   "name": "affix.global_pct.t2",
+   "Kind": 0,
+   "Group": "global_pct",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "GlobalDamage|PercentAdditive|0.09|0.13"
+   ]
+  },
+  {
+   "id": "affix.global_pct.t3",
+   "file": "global_pct_t3",
+   "sha256": "c61de812a7d41ec52e6c42880a9db0ed2e3cd06fdfc1b71a64be0fc137e1e283",
+   "name": "affix.global_pct.t3",
+   "Kind": 0,
+   "Group": "global_pct",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "GlobalDamage|PercentAdditive|0.14|0.19"
+   ]
+  },
+  {
+   "id": "affix.health_pct.t1",
+   "file": "health_pct_t1",
+   "sha256": "9e4e39236019686a09dd56f0cfe0a560bf1e6ed4403523673891b4a775a03446",
+   "name": "Niedźwiedzia",
+   "Kind": 1,
+   "Group": "health_pct",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.8,
+   "Categories": [
+    "Body",
+    "Head",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MaxHealth|PercentAdditive|0.04|0.06"
+   ]
+  },
+  {
+   "id": "affix.health_pct.t2",
+   "file": "health_pct_t2",
+   "sha256": "7bbfe85f6d8797b9588d5d4a4a35f7e17f5131cefdfcd333dbb5b2f768c0e9c8",
+   "name": "Tura",
+   "Kind": 1,
+   "Group": "health_pct",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.8,
+   "Categories": [
+    "Body",
+    "Head",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MaxHealth|PercentAdditive|0.07|0.1"
+   ]
+  },
+  {
+   "id": "affix.health_pct.t3",
+   "file": "health_pct_t3",
+   "sha256": "60724a8cff7d42f9e021b6d2e6591a16a440c9d66e4034973d896b07685f0693",
+   "name": "Smoka",
+   "Kind": 1,
+   "Group": "health_pct",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.8,
+   "Categories": [
+    "Body",
+    "Head",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MaxHealth|PercentAdditive|0.11|0.15"
+   ]
+  },
+  {
+   "id": "affix.health.t1",
+   "file": "health_t1",
+   "sha256": "d0610d02fdef9968d635e4377bbaeb7a3ae7d416a495b0a7232a411d6d508f32",
+   "name": "affix.health.t1",
+   "Kind": 0,
+   "Group": "health",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MaxHealth|Flat|8|14"
+   ]
+  },
+  {
+   "id": "affix.health.t2",
+   "file": "health_t2",
+   "sha256": "cc1ce40a8cc83dc4ec1ae9c21b00ca1c29007d9be28a5efa30af308857619142",
+   "name": "affix.health.t2",
+   "Kind": 0,
+   "Group": "health",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MaxHealth|Flat|15|24"
+   ]
+  },
+  {
+   "id": "affix.health.t3",
+   "file": "health_t3",
+   "sha256": "d45f0298e591d02d2f4f884bc93d8eb0b6cb38230ba74d129227bdd1cd8e2aba",
+   "name": "affix.health.t3",
+   "Kind": 0,
+   "Group": "health",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MaxHealth|Flat|25|40"
+   ]
+  },
+  {
+   "id": "affix.knockback.t1",
+   "file": "knockback_t1",
+   "sha256": "3970ddeed8b66662af5e17d3f08c9924007aefd74e25072ddf8ae576b47092b2",
+   "name": "Taranu",
+   "Kind": 1,
+   "Group": "knockback",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.6,
+   "Categories": [
+    "Weapon"
+   ],
+   "RequiredTags": [
+    "melee"
+   ],
+   "Ranges": [
+    "Knockback|Flat|0.3|0.5"
+   ]
+  },
+  {
+   "id": "affix.knockback.t2",
+   "file": "knockback_t2",
+   "sha256": "ff592c0c2ead9c40fa88a7051e87db27125e1536669e53e2f6680fd7d53f5969",
+   "name": "Lawiny",
+   "Kind": 1,
+   "Group": "knockback",
+   "Tier": 2,
+   "MinWave": 10,
+   "Weight": 0.6,
+   "Categories": [
+    "Weapon"
+   ],
+   "RequiredTags": [
+    "melee"
+   ],
+   "Ranges": [
+    "Knockback|Flat|0.6|0.9"
+   ]
+  },
+  {
+   "id": "affix.leech.t1",
+   "file": "leech_t1",
+   "sha256": "eafa574ce9bb41f738b61312d935e158533370512d68d0da31649c173dac04e0",
+   "name": "affix.leech.t1",
+   "Kind": 0,
+   "Group": "leech",
+   "Tier": 1,
+   "MinWave": 4,
+   "Weight": 0.5,
+   "Categories": [
+    "Weapon",
+    "Ring",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "LifeLeech|Flat|0.01|0.02"
+   ]
+  },
+  {
+   "id": "affix.leech.t2",
+   "file": "leech_t2",
+   "sha256": "9896ec7fcc3fe6bb7f16d9a52d012c31bfaf1dc48991d8d4dd325370e0949f30",
+   "name": "affix.leech.t2",
+   "Kind": 0,
+   "Group": "leech",
+   "Tier": 2,
+   "MinWave": 14,
+   "Weight": 0.5,
+   "Categories": [
+    "Weapon",
+    "Ring",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "LifeLeech|Flat|0.025|0.035"
+   ]
+  },
+  {
+   "id": "affix.life_on_kill.t1",
+   "file": "life_on_kill_t1",
+   "sha256": "020f064a405c4aca1a1385888d6d6b222c8dc7e42ed842d06f8d2b83d6be3220",
+   "name": "Rzeźnika",
+   "Kind": 1,
+   "Group": "life_on_kill",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon",
+    "Hands",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "LifeOnKill|Flat|1|2"
+   ]
+  },
+  {
+   "id": "affix.life_on_kill.t2",
+   "file": "life_on_kill_t2",
+   "sha256": "9a23546dc962df0cba7491308fdd9007eb1816bcc034abafed73538b6d160614",
+   "name": "Kata",
+   "Kind": 1,
+   "Group": "life_on_kill",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon",
+    "Hands",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "LifeOnKill|Flat|3|4"
+   ]
+  },
+  {
+   "id": "affix.life_on_kill.t3",
+   "file": "life_on_kill_t3",
+   "sha256": "18e95b8fe75c0f7765aa6cac790563087d4a1024594bf07218564ea815b1134e",
+   "name": "Żniwiarza",
+   "Kind": 1,
+   "Group": "life_on_kill",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon",
+    "Hands",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "LifeOnKill|Flat|5|7"
+   ]
+  },
+  {
+   "id": "affix.load.t1",
+   "file": "load_t1",
+   "sha256": "eba6c2a0e2d2adb9236b278c84b7a2565b2bb1d23fb3e2d1bea3fceaff4bd0a7",
+   "name": "Tragarza",
+   "Kind": 1,
+   "Group": "load",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.7,
+   "Categories": [
+    "Body",
+    "Feet",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "EquipLoad|Flat|3|5"
+   ]
+  },
+  {
+   "id": "affix.load.t2",
+   "file": "load_t2",
+   "sha256": "e59a553bce803d90a4f9e998ba209894a6348e66ab580be636518abfb1188b20",
+   "name": "Mułu",
+   "Kind": 1,
+   "Group": "load",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.7,
+   "Categories": [
+    "Body",
+    "Feet",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "EquipLoad|Flat|6|9"
+   ]
+  },
+  {
+   "id": "affix.load.t3",
+   "file": "load_t3",
+   "sha256": "2bf64bf02f1c74ee1e14f24cbd4e2a5c9133a322b07a622ca88b98a6ff30cefc",
+   "name": "Atlasa",
+   "Kind": 1,
+   "Group": "load",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.7,
+   "Categories": [
+    "Body",
+    "Feet",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "EquipLoad|Flat|10|14"
+   ]
+  },
+  {
+   "id": "affix.mana_on_kill.t1",
+   "file": "mana_on_kill_t1",
+   "sha256": "3e61f7905381550540c68c505b2a0027517c42416586497fbe7c2f88496ebc5d",
+   "name": "Pijawki",
+   "Kind": 1,
+   "Group": "mana_on_kill",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.6,
+   "Categories": [
+    "Weapon",
+    "Ring",
+    "Head"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "ManaOnKill|Flat|1|2"
+   ]
+  },
+  {
+   "id": "affix.mana_on_kill.t2",
+   "file": "mana_on_kill_t2",
+   "sha256": "dc33a42dc6003139c0c80fe68ec6794dd1834f0f1fa156111d5b21ea76881823",
+   "name": "Upiora",
+   "Kind": 1,
+   "Group": "mana_on_kill",
+   "Tier": 2,
+   "MinWave": 10,
+   "Weight": 0.6,
+   "Categories": [
+    "Weapon",
+    "Ring",
+    "Head"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "ManaOnKill|Flat|3|5"
+   ]
+  },
+  {
+   "id": "affix.mana_regen.t1",
+   "file": "mana_regen_t1",
+   "sha256": "94d031198a8f8485101242ae0a3ce673d612ad53f1a2ce38e85898f94cf5876a",
+   "name": "Medytacji",
+   "Kind": 1,
+   "Group": "mana_regen",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.7,
+   "Categories": [
+    "Head",
+    "Body",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "ManaRegen|Flat|0.5|1"
+   ]
+  },
+  {
+   "id": "affix.mana_regen.t2",
+   "file": "mana_regen_t2",
+   "sha256": "e7092e7f7daf73c06146a92dd7b9ae5b0f20b143cfc9fd5aeb7a144189e02b3d",
+   "name": "Kontemplacji",
+   "Kind": 1,
+   "Group": "mana_regen",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.7,
+   "Categories": [
+    "Head",
+    "Body",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "ManaRegen|Flat|1.1|2"
+   ]
+  },
+  {
+   "id": "affix.mana_regen.t3",
+   "file": "mana_regen_t3",
+   "sha256": "8b0895b7d9ed361e30c14da8426fc6fe0c76b6652592a0b3f18e8257fe345a4f",
+   "name": "Ascety",
+   "Kind": 1,
+   "Group": "mana_regen",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.7,
+   "Categories": [
+    "Head",
+    "Body",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "ManaRegen|Flat|2.1|3"
+   ]
+  },
+  {
+   "id": "affix.mana.t1",
+   "file": "mana_t1",
+   "sha256": "aae32497ebf72cc0d913cb723885e6328ba6ad01623c8a91e1fc51e33cf32028",
+   "name": "affix.mana.t1",
+   "Kind": 0,
+   "Group": "mana",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.7,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MaxMana|Flat|10|16"
+   ]
+  },
+  {
+   "id": "affix.mana.t2",
+   "file": "mana_t2",
+   "sha256": "f01a0c04123f1ce50457b202d7f170cc25915f52e37aa4604e12d0237eefde74",
+   "name": "affix.mana.t2",
+   "Kind": 0,
+   "Group": "mana",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.7,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MaxMana|Flat|17|26"
+   ]
+  },
+  {
+   "id": "affix.mana.t3",
+   "file": "mana_t3",
+   "sha256": "7fcdda66477e5d13fed8909af2b805bb14db9485cdc1337473b30c9283d1bfe1",
+   "name": "affix.mana.t3",
+   "Kind": 0,
+   "Group": "mana",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.7,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MaxMana|Flat|27|40"
+   ]
+  },
+  {
+   "id": "affix.melee_range.t1",
+   "file": "melee_range_t1",
+   "sha256": "c16eb2a13ac37959f81f1a44ffbca510a4a2153ef607909af21dbf60de6d4746",
+   "name": "Zasięgu",
+   "Kind": 1,
+   "Group": "melee_range",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon"
+   ],
+   "RequiredTags": [
+    "melee"
+   ],
+   "Ranges": [
+    "MeleeRange|PercentAdditive|0.06|0.1"
+   ]
+  },
+  {
+   "id": "affix.melee_range.t2",
+   "file": "melee_range_t2",
+   "sha256": "f242b1d1d06df05064d8801a308075cb1c9f701812639042ffa55e7565a3bbe9",
+   "name": "Długiego Ramienia",
+   "Kind": 1,
+   "Group": "melee_range",
+   "Tier": 2,
+   "MinWave": 10,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon"
+   ],
+   "RequiredTags": [
+    "melee"
+   ],
+   "Ranges": [
+    "MeleeRange|PercentAdditive|0.11|0.16"
+   ]
+  },
+  {
+   "id": "affix.move.t1",
+   "file": "move_t1",
+   "sha256": "1daf03a5c2b6dff4046d51690ca5671a0dc5013d0df7f9b575fa0d0f7a1dd6ec",
+   "name": "Wędrowca",
+   "Kind": 1,
+   "Group": "move",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 1.2,
+   "Categories": [
+    "Feet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MoveSpeed|PercentAdditive|0.03|0.05"
+   ]
+  },
+  {
+   "id": "affix.move.t2",
+   "file": "move_t2",
+   "sha256": "57176407829e1cd494a03843b917dc9bae96873c3cc462de5a5a03dc38547103",
+   "name": "Gończego",
+   "Kind": 1,
+   "Group": "move",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 1.2,
+   "Categories": [
+    "Feet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MoveSpeed|PercentAdditive|0.06|0.08"
+   ]
+  },
+  {
+   "id": "affix.move.t3",
+   "file": "move_t3",
+   "sha256": "b1ac0c32542a96a888ae2f07b0224aeb72acd7c0cea7026692ab817a5902509c",
+   "name": "Wiatru",
+   "Kind": 1,
+   "Group": "move",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 1.2,
+   "Categories": [
+    "Feet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MoveSpeed|PercentAdditive|0.09|0.12"
+   ]
+  },
+  {
+   "id": "affix.phys_add.t1",
+   "file": "phys_add_t1",
+   "sha256": "8ac950e97f2ed2a0aacfeee33f26cb252611fc4f36c18c4df97b3a828f2045f4",
+   "name": "affix.phys_add.t1",
+   "Kind": 0,
+   "Group": "phys_add",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 1,
+   "Categories": [
+    "Weapon",
+    "Hands",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "PhysicalDamage|Flat|2|4"
+   ]
+  },
+  {
+   "id": "affix.phys_add.t2",
+   "file": "phys_add_t2",
+   "sha256": "17d44fec0e6b094fdfb6eb2d0a508628607486ef52814afac3e79abfd0dc48f8",
+   "name": "affix.phys_add.t2",
+   "Kind": 0,
+   "Group": "phys_add",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 1,
+   "Categories": [
+    "Weapon",
+    "Hands",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "PhysicalDamage|Flat|5|8"
+   ]
+  },
+  {
+   "id": "affix.phys_add.t3",
+   "file": "phys_add_t3",
+   "sha256": "27697cb804aa2186b8053874146e51bd35af41486eee1cae22f2c59b4612d911",
+   "name": "affix.phys_add.t3",
+   "Kind": 0,
+   "Group": "phys_add",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 1,
+   "Categories": [
+    "Weapon",
+    "Hands",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "PhysicalDamage|Flat|9|14"
+   ]
+  },
+  {
+   "id": "affix.phys_pct.t1",
+   "file": "phys_pct_t1",
+   "sha256": "419fd409ac2d64348f2eb413d9874ef643bfd5dde3decc401350143f170138ff",
+   "name": "affix.phys_pct.t1",
+   "Kind": 0,
+   "Group": "phys_pct",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 1,
+   "Categories": [
+    "Weapon",
+    "Hands",
+    "Ring",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "PhysicalDamage|PercentAdditive|0.06|0.1"
+   ]
+  },
+  {
+   "id": "affix.phys_pct.t2",
+   "file": "phys_pct_t2",
+   "sha256": "aa32a962ff49f4d6ed5fcb4f02eda516de03241b1ccd7c463c1e875ac3ff06f3",
+   "name": "affix.phys_pct.t2",
+   "Kind": 0,
+   "Group": "phys_pct",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 1,
+   "Categories": [
+    "Weapon",
+    "Hands",
+    "Ring",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "PhysicalDamage|PercentAdditive|0.11|0.16"
+   ]
+  },
+  {
+   "id": "affix.phys_pct.t3",
+   "file": "phys_pct_t3",
+   "sha256": "b0f2362baea6dbb9da3dc80727a0ea10b398cdeadabd3afc049bf3deb91b6dd5",
+   "name": "affix.phys_pct.t3",
+   "Kind": 0,
+   "Group": "phys_pct",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 1,
+   "Categories": [
+    "Weapon",
+    "Hands",
+    "Ring",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "PhysicalDamage|PercentAdditive|0.17|0.24"
+   ]
+  },
+  {
+   "id": "affix.phys_pen.t1",
+   "file": "phys_pen_t1",
+   "sha256": "d49efa62fbd13cebd158ba8e7e2a62b4856e1475698039baab904609f46ca318",
+   "name": "affix.phys_pen.t1",
+   "Kind": 0,
+   "Group": "phys_pen",
+   "Tier": 1,
+   "MinWave": 3,
+   "Weight": 0.6,
+   "Categories": [
+    "Weapon"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "PhysicalPenetration|Flat|0.04|0.06"
+   ]
+  },
+  {
+   "id": "affix.phys_pen.t2",
+   "file": "phys_pen_t2",
+   "sha256": "9595178b7154a0263e37899beb24e20e107b8f94e20cd835fb0bc72649177f16",
+   "name": "affix.phys_pen.t2",
+   "Kind": 0,
+   "Group": "phys_pen",
+   "Tier": 2,
+   "MinWave": 10,
+   "Weight": 0.6,
+   "Categories": [
+    "Weapon"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "PhysicalPenetration|Flat|0.07|0.1"
+   ]
+  },
+  {
+   "id": "affix.phys_pen.t3",
+   "file": "phys_pen_t3",
+   "sha256": "c2e5faae20abb05ec07cb97b5ce83c3636298510fe63acfdbbb5834583152895",
+   "name": "affix.phys_pen.t3",
+   "Kind": 0,
+   "Group": "phys_pen",
+   "Tier": 3,
+   "MinWave": 18,
+   "Weight": 0.6,
+   "Categories": [
+    "Weapon"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "PhysicalPenetration|Flat|0.11|0.15"
+   ]
+  },
+  {
+   "id": "affix.phys_res.t1",
+   "file": "phys_res_t1",
+   "sha256": "169d55f30c42cb4ac8dda914b5ea883446f9f6e5443d6970cd9f2b9946779b5c",
+   "name": "Tarczy",
+   "Kind": 1,
+   "Group": "phys_res",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.8,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Offhand",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "PhysicalResistance|Flat|0.03|0.05"
+   ]
+  },
+  {
+   "id": "affix.phys_res.t2",
+   "file": "phys_res_t2",
+   "sha256": "7e6617a193d8deedb2b39c1685af31cc494532fdf1beb5b13dd284f04bf6fa7c",
+   "name": "Bastionu",
+   "Kind": 1,
+   "Group": "phys_res",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.8,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Offhand",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "PhysicalResistance|Flat|0.06|0.08"
+   ]
+  },
+  {
+   "id": "affix.phys_res.t3",
+   "file": "phys_res_t3",
+   "sha256": "2f0195593603ce0dbbe133320aa9177396901a895519beb3775969146a5da2c9",
+   "name": "Twierdzy",
+   "Kind": 1,
+   "Group": "phys_res",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.8,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Offhand",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "PhysicalResistance|Flat|0.09|0.12"
+   ]
+  },
+  {
+   "id": "affix.pierce.t1",
+   "file": "pierce_t1",
+   "sha256": "59f038249fd688f46f92a6368143527715710ded3eb4a82091cb0db796d28cb9",
+   "name": "Przeszycia",
+   "Kind": 1,
+   "Group": "pierce",
+   "Tier": 1,
+   "MinWave": 6,
+   "Weight": 0.4,
+   "Categories": [
+    "Weapon"
+   ],
+   "RequiredTags": [
+    "projectile"
+   ],
+   "Ranges": [
+    "ProjectilePierce|Flat|1|1"
+   ]
+  },
+  {
+   "id": "affix.proj_speed.t1",
+   "file": "proj_speed_t1",
+   "sha256": "232d16b66657f75198eb44e08740c9e92a5763151cfcfaef6b2a1bd1d425e0e4",
+   "name": "Jastrzębia",
+   "Kind": 1,
+   "Group": "proj_speed",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon"
+   ],
+   "RequiredTags": [
+    "projectile"
+   ],
+   "Ranges": [
+    "ProjectileSpeed|PercentAdditive|0.08|0.12"
+   ]
+  },
+  {
+   "id": "affix.proj_speed.t2",
+   "file": "proj_speed_t2",
+   "sha256": "e518bdefad0d4658ebb1ae3b44cbe6b66e4e106ff1a3eab482ef237ae88b6f67",
+   "name": "Błyskawicy",
+   "Kind": 1,
+   "Group": "proj_speed",
+   "Tier": 2,
+   "MinWave": 10,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon"
+   ],
+   "RequiredTags": [
+    "projectile"
+   ],
+   "Ranges": [
+    "ProjectileSpeed|PercentAdditive|0.13|0.2"
+   ]
+  },
+  {
+   "id": "affix.reduction.t1",
+   "file": "reduction_t1",
+   "sha256": "e3c46dcda39f5f5e286a1178b7aad8368caac0504eaddf00707d009d9580bf62",
+   "name": "affix.reduction.t1",
+   "Kind": 0,
+   "Group": "reduction",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.8,
+   "Categories": [
+    "Head",
+    "Body",
+    "Offhand"
+   ],
+   "RequiredTags": [
+    "heavy",
+    "medium",
+    "shield"
+   ],
+   "Ranges": [
+    "DamageReduction|Flat|0.02|0.03"
+   ]
+  },
+  {
+   "id": "affix.reduction.t2",
+   "file": "reduction_t2",
+   "sha256": "1c3d9f704e2694c5e6da61e6d3a564f5831762615e7864e6af51e01f6ce8ca00",
+   "name": "affix.reduction.t2",
+   "Kind": 0,
+   "Group": "reduction",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.8,
+   "Categories": [
+    "Head",
+    "Body",
+    "Offhand"
+   ],
+   "RequiredTags": [
+    "heavy",
+    "medium",
+    "shield"
+   ],
+   "Ranges": [
+    "DamageReduction|Flat|0.035|0.05"
+   ]
+  },
+  {
+   "id": "affix.reduction.t3",
+   "file": "reduction_t3",
+   "sha256": "2655c1e6497ec9a2e428497e48dd5864408366e81bb50362f63f8349c9f0e509",
+   "name": "affix.reduction.t3",
+   "Kind": 0,
+   "Group": "reduction",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.8,
+   "Categories": [
+    "Head",
+    "Body",
+    "Offhand"
+   ],
+   "RequiredTags": [
+    "heavy",
+    "medium",
+    "shield"
+   ],
+   "Ranges": [
+    "DamageReduction|Flat|0.055|0.07"
+   ]
+  },
+  {
+   "id": "affix.regen.t1",
+   "file": "regen_t1",
+   "sha256": "31dfe94c2b21c19f0585f6bb4021db93629d1924fa7f8cb856021a092d2ec932",
+   "name": "Odnowy",
+   "Kind": 1,
+   "Group": "regen",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.9,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "HealthRegen|Flat|0.4|0.8"
+   ]
+  },
+  {
+   "id": "affix.regen.t2",
+   "file": "regen_t2",
+   "sha256": "23b2c5d84dbfcfc2f3434a2b95a983ff87d9d05c21ca589d36e29176258bd476",
+   "name": "Regeneracji",
+   "Kind": 1,
+   "Group": "regen",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.9,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "HealthRegen|Flat|0.9|1.5"
+   ]
+  },
+  {
+   "id": "affix.regen.t3",
+   "file": "regen_t3",
+   "sha256": "e898e12ddd323c841409ed7e6e1d430a0bbf08c5654b06da950c0f65325bdebf",
+   "name": "Trolla",
+   "Kind": 1,
+   "Group": "regen",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.9,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "HealthRegen|Flat|1.6|2.5"
+   ]
+  },
+  {
+   "id": "affix.soul.t1",
+   "file": "soul_t1",
+   "sha256": "c0ce85cae4b774b2862945578332e8f3322311cf58ea6688b23a00248946848c",
+   "name": "Chciwości",
+   "Kind": 1,
+   "Group": "soul",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.6,
+   "Categories": [
+    "Amulet",
+    "Ring",
+    "Head"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "SoulGain|PercentAdditive|0.05|0.08"
+   ]
+  },
+  {
+   "id": "affix.soul.t2",
+   "file": "soul_t2",
+   "sha256": "9f9ea0dd74892005363853c457907c13bacac75538670f097ceccece99bab688",
+   "name": "Skąpca",
+   "Kind": 1,
+   "Group": "soul",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.6,
+   "Categories": [
+    "Amulet",
+    "Ring",
+    "Head"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "SoulGain|PercentAdditive|0.09|0.13"
+   ]
+  },
+  {
+   "id": "affix.soul.t3",
+   "file": "soul_t3",
+   "sha256": "b25e071d67757edc3d810b85d1fc650377be42403f5912ab0b38dfc869e2c825",
+   "name": "Mamony",
+   "Kind": 1,
+   "Group": "soul",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.6,
+   "Categories": [
+    "Amulet",
+    "Ring",
+    "Head"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "SoulGain|PercentAdditive|0.14|0.2"
+   ]
+  },
+  {
+   "id": "affix.spell_pct.t1",
+   "file": "spell_pct_t1",
+   "sha256": "68eb9981587a178981d9c8404533dcb1121f5e7b1464e673e9e5c7ce64874d22",
+   "name": "affix.spell_pct.t1",
+   "Kind": 0,
+   "Group": "spell_pct",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 1,
+   "Categories": [
+    "Weapon",
+    "Offhand"
+   ],
+   "RequiredTags": [
+    "spell"
+   ],
+   "Ranges": [
+    "SpellDamage|PercentAdditive|0.06|0.1"
+   ]
+  },
+  {
+   "id": "affix.spell_pct.t2",
+   "file": "spell_pct_t2",
+   "sha256": "b738e7131fd2bc942b71847550a2930b99d5916e30c2d153ca92614f18b639b2",
+   "name": "affix.spell_pct.t2",
+   "Kind": 0,
+   "Group": "spell_pct",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 1,
+   "Categories": [
+    "Weapon",
+    "Offhand"
+   ],
+   "RequiredTags": [
+    "spell"
+   ],
+   "Ranges": [
+    "SpellDamage|PercentAdditive|0.11|0.16"
+   ]
+  },
+  {
+   "id": "affix.spell_pct.t3",
+   "file": "spell_pct_t3",
+   "sha256": "4b21f987b903e107a429703c5b16ac8aa75d799e6cc908b32ca12e4027e5d656",
+   "name": "affix.spell_pct.t3",
+   "Kind": 0,
+   "Group": "spell_pct",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 1,
+   "Categories": [
+    "Weapon",
+    "Offhand"
+   ],
+   "RequiredTags": [
+    "spell"
+   ],
+   "Ranges": [
+    "SpellDamage|PercentAdditive|0.17|0.24"
+   ]
+  },
+  {
+   "id": "affix.spell_pct_v1.t1",
+   "file": "spell_pct_v1_t1",
+   "sha256": "15c9a16610f319b7683ba6fde8fbee4a0864ab0a3c010de912340a888de9929e",
+   "name": "affix.spell_pct_v1.t1",
+   "Kind": 0,
+   "Group": "spell_pct",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet"
+   ],
+   "RequiredTags": [
+    "robe"
+   ],
+   "Ranges": [
+    "SpellDamage|PercentAdditive|0.04|0.07"
+   ]
+  },
+  {
+   "id": "affix.spell_pct_v1.t2",
+   "file": "spell_pct_v1_t2",
+   "sha256": "b9d5bda4a28bba1002c03438922262215d1bda4459936b441722770c7802a44e",
+   "name": "affix.spell_pct_v1.t2",
+   "Kind": 0,
+   "Group": "spell_pct",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet"
+   ],
+   "RequiredTags": [
+    "robe"
+   ],
+   "Ranges": [
+    "SpellDamage|PercentAdditive|0.08|0.11"
+   ]
+  },
+  {
+   "id": "affix.spell_pct_v1.t3",
+   "file": "spell_pct_v1_t3",
+   "sha256": "ffa1f245124b17a619e8a7a3019d116da42747f2db3bdc287a30c0d6b6375491",
+   "name": "affix.spell_pct_v1.t3",
+   "Kind": 0,
+   "Group": "spell_pct",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet"
+   ],
+   "RequiredTags": [
+    "robe"
+   ],
+   "Ranges": [
+    "SpellDamage|PercentAdditive|0.12|0.16"
+   ]
+  },
+  {
+   "id": "affix.spell_pct_v2.t1",
+   "file": "spell_pct_v2_t1",
+   "sha256": "999930f985f5635a26c1feef3f0aa823ed0c068f60e6fc01489ad87a7916bdd1",
+   "name": "affix.spell_pct_v2.t1",
+   "Kind": 0,
+   "Group": "spell_pct",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.6,
+   "Categories": [
+    "Amulet",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "SpellDamage|PercentAdditive|0.04|0.07"
+   ]
+  },
+  {
+   "id": "affix.spell_pct_v2.t2",
+   "file": "spell_pct_v2_t2",
+   "sha256": "b59da8be317ceefd6b86f53472577a0cad96c8c01dfed58ffc38a1a3875aac83",
+   "name": "affix.spell_pct_v2.t2",
+   "Kind": 0,
+   "Group": "spell_pct",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.6,
+   "Categories": [
+    "Amulet",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "SpellDamage|PercentAdditive|0.08|0.11"
+   ]
+  },
+  {
+   "id": "affix.spell_pct_v2.t3",
+   "file": "spell_pct_v2_t3",
+   "sha256": "c9d1771f9a0af424ce3fb9c6de7c369cec27a0ffd250a7c50a9a55528ce23aea",
+   "name": "affix.spell_pct_v2.t3",
+   "Kind": 0,
+   "Group": "spell_pct",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.6,
+   "Categories": [
+    "Amulet",
+    "Ring"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "SpellDamage|PercentAdditive|0.12|0.16"
+   ]
+  },
+  {
+   "id": "affix.stamina_regen.t1",
+   "file": "stamina_regen_t1",
+   "sha256": "39f575a51dabfd6f225a8ff2353cd706748d989bdd637d69a41dc7864d501256",
+   "name": "Oddechu",
+   "Kind": 1,
+   "Group": "stamina_regen",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.7,
+   "Categories": [
+    "Feet",
+    "Body",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "StaminaRegen|PercentAdditive|0.08|0.12"
+   ]
+  },
+  {
+   "id": "affix.stamina_regen.t2",
+   "file": "stamina_regen_t2",
+   "sha256": "40a3e5013c648d01dfdd276d1cdd1221cf7151736882653726b8dd512a3e5bbf",
+   "name": "Wytrwałości",
+   "Kind": 1,
+   "Group": "stamina_regen",
+   "Tier": 2,
+   "MinWave": 10,
+   "Weight": 0.7,
+   "Categories": [
+    "Feet",
+    "Body",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "StaminaRegen|PercentAdditive|0.13|0.2"
+   ]
+  },
+  {
+   "id": "affix.stamina.t1",
+   "file": "stamina_t1",
+   "sha256": "76fd63091731391ed3a2f1f26c8e65990d19a5f0aaff10088f439018686a112c",
+   "name": "Biegacza",
+   "Kind": 1,
+   "Group": "stamina",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.8,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MaxStamina|Flat|8|12"
+   ]
+  },
+  {
+   "id": "affix.stamina.t2",
+   "file": "stamina_t2",
+   "sha256": "97599f5b3a2e312712175ea1987ef419ae539a9ccecefa47b698ff11412098e8",
+   "name": "Atlety",
+   "Kind": 1,
+   "Group": "stamina",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.8,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MaxStamina|Flat|13|20"
+   ]
+  },
+  {
+   "id": "affix.stamina.t3",
+   "file": "stamina_t3",
+   "sha256": "c821303eb19fa6c031ec5173ee801650d8f2e77d0b1fe545399f1041f1788de6",
+   "name": "Niezmordowania",
+   "Kind": 1,
+   "Group": "stamina",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.8,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MaxStamina|Flat|21|30"
+   ]
+  },
+  {
+   "id": "affix.water_add.t1",
+   "file": "water_add_t1",
+   "sha256": "37913fad562d8540f07860abe829ed9a3bcaab4701e33f97fae3e4a3ab766663",
+   "name": "affix.water_add.t1",
+   "Kind": 0,
+   "Group": "water_add",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon",
+    "Ring",
+    "Amulet",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "WaterDamage|Flat|2|4"
+   ]
+  },
+  {
+   "id": "affix.water_add.t2",
+   "file": "water_add_t2",
+   "sha256": "b58ea8e6159c005890662a37685eaf91dfd4fdbafd22cca69073e810d24c6f00",
+   "name": "affix.water_add.t2",
+   "Kind": 0,
+   "Group": "water_add",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon",
+    "Ring",
+    "Amulet",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "WaterDamage|Flat|5|8"
+   ]
+  },
+  {
+   "id": "affix.water_add.t3",
+   "file": "water_add_t3",
+   "sha256": "58923000e2ebb1efbd9dac6e80967f082952cbd29344b93d56a633373df64fcf",
+   "name": "affix.water_add.t3",
+   "Kind": 0,
+   "Group": "water_add",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.8,
+   "Categories": [
+    "Weapon",
+    "Ring",
+    "Amulet",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "WaterDamage|Flat|9|14"
+   ]
+  },
+  {
+   "id": "affix.water_pct.t1",
+   "file": "water_pct_t1",
+   "sha256": "48311dde4bec79092d57e3bf39c50f3d1ec93195123932126ca12764a95c2531",
+   "name": "affix.water_pct.t1",
+   "Kind": 0,
+   "Group": "water_pct",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet",
+    "Ring",
+    "Head",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "WaterDamage|PercentAdditive|0.08|0.12"
+   ]
+  },
+  {
+   "id": "affix.water_pct.t2",
+   "file": "water_pct_t2",
+   "sha256": "5e835950073b0a1fc87ac30a7ce0c92a8e8a5385918ad5091bee0869737d600f",
+   "name": "affix.water_pct.t2",
+   "Kind": 0,
+   "Group": "water_pct",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet",
+    "Ring",
+    "Head",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "WaterDamage|PercentAdditive|0.13|0.18"
+   ]
+  },
+  {
+   "id": "affix.water_pct.t3",
+   "file": "water_pct_t3",
+   "sha256": "098cb1130bfbc9a1d53c9c4f506203c4c238d0be2344d6c729091afbaefd5cda",
+   "name": "affix.water_pct.t3",
+   "Kind": 0,
+   "Group": "water_pct",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet",
+    "Ring",
+    "Head",
+    "Hands"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "WaterDamage|PercentAdditive|0.19|0.26"
+   ]
+  },
+  {
+   "id": "affix.water_res.t1",
+   "file": "water_res_t1",
+   "sha256": "42ffedc0b985a99b457f855d8344d729d09551a231015950336831c7e938befa",
+   "name": "Przypływu",
+   "Kind": 1,
+   "Group": "water_res",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "WaterResistance|Flat|0.06|0.1"
+   ]
+  },
+  {
+   "id": "affix.water_res.t2",
+   "file": "water_res_t2",
+   "sha256": "2d851b375206bfe21dfad25cc4ac3a6776996297d62e5081377cc4a5d1899b96",
+   "name": "Głębin",
+   "Kind": 1,
+   "Group": "water_res",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "WaterResistance|Flat|0.11|0.16"
+   ]
+  },
+  {
+   "id": "affix.water_res.t3",
+   "file": "water_res_t3",
+   "sha256": "b9027fe16d0afc8114b2d04ece137c38e86d4f2ec0b8258e319ce5ab83af4ccf",
+   "name": "Lewiatana",
+   "Kind": 1,
+   "Group": "water_res",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 1,
+   "Categories": [
+    "Head",
+    "Body",
+    "Hands",
+    "Feet",
+    "Amulet",
+    "Ring",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "WaterResistance|Flat|0.17|0.24"
+   ]
+  }
+ ]
+}

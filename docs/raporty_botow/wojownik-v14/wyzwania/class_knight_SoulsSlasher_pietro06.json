@@ -1,0 +1,142 @@
+{
+    "title": "Wojownik, piętro 6: VI. Pan Sfory (Gracz H&S / souls-like)",
+    "note": "Bot nie przeszedł piętra w 3 próbach (podejście 3); ostatni zabójca:  – .",
+    "created": "2026-10-28 14:56",
+    "classId": "class_knight",
+    "appearanceId": "",
+    "difficultyTier": 0,
+    "seed": 76237171,
+    "floorIndex": 5,
+    "floorsCleared": 5,
+    "souls": 54,
+    "ashEarned": 25,
+    "kills": 154,
+    "attributePoints": 0,
+    "toughness": 14,
+    "strength": 17,
+    "dexterity": 10,
+    "intelligence": 7,
+    "healthFlasks": 4,
+    "manaFlasks": 1,
+    "bonusHealthFlasks": 0,
+    "healthFraction": 1.0,
+    "manaFraction": 1.0,
+    "equipment": [
+        {
+            "id": "head_hood",
+            "level": 1,
+            "slot": 2
+        },
+        {
+            "id": "body_chainmail",
+            "level": 0,
+            "slot": 3
+        }
+    ],
+    "inventory": [
+        {
+            "id": "hu_greatsword",
+            "level": 1,
+            "slot": -1
+        },
+        {
+            "id": "hu_shield",
+            "level": 2,
+            "slot": -1
+        }
+    ],
+    "skills": [
+        {
+            "id": "hu_cleave",
+            "level": 2,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_cleave",
+            "level": 3,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_charge",
+            "level": 2,
+            "permanent": true,
+            "fromItem": false,
+            "slot": 2,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_rend",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_lunge",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_stomp",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": 1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_shieldbash",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_repel",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 0,
+            "form": "",
+            "supports": []
+        }
+    ],
+    "signature": {
+        "id": "hu_warcry",
+        "level": 1,
+        "permanent": true,
+        "fromItem": false,
+        "slot": -1,
+        "form": "",
+        "supports": []
+    },
+    "boons": [
+        {
+            "id": "talent_vigilance",
+            "count": 1
+        }
+    ],
+    "sealRanks": [],
+    "sealPouch": [
+        "seal.fan",
+        "seal.charges"
+    ]
+}

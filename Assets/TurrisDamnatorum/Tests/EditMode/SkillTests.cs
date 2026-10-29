@@ -169,8 +169,9 @@ namespace Turris.Tests
             Assert.IsNotNull(charge, "Odblokowana umiejętność jest w kolekcji od startu");
             Assert.IsTrue(charge.permanent);
 
-            new RewardOption { kind = RewardKind.LearnSpell, spell = Def("spell_nova") }.Apply(run1);
-            Assert.IsFalse(run1.FindSpell(Def("spell_nova")).permanent, "Nagroda między piętrami – tylko na to podejście");
+            run1.souls = 100000;
+            Assert.IsTrue(SoulShop.TryBuyOffer(Def("spell_nova"), run1, fx.Cfg.balance));
+            Assert.IsFalse(run1.FindSpell(Def("spell_nova")).permanent, "Skill ze sklepu dusz – tylko na to podejście");
 
             // Kolejne podejście (także po ponownym wczytaniu profilu): stała umiejętność jest, tymczasowej nie ma.
             var run2 = RunFactory.Create(new MetaService(fx.Cfg, storage).LastPlan(), fx.Cfg, 2);
@@ -196,12 +197,12 @@ namespace Turris.Tests
         }
 
         [Test]
-        public void RewardPool_OffersLockedSkillsTemporarily_AndRespectsEquipment()
+        public void ShopPool_OffersLockedSkillsTemporarily_AndRespectsEquipment()
         {
             var meta = new MetaService(fx.Cfg, new MemoryProfileStorage());
             var whirl = Def("skill_whirlwind");
-            Assert.IsFalse(meta.BuildRewardPools().spells.Contains(whirl), "Przed dotarciem na piętro 2 młynka nie ma w puli");
-            meta.RecordReachedFloor(1);
+            Assert.IsFalse(meta.BuildRewardPools().spells.Contains(whirl), "Przed dotarciem na piętro 10 młynka nie ma w puli");
+            meta.RecordReachedFloor(9);
             Assert.IsTrue(meta.BuildRewardPools().spells.Contains(whirl), "Nieodblokowany młynek można zdobyć na jedno podejście");
 
             var pools = meta.BuildRewardPools();
@@ -209,11 +210,13 @@ namespace Turris.Tests
             for (int seed = 0; seed < 300; seed++)
             {
                 var run = fx.NewRun("legacy_mage");
-                foreach (var o in RewardGenerator.Generate(run, BuildCalculator.Compute(run, fx.Cfg), pools, fx.Cfg, new System.Random(seed)))
-                    if (o.kind == RewardKind.LearnSpell) offered.Add(o.spell.id);
+                run.floorsCleared = 12;
+                foreach (var o in SoulShop.PickOffers(run, BuildCalculator.Compute(run, fx.Cfg), pools, new System.Random(seed), fx.Cfg.balance))
+                    offered.Add(o.id);
             }
             Assert.IsFalse(offered.Contains("skill_shieldbash"), "Mag bez tarczy nie dostaje uderzenia tarczą");
-            Assert.IsTrue(offered.Contains("skill_cleave"), "Techniki bronią są proponowane także magowi");
+            Assert.IsFalse(offered.Contains("skill_cleave"), "Rozpłatanie wymaga ostrza lub ciężkiej broni – mag z kosturem go nie dostaje");
+            Assert.IsTrue(offered.Contains("skill_charge"), "Techniki dla dowolnej broni są proponowane także magowi");
         }
 
         [Test]

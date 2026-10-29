@@ -1,0 +1,177 @@
+{
+    "title": "Piętro 14 · Kamienne Trzewia",
+    "note": "Wojownik · Tester QA · poległ 3× (podejście 20) · ostatni cios: Miotacz głazów",
+    "created": "2026-10-28 19:37",
+    "classId": "class_knight",
+    "appearanceId": "",
+    "difficultyTier": 0,
+    "seed": 93053421,
+    "floorIndex": 13,
+    "floorsCleared": 13,
+    "souls": 206,
+    "ashEarned": 144,
+    "kills": 437,
+    "attributePoints": 0,
+    "toughness": 15,
+    "strength": 18,
+    "dexterity": 13,
+    "intelligence": 10,
+    "healthFlasks": 6,
+    "manaFlasks": 2,
+    "bonusHealthFlasks": 1,
+    "healthFraction": 1.0,
+    "manaFraction": 1.0,
+    "equipment": [
+        {
+            "id": "hu_greatsword",
+            "level": 1,
+            "slot": 0
+        },
+        {
+            "id": "body_chainmail",
+            "level": 0,
+            "slot": 3
+        },
+        {
+            "id": "ring_frostvein",
+            "level": 2,
+            "slot": 7
+        }
+    ],
+    "inventory": [
+        {
+            "id": "hu_warhammer",
+            "level": 1,
+            "slot": -1
+        },
+        {
+            "id": "hu_dagger_kris",
+            "level": 3,
+            "slot": -1
+        },
+        {
+            "id": "weapon_longsword",
+            "level": 5,
+            "slot": -1
+        }
+    ],
+    "skills": [
+        {
+            "id": "hu_wind_slash",
+            "level": 1,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "seal.form.slash.boomerang",
+            "supports": [
+                "seal.trigger.hurt",
+                "seal.element.earth"
+            ]
+        },
+        {
+            "id": "skill_stomp",
+            "level": 4,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_whirlwind",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 2,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_breaker_wave",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 1,
+            "form": "seal.form.breaker.tide",
+            "supports": [
+                "seal.demon.eternal_flame",
+                "seal.mirror"
+            ]
+        },
+        {
+            "id": "skill_warcry",
+            "level": 2,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 0,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_charge",
+            "level": 2,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_aura_holy_fire",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        }
+    ],
+    "signature": {
+        "id": "hu_warcry",
+        "level": 1,
+        "permanent": true,
+        "fromItem": false,
+        "slot": -1,
+        "form": "",
+        "supports": [
+            "seal.wide",
+            "seal.demon.infinity"
+        ]
+    },
+    "boons": [
+        {
+            "id": "talent_vigilance",
+            "count": 1
+        },
+        {
+            "id": "boon_flask",
+            "count": 1
+        },
+        {
+            "id": "boon_manaflask",
+            "count": 1
+        },
+        {
+            "id": "boon_ironskin",
+            "count": 1
+        }
+    ],
+    "sealRanks": [
+        {
+            "id": "seal.demon.eternal_flame",
+            "count": 2
+        },
+        {
+            "id": "seal.ward",
+            "count": 2
+        },
+        {
+            "id": "seal.form.slash.boomerang",
+            "count": 2
+        }
+    ],
+    "sealPouch": [
+        "seal.ward",
+        "seal.demon.veles_crown"
+    ]
+}

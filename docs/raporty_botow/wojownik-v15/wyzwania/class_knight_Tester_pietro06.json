@@ -1,0 +1,129 @@
+{
+    "title": "Wojownik, piętro 6: VI. Pan Sfory (Tester QA)",
+    "note": "Bot nie przeszedł piętra w 3 próbach (podejście 17); ostatni zabójca:  – .",
+    "created": "2026-10-28 15:18",
+    "classId": "class_knight",
+    "appearanceId": "",
+    "difficultyTier": 0,
+    "seed": 77592812,
+    "floorIndex": 5,
+    "floorsCleared": 5,
+    "souls": 43,
+    "ashEarned": 25,
+    "kills": 161,
+    "attributePoints": 0,
+    "toughness": 13,
+    "strength": 16,
+    "dexterity": 11,
+    "intelligence": 8,
+    "healthFlasks": 4,
+    "manaFlasks": 1,
+    "bonusHealthFlasks": 0,
+    "healthFraction": 1.0,
+    "manaFraction": 1.0,
+    "equipment": [
+        {
+            "id": "hu_sword",
+            "level": 1,
+            "slot": 0
+        },
+        {
+            "id": "hu_shield",
+            "level": 0,
+            "slot": 1
+        },
+        {
+            "id": "body_chainmail",
+            "level": 0,
+            "slot": 3
+        }
+    ],
+    "inventory": [
+        {
+            "id": "weapon_longsword",
+            "level": 1,
+            "slot": -1
+        },
+        {
+            "id": "hu_sword_earth",
+            "level": 2,
+            "slot": -1
+        }
+    ],
+    "skills": [
+        {
+            "id": "hu_cleave",
+            "level": 2,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_stomp",
+            "level": 2,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_executioners_fall",
+            "level": 0,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 2,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_aura_holy_fire",
+            "level": 0,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_leapslash",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 0,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_charge",
+            "level": 0,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 1,
+            "form": "",
+            "supports": []
+        }
+    ],
+    "signature": {
+        "id": "hu_warcry",
+        "level": 0,
+        "permanent": true,
+        "fromItem": false,
+        "slot": -1,
+        "form": "",
+        "supports": []
+    },
+    "boons": [
+        {
+            "id": "boon_parrymaster",
+            "count": 1
+        }
+    ],
+    "sealRanks": [],
+    "sealPouch": [
+        "seal.demon.chernobog_eye",
+        "seal.form.cleave.round"
+    ]
+}

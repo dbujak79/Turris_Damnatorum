@@ -21,40 +21,78 @@ namespace Turris.Tests
         }
 
         [Test]
-        public void FloorTwo_HasThreeFewerCultists_SameImpsAndWorms()
+        public void FloorTwo_FewerCultists_TwentyPercentFewerDemons()
         {
             var p = fx.Cfg.tower.floors[1].portals;
-            // Przed korektą (budżet 44, waga kultysty 4,5): ok. 16,9 kultysty, 13,9 chochlika, 5,3 czerwia.
-            Assert.AreEqual(13.9f, Expected(p, "enemy_hu_cultist"), 0.3f, "kultyści");
-            Assert.AreEqual(13.9f, Expected(p, "enemy_imp"), 0.3f, "chochliki bez zmian");
-            Assert.AreEqual(5.3f, Expected(p, "enemy_worm"), 0.2f, "czerwie bez zmian");
+            // HU (budżet 44, waga kultysty 4,5): ok. 16,9 kultysty, 13,9 chochlika, 5,3 czerwia. Turris: budżet ×0,8 i waga kultysty 3,7.
+            Assert.AreEqual(11.9f, Expected(p, "enemy_hu_cultist"), 0.3f, "kultyści");
+            Assert.AreEqual(11.9f, Expected(p, "enemy_imp"), 0.3f, "chochliki");
+            Assert.AreEqual(4.5f, Expected(p, "enemy_worm"), 0.2f, "czerwie");
         }
 
+        /// <summary>Wieża to 30 fal Hell Unleashed: boss co trzecie piętro z kapliczką po nim, finał (Arcydemon) kończy podejście.</summary>
         [Test]
-        public void FloorsFourAndFive_GetOneSignatureEnemy_BossFloorsUnchanged()
+        public void Tower_Is30HuWaves_BossEveryThirdFloor()
         {
             var f = fx.Cfg.tower.floors;
-            Assert.AreEqual(1, f[3].extraWaves[1].enemies.Count(e => e.id == "enemy_hu_charger"), "Zbrojownia: Taranowiec");
-            Assert.AreEqual(1, f[4].extraWaves[2].enemies.Count(e => e.id == "enemy_hu_gargoyle"), "Brama Strażnika: Gargulec");
-            Assert.IsFalse(f[3].isBoss || f[4].isBoss);
-            Assert.IsTrue(f[5].isBoss);
-            Assert.AreEqual(1, f[5].enemies.Count, "piętro z bossem bez dodatkowego wroga");
-            Assert.AreEqual(0, f[5].extraWaves.Count);
+            Assert.AreEqual(30, f.Count);
+            for (int i = 0; i < f.Count; i++)
+            {
+                bool boss = (i + 1) % 3 == 0;
+                Assert.AreEqual(boss, f[i].isDuel, $"piętro {i + 1}: pojedynek z bossem");
+                Assert.AreEqual(boss, !f[i].portals.enabled, $"piętro {i + 1}: portale");
+                Assert.AreEqual(boss && i < 29, f[i].restAfter, $"piętro {i + 1}: kapliczka po bossie");
+                Assert.AreEqual(i == 29, f[i].isBoss, $"piętro {i + 1}: zwycięstwo tylko po finale");
+                if (boss) Assert.AreEqual(1, f[i].enemies.Count(e => e != null && e.isBoss), $"piętro {i + 1}: boss");
+                else Assert.IsTrue(f[i].portals.composition.Count > 0 && f[i].portals.composition.All(c => c.enemy != null), $"piętro {i + 1}: skład z demonów HU");
+            }
+            Assert.AreEqual("enemy_gatelord", f[2].enemies[0].id, "piętro III: Władca Bramy");
+        }
 
-            // Ponowne zastosowanie (migracja edytora na gotowym assecie) niczego nie dubluje.
-            int before = f[3].extraWaves.Sum(w => w.enemies.Count) + f[4].extraWaves.Sum(w => w.enemies.Count);
-            HellEncounters.ExtendTower(fx.Cfg, fx.bundle.byId);
-            Assert.AreEqual(before, f[3].extraWaves.Sum(w => w.enemies.Count) + f[4].extraWaves.Sum(w => w.enemies.Count));
+        /// <summary>Zwykłe piętro = fala HU: czas, budżet, grupy, skład i mnożniki (życie z łagodzeniem późnych fal).</summary>
+        [Test]
+        public void Floors_CopyHuWaveNumbers()
+        {
+            var w = HellTower.Rows[6];
+            var f = fx.Cfg.tower.floors[6];
+            // Fala 7: o 20% mniej demonów i o jednego mniej – najsłabszego (korekta Turris po raporcie botów).
+            Assert.AreEqual(w.SpawnBudget * HellTower.MonsterCountScale - HellTower.FewerEnemies[7] * HellTower.Weakest(f.portals).spawnCost, f.portals.budget, 1e-3f);
+            var eight = fx.Cfg.tower.floors[7];
+            Assert.AreEqual(HellTower.Rows[7].SpawnBudget * HellTower.MonsterCountScale, eight.portals.budget, 1e-3f, "bez korekty: o 20% mniej niż w HU");
+            Assert.AreEqual(w.DurationSeconds / HellTower.SpawnTempoScale, f.portals.duration, 1e-3f, "portale otwarte dłużej");
+            Assert.AreEqual(w.GroupIntervalSeconds / HellTower.SpawnTempoScale, f.portals.groupInterval, 1e-3f, "tempo wychodzenia o połowę wolniejsze");
+            Assert.AreEqual(w.MaxGroupSize, f.portals.maxGroup);
+            Assert.AreEqual(w.Composition.Length, f.portals.composition.Count, "skład jak w HU");
+            Assert.AreEqual(w.DamageMultiplier, f.DamageScale, 1e-4f);
+            Assert.AreEqual(w.HealthMultiplier, f.statScale, 1e-4f, "do fali 10 bez łagodzenia");
+            var late = fx.Cfg.tower.floors[28];
+            Assert.AreEqual(HellTower.Rows[28].HealthMultiplier * 0.75f, late.statScale, 1e-3f, "fala 29: życie ×0,75");
+            Assert.Greater(late.DamageScale, f.DamageScale);
         }
 
         [Test]
-        public void Cleave_IsStronger_KnocksDown_FourSecondCooldown()
+        public void Cleave_KnocksDown_BalancedToTarget()
         {
             var data = HuCatalog.Skill("skill.warrior.cleave");
             Assert.IsNotNull(data);
-            CollectionAssert.AreEqual(new[] { 39f, 44f, 44f }, data.levels.Select(l => l.GetF("damage.physical")).ToArray());
-            CollectionAssert.AreEqual(new[] { 4f, 4f, 4f }, data.levels.Select(l => l.GetF("cooldown")).ToArray(), "odnowienie 4 s");
+            CollectionAssert.AreEqual(new[] { 32f, 36f, 36f }, data.levels.Select(l => l.GetF("damage.physical")).ToArray());
+            CollectionAssert.AreEqual(new[] { 5f, 5f, 5f }, data.levels.Select(l => l.GetF("cooldown")).ToArray(), "odnowienie 5 s");
             CollectionAssert.AreEqual(new[] { 1f, 1f, 1f }, data.levels.Select(l => l.GetF("down_seconds")).ToArray(), "powalenie 1 s");
+        }
+
+        /// <summary>Seria 5 botów: skille wojownika w jednym przedziale obrażeń na odnowienie (poziom 1, bez form).</summary>
+        [Test]
+        public void WarriorSkills_DamagePerCooldown_InOneBand()
+        {
+            // Fala przełamania pominięta: trafia stożkiem i falą (dwa razy), więc jej parametry są celowo niższe.
+            var ids = new[] { "cleave", "wind_slash", "executioners_fall", "infernal_charge", "quake" };
+            var perCd = ids.ToDictionary(id => id, id =>
+            {
+                var l = HuCatalog.Skill("skill.warrior." + id).levels[0];
+                return (float)l.TotalDamage / l.GetF("cooldown");
+            });
+            float min = perCd.Values.Min(), max = perCd.Values.Max();
+            Assert.Less(max / min, 1.6f, string.Join(", ", perCd.Select(kv => $"{kv.Key} {kv.Value:0.0}")));
         }
     }
 }

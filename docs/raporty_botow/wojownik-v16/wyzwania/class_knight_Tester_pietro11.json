@@ -1,0 +1,171 @@
+{
+    "title": "Wojownik, piętro 11: XI. Rzeźnia (Tester QA)",
+    "note": "Bot nie przeszedł piętra w 3 próbach (podejście 19); ostatni zabójca:  – .",
+    "created": "2026-10-28 18:06",
+    "classId": "class_knight",
+    "appearanceId": "",
+    "difficultyTier": 0,
+    "seed": 87609734,
+    "floorIndex": 10,
+    "floorsCleared": 10,
+    "souls": 121,
+    "ashEarned": 86,
+    "kills": 330,
+    "attributePoints": 0,
+    "toughness": 15,
+    "strength": 17,
+    "dexterity": 12,
+    "intelligence": 9,
+    "healthFlasks": 5,
+    "manaFlasks": 2,
+    "bonusHealthFlasks": 1,
+    "healthFraction": 0.8888888955116272,
+    "manaFraction": 1.0,
+    "equipment": [
+        {
+            "id": "hu_greatsword",
+            "level": 1,
+            "slot": 0
+        },
+        {
+            "id": "head_fur",
+            "level": 1,
+            "slot": 2
+        },
+        {
+            "id": "body_chainmail",
+            "level": 0,
+            "slot": 3
+        },
+        {
+            "id": "amulet_bastion",
+            "level": 5,
+            "slot": 9
+        }
+    ],
+    "inventory": [
+        {
+            "id": "weapon_longsword",
+            "level": 2,
+            "slot": -1
+        }
+    ],
+    "skills": [
+        {
+            "id": "hu_cleave",
+            "level": 2,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_stomp",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_cross_cut",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 2,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_executioners_fall",
+            "level": 2,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_rend",
+            "level": 2,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_aura_holy_fire",
+            "level": 0,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_breaker_wave",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_aura_purity",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_lunge",
+            "level": 2,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 0,
+            "form": "",
+            "supports": []
+        }
+    ],
+    "signature": {
+        "id": "hu_warcry",
+        "level": 1,
+        "permanent": true,
+        "fromItem": false,
+        "slot": -1,
+        "form": "",
+        "supports": []
+    },
+    "boons": [
+        {
+            "id": "boon_breath",
+            "count": 1
+        },
+        {
+            "id": "boon_manaflask",
+            "count": 1
+        },
+        {
+            "id": "boon_wrath",
+            "count": 1
+        },
+        {
+            "id": "boon_vigor",
+            "count": 1
+        }
+    ],
+    "sealRanks": [],
+    "sealPouch": [
+        "seal.demon.infinity",
+        "seal.form.fall.star",
+        "seal.cascade",
+        "seal.scorched",
+        "seal.form.holy_fire.blaze"
+    ]
+}

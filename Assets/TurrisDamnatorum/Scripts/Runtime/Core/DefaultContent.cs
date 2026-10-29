@@ -103,7 +103,7 @@ namespace Turris
                 d.id = id; d.name = id; d.displayName = name; d.description = desc; d.archetype = archetype;
                 d.maxHealth = hp; d.maxPoise = poise; d.poiseRegen = 25f; d.moveSpeed = speed; d.turnSpeed = 480f;
                 d.scale = height / 1.8f; d.soulReward = souls;
-                d.eliteHealthMultiplier = 7f; d.eliteDamageMultiplier = 1.6f;
+                d.eliteHealthMultiplier = 4.5f; d.eliteDamageMultiplier = 1.45f; // HU balans 2.0
                 d.color = new Color(0.6f, 0.2f, 0.15f);
                 bundle.all.Add(d); bundle.byId[id] = d;
                 return d;
@@ -645,9 +645,11 @@ namespace Turris
             var leapSlash = Tech("skill_leapslash", "Cięcie z wyskoku", SpellKind.Charge, 24, 0.3f, 0.45f, 0.45f, 8f, 1.8f, 5f, 1.2f, 60,
                 "Skok na cel i cios z góry; łamie postawę każdego na drodze.", BuildTag.Heavy);
             leapSlash.attack.animation = AttackAnim.Leap; leapSlash.color = new Color(1f, 0.7f, 0.4f);
-            var execute = Tech("skill_execute", "Egzekucja", SpellKind.Cleave, 22, 0.45f, 0.12f, 0.5f, 7f, 1.6f, 2.6f, 1f, 40,
-                "Cios z góry: +100% obrażeń celom poniżej 30% życia lub z przełamaną postawą.", BuildTag.Heavy);
-            execute.arcAngle = 70f; execute.attack.executeBonus = 1f; execute.attack.animation = AttackAnim.Overhead; execute.color = new Color(0.9f, 0.25f, 0.2f);
+            // Seria 5 botów: 810 obrażeń na użycie (cele powalone Rozpłataniem mają przełamaną postawę → ×2 na całą gromadę):
+            // mnożnik 1,6 → 1,2, premia +100% → +60%, odnowienie 7 → 9 s.
+            var execute = Tech("skill_execute", "Egzekucja", SpellKind.Cleave, 22, 0.45f, 0.12f, 0.5f, 9f, 1.2f, 2.6f, 1f, 40,
+                "Cios z góry: +60% obrażeń celom poniżej 30% życia lub z przełamaną postawą.", BuildTag.Heavy);
+            execute.arcAngle = 70f; execute.attack.executeBonus = 0.6f; execute.attack.animation = AttackAnim.Overhead; execute.color = new Color(0.9f, 0.25f, 0.2f);
             var warcry = Tech("skill_warcry", "Okrzyk wojenny", SpellKind.Warcry, 0, 0.3f, 0.1f, 0.35f, 20f, 0f, 0f, 0f, 0,
                 "+25% obrażeń na 8 s i odnowienie 40% wytrzymałości.", BuildTag.Melee);
             warcry.amount = 25; warcry.duration = 8f; warcry.color = new Color(1f, 0.35f, 0.25f);
@@ -869,27 +871,7 @@ namespace Turris
 
             var tower = Make<TowerDefinition>("tower_main", "Turris Damnatorum", "");
             tower.victoryAshBonus = 40;
-            EnemyWave Wave(params EnemyDefinition[] e) { var w = new EnemyWave(); w.enemies.AddRange(e); return w; }
-            // Piętra I–III: pierwsze trzy areny Hell Unleashed – demony wychodzą z portali przez cały czas piętra
-            // (czas, budżet, odstęp grup i wagi składu jak fale 1–2), a trzecia arena to Władca Bramy.
-            PortalSpawning Portals(float duration, float budget, float interval, params (EnemyDefinition e, float w)[] comp)
-            {
-                var ps = new PortalSpawning { enabled = true, duration = duration, budget = budget, groupInterval = interval, minGroup = 1, maxGroup = 2 };
-                foreach (var c in comp) ps.composition.Add(new PortalEntry { enemy = c.e, weight = c.w });
-                return ps;
-            }
-            tower.floors.Add(new FloorDefinition { name = "I. Wrota Otchłani", arena = courtyard, statScale = 1.0f, isDuel = false, ashReward = 3,
-                portals = Portals(75f, 30f, 3.18f, (hu.imp, 3.85f)) });
-            tower.floors.Add(new FloorDefinition { name = "II. Kult Bramy", arena = crypt, statScale = 1.05f, isDuel = false, ashReward = 6,
-                // Budżet 44 → 41 i waga kultysty 4,5 → 3,7: średnio o trzech kultystów mniej (ok. 13,9 zamiast 16,9),
-                // przy tej samej liczbie chochlików i czerwi – raport botów: piętro II zabijało w 18/20 śmierci.
-                portals = Portals(78f, 41f, 2.91f, (hu.imp, 3.7f), (hu.cultist, 3.7f), (hu.worm, 1.4f)) });
-            tower.floors.Add(new FloorDefinition { name = "III. Władca Bramy", arena = courtyard, enemies = { hu.gatelord }, statScale = 1.0f, isDuel = true, ashReward = 10, restAfter = true });
-            tower.floors.Add(new FloorDefinition { name = "IV. Zbrojownia", arena = crypt, enemies = { ghoul, ghoul, heretic }, statScale = 0.95f, isDuel = false, ashReward = 12,
-                extraWaves = { Wave(archer, archer, ghoul), Wave(ghoul, heretic, archer, ghoul), Wave(warden) } });
-            tower.floors.Add(new FloorDefinition { name = "V. Brama Strażnika", arena = courtyard, enemies = { warden }, statScale = 1.12f, isDuel = true, ashReward = 15, restAfter = true,
-                extraWaves = { Wave(ghoul, ghoul, archer), Wave(heretic, archer, archer, ghoul), Wave(warden, archer) } });
-            tower.floors.Add(new FloorDefinition { name = "VI. Szczyt Wieży", arena = summit, enemies = { boss }, statScale = 1.0f, isDuel = true, isBoss = true, ashReward = 30 });
+            // Piętra: wierny port 30 fal Hell Unleashed (HellTower) – budowane na końcu, gdy cały katalog demonów HU już istnieje.
             cfg.tower = tower;
 
             // ============================================================ TRUDNOŚĆ
@@ -988,8 +970,8 @@ namespace Turris
             Unlock("unlock_firering", UnlockKind.Spell, fireRing, 0, 0, true);
             Unlock("unlock_bladefan", UnlockKind.Spell, bladeFan, 0, 0, true);
 
-            // Na start podejścia: dodatki i stałe umiejętności ogólne albo przypisane do klasy (rycerz nie zaczyna z kulą ognia).
-            // Nagrody w trakcie podejścia nie są ograniczone klasą.
+            // Domyślny zestaw startowy i pozostałe dodatki są przypisane do klasy; kupione skille i bronie – dla każdej klasy
+            // (UnlockDefinition.ClassFree: skill wymaga rodzaju broni, broń – atrybutów). Nagrody nie są ograniczone klasą.
             void ForClass(ClassDefinition c, params string[] ids)
             {
                 foreach (var id in ids) cfg.unlocks.Find(u => u.id == id).classes.Add(c);
@@ -1008,7 +990,22 @@ namespace Turris
             HellEnemyCatalog.Add(cfg, bundle.all);
             foreach (var definition in bundle.all) if (definition is ContentDefinition cd) bundle.byId[cd.id] = cd;
             AddHellWeapons(cfg);
-            HellEncounters.ExtendTower(cfg, bundle.byId);
+            AddHellEconomy(cfg);
+            tower.floors.Clear();
+            tower.floors.AddRange(HellTower.Build(id =>
+            {
+                string target = HellEnemyCatalog.Target(id);
+                return target != null && bundle.byId.TryGetValue(target, out var e) ? e as EnemyDefinition : null;
+            }, courtyard, crypt, summit));
+            // Treść Turris z progami dla 6 pięter → 30 pięter (skille, przedmioty, odblokowania); treść HU ma progi z fal.
+            foreach (var definition in bundle.all)
+            {
+                if (definition is SpellDefinition ls && ls.HuData == null) ls.minFloor *= LegacyFloorScale;
+                else if (definition is ItemDefinition li && string.IsNullOrEmpty(li.huSourceId)) li.minFloor *= LegacyFloorScale;
+                else if (definition is UnlockDefinition lu) lu.requiredBestFloor *= LegacyFloorScale;
+            }
+            // Skille wymagają rodzaju broni (nie klasy) – jedna tabela w WeaponFamilies.
+            foreach (var definition in bundle.all) if (definition is SpellDefinition sd) sd.requiredTags = WeaponFamilies.ForSkill(sd);
 
             var result = bundle;
             bundle = null;

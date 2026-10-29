@@ -462,7 +462,10 @@ MonoBehaviour:
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0
-      statuses: []
+      statuses:
+      - kind: 0
+        stacks: 1
+        chance: 1
       animation: 9
     minRange: 0
     maxRange: 25
@@ -519,7 +522,10 @@ MonoBehaviour:
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0
-      statuses: []
+      statuses:
+      - kind: 0
+        stacks: 1
+        chance: 1
       animation: 11
     minRange: 0
     maxRange: 25
@@ -1083,6 +1089,6 @@ MonoBehaviour:
   visual: {fileID: 11400000, guid: 94976c56620841944b3aab1c685e68a3, type: 2}
   spawnCost: 0
   packSize: 1
-  eliteHealthMultiplier: 7
-  eliteDamageMultiplier: 1.6
+  eliteHealthMultiplier: 4.5
+  eliteDamageMultiplier: 1.45
   isMinion: 0

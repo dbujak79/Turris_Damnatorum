@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
   id: skill_execute
   displayName: Egzekucja
-  description: "Cios z g\xF3ry: +100% obra\u017Ce\u0144 celom poni\u017Cej 30% \u017Cycia lub z prze\u0142aman\u0105 postaw\u0105."
+  description: "Cios z g\xF3ry: +60% obra\u017Ce\u0144 celom poni\u017Cej 30% \u017Cycia lub z prze\u0142aman\u0105 postaw\u0105."
   tags: 17
   kind: 5
   category: 1
@@ -24,7 +24,7 @@ MonoBehaviour:
   cancelAfter: 0.2
   staminaCost: 22
   requirements: []
-  requiredTags: 0
+  requiredTags: 512
   intelligenceScaling: 0
   attack:
     name: Egzekucja
@@ -54,16 +54,16 @@ MonoBehaviour:
     elementShare: 0
     bonusVsFrozen: 0
     bonusVsBleeding: 0
-    executeBonus: 1
+    executeBonus: 0.6
     statuses: []
     animation: 3
   amount: 60
   duration: 0.12
-  cooldown: 7
+  cooldown: 9
   charges: 1
   extraChargeAtLevel: 0
   cooldownReductionPerLevel: 0.06
-  weaponMultiplier: 1.6
+  weaponMultiplier: 1.2
   arcAngle: 70
   tickInterval: 0.35
   moveMultiplier: 0.5

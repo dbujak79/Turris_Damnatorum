@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ClassDefinition
   id: class_hu_mage_air
   displayName: Mag powietrza
-  description: "Specjalizacja w powietrzu (b\u0142yskawicach): +20% obra\u017Ce\u0144 od b\u0142yskawic, szybszy krok. Skill klasy: Nawa\u0142nica \u2013 burza nad wskazanym miejscem."
+  description: "Specjalizacja w powietrzu (b\u0142yskawicach): +20% obra\u017Ce\u0144 od b\u0142yskawic, szybszy krok. Skill klasy: Nawa\u0142nica \u2013 burza nad wskazanym miejscem, która powala demony."
   tags: 0
   parent: {fileID: 11400000, guid: 238a470220177034c9a2fb416776b492, type: 2}
   tagline: "Wiatr i b\u0142yskawice"

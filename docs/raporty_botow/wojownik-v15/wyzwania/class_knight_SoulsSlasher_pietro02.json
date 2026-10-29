@@ -1,0 +1,136 @@
+{
+    "title": "Wojownik, piętro 2: II. Kult Bramy (Gracz H&S / souls-like)",
+    "note": "Bot nie przeszedł piętra w 3 próbach (podejście 5); ostatni zabójca:  – .",
+    "created": "2026-10-28 15:09",
+    "classId": "class_knight",
+    "appearanceId": "",
+    "difficultyTier": 0,
+    "seed": 77013640,
+    "floorIndex": 1,
+    "floorsCleared": 1,
+    "souls": 16,
+    "ashEarned": 3,
+    "kills": 24,
+    "attributePoints": 0,
+    "toughness": 13,
+    "strength": 14,
+    "dexterity": 10,
+    "intelligence": 7,
+    "healthFlasks": 5,
+    "manaFlasks": 1,
+    "bonusHealthFlasks": 0,
+    "healthFraction": 0.9647058844566345,
+    "manaFraction": 0.7209302186965942,
+    "equipment": [
+        {
+            "id": "hu_greatsword",
+            "level": 0,
+            "slot": 0
+        },
+        {
+            "id": "body_chainmail",
+            "level": 0,
+            "slot": 3
+        }
+    ],
+    "inventory": [],
+    "skills": [
+        {
+            "id": "hu_cleave",
+            "level": 1,
+            "permanent": true,
+            "fromItem": false,
+            "slot": 0,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_cleave",
+            "level": 1,
+            "permanent": true,
+            "fromItem": false,
+            "slot": 1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_charge",
+            "level": 1,
+            "permanent": true,
+            "fromItem": false,
+            "slot": 2,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_rend",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_lunge",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_counter",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_stomp",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_shieldbash",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        }
+    ],
+    "signature": {
+        "id": "hu_warcry",
+        "level": 0,
+        "permanent": true,
+        "fromItem": false,
+        "slot": -1,
+        "form": "",
+        "supports": []
+    },
+    "boons": [
+        {
+            "id": "talent_survivor",
+            "count": 1
+        },
+        {
+            "id": "talent_vigilance",
+            "count": 1
+        },
+        {
+            "id": "boon_mind",
+            "count": 1
+        }
+    ],
+    "sealRanks": [],
+    "sealPouch": []
+}

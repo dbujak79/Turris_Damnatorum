@@ -113,12 +113,6 @@ namespace Turris
             if (kb != null && kb.f1Key.wasPressedThisFrame) showHelp = !showHelp;
             // Na padzie Select w czasie gry to skill klasy – pomoc przełącza się nim poza rozgrywką (menu, pauza).
             if (Gamepad.current != null && Gamepad.current.selectButton.wasPressedThisFrame && root.Screen != GameScreen.Playing) showHelp = !showHelp;
-            if (kb != null && root.Screen == GameScreen.Reward)
-            {
-                if (kb.digit1Key.wasPressedThisFrame) root.ChooseReward(0);
-                else if (kb.digit2Key.wasPressedThisFrame) root.ChooseReward(1);
-                else if (kb.digit3Key.wasPressedThisFrame) root.ChooseReward(2);
-            }
         }
 
         // ================================================================== Wejście w menu (pad / strzałki)
@@ -409,7 +403,6 @@ namespace Turris
                 case GameScreen.Loadout: DrawLoadout(); break;
                 case GameScreen.Playing: DrawHud(); DrawRangePanel(); break;
                 case GameScreen.Paused: DrawHud(); DrawRangePanel(); DrawPause(); break;
-                case GameScreen.Reward: DrawReward(); break;
                 case GameScreen.Intermission: DrawIntermission(); break;
                 case GameScreen.Equipment: DrawEquipment(); break;
                 case GameScreen.Controls: DrawControls(); break;
@@ -421,6 +414,8 @@ namespace Turris
         }
 
         // ================================================================== Menu główne
+
+        bool showChallenges;
 
         void DrawMainMenu()
         {
@@ -443,6 +438,10 @@ namespace Turris
             Btn("Odblokowania", button, root.ShowUnlocks, GUILayout.Height(48));
             Btn("Poligon umiejętności", button, () => root.StartSkillRange(root.Meta.LastPlan().classDef), GUILayout.Height(44));
             Btn("Bestiariusz", button, OpenBestiary, GUILayout.Height(44));
+            // Wyzwania botów: piętra, których bot nie przeszedł w trzech próbach – lista w osobnym panelu obok menu.
+            var challenges = RunSnapshot.ChallengeFiles();
+            if (challenges.Count > 0)
+                Btn($"Wyzwania botów ({challenges.Count}) {(showChallenges ? "◀" : "▶")}", button, () => showChallenges = !showChallenges, GUILayout.Height(40));
             Btn("Ustawienia", button, root.ShowControls, GUILayout.Height(44));
             Btn("Wyjdź", button, Application.Quit, GUILayout.Height(40));
             GUILayout.Space(10);
@@ -450,6 +449,33 @@ namespace Turris
             GUILayout.FlexibleSpace();
             GUILayout.Label($"Zapis: {root.ProfilePath}", small);
             GUILayout.Label("[F9] deweloperskie +100 popiołu (do testów odblokowań)", small);
+            GUILayout.EndArea();
+            if (showChallenges && challenges.Count > 0) DrawChallenges(challenges, new Rect(r.xMax + 20, r.y, Mathf.Min(460, W - r.xMax - 40), r.height));
+        }
+
+        /// <summary>Wyzwania botów: tytuł (piętro i miejsce), opis (klasa, bot, ostatni cios), „Zagraj” i „Usuń”.</summary>
+        void DrawChallenges(System.Collections.Generic.List<string> files, Rect area)
+        {
+            if (area.width < 240) return;
+            GUILayout.BeginArea(area, box);
+            GUILayout.Label("Wyzwania botów", label);
+            GUILayout.Label("Piętro, którego bot nie przeszedł w trzech próbach – zaczynasz je z jego buildem.", small);
+            GUILayout.Space(8);
+            var wrap = new GUIStyle(small) { wordWrap = true };
+            foreach (var path in files.Take(6))
+            {
+                var snap = RunSnapshot.Load(path);
+                if (snap == null) continue;
+                GUILayout.BeginVertical(box);
+                GUILayout.Label($"<b>{snap.title ?? System.IO.Path.GetFileNameWithoutExtension(path)}</b>", label);
+                if (!string.IsNullOrEmpty(snap.note)) GUILayout.Label(snap.note, wrap);
+                GUILayout.BeginHorizontal();
+                Btn("Zagraj", button, () => { if (!root.StartRunFromSnapshot(snap)) status = "Wyzwanie nie pasuje do obecnej treści gry."; }, GUILayout.Height(36));
+                Btn("Usuń", button, () => System.IO.File.Delete(path), GUILayout.Width(90), GUILayout.Height(36));
+                GUILayout.EndHorizontal();
+                GUILayout.EndVertical();
+                GUILayout.Space(6);
+            }
             GUILayout.EndArea();
         }
 
@@ -687,10 +713,17 @@ namespace Turris
                     foreach (var sk in c.startingSkillChoices)
                     {
                         var skill = sk;
+                        // Skill wymaga rodzaju broni: z bronią tego zestawu niedostępny (np. strzały bez łuku).
+                        if (!WeaponFamilies.Usable(skill, plan.Weapon, plan.OffHand)) { GUILayout.Label($"<color=#887766>{skill.displayName}\n{Names.Requirement(skill.requiredTags)}</color>", small, GUILayout.Height(40)); continue; }
                         Tog(plan.OpeningSkill == skill, skill.displayName, button, on => { if (on) meta.SelectStartingSkill(plan, skill); }, GUILayout.Height(40));
                     }
                     GUILayout.EndHorizontal();
                 }
+                // Dodatek z bronią innego rodzaju wyłącza skille startowe (skill wymaga rodzaju broni) – ostrzeżenie przed startem.
+                var blocked = plan.SkillsBlockedByExtras();
+                if (blocked.Count > 0)
+                    GUILayout.Label($"<color=#ff7755><b>Uwaga:</b> {plan.StartingHands.main?.displayName ?? "broń"} z dodatków nie pozwala użyć: " +
+                                    string.Join(", ", blocked.Select(s => $"{s.displayName} ({Names.Requirement(s.requiredTags)})")) + ".</color>", small);
                 if (c.startingItems.Count > 0) GUILayout.Label("Wyposażenie: " + string.Join(", ", c.startingItems.Select(i => i == c.DefaultWeapon && plan.Weapon != null ? plan.Weapon.displayName : i.displayName)), small);
                 if (c.startingSpells.Count > 0) GUILayout.Label("Umiejętności klasy: " + string.Join(", ", c.startingSpells.Select(s => s.displayName)), small);
                 GUILayout.Label($"Flaszki: życia {c.healthFlasks}, many {c.manaFlasks}", small);
@@ -879,7 +912,7 @@ namespace Turris
                     : $"<b>Dobij pozostałe demony</b> · {root.Enemies.Count(e => e != null && !e.IsDead)}", rich);
             else if (floor != null && floor.WaveCount > 1)
                 GUI.Label(new Rect(W - 520, 96, 480, 30), $"<b>Fala {root.WaveIndex + 1}/{floor.WaveCount}</b> · wrogowie: {root.Enemies.Count(e => e != null && !e.IsDead)}", rich);
-            GUI.Label(new Rect(W - 520, 70, 480, 30), $"Dusze: {run.souls}   Popiół w podejściu: {run.ashEarned}   Trudność: {run.difficulty.displayName}", small);
+            GUI.Label(new Rect(W - 520, 70, 480, 30), $"Dusze: {run.souls}{(root.PendingSouls > 0 ? $" (+{root.PendingSouls} dojrzewa)" : "")}   Popiół w podejściu: {run.ashEarned}   Trudność: {run.difficulty.displayName}", small);
 
             // Wrogowie: paski, telegrafy
             foreach (var e in root.Enemies)
@@ -1058,39 +1091,6 @@ namespace Turris
 
         // ================================================================== Nagrody i przerwa
 
-        void DrawReward()
-        {
-            var run = root.Run;
-            var pc = root.Player;
-            GUI.Label(new Rect(0, 60, W, 50), root.LastFloorSummary, bigCenter);
-            GUI.Label(new Rect(0, 115, W, 30), UsingPad ? "Wybierz jedną nagrodę (D-pad / gałka, A)" : "Wybierz jedną nagrodę (klawisze 1–3)", center);
-            int n = root.Rewards.Count;
-            float cardW = 460, gap = 30;
-            float startX = W / 2 - (n * cardW + (n - 1) * gap) / 2;
-            for (int i = 0; i < n; i++)
-            {
-                int idx = i;
-                var o = root.Rewards[i];
-                var r = new Rect(startX + i * (cardW + gap), 180, cardW, 620);
-                GUILayout.BeginArea(r, box);
-                GUILayout.Label($"<size=16><color=#e8c070>{o.Category}</color></size>", rich);
-                GUILayout.Label(o.Title, header);
-                GUILayout.Space(8);
-                GUILayout.Label(Describe.Reward(o, run, pc.Build.stats, root.config.balance), small);
-                GUILayout.FlexibleSpace();
-                Btn(UsingPad ? "Wybierz" : $"Wybierz [{i + 1}]", button, () => root.ChooseReward(idx), GUILayout.Height(54));
-                GUILayout.EndArea();
-            }
-            if (n == 0) BtnRect(new Rect(W / 2 - 150, 500, 300, 60), "Dalej", button, () => root.ChooseReward(-1));
-            else
-            {
-                int cost = SoulShop.RerollCost(run, root.config.balance);
-                GUI.enabled = root.CanReroll;
-                BtnRect(new Rect(W / 2 - 220, 830, 440, 54), root.RerollUsed ? "Nagrody już przerzucone" : $"Przerzuć nagrody ({cost} dusz, masz {run.souls})", button, root.RerollRewards);
-                GUI.enabled = true;
-            }
-        }
-
         void DrawIntermission()
         {
             var run = root.Run;
@@ -1153,16 +1153,22 @@ namespace Turris
             GUILayout.Label($"Sklep dusz – masz {run.souls}", header);
             GUILayout.Label($"<size=15>Ceny rosną z każdym piętrem (teraz ×{SoulShop.Inflation(run, b):0.00}).</size>", label);
             BeginScroll(scrollB, 560);
+            DrawFloorShopSection();
             DrawSealShopSection();
-            var offer = root.ShopOffer;
-            if (offer != null)
+            if (root.ShopOffers.Count > 0)
             {
                 int oc = SoulShop.OfferCost(run, b);
-                GUILayout.Label($"<b>Oferta:</b> {offer.displayName} <size=14>({Names.SkillCategory(offer.category)}, na to podejście)</size>", label);
-                GUILayout.Label("<size=14>" + Describe.Spell(offer, 0, root.Player.Build.stats, b).Replace("\n", " · ") + "</size>", label);
-                GUI.enabled = run.souls >= oc;
-                Btn($"Kup ({oc} dusz)", button, root.BuyShopOffer, GUILayout.Height(44));
-                GUI.enabled = true;
+                GUILayout.Label($"<b>Skille na sprzedaż</b> <size=14>(na to podejście, {oc} dusz każdy)</size>", label);
+                foreach (var o in root.ShopOffers.ToList())
+                {
+                    var offer = o;
+                    int ol = SkillTiers.StartLevel(offer, run.floorsCleared);
+                    GUILayout.Label($"{offer.displayName}{(ol > 0 ? $" +{ol}" : "")} <size=14>({Names.SkillCategory(offer.category)})</size>", label);
+                    GUILayout.Label("<size=14>" + Describe.Spell(offer, ol, root.Player.Build.stats, b).Replace("\n", " · ") + "</size>", label);
+                    GUI.enabled = run.souls >= oc;
+                    Btn($"Kup: {offer.displayName} ({oc} dusz)", button, () => root.BuyShopOffer(offer), GUILayout.Height(40));
+                    GUI.enabled = true;
+                }
                 GUILayout.Space(8);
             }
             GUILayout.Label("<b>Ulepszenie umiejętności</b>", label);
@@ -1367,7 +1373,7 @@ namespace Turris
             GUILayout.Label($"Obciążenie {run.equipment.TotalWeight:0.#}/{st[StatType.EquipLoad]:0} ({snap.loadRatio * 100:0}%) – unik {snap.dodge.distance:0.#} m, niewrażliwość {snap.dodge.invulnDuration:0.00}s, koszt {snap.dodge.staminaCost:0}", label);
             GUILayout.Label($"Premie: obrażenia broni +{st[StatType.PhysicalDamage]:0}%, moc czarów +{st[StatType.SpellPower]:0}%, flaszki +{st[StatType.FlaskPotency]:0}%, riposta +{st[StatType.RiposteDamage]:0}%", small);
             GUILayout.Label($"Żywioły – obrażenia: ogień +{st[StatType.FireDamage]:0}%, mróz +{st[StatType.FrostDamage]:0}%, błyskawice +{st[StatType.LightningDamage]:0}%, krwawienie +{st[StatType.BleedDamage]:0}%", small);
-            GUILayout.Label($"Odporności: ogień {Mathf.Min(st[StatType.FireResist], b.maxElementResist):0}%, mróz {Mathf.Min(st[StatType.FrostResist], b.maxElementResist):0}%, błyskawice {Mathf.Min(st[StatType.LightningResist], b.maxElementResist):0}%", small);
+            GUILayout.Label($"Odporności (skuteczne): ogień {b.HeroResist(st[StatType.FireResist]):0}%, mróz {b.HeroResist(st[StatType.FrostResist]):0}%, błyskawice {b.HeroResist(st[StatType.LightningResist]):0}%, ziemia {b.HeroResist(st[StatType.EarthResist]):0}%", small);
             var fxs = new List<string>();
             foreach (PassiveEffectType t in Enum.GetValues(typeof(PassiveEffectType)))
                 if (t != PassiveEffectType.None && snap.effects[t] != 0) fxs.Add(Names.Effect(t, snap.effects[t]));

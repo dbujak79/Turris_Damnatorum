@@ -1,0 +1,609 @@
+{
+    "title": "Piętro 11 · Rzeźnia",
+    "note": "Mag · Gracz H&S / souls-like · poległ 3× (podejście 1) · ostatni cios: Wiedźma wichru: CycloneEye",
+    "created": "2026-10-29 09:58",
+    "classId": "class_mage",
+    "appearanceId": "",
+    "difficultyTier": 0,
+    "seed": 144726671,
+    "floorIndex": 10,
+    "floorsCleared": 10,
+    "souls": 59,
+    "ashEarned": 112,
+    "kills": 343,
+    "attributePoints": 0,
+    "toughness": 13,
+    "strength": 7,
+    "dexterity": 11,
+    "intelligence": 22,
+    "healthFlasks": 4,
+    "manaFlasks": 3,
+    "bonusHealthFlasks": 1,
+    "healthFraction": 0.9184303283691406,
+    "manaFraction": 0.9689119458198547,
+    "equipment": [
+        {
+            "id": "hu_wand_fire",
+            "level": 2,
+            "slot": 0,
+            "rarity": 0,
+            "quality": 0,
+            "affixes": [],
+            "affixNames": []
+        },
+        {
+            "id": "hu_grimoire_fire",
+            "level": 0,
+            "slot": 1,
+            "rarity": 0,
+            "quality": 0,
+            "affixes": [],
+            "affixNames": []
+        },
+        {
+            "id": "hu_item_head_medium_t1",
+            "level": 0,
+            "slot": 2,
+            "rarity": 2,
+            "quality": 2,
+            "affixes": [
+                {
+                    "stat": 29,
+                    "mode": 0,
+                    "value": 10.899999618530273
+                },
+                {
+                    "stat": 26,
+                    "mode": 0,
+                    "value": 10.899999618530273
+                },
+                {
+                    "stat": 6,
+                    "mode": 1,
+                    "value": 4.599999904632568
+                },
+                {
+                    "stat": 21,
+                    "mode": 0,
+                    "value": 9.700000762939453
+                }
+            ],
+            "affixNames": [
+                "affix.earth_pct.t1",
+                "affix.air_pct.t1",
+                "Niedźwiedzia",
+                "Popiołu"
+            ]
+        },
+        {
+            "id": "body_robe",
+            "level": 0,
+            "slot": 3,
+            "rarity": 0,
+            "quality": 0,
+            "affixes": [],
+            "affixNames": []
+        },
+        {
+            "id": "hu_item_hands_medium_t1",
+            "level": 0,
+            "slot": 4,
+            "rarity": 1,
+            "quality": 1,
+            "affixes": [
+                {
+                    "stat": 12,
+                    "mode": 0,
+                    "value": 18.0
+                },
+                {
+                    "stat": 22,
+                    "mode": 0,
+                    "value": 12.199999809265137
+                }
+            ],
+            "affixNames": [
+                "affix.armour.t2",
+                "Głębin"
+            ]
+        },
+        {
+            "id": "hu_item_feet_heavy_t1",
+            "level": 0,
+            "slot": 6,
+            "rarity": 3,
+            "quality": 2,
+            "affixes": [
+                {
+                    "stat": 12,
+                    "mode": 0,
+                    "value": 12.0
+                },
+                {
+                    "stat": 6,
+                    "mode": 0,
+                    "value": 28.0
+                },
+                {
+                    "stat": 8,
+                    "mode": 0,
+                    "value": 14.0
+                },
+                {
+                    "stat": 12,
+                    "mode": 0,
+                    "value": 4.699999809265137
+                },
+                {
+                    "stat": 7,
+                    "mode": 0,
+                    "value": 11.0
+                },
+                {
+                    "stat": 23,
+                    "mode": 0,
+                    "value": 8.399999618530273
+                }
+            ],
+            "affixNames": [
+                "affix.armour.t1",
+                "affix.health.t1",
+                "affix.mana.t1",
+                "Tarczy",
+                "Biegacza",
+                "Wichru"
+            ]
+        },
+        {
+            "id": "hu_item_amulet_silver",
+            "level": 0,
+            "slot": 9,
+            "rarity": 3,
+            "quality": 0,
+            "affixes": [
+                {
+                    "stat": 29,
+                    "mode": 0,
+                    "value": 12.0
+                },
+                {
+                    "stat": 6,
+                    "mode": 0,
+                    "value": 26.0
+                },
+                {
+                    "stat": 15,
+                    "mode": 0,
+                    "value": 7.0
+                },
+                {
+                    "stat": 12,
+                    "mode": 0,
+                    "value": 4.0
+                },
+                {
+                    "stat": 6,
+                    "mode": 1,
+                    "value": 9.0
+                },
+                {
+                    "stat": 23,
+                    "mode": 0,
+                    "value": 9.0
+                }
+            ],
+            "affixNames": [
+                "affix.earth_pct.t1",
+                "affix.health.t1",
+                "affix.spell_pct_v2.t1",
+                "Tarczy",
+                "Tura",
+                "Wichru"
+            ]
+        }
+    ],
+    "inventory": [
+        {
+            "id": "hu_morningstar2h",
+            "level": 0,
+            "slot": -1,
+            "rarity": 0,
+            "quality": 0,
+            "affixes": [],
+            "affixNames": []
+        },
+        {
+            "id": "hu_greatsword",
+            "level": 0,
+            "slot": -1,
+            "rarity": 0,
+            "quality": 0,
+            "affixes": [],
+            "affixNames": []
+        },
+        {
+            "id": "hu_wand_air",
+            "level": 0,
+            "slot": -1,
+            "rarity": 2,
+            "quality": 0,
+            "affixes": [
+                {
+                    "stat": 15,
+                    "mode": 0,
+                    "value": 9.700000762939453
+                },
+                {
+                    "stat": 25,
+                    "mode": 0,
+                    "value": 8.800000190734863
+                }
+            ],
+            "affixNames": [
+                "affix.spell_pct.t1",
+                "affix.water_pct.t1"
+            ]
+        },
+        {
+            "id": "hu_wand_fire",
+            "level": 0,
+            "slot": -1,
+            "rarity": 2,
+            "quality": 1,
+            "affixes": [
+                {
+                    "stat": 24,
+                    "mode": 0,
+                    "value": 8.299999237060547
+                },
+                {
+                    "stat": 29,
+                    "mode": 0,
+                    "value": 8.90000057220459
+                }
+            ],
+            "affixNames": [
+                "affix.fire_pct.t1",
+                "affix.earth_pct.t1"
+            ]
+        },
+        {
+            "id": "hu_wand_earth",
+            "level": 0,
+            "slot": -1,
+            "rarity": 0,
+            "quality": 0,
+            "affixes": [],
+            "affixNames": []
+        },
+        {
+            "id": "hu_wand_earth",
+            "level": 0,
+            "slot": -1,
+            "rarity": 0,
+            "quality": 0,
+            "affixes": [],
+            "affixNames": []
+        },
+        {
+            "id": "hu_morningstar2h",
+            "level": 0,
+            "slot": -1,
+            "rarity": 0,
+            "quality": 0,
+            "affixes": [],
+            "affixNames": []
+        },
+        {
+            "id": "hu_wand_water",
+            "level": 0,
+            "slot": -1,
+            "rarity": 1,
+            "quality": 0,
+            "affixes": [
+                {
+                    "stat": 14,
+                    "mode": 0,
+                    "value": 35.0
+                }
+            ],
+            "affixNames": [
+                "affix.earth_add.t2"
+            ]
+        },
+        {
+            "id": "hu_item_head_light_t1",
+            "level": 0,
+            "slot": -1,
+            "rarity": 2,
+            "quality": 0,
+            "affixes": [
+                {
+                    "stat": 25,
+                    "mode": 0,
+                    "value": 11.5
+                },
+                {
+                    "stat": 29,
+                    "mode": 0,
+                    "value": 10.100000381469727
+                },
+                {
+                    "stat": 11,
+                    "mode": 0,
+                    "value": 0.652999997138977
+                },
+                {
+                    "stat": 23,
+                    "mode": 0,
+                    "value": 6.5
+                }
+            ],
+            "affixNames": [
+                "affix.water_pct.t1",
+                "affix.earth_pct.t1",
+                "Medytacji",
+                "Wichru"
+            ]
+        },
+        {
+            "id": "hu_item_head_robe_t1",
+            "level": 0,
+            "slot": -1,
+            "rarity": 1,
+            "quality": 0,
+            "affixes": [
+                {
+                    "stat": 6,
+                    "mode": 0,
+                    "value": 22.0
+                },
+                {
+                    "stat": 11,
+                    "mode": 0,
+                    "value": 0.7509999871253967
+                }
+            ],
+            "affixNames": [
+                "affix.health.t1",
+                "Medytacji"
+            ]
+        },
+        {
+            "id": "hu_item_body_robe_t1",
+            "level": 0,
+            "slot": -1,
+            "rarity": 0,
+            "quality": 0,
+            "affixes": [],
+            "affixNames": []
+        },
+        {
+            "id": "hu_item_head_medium_t1",
+            "level": 0,
+            "slot": -1,
+            "rarity": 1,
+            "quality": 0,
+            "affixes": [
+                {
+                    "stat": 8,
+                    "mode": 0,
+                    "value": 12.0
+                },
+                {
+                    "stat": 12,
+                    "mode": 0,
+                    "value": 3.799999952316284
+                }
+            ],
+            "affixNames": [
+                "affix.mana.t1",
+                "Tarczy"
+            ]
+        },
+        {
+            "id": "hu_item_feet_medium_t1",
+            "level": 0,
+            "slot": -1,
+            "rarity": 1,
+            "quality": 0,
+            "affixes": [
+                {
+                    "stat": 6,
+                    "mode": 0,
+                    "value": 16.0
+                },
+                {
+                    "stat": 7,
+                    "mode": 0,
+                    "value": 12.0
+                }
+            ],
+            "affixNames": [
+                "affix.health.t1",
+                "Biegacza"
+            ]
+        },
+        {
+            "id": "hu_item_hands_medium_t1",
+            "level": 0,
+            "slot": -1,
+            "rarity": 2,
+            "quality": 0,
+            "affixes": [
+                {
+                    "stat": 14,
+                    "mode": 0,
+                    "value": 8.399999618530273
+                },
+                {
+                    "stat": 25,
+                    "mode": 0,
+                    "value": 9.09999942779541
+                },
+                {
+                    "stat": 9,
+                    "mode": 0,
+                    "value": 1.2580000162124634
+                },
+                {
+                    "stat": 28,
+                    "mode": 0,
+                    "value": 9.800000190734863
+                }
+            ],
+            "affixNames": [
+                "affix.phys_pct.t1",
+                "affix.water_pct.t1",
+                "Odnowy",
+                "Skały"
+            ]
+        },
+        {
+            "id": "hu_item_hands_medium_t2",
+            "level": 0,
+            "slot": -1,
+            "rarity": 2,
+            "quality": 2,
+            "affixes": [
+                {
+                    "stat": 8,
+                    "mode": 0,
+                    "value": 24.0
+                },
+                {
+                    "stat": 27,
+                    "mode": 0,
+                    "value": 15.80000114440918
+                },
+                {
+                    "stat": 28,
+                    "mode": 0,
+                    "value": 14.5
+                },
+                {
+                    "stat": 9,
+                    "mode": 0,
+                    "value": 1.027999997138977
+                }
+            ],
+            "affixNames": [
+                "affix.mana.t2",
+                "affix.bleed.t1",
+                "Góry",
+                "Odnowy"
+            ]
+        },
+        {
+            "id": "hu_item_amulet_bone",
+            "level": 0,
+            "slot": -1,
+            "rarity": 0,
+            "quality": 0,
+            "affixes": [],
+            "affixNames": []
+        },
+        {
+            "id": "hu_item_feet_medium_t1",
+            "level": 0,
+            "slot": -1,
+            "rarity": 1,
+            "quality": 0,
+            "affixes": [
+                {
+                    "stat": 6,
+                    "mode": 0,
+                    "value": 32.0
+                },
+                {
+                    "stat": 10,
+                    "mode": 1,
+                    "value": 19.600000381469727
+                }
+            ],
+            "affixNames": [
+                "affix.health.t2",
+                "Wytrwałości"
+            ]
+        },
+        {
+            "id": "hu_item_head_robe_t2",
+            "level": 0,
+            "slot": -1,
+            "rarity": 0,
+            "quality": 0,
+            "affixes": [],
+            "affixNames": []
+        }
+    ],
+    "skills": [
+        {
+            "id": "spell_bolt",
+            "level": 1,
+            "permanent": true,
+            "fromItem": false,
+            "slot": 1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "spell_firering",
+            "level": 1,
+            "permanent": true,
+            "fromItem": false,
+            "slot": 2,
+            "form": "",
+            "supports": [
+                "seal.trigger.hurt",
+                "seal.demon.devil_pact"
+            ]
+        }
+    ],
+    "signature": {
+        "id": "hu_overload",
+        "level": 1,
+        "permanent": true,
+        "fromItem": false,
+        "slot": -1,
+        "form": "",
+        "supports": []
+    },
+    "boons": [
+        {
+            "id": "talent_vigilance",
+            "count": 1
+        },
+        {
+            "id": "hu_perk_armour",
+            "count": 3
+        },
+        {
+            "id": "hu_perk_damage_fire",
+            "count": 1
+        },
+        {
+            "id": "hu_perk_cooldown",
+            "count": 2
+        },
+        {
+            "id": "hu_perk_penetration_fire",
+            "count": 1
+        },
+        {
+            "id": "hu_perk_evasion",
+            "count": 1
+        },
+        {
+            "id": "hu_perk_area",
+            "count": 1
+        },
+        {
+            "id": "hu_perk_resist_physical",
+            "count": 1
+        }
+    ],
+    "sealRanks": [],
+    "sealPouch": [
+        "seal.harden"
+    ]
+}

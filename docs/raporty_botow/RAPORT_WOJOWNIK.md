@@ -181,6 +181,205 @@ Przy 16 podejściach różnica 12 → 9 zwycięstw mieści się w szumie. Powale
 gracz z Rozpłataniem nadal ginie na piętrze II od kul ognia. Boty nie wykorzystują jeszcze celowo okna po powaleniu
 (np. mocny cios w leżącego), więc zysk z efektu jest w tych liczbach raczej zaniżony.
 
+## Piąta seria: oferty sklepu, zamiana skilli, 2 × 50 podejść (2026-10-28)
+
+Gra bez zmian, zmieniły się boty:
+- **Tester** kupuje każdą ofertę sklepu dusz i co piętro wkłada do slotu najmniej sprawdzony skill z kolekcji.
+- **Gracz** kupuje oferty i wybiera nowe skille w nagrodach, jeśli zapowiadają się lepiej niż najsłabszy skill w slocie
+  albo dają atak z dystansu. Sloty układa według obrażeń na sekundę odnowienia, które zmierzył w swoich podejściach,
+  a nieznane skille próbuje z ciekawości.
+
+Raport zawiera nową sekcję „Kolekcja skilli”. Dane: [wojownik-v5b/RAPORT_class_knight.md](wojownik-v5b/RAPORT_class_knight.md)
+(tester z serii v5 i gracz po poprawce wyceny skilli ruchu). Pierwszy przebieg gracza jest w `wojownik-v5`.
+
+| | Seria 4 (20) | Seria 5 (50) |
+|---|---|---|
+| Tester – zwycięstwa | 17/20 | **45/50** |
+| Gracz – zwycięstwa | 13/20 | 22/50 (pierwszy przebieg: 20/50) |
+| Różnych skilli użytych na podejście (tester / gracz) | 3,9 / 3,8 | **6,1 / 5,2** |
+| Udział użyć: skille ze sklepu (tester / gracz) | – | 31% / 7% |
+| Udział użyć: skill startowy (tester / gracz) | – | 29% / 49% |
+
+### Skille startowe są za mocne (potwierdzone)
+
+Obrażenia na sekundę odnowienia (dane testera, skille użyte co najmniej 15 razy, odnowienie z poziomu 1):
+
+| Skill wojownika | Obr./użycie | Odnowienie | Obr./s odnowienia |
+|---|---|---|---|
+| **Rozpłatanie** (startowy) | 167 | 4 s | **41,8** |
+| Fala przełamania | 244 | 7 s | 34,9 |
+| **Cięcie wichru** (startowy) | 152 | 5 s | **30,4** |
+| Piekielna szarża | 153 | 8 s | 19,1 |
+| Upadek kata | 167 | 9 s | 18,6 |
+| Trzęsienie | 133 | 8 s | 16,6 |
+| Młynek | 64 | 9 s | 7,1 |
+
+Wnioski:
+- Oba skille startowe są **1,5–2,5× mocniejsze** od pozostałych skilli wojownika z puli sklepu i nagród.
+  Rozpłatanie jest najmocniejsze dopiero po korektach z serii 2–4 (+15% obrażeń, odnowienie 5 → 4 s), więc te korekty poszły za daleko.
+- Gracz, który ocenia skille po wynikach, prawie zawsze zostawia oba startowe w slotach. Odrzucił 59 ze 139 ofert,
+  a skille ze sklepu dają tylko 7% jego użyć. Nowe skille przegrywają z ulepszonymi startowymi także dlatego,
+  że ulepszenia trafiają tylko do skilli w slotach.
+- Skille z puli innych klas (Piekielna kula, Strzał przeszywający, novy) mieszczą się w przedziale 15–70 obr./s odnowienia,
+  więc to skille klasowe wojownika odstają w dół.
+- **Zastrzeżenie:** skille nie są dziś przypisane do broni ani klasy. Prawie żaden skill HU nie ma `requiredTags` ani wymagań cech:
+  wojownik z mieczem rzuca Piekielną kulę i novy maga, a Cięcie wichru działa z każdą bronią. Wymaganie broni mają tylko
+  strzały Turris (łuk) i Uderzenie tarczą (tarcza). Pole `classId` w katalogu HU nie filtruje puli sklepu i nagród.
+  Część 31% użyć ze sklepu u testera to skille, które po przypisaniu do broni byłyby niedostępne.
+- Tester z rotacją i zakupami wygrywa 45/50, czyli więcej niż w serii 4. Pełna kolekcja skilli mu nie szkodzi, a raczej pomaga.
+
+### Gracz i piętro II
+
+27 z 28 śmierci gracza padło na piętrze II, najczęściej od kultysty (16). Oferty sklepu niewiele tu zmieniają, bo przed piętrem II
+jest tylko jedna przerwa. Gracz na starcie każdego podejścia zamienia Szarżę na Egzekucję (45×), bo Egzekucja ma 341 obrażeń na użycie.
+Spadek z 13/20 do 22/50 może więc wynikać z utraty doskoku do strzelców, ale może to być też szum: przy 20 podejściach rozrzut wynosi ok. ±11 p.p.
+Do sprawdzenia: seria gracza z Szarżą zablokowaną w slocie.
+
+### Propozycja balansu (do decyzji)
+
+1. **Rozpłatanie:** cofnąć część korekt z serii 2–4, np. odnowienie 4 → 5 s i obrażenia 39 → 34. Daje to ok. 29 obr./s odnowienia,
+   czyli poziom Cięcia wichru. Powalenie zostaje jako cecha skilla.
+2. **Cięcie wichru:** −10% obrażeń albo odnowienie 5 → 5,5 s (ok. 27 obr./s odnowienia).
+3. **Pozostałe skille wojownika:** podnieść do 22–28 obr./s odnowienia. Trzęsienie, Upadek kata i Piekielna szarża
+   +20–30% obrażeń albo krótsze odnowienie. Młynek wymaga osobnej analizy (7 obr./s odnowienia; możliwe, że jego obrażenia nie trafiają w pełni do telemetrii).
+4. **Zmiana skilla nie może zerować inwestycji:** obecnie ulepszenia zostają w starym skillu. Można np. zwracać część dusz przy wymianie
+   albo dawać nowemu skillowi poziom startowy równy połowie poziomu wymienianego.
+
+## Szósta seria: skille przypisane do broni, 2 × 50 podejść (2026-10-28)
+
+Skille wymagają rodzaju broni (ostrze, ciężka broń, sztylet, łuk, fokus), a ich obrażenia zależą od siły broni.
+Kupione odblokowania skilli i broni są dla każdej klasy. Dane: [wojownik-v6/RAPORT_class_knight.md](wojownik-v6/RAPORT_class_knight.md).
+
+| | Seria 5 | Seria 6 |
+|---|---|---|
+| Tester – zwycięstwa | 45/50 | 45/50 |
+| Gracz – zwycięstwa | 22/50 | **39/50** |
+| Różnych skilli na podejście (tester / gracz) | 6,1 / 5,2 | 5,9 / 4,1 |
+| Udział użyć: sklep (tester / gracz) | 31% / 7% | 36% / 1% |
+| Gracz: oferty kupione / odrzucone | 56 / 59 | 9 / 157 |
+
+Wnioski:
+- Sklep proponuje teraz tylko skille pasujące do broni, więc wojownik nie dostaje już Piekielnej kuli ani nov.
+  Tester kupuje wszystko i dalej wygrywa 45/50.
+- Gracz wygrywa 39/50, bo od początku gra zestawem Cięcie wichru + Rozpłatanie (odblokowanie) + Szarża i wymienia skille tylko
+  wyjątkowo. **Cel „korzystanie z wielu skilli” nie jest spełniony**: pozostałe skille wojownika przegrywają z dwoma startowymi
+  (patrz seria 5: 30–42 wobec 7–19 obr./s odnowienia), więc gracz odrzuca 157 z 207 ofert.
+- Egzekucja u testera: 810 obrażeń na użycie, czyli wartość odstająca. Do sprawdzenia przy balansie.
+- Pierwszy przebieg gracza (14/50) był błędny. Bot brał na start dodatek z bronią innego rodzaju (np. Młot burzy),
+  przez co jego skill startowy przestawał działać. To samo grozi graczowi: **ekran przygotowania powinien ostrzegać**,
+  gdy broń z dodatków nie pasuje do skilla startowego.
+
+## Siódma seria: balans skilli wojownika, ostrzeżenie przy dodatkach, 2 × 50 podejść (2026-10-28)
+
+Cel balansu: 24–28 obrażeń na sekundę odnowienia dla wszystkich skilli wojownika (`HuBalance`, Egzekucja w treści Turris).
+
+| Skill | Zmiana | Obr./s odnowienia: seria 5 → 7 (tester) |
+|---|---|---|
+| Rozpłatanie | 39/44/44 → 32/36/36, odnowienie 4 → 5 s | 41,8 → 28,4 |
+| Cięcie wichru | 32 → 28/30/30 | 30,4 → 32,3 |
+| Fala przełamania | 34/40/46 → 30/35/40, odnowienie 7 → 8 s | 34,9 → 26,2 |
+| Upadek kata | 42/50/50 → 46/54/54, odnowienie 9 → 7 s | 18,6 → 23,8 |
+| Piekielna szarża | 38 → 42, odnowienie 8 → 6,5 s | 19,1 → 28,6 |
+| Trzęsienie | 34 → 40, odnowienie 8 → 6 s | 16,6 → za mało danych |
+| Młynek | 11 → 23 na obrót, odnowienie 9 → 6 s | 7,1 → 15,2 |
+| Egzekucja | mnożnik 1,6 → 1,2, premia +100% → +60%, odnowienie 7 → 9 s | 90 (810/użycie) → 41,7 |
+
+Ekran przygotowania ostrzega teraz, gdy broń z dodatków nie pozwala użyć skilla startowego (np. kostur zamiast miecza przy Cięciu wichru).
+Dane: [wojownik-v7/RAPORT_class_knight.md](wojownik-v7/RAPORT_class_knight.md).
+
+| | Seria 6 | Seria 7 |
+|---|---|---|
+| Tester – zwycięstwa | 45/50 | 37/50 |
+| Gracz – zwycięstwa | 39/50 | 34/50 |
+| Różnych skilli na podejście (tester / gracz) | 5,9 / 4,1 | 5,5 / 4,2 |
+| Gracz: udział użyć ze sklepu, oferty kupione / odrzucone | 1%, 9 / 157 | 7%, 28 / 123 |
+
+Wnioski:
+- Rozrzut skilli wojownika zmalał z 7–42 do 24–32 obrażeń na sekundę odnowienia (bez Młynka). Wieża jest trochę trudniejsza: −8 zwycięstw testera, −5 gracza.
+- Gracz kupuje 3× więcej ofert i rotuje trzeci slot (Szarża → Egzekucja, Fala przełamania, Cięcie krzyżowe). Rozpłatanie i Cięcie wichru
+  dalej zostają, bo są teraz porównywalne z resztą, a do tego ulepszone (ulepszenia nie przechodzą na nowy skill) i dają atak z dystansu
+  oraz powalenie. Różnorodność wzrosła tylko nieznacznie (4,1 → 4,2 skilla na podejście).
+- Na dalszą różnorodność bardziej niż liczby wpłyną zmiany w systemie: przenoszenie części ulepszeń przy wymianie skilla, więcej ofert
+  skilli ostrzy i ciężkiej broni w sklepie, ewentualnie czwarty slot.
+- Do dalszej korekty: Młynek (15,2) i Egzekucja u testera (41,7; u gracza 24,6, bo gracz rzadziej trafia nią w powalone cele).
+
+## Ósma seria: wieża 30 pięter (fale Hell Unleashed), 2 × 20 podejść (2026-10-28)
+
+Wieża jest wiernym portem 30 fal HU. Do tego skille zdobyte później przychodzą na wyższym poziomie (progi HU).
+Dane: [wojownik-v8/RAPORT_class_knight.md](wojownik-v8/RAPORT_class_knight.md).
+
+| | Tester | Gracz |
+|---|---|---|
+| Zwycięstwa | 0/20 | 0/20 |
+| Średnie piętro | 4,6 | 5,0 |
+| Najdalej | VII | VII |
+| Ukończyło piętro IV / V / VI | 10 / 4 / 1 | 14 / 8 / 7 |
+| Ukończyło piętro VII | 0 | 0 (7 dotarło) |
+
+Wnioski:
+- **Nowa ściana to fale 4–7.** Fala 4 to ogary i pomioty przy budżecie 57 (dawne piętro IV było ręczne, ze skalą 0,95).
+  Fala 7 dokłada osiłków, czarowników mrozu, harpie i ofiarników przy życiu ×1,47. Nikt jej nie przeszedł.
+- Przyczyną jest **krzywa siły bohatera, nie liczby demonów**. W HU bohater rośnie co falę dzięki sklepowi: perki, poziomy broni (+20%/poziom),
+  przedmioty losowane na poziom fali z rzadkością i affixami, pieczęcie, atrybuty. W Turris rośnie wolniej:
+  - nagroda za piętro;
+  - jeden punkt cechy na piętro;
+  - ulepszenie broni tylko w kapliczce po bossie;
+  - brak przedmiotów skalowanych falą i brak perków.
+
+  Demony mają liczby HU, bohater ich nie dogania.
+- Wniosek dla migracji: wierna wieża HU wymaga **etapu 6 planu migracji** (przedmioty, affixy, rzadkości i ekonomia),
+  czyli sklepu co piętro z poziomami broni i perkami jak w HU.
+
+## Seria 9–10: o 20% mniej demonów niż w HU, łagodzenie pięter IV–VI (2026-10-28)
+
+Założenie projektu: w Turris ma być nieco mniej demonów niż w Hell Unleashed, na początek o 20% (`HellTower.MonsterCountScale` = 0,8,
+budżet portali każdej fali). Seria 10 dokłada łagodzenie pięter IV–VI: życie ×0,85, obrażenia ×0,9. Ma ono przywrócić przejście
+pierwszych sześciu pięter z dawnej wieży, bo bohater Turris rośnie wolniej niż w HU.
+Dane: [wojownik-v9](wojownik-v9/RAPORT_class_knight.md), [wojownik-v10](wojownik-v10/RAPORT_class_knight.md) (po 30 podejść).
+
+Odsetek podejść, które przeszły piętro VI:
+
+| | Stara wieża (seria 7) | 30 pięter, demony jak w HU | −20% demonów | −20% demonów + łagodzenie IV–VI |
+|---|---|---|---|---|
+| Gracz | ok. 68% | 35% | 57% | **77%** |
+| Tester | ok. 74% | 5% | 17% | 23% |
+
+Ukończone piętra w serii 10:
+- gracz: I 30, II 27, III 27, IV 26, V 23, VI 23, **VII 9**, VIII 1;
+- tester: I 30, II 25, III 25, IV 20, V 13, VI 7, VII 2.
+
+Wnioski:
+- Liczba demonów była częścią problemu: −20% podniosło przejście VI u gracza z 35% do 57%.
+- Gracz przechodzi teraz pierwsze sześć pięter tak jak dawną wieżę. Tester (30% celowo złych reakcji, bez meta-progresji)
+  ginie częściej niż dawniej na piętrze V i na bossie VI (Pan Sfory).
+- **Kolejną ścianą jest piętro VII**, gdzie zaczyna się pełna krzywa HU (osiłki, harpie, czarownicy mrozu, życie ×1,47). Dalsze piętra
+  wymagają progresji bohatera jak w HU (etap 6 planu migracji). Łagodzenie samych liczb tylko przesuwa ścianę.
+
+## Serie 11–16: przedmioty botów, korekty piętra VII, ponowne próby, powtórki, wolniejsze portale (2026-10-28)
+
+- **Seria 11:** boty zakładają przedmioty. Gracz bierze przedmiot z nagrody, gdy wypełni pusty slot albo poprawi build.
+  Wyniki prawie bez zmian (gracz przechodzi piętro VII w 4 z 17 podejść).
+- **Seria 12–13:** na piętrze VII o 1, potem o 8 wrogów mniej, zawsze najsłabszych (budżet maleje o koszt najsłabszego demona składu).
+  Bez efektu: gracz przechodzi 1/20 i 3/27. Boty giną po 35–65 s, mając 10–30 zabitych, więc nie decyduje liczba wrogów.
+- **Seria 14:** ponowne próby. Po śmierci bot wraca na początek piętra z zapisu stanu (do 3 prób), a po trzeciej porażce zapisuje
+  wyzwanie dla gracza (menu główne → „Wyzwania botów”). Średnie piętro: tester 6,8, gracz 7,2.
+- **Seria 15:** powtórki ostatecznych porażek, odtwarzacz HTML z widokiem z góry (`wojownik-v15/powtorki/`).
+- **Seria 16: tempo wychodzenia z portali −50%** (obserwacja gracza z powtórki: potwory wychodziły za szybko). Odstęp grup i czas
+  otwarcia portali ×2, liczba demonów bez zmian. Dane: [wojownik-v16](wojownik-v16/RAPORT_class_knight.md).
+
+| Seria 16 (po 20 podejść, 3 próby na piętro) | Tester | Gracz |
+|---|---|---|
+| Średnie piętro (poprzednio 6,9 / 6,9) | **7,7** | **9,1** |
+| Najdalej | XI | XIV |
+| Piętro VII: ukończone / próby | 12/18 | 16/21 |
+| Ściana | VI Pan Sfory (12/43), IX Królowa Topieli (1/22) | IX Królowa Topieli (6/40), XI (1/16) |
+
+Wnioski:
+- Wolniejsze portale dały największy skok ze wszystkich korekt. Piętro VII przestało być ścianą (gracz 76% prób),
+  a gracz dochodzi średnio o dwa piętra dalej.
+- Kolejne ściany to bossowie: Królowa Topieli na IX, a u testera Pan Sfory na VI. Do tego piętro XI (Rzeźnia).
+- Korekta „−8 najsłabszych na piętrze VII” zostaje do decyzji. Przy wolniejszych portalach może być zbędna.
+
 ## Ograniczenia botów (uczciwie)
 
 - Bot widzi początek zamachu z danych gry, a nie z animacji. Opóźnienie reakcji to model człowieka, nie percepcja obrazu.
@@ -188,7 +387,7 @@ gracz z Rozpłataniem nadal ginie na piętrze II od kul ognia. Boty nie wykorzys
 - Nawigacja jest prosta (prosto do celu plus omijanie zablokowań), nie ma planowania pozycji względem strzelców ani priorytetu zabijania kultystów.
   Człowiek prawdopodobnie przeszedłby piętro 2 częściej.
 - Prędkość pocisków jest szacowana stałą (14 m/s), a skille idą przy każdej okazji. Udział skilli w obrażeniach jest przez to zawyżony.
-- Jedna trudność i 20 podejść na bota: wnioski ilościowe mają dokładność rzędu ±10 p.p.
+- Jedna trudność i 20 podejść na bota (seria 5: 50): wnioski ilościowe mają dokładność rzędu ±10 p.p. (±7 p.p. przy 50).
 - Strojenie botów w trakcie prac zmieniało wyniki: wersja bez odpowiedniego leczenia wygrała 0/20, a ta sama gra z poprawionym botem 11/20.
   Wnioski z punktów 1–3 były stabilne we wszystkich czterech wersjach serii.
 

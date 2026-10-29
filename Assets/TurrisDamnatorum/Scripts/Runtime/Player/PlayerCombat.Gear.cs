@@ -86,7 +86,7 @@ namespace Turris
         void GearOnKill(IHitReceiver target)
         {
             float harvest = Power(PassiveEffectType.SoulHarvest);
-            if (harvest > 0f && !IsDead) Health.Restore(Health.Max * harvest);
+            if (harvest > 0f && !IsDead) PassiveHeal(Health.Max * harvest);
             float corpse = Power(PassiveEffectType.CorpseExplosion);
             if (corpse > 0f && target is EnemyBrain enemy && enemy.Health != null)
             {

@@ -49,6 +49,8 @@ namespace Turris.Tests
 
             var bolt = fx.Get<SpellDefinition>("spell_bolt");
             run.LearnSpell(bolt);
+            fx.GiveFocus(run); // czar wymaga fokusu (różdżka), nie klasy
+            pc.RefreshBuild();
             pc.RefreshBuild();
             Assert.AreEqual(2, run.SlotOf(run.FindSpell(bolt)), "Nowa umiejętność trafia do pierwszego wolnego slotu");
             var skill = pc.Skill(2);
@@ -308,6 +310,7 @@ namespace Turris.Tests
         {
             var run = fx.NewRun("legacy_knight");
             var bolt = run.LearnSpell(fx.Get<SpellDefinition>("spell_bolt"));
+            fx.GiveFocus(run);
             var pc = fx.NewCombatant(run);
             float mana = pc.Mana.Current;
             pc.RequestSkill(run.SlotOf(bolt));

@@ -35,6 +35,7 @@ namespace Turris.Tests
         [UnityTearDown]
         public IEnumerator UnloadMain()
         {
+            Time.timeScale = 1f;
             HuWorld.Clear();
             var main = SceneManager.GetSceneByName("Main");
             if (!main.IsValid() || !main.isLoaded) yield break;
@@ -81,6 +82,9 @@ namespace Turris.Tests
         SpellInstance Equip(SpellDefinition def, params HuSeal[] seals)
         {
             var run = root.Run;
+            // Skill wymaga rodzaju broni – broń wzorcowa rodzaju (siła ×1), żeby pomiary nie zależały od broni klasy.
+            TestWeapons.EnsureFor(run, def, id => root.config.baseItemPool.Concat(root.config.classes.SelectMany(c => c.loadouts).SelectMany(l => new[] { l.weapon, l.offHand }))
+                .FirstOrDefault(i => i != null && i.id == id));
             var inst = run.FindSpell(def) ?? run.LearnSpell(def);
             run.AssignSlot(inst, 0);
             inst.level = def.maxLevel;
@@ -134,6 +138,7 @@ namespace Turris.Tests
         public IEnumerator EveryHuSkillAndForm_DealsDamage_WithoutErrors()
         {
             yield return StartRange("class_mage");
+            Time.timeScale = 3f; // ok. 300 rzutów – czas gry ×3 (fizyka w FixedUpdate liczy te same kroki), test 3× krótszy
             var defs = root.config.classes.SelectMany(c => new[] { c.signatureSkill }).Concat(root.config.baseSpellPool)
                 .Where(d => d != null && d.HuData != null).Distinct().ToList();
             foreach (var hu in HuCatalog.Skills.Values)
@@ -164,15 +169,14 @@ namespace Turris.Tests
         }
 
         /// <summary>
-        /// Galeria wybranych skilli i form w trakcie działania (kamera gry → PNG). Zapis do TURRIS_SHOT_DIR albo do
-        /// TestResults/hu-seals, jeśli ten katalog istnieje; inaczej test jest pomijany.
+        /// Galeria wybranych skilli i form w trakcie działania (kamera gry → PNG). Zapis do TURRIS_SHOT_DIR,
+        /// tylko na żądanie (TURRIS_SHOT_DIR); inaczej test jest pomijany.
         /// </summary>
         [UnityTest, Timeout(300000)]
         public IEnumerator Gallery_SkillsAndForms_WhenRequested()
         {
             string dir = System.Environment.GetEnvironmentVariable("TURRIS_SHOT_DIR");
-            if (string.IsNullOrEmpty(dir) && Directory.Exists(Path.Combine("TestResults", "hu-seals"))) dir = Path.Combine("TestResults", "hu-seals");
-            if (string.IsNullOrEmpty(dir)) { Assert.Ignore("Utwórz TestResults/hu-seals albo ustaw TURRIS_SHOT_DIR."); yield break; }
+            if (string.IsNullOrEmpty(dir)) { Assert.Ignore("Galeria na żądanie: ustaw TURRIS_SHOT_DIR."); yield break; }
             Directory.CreateDirectory(dir);
             yield return StartRange("class_mage");
             var shots = new (string skill, string form, float at)[]

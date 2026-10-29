@@ -1,0 +1,140 @@
+{
+    "title": "Wojownik, piętro 8: VIII. Zatopione Krużganki (Tester QA)",
+    "note": "Bot nie przeszedł piętra w 3 próbach (podejście 19); ostatni zabójca:  – .",
+    "created": "2026-10-28 15:19",
+    "classId": "class_knight",
+    "appearanceId": "",
+    "difficultyTier": 0,
+    "seed": 77628515,
+    "floorIndex": 7,
+    "floorsCleared": 7,
+    "souls": 78,
+    "ashEarned": 42,
+    "kills": 216,
+    "attributePoints": 0,
+    "toughness": 14,
+    "strength": 16,
+    "dexterity": 12,
+    "intelligence": 8,
+    "healthFlasks": 5,
+    "manaFlasks": 1,
+    "bonusHealthFlasks": 1,
+    "healthFraction": 1.0,
+    "manaFraction": 1.0,
+    "equipment": [
+        {
+            "id": "hu_greatsword",
+            "level": 1,
+            "slot": 0
+        },
+        {
+            "id": "head_helm",
+            "level": 2,
+            "slot": 2
+        },
+        {
+            "id": "body_chainmail",
+            "level": 0,
+            "slot": 3
+        }
+    ],
+    "inventory": [
+        {
+            "id": "weapon_bow",
+            "level": 1,
+            "slot": -1
+        }
+    ],
+    "skills": [
+        {
+            "id": "hu_cleave",
+            "level": 2,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_stomp",
+            "level": 1,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_breaker_wave",
+            "level": 0,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_cross_cut",
+            "level": 0,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_lunge",
+            "level": 2,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 0,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_warcry",
+            "level": 0,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 2,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_rend",
+            "level": 2,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 1,
+            "form": "",
+            "supports": []
+        }
+    ],
+    "signature": {
+        "id": "hu_warcry",
+        "level": 0,
+        "permanent": true,
+        "fromItem": false,
+        "slot": -1,
+        "form": "",
+        "supports": []
+    },
+    "boons": [
+        {
+            "id": "boon_vampire",
+            "count": 1
+        },
+        {
+            "id": "boon_wrath",
+            "count": 1
+        },
+        {
+            "id": "boon_ironskin",
+            "count": 1
+        }
+    ],
+    "sealRanks": [],
+    "sealPouch": [
+        "seal.homing"
+    ]
+}

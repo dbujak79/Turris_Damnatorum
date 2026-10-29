@@ -12,12 +12,12 @@ namespace Turris.Tests.Bots
     /// </summary>
     public class WarriorBotPlaytests
     {
-        const int SixHours = 6 * 60 * 60 * 1000;
+        const int SeriesTimeout = 48 * 60 * 60 * 1000; // w czasie rzeczywistym (TURRIS_BOT_REALTIME) seria trwa wiele godzin
 
-        [UnityTest, Timeout(SixHours)]
+        [UnityTest, Timeout(SeriesTimeout)]
         public IEnumerator Warrior_Tester() => BotPlaytestRunner.RunSeries<WarriorBot>(WarriorBot.ClassId, BotPersona.Tester);
 
-        [UnityTest, Timeout(SixHours)]
+        [UnityTest, Timeout(SeriesTimeout)]
         public IEnumerator Warrior_SoulsSlasher() => BotPlaytestRunner.RunSeries<WarriorBot>(WarriorBot.ClassId, BotPersona.SoulsSlasher);
     }
 }

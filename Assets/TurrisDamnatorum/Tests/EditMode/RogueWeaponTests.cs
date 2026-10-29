@@ -48,18 +48,19 @@ namespace Turris.Tests
         }
 
         [Test]
-        public void Floors_HaveWaves_BossFloorIsDuel()
+        public void Floors_ArePortalWaves_BossFloorsAreDuels()
         {
+            // Wieża = 30 fal Hell Unleashed: zwykłe piętra to portale z rosnącym budżetem, co trzecie – pojedynek z bossem.
             var floors = fx.Cfg.tower.floors;
-            // Piętra z portalami (Hell Unleashed) i bossowie w środku wieży mają własny rytm – fale liczą się na pozostałych.
-            for (int i = 0; i < floors.Count - 1; i++)
-                if (!floors[i].portals.enabled && !floors[i].enemies.Exists(e => e.isBoss))
-                    Assert.GreaterOrEqual(floors[i].WaveCount, 3, floors[i].name + ": co najmniej 3 fale");
-            Assert.AreEqual(1, floors[floors.Count - 1].WaveCount, "Boss – pojedynek");
-            int total = 0;
-            foreach (var f in floors) { total += f.enemies.Count; foreach (var w in f.extraWaves) total += w.enemies.Count; }
-            Assert.GreaterOrEqual(total, 20, "Dużo więcej wrogów niż dawniej (8), nie licząc demonów z portali");
-            Assert.IsTrue(floors.Exists(f => f.extraWaves.Exists(w => w.enemies.Exists(e => e.id == "enemy_archer"))), "Łucznicy w falach");
+            float lastBudget = 0f;
+            foreach (var f in floors)
+            {
+                if (f.isDuel) { Assert.AreEqual(1, f.WaveCount, f.name + ": boss – pojedynek"); continue; }
+                Assert.IsTrue(f.portals.enabled, f.name + ": portale");
+                Assert.GreaterOrEqual(f.portals.budget, lastBudget * 0.9f, f.name + ": budżet nie spada");
+                lastBudget = f.portals.budget;
+            }
+            Assert.Greater(lastBudget, 10f * floors[0].portals.budget, "późne fale ponad 10× liczniejsze niż pierwsza");
         }
 
         [Test]

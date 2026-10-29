@@ -30,9 +30,9 @@ namespace Turris.Tests
         [Test]
         public void Catalog_HasAllSkillsAndSeals_AndEveryOpParses()
         {
-            // 61 skilli i 186 pieczęci z HU + skille Turris na komponentach HU (Ściana ognia z dwiema formami).
+            // 61 skilli i 186 pieczęci z HU + skille Turris na komponentach HU (Ściana ognia z dwiema formami, pieczęć Grzmot).
             Assert.AreEqual(61 + 1, HuCatalog.Skills.Count);
-            Assert.AreEqual(186 + 2, HuCatalog.Seals.Count);
+            Assert.AreEqual(186 + 3, HuCatalog.Seals.Count);
             CollectionAssert.IsEmpty(HuCatalog.Errors, string.Join("\n", HuCatalog.Errors));
             Assert.IsTrue(HuCatalog.Seals.All(s => !string.IsNullOrEmpty(s.name) && s.name != s.id), "każda pieczęć ma polską nazwę");
         }
@@ -223,6 +223,17 @@ namespace Turris.Tests
             var water = Fresh(HuCatalog.Skill("skill.mage.frost_shard"));
             var matches = HuBondRules.Holding(HuCatalog.Bonds, new[] { fire.Unbonded, water.Unbonded });
             Assert.IsTrue(matches.Any(m => m.bond.id == "seal.bond.steam"), "Para: ogień + woda");
+        }
+
+        [Test]
+        public void Thunder_AddsKnockdown_AndAirSignatureKnocksDown()
+        {
+            var orb = Shipped(Orb, "seal.turris.thunder");
+            Assert.AreEqual(0.7, orb.Shape.Parameters.Get("down_seconds"), 1e-6);
+            Assert.AreEqual(Fresh(HuCatalog.Skill(Orb)).Shape.Parameters.Damage(HuElement.Fire) * 0.85, orb.Shape.Parameters.Damage(HuElement.Fire), 1e-6);
+            Assert.AreNotEqual(SealFit.Fits, Fresh(HuCatalog.Skill("skill.aura.purity")).Fit(HuCatalog.Seal("seal.turris.thunder")), "aura nie powala");
+            Assert.AreEqual(0.5, Fresh(HuCatalog.Skill("skill.sub.tempest")).Shape.Parameters.Get("down_seconds"), 1e-6);
+            Assert.AreEqual(0.6, Fresh(HuCatalog.Skill("skill.nova.air")).Shape.Parameters.Get("down_seconds"), 1e-6);
         }
     }
 }

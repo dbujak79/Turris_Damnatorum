@@ -82,6 +82,7 @@ namespace Turris
             if (!plain)
             {
                 hit.knockback = p.GetF(HuParams.Knockback);
+                hit.knockdown = p.GetF("down_seconds");
                 hit.bonusVsBleeding = p.GetF("bonus_vs_bleeding");
                 hit.bonusVsChilled = p.GetF("bonus_vs_soaked");
                 hit.statuses = HuStatuses(p);

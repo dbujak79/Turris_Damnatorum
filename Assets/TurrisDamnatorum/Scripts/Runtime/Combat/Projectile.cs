@@ -18,6 +18,12 @@ namespace Turris
         public float zoneRadius, zoneDuration, zoneInterval, zoneShare;
         /// <summary>Odrzut trafionego (m, ujemny = przyciąganie).</summary>
         public float knockback;
+        /// <summary>Rykoszet (perk HU): ile razy pocisk odbija się do najbliższego nietrafionego wroga w promieniu 7 m – bez spadku obrażeń.</summary>
+        public int ricochet;
+        /// <summary>Niestabilne pociski (perk HU): przy każdym trafieniu wybuch za tę część obrażeń (także w trafionego) o promieniu <see cref="explosionRadius"/>.</summary>
+        public float explosionShare, explosionRadius;
+        /// <summary>Pozostałość żywiołu (perk HU): wybuch zostawia strefę na 2 s (promień ×0,8, tyknięcie co 0,5 s za 10% obrażeń wybuchu).</summary>
+        public bool residue;
     }
 
     /// <summary>Pocisk: porusza się, trafia cel (lub ścianę) i znika – albo przebija kolejnych wrogów.</summary>
@@ -170,22 +176,89 @@ namespace Turris
         {
             if (opts.fullExplosion) return false; // całe obrażenia w wybuchu
             hit.sourcePosition = transform.position - velocity.normalized * 0.5f;
-            HitQuery.Apply(owner, r, hit, false);
+            var result = HitQuery.Apply(owner, r, hit, false);
+            if (result.outcome == HitOutcome.Parried && TryReflect(r)) return true;
             Push(r);
+            if (opts.explosionShare > 0f && opts.explosionRadius > 0f) PerkExplosion();
             if (opts.split)
             {
-                // Drzazgi lecą dalej pod kątem ±25°, każda za 40% obrażeń; trafionego już nie ranią.
+                // Drzazgi lecą dalej pod kątem ±25°, każda za 40% obrażeń; trafionego już nie ranią. Dziedziczą wybuch i pozostałość.
                 opts.split = false;
                 foreach (float a in new[] { -25f, 25f })
                 {
                     var h = hit; h.physical *= 0.4f; h.magic *= 0.4f;
-                    var child = Spawn(transform.position, Quaternion.Euler(0, a, 0) * velocity, speedValue, h, faction, owner, color, radiusVisual * 0.8f, 1.5f, null, 0f, arrowModel != null);
+                    var child = Spawn(transform.position, Quaternion.Euler(0, a, 0) * velocity, speedValue, h, faction, owner, color, radiusVisual * 0.8f, 1.5f, null, 0f, arrowModel != null,
+                        new ProjectileOptions { explosionShare = opts.explosionShare, explosionRadius = opts.explosionRadius, residue = opts.residue });
                     if (child != null) child.tracker.TryRegister(r);
                 }
             }
             if (pierceLeft > 0) { pierceLeft--; HellFx.Impact(transform.position, hit.visualElement ?? HellFx.For(hit.element), color, 0.5f); return true; }
+            if (opts.ricochet > 0 && Bounce()) return true;
             return false;
         }
+
+        /// <summary>Rykoszet: skręt do najbliższego żywego, jeszcze nietrafionego wroga w promieniu 7 m (zużywa ładunek tylko, gdy taki jest).</summary>
+        bool Bounce()
+        {
+            const float Range = 7f;
+            int n = Physics.OverlapSphereNonAlloc(transform.position, Range, Near, ~0, QueryTriggerInteraction.Ignore);
+            IHitReceiver best = null; float bestD = float.MaxValue;
+            for (int i = 0; i < n; i++)
+            {
+                var c = Near[i].GetComponentInParent<IHitReceiver>();
+                if (c == null || c.Faction == faction || c.IsDead || tracker.Contains(c)) continue;
+                float d = (c.AimPoint - transform.position).sqrMagnitude;
+                if (d < bestD) { bestD = d; best = c; }
+            }
+            if (best == null) return false;
+            opts.ricochet--;
+            Vector3 to = best.AimPoint - transform.position;
+            velocity = to.normalized * speedValue;
+            homingTarget = best; homing = Mathf.Max(homing, 120f);
+            life = Mathf.Max(life, 1.5f);
+            HellFx.Impact(transform.position, hit.visualElement ?? HellFx.For(hit.element), color, 0.5f);
+            return true;
+        }
+
+        /// <summary>Wybuch perka przy trafieniu: część obrażeń we wszystkich w promieniu (z trafionym), potem ewentualna strefa.</summary>
+        void PerkExplosion()
+        {
+            var boom = hit;
+            boom.physical *= opts.explosionShare; boom.magic *= opts.explosionShare;
+            boom.sourcePosition = transform.position; boom.explosionRadius = 0f; boom.leaveZoneDuration = 0f;
+            var t = new HitTracker();
+            HitQuery.Sphere(transform.position, opts.explosionRadius, faction, t, x => HitQuery.Apply(owner, x, boom, false));
+            HellFx.Shockwave(transform.position, hit.visualElement ?? HellFx.For(hit.element), color, opts.explosionRadius);
+            Sfx.Play(hit.element == Element.Fire ? SoundId.FireExplosion : SoundId.Shockwave, transform.position, 0.7f);
+            if (!opts.residue) return;
+            Vector3 ground = transform.position;
+            if (Physics.Raycast(transform.position + Vector3.up * 0.2f, Vector3.down, out var gh, 6f, ~0, QueryTriggerInteraction.Ignore)) ground = gh.point;
+            var zh = boom; zh.physical *= 0.1f; zh.magic *= 0.1f; zh.poiseDamage *= 0.1f; zh.knockback = 0f; zh.knockdown = 0f;
+            if (DamageZone.Active.Count < 24) DamageZone.Spawn(ground, opts.explosionRadius * 0.8f, 2f, 0.5f, zh, faction, owner, color);
+        }
+
+        /// <summary>
+        /// Odbicie (perk HU): sparowany pocisk wroga zmienia stronę – wraca ×1,4 szybciej, z obrażeniami × moc perka i dłuższym lotem.
+        /// </summary>
+        bool TryReflect(IHitReceiver parrier)
+        {
+            if (faction != Faction.Enemy || !(parrier is PlayerCombat pc) || pc.Build == null) return false;
+            float share = pc.Build.effects[PassiveEffectType.ParryReflect];
+            if (share <= 0f) return false;
+            var shooter = owner;
+            faction = Faction.Player; owner = pc;
+            hit.physical *= share; hit.magic *= share; hit.attacker = pc; hit.dodgeable = true; hit.parryable = false;
+            tracker.Reset(); tracker.TryRegister(pc);
+            speedValue *= PerkMechanics.ReflectSpeed;
+            Vector3 back = shooter != null && !shooter.IsDead ? shooter.AimPoint - transform.position : -velocity;
+            velocity = back.normalized * speedValue;
+            homingTarget = shooter != null && !shooter.IsDead ? shooter : null; homing = homingTarget != null ? 90f : 0f;
+            life += PerkMechanics.ReflectExtraLife;
+            CombatEvents.RaiseWorldText(pc.AimPoint + Vector3.up * 0.5f, "ODBICIE", new Color(1f, 0.95f, 0.5f));
+            return true;
+        }
+
+        static readonly Collider[] Near = new Collider[48];
 
         void Push(IHitReceiver r)
         {

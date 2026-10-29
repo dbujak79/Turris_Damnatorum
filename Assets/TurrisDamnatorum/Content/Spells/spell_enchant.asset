@@ -16,6 +16,7 @@ MonoBehaviour:
   displayName: "Zakl\u0119te ostrze"
   description: "Hybryda: bro\u0144 zadaje dodatkowe obra\u017Cenia magiczne."
   tags: 3
+  requiredTags: 4096
   kind: 3
   manaCost: 25
   castTime: 0.6

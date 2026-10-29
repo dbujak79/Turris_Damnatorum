@@ -84,65 +84,6 @@ namespace Turris.Tests.Bots
             return false;
         }
 
-        /// <summary>Kiedy użyć danego skilla – wg rodzaju (działa też dla skilli zdobytych w nagrodach).</summary>
-        bool WantsSkill(SpellDefinition def, float d, int close, float hp)
-        {
-            float reach = Mathf.Max(def.attack.reach, def.attack.radius, 2.5f);
-            bool tester = P.persona == BotPersona.Tester;
-            switch (def.kind)
-            {
-                case SpellKind.Cone:
-                case SpellKind.Cleave:
-                case SpellKind.Flurry:
-                case SpellKind.ShieldBash:
-                case SpellKind.Quake:
-                    return d <= reach * 0.9f && (close >= 2 || tester || target.CurrentState != EnemyBrain.State.Attacking);
-                case SpellKind.Wave:
-                case SpellKind.Projectile:
-                case SpellKind.Chain:
-                case SpellKind.WeaponThrow:
-                    return d >= 3.5f && d <= reach || (close >= 2 && d <= 3f);
-                case SpellKind.Charge:
-                case SpellKind.Dash:
-                    return d >= 4f && d <= Mathf.Max(reach, 8f);
-                case SpellKind.Whirlwind:
-                case SpellKind.Nova:
-                case SpellKind.Warcry:
-                    return close >= 2 || (tester && close >= 1);
-                case SpellKind.Heal:
-                case SpellKind.Barrier:
-                case SpellKind.FrostArmor:
-                case SpellKind.Undying:
-                    return hp < 0.5f && close >= 1;
-                case SpellKind.WeaponBuff:
-                    return d <= 6f && Pc.WeaponBuffTime <= 0f;
-                case SpellKind.Aura:
-                    return false; // aury przełącza OnFight
-                case SpellKind.Zone:
-                case SpellKind.Meteor:
-                case SpellKind.Storm:
-                    return d <= reach && (close >= 2 || target.Def.isBoss);
-                default:
-                    return d <= reach;
-            }
-        }
-
-        protected override void OnFight()
-        {
-            // Aura zdobyta w nagrodzie: włącz raz i zostaw.
-            for (int slot = 0; slot < RunState.SkillSlotCount; slot++)
-            {
-                var sk = Pc.Skill(slot);
-                if (sk != null && sk.Def.IsAura && !auraTried.Contains(sk.Def) && Pc.Actions.IsIdle)
-                {
-                    auraTried.Add(sk.Def);
-                    Pc.RequestSkill(slot);
-                }
-            }
-        }
-
-        readonly HashSet<SpellDefinition> auraTried = new HashSet<SpellDefinition>();
-
         protected override ActionType ChooseAttack(EnemyBrain e)
         {
             // Dwuręczny: mocny cios łamie postawę – gracz souls chętnie otwiera nim serię na odsłoniętym celu.
@@ -150,12 +91,6 @@ namespace Turris.Tests.Bots
                 e.CurrentState == EnemyBrain.State.Recoil && Pc.Stamina.Fraction > 0.6f)
                 return ActionType.HeavyAttack;
             return base.ChooseAttack(e);
-        }
-
-        public override void Intermission()
-        {
-            auraTried.Clear();
-            base.Intermission();
         }
     }
 }

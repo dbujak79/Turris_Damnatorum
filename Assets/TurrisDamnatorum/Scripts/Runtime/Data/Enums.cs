@@ -123,6 +123,32 @@ namespace Turris
         LowHealthDamage,      // poniżej 35% życia +X obrażeń (ułamek)
         SoulHarvest,          // zabicie leczy X maks. życia
         ProjectilePierce,     // strzały z broni przebijają X kolejnych wrogów
+        // Perki Hell Unleashed zmieniające mechanikę (wartość na poziom perka, sumowana):
+        AreaSize,             // +X% promieni umiejętności i wybuchów pocisków broni
+        Evasion,              // +X% uchylenia (razem ze Zręcznością do 50%)
+        PassiveBlockChance,   // +X% szansy bloku biernego z tarczą
+        BlockCostReduction,   // −X% kosztu bloku (wytrzymałość)
+        MeleeKnockback,       // zwykły cios wręcz odrzuca o X m
+        MeleeRange,           // +X% zasięgu zwykłego ciosu wręcz
+        MomentumAttackSpeed,  // rozpęd: +X% szybkości ataku za warstwę (do 5)
+        PenetrationPhysical,  // −X punktów % odporności wroga (nie poniżej 0)
+        PenetrationFire,
+        PenetrationFrost,
+        PenetrationLightning,
+        PenetrationEarth,
+        ProjectileRicochet,   // pocisk broni odbija się do X kolejnych wrogów (7 m)
+        ProjectileVolley,     // poziom perka Rozszczepienie: 2 / 3 / 5 / 8 pocisków na strzał
+        ProjectileSplit,      // pocisk broni pęka przy trafieniu na 2 drzazgi
+        ProjectileExplosion,  // poziom perka Niestabilne pociski: wybuch za 30 / 45 / 60% obrażeń
+        ProjectileResidue,    // wybuch pocisku broni zostawia strefę żywiołu (2 s)
+        ParryReflect,         // sparowany pocisk wraca do wroga za X obrażeń
+        SunderOnHit,          // ciosy wręcz (także technik) nakładają pęknięcie pancerza
+        BleedOnHit,           // zwykłe ciosy wręcz nakładają krwawienie
+        BurnOnHit,            // zwykłe ataki bronią podpalają
+        ChillOnHit,           // zwykłe ataki bronią wychładzają (HU: przemoczenie)
+        StaggerOnHit,         // zwykłe ataki bronią zachwiewają
+        ConvertFireToFrost,   // X części ognia staje się mrozem (wszystkie trafienia)
+        ConvertPhysicalToFire,// X części obrażeń fizycznych zwykłego ciosu wręcz staje się ogniem
     }
 
     public enum HitOutcome { Ignored, Hit, Dodged, Parried, Blocked, GuardBroken }
@@ -131,7 +157,6 @@ namespace Turris
 
     public enum ActionPhase { Startup, Active, Recovery, Finished }
 
-    public enum RewardKind { Item, Boon, LearnSpell, UpgradeSpell }
 
     public enum UnlockKind { StartingItem, Spell, Boon, Difficulty }
 
@@ -148,5 +173,10 @@ namespace Turris
         Flask = 1 << 6,
         Guard = 1 << 7,
         Ranged = 1 << 8,   // broń dystansowa (łuk) – wymagana przez strzały specjalne
+        // Rodzaje broni (WeaponFamilies) – skill wymaga rodzaju broni, nie klasy; broń może należeć do kilku rodzajów.
+        Blade = 1 << 9,        // ostrze: miecze, szable, sztylety
+        HeavyWeapon = 1 << 10, // ciężka broń: topory, młoty, buławy, gwiazdy zaranne, korbacze, cepy
+        Dagger = 1 << 11,      // sztylety (też ostrza) i szabla
+        Focus = 1 << 12,       // fokus magiczny: różdżka, kostur, grymuar
     }
 }

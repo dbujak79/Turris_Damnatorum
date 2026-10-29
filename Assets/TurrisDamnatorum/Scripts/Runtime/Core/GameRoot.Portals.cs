@@ -190,10 +190,11 @@ namespace Turris
 
         bool RollElite(PortalSpawning s, EnemyDefinition def)
         {
-            if (def.isBoss || def.isMinion) return false;
-            if (eliteCountdown < 0) eliteCountdown = rng.Next(s.eliteEvery.x, s.eliteEvery.y + 1);
+            if (def.isBoss || def.isMinion || Run.floorIndex + 1 < HellTower.EliteFirstWave) return false;
+            var every = HellTower.EliteEvery; // HU balans 2.0 – wspólne dla wszystkich pięter (pole piętra zostaje dla starych assetów)
+            if (eliteCountdown < 0) eliteCountdown = rng.Next(every.x, every.y + 1);
             if (--eliteCountdown > 0) return false;
-            eliteCountdown = rng.Next(s.eliteEvery.x, s.eliteEvery.y + 1);
+            eliteCountdown = rng.Next(every.x, every.y + 1);
             return true;
         }
 
@@ -226,7 +227,8 @@ namespace Turris
             Vector3 look = Player != null ? Player.transform.position - pos : -pos;
             look.y = 0f;
             if (look.sqrMagnitude > 1e-3f) e.transform.rotation = Quaternion.LookRotation(look);
-            e.Setup(def, Player, statScale, Run.difficulty, elite, config.balance);
+            var floor = CurrentFloor;
+            e.Setup(def, Player, statScale, Run.difficulty, elite, config.balance, floor?.DamageScale ?? -1f, floor?.speedScale ?? 1f);
             enemies.Add(e);
             return e;
         }

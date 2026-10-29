@@ -45,6 +45,7 @@ namespace Turris.Tests.Bots
             Dodges(sb, series);
             Loadouts(sb, series);
             Skills(sb, series);
+            SkillCollection(sb, series);
             ActionsAndEconomy(sb, series);
             Anomalies(sb, series);
 
@@ -119,6 +120,17 @@ namespace Turris.Tests.Bots
                     sb.AppendLine($"| {s.personaName} | {g.Key + 1}. {g.First().name} | {g.Count()} | {cleared.Count} | {F(Avg(cleared.Select(f => f.time)), 0)} s | " +
                                   $"{F(Avg(g.Select(f => f.damageTaken)), 0)} | {F(Avg(g.Select(f => (float)f.flasks)))} | {F(Avg(g.Select(f => (float)f.kills)))} |");
                 }
+            }
+            sb.AppendLine();
+            sb.AppendLine("Po śmierci bot powtarza piętro z zapisu stanu z jego początku (do 3 prób); „Dotarło” liczy każdą próbę.");
+            sb.AppendLine();
+            foreach (var s in series)
+            {
+                var retries = Tally.Merge(s.runs.Select(r => r.floorRetries));
+                var ch = s.runs.SelectMany(r => r.challenges).ToList();
+                if (retries.Sum > 0)
+                    sb.AppendLine($"**{s.personaName}** – ponowne próby: " + string.Join(", ", retries.Items.OrderBy(x => int.Parse(x.key)).Select(x => $"piętro {x.key} ×{x.val}")) +
+                                  $"; wyzwań (3 porażki na piętrze): {ch.Count}" + (ch.Count > 0 ? $" – {string.Join(", ", ch.Distinct())}" : "") + ".");
             }
             sb.AppendLine();
         }
@@ -310,6 +322,68 @@ namespace Turris.Tests.Bots
             }
         }
 
+        static readonly string[] Origins = { "startowy", "odblokowanie", "zestaw", "klasa", "nagroda", "sklep", "przedmiot" };
+
+        /// <summary>
+        /// Różnorodność skilli: ile różnych skilli bohater używa, skąd pochodzą użycia (start, odblokowanie, nagroda, sklep),
+        /// oferty sklepu, zamiany w slotach i porównanie skuteczności skilli startowych z dokupionymi w trakcie podejścia.
+        /// </summary>
+        static void SkillCollection(StringBuilder sb, IList<BotSeries> series)
+        {
+            sb.AppendLine("## Kolekcja skilli: różnorodność, sklep, zamiany");
+            sb.AppendLine();
+            sb.AppendLine("Pochodzenie: **startowy** – skill startowy wybrany przed podejściem, **odblokowanie** – kupiony na stałe za popiół, " +
+                          "**zestaw** – z zestawu startowego, **klasa** – skill klasy pod osobnym przyciskiem, **nagroda** – wybrany po piętrze, " +
+                          "**sklep** – oferta sklepu dusz, **przedmiot** – z broni. „?” – serie sprzed oznaczania skilla klasy.");
+            sb.AppendLine();
+            foreach (var s in series)
+            {
+                int n = Math.Max(1, s.runs.Count);
+                var distinct = s.runs.Select(r => (float)r.skillUses.Items.Count(x => x.val > 0)).ToList();
+                // Na podejście: pochodzenie każdego skilla z jego użyć w tym podejściu – obrażenia i poziomy przypisane dokładnie.
+                var byOrigin = new Dictionary<string, (float uses, float dmg, float lvl)>();
+                var bySkill = new Dictionary<string, (string orig, float runs, float uses, float dmg, float lvl)>();
+                foreach (var r in s.runs)
+                    foreach (var (key, uses) in r.skillUsesByOrigin.Items)
+                    {
+                        int bar = key.LastIndexOf('|');
+                        string name = key.Substring(0, bar), orig = key.Substring(bar + 1);
+                        float share = uses / Math.Max(1f, r.skillUses.Get(name));
+                        float dmg = r.damageBySource.Get(name) * share, lvl = r.skillLevelSum.Get(name) * share;
+                        byOrigin.TryGetValue(orig, out var o);
+                        byOrigin[orig] = (o.uses + uses, o.dmg + dmg, o.lvl + lvl);
+                        bySkill.TryGetValue(name, out var k);
+                        bySkill[name] = (k.orig == null || k.uses < uses ? orig : k.orig, k.runs + 1, k.uses + uses, k.dmg + dmg, k.lvl + lvl);
+                    }
+                float allUses = byOrigin.Values.Sum(x => x.uses);
+                sb.AppendLine($"**{s.personaName}** — różnych skilli użytych na podejście: średnio {F(Avg(distinct))}, mediana {F(Median(distinct))}, " +
+                              $"najwięcej {(distinct.Count > 0 ? distinct.Max() : 0):0} (3 sloty + skill klasy, zamiany między piętrami dokładają kolejne).");
+                sb.AppendLine();
+                sb.AppendLine("| Pochodzenie | Udział użyć | Użycia/podejście | Obr./użycie | Śr. poziom przy użyciu |");
+                sb.AppendLine("|---|---|---|---|---|");
+                foreach (var o in Origins.Concat(byOrigin.Keys.Except(Origins)))
+                {
+                    if (!byOrigin.TryGetValue(o, out var v) || v.uses <= 0) continue;
+                    sb.AppendLine($"| {o} | {Pct(v.uses, allUses)} | {F(v.uses / n)} | {(v.dmg > 0 ? F(v.dmg / v.uses, 0) : "–")} | {F(v.lvl / v.uses)} |");
+                }
+                sb.AppendLine();
+                var offers = Tally.Merge(s.runs.Select(r => r.shopOffers));
+                if (offers.Sum > 0)
+                    sb.AppendLine($"Oferty sklepu dusz: widziane {offers.Get("widziana")}, kupione {offers.Get("kupiona")}, odrzucone {offers.Get("odrzucona")}, " +
+                                  $"za mało dusz {offers.Get("za mało dusz")}.");
+                var swaps = Tally.Merge(s.runs.Select(r => r.skillSwaps));
+                if (swaps.Sum > 0)
+                    sb.AppendLine($"Zamiany w slotach: {F(swaps.Sum / n)} na podejście; najczęstsze: " +
+                                  string.Join(", ", swaps.Items.OrderByDescending(x => x.val).Take(6).Select(x => $"{x.key} ×{x.val}")) + ".");
+                sb.AppendLine();
+                sb.AppendLine("| Skill | Pochodzenie (najczęstsze) | Podejścia z użyciem | Użycia/podejście z użyciem | Obr./użycie | Śr. poziom |");
+                sb.AppendLine("|---|---|---|---|---|---|");
+                foreach (var (name, v) in bySkill.OrderByDescending(x => x.Value.uses))
+                    sb.AppendLine($"| {name} | {v.orig} | {v.runs} | {F(v.uses / Math.Max(1f, v.runs))} | {(v.dmg > 0 ? F(v.dmg / v.uses, 0) : "–")} | {F(v.lvl / Math.Max(1f, v.uses))} |");
+                sb.AppendLine();
+            }
+        }
+
         static void ActionsAndEconomy(StringBuilder sb, IList<BotSeries> series)
         {
             sb.AppendLine("## Akcje, nagrody, zakupy");
@@ -321,12 +395,17 @@ namespace Turris.Tests.Bots
                 sb.AppendLine($"**{s.personaName}** — akcje na podejście: " + string.Join(", ", acts.Items.OrderByDescending(x => x.val).Select(x => $"{x.key} {F(x.val / n)}")) + ".");
                 sb.AppendLine($"Czas w bloku {F(Avg(s.runs.Select(r => r.timeBlocking)), 0)} s, w biegu {F(Avg(s.runs.Select(r => r.timeSprinting)), 0)} s, " +
                               $"bez wytrzymałości (<10%) {F(Avg(s.runs.Select(r => r.timeLowStamina)), 0)} s na podejście.");
-                var rew = Tally.Merge(s.runs.Select(r => r.rewards));
-                if (rew.k.Count > 0) sb.AppendLine("Najczęściej brane nagrody: " + string.Join(", ", rew.Items.OrderByDescending(x => x.val).Take(8).Select(x => $"{x.key} ×{x.val}")) + ".");
                 var buy = Tally.Merge(s.runs.Select(r => r.purchases));
                 if (buy.k.Count > 0) sb.AppendLine("Zakupy: " + string.Join(", ", buy.Items.OrderByDescending(x => x.val).Take(8).Select(x => $"{x.key} ×{x.val}")) + ".");
                 var attr = Tally.Merge(s.runs.Select(r => r.attributes));
                 if (attr.k.Count > 0) sb.AppendLine("Punkty cech: " + string.Join(", ", attr.Items.Select(x => $"{x.key} {x.val}")) + ".");
+                var seals = Tally.Merge(s.runs.Select(r => r.seals));
+                if (seals.k.Count > 0)
+                {
+                    float Kind(string k) => seals.Items.Where(x => x.key.StartsWith(k)).Sum(x => x.val);
+                    sb.AppendLine($"Pieczęcie na podejście: z daru bossa {F(Kind("dar") / n)}, z sakwy do skilli {F(Kind("z sakwy") / n)}, kupione {F(Kind("kupiona") / n)}; " +
+                                  "najczęstsze: " + string.Join(", ", seals.Items.OrderByDescending(x => x.val).Take(6).Select(x => $"{x.key.Substring(x.key.IndexOf(':') + 2)} ×{x.val}")) + ".");
+                }
                 var meta = s.runs.SelectMany(r => r.metaUnlocks).ToList();
                 if (meta.Count > 0) sb.AppendLine("Odblokowania za popiół między podejściami: " + string.Join(", ", meta) + ".");
                 var msg = Tally.Merge(s.runs.Select(r => r.messages));
@@ -565,6 +644,12 @@ namespace Turris.Tests.Bots
                 : $"Skille robią {Pct(skillDmg, total)} obrażeń – zdrowa proporcja między bronią a umiejętnościami.");
             var bestSkill = uses.Items.Where(x => x.val >= 5).Select(x => (x.key, src.Get(x.key) / x.val)).OrderByDescending(x => x.Item2).FirstOrDefault();
             if (bestSkill.key != null) l.Add($"Najmocniej czuć „{bestSkill.key}”: {F(bestSkill.Item2, 0)} obrażeń na użycie.");
+            var byOrig = Tally.Merge(r.Select(x => x.skillUsesByOrigin));
+            float uStart = byOrig.Items.Where(x => x.key.EndsWith("|startowy")).Sum(x => x.val);
+            float uRun = byOrig.Items.Where(x => x.key.EndsWith("|nagroda") || x.key.EndsWith("|sklep")).Sum(x => x.val);
+            if (byOrig.Sum > 0)
+                l.Add($"Skill startowy to {Pct(uStart, byOrig.Sum)} moich użyć skilli, zdobyte w trakcie podejścia (nagrody, sklep) – {Pct(uRun, byOrig.Sum)}. " +
+                      $"Różnych skilli na podejście: średnio {F(Avg(r.Select(x => (float)x.skillUses.Items.Count(y => y.val > 0))))}.");
 
             var combos = r.GroupBy(x => $"{x.loadout} + {x.startSkill}").Select(g => (g.Key, g.Count(), Avg(g.Select(x => (float)x.floorReached + (x.Victory ? 1 : 0))))).OrderByDescending(x => x.Item2).ToList();
             if (combos.Count > 1)

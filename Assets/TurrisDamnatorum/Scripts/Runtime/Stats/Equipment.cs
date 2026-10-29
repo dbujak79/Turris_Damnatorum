@@ -12,6 +12,11 @@ namespace Turris
         public ItemDefinition definition;
         public int level;
         public int uid;
+        /// <summary>Hell Unleashed (etap 6): rzadkość, jakość (×(1 + 0,25·jakość) wszystkich premii) i wylosowane affixy.</summary>
+        public ItemRarity rarity;
+        public int huQuality;
+        public List<StatModifier> affixes = new List<StatModifier>();
+        public List<string> affixNames = new List<string>();
 
         public ItemInstance(ItemDefinition def, int level = 0)
         {
@@ -20,15 +25,22 @@ namespace Turris
 
         public string Name => level > 0 ? $"{definition.displayName} +{level}" : definition.displayName;
 
-        /// <summary>Mnożnik premii z poziomu jakości.</summary>
-        public float QualityFactor => 1f + 0.15f * level;
+        /// <summary>Mnożnik premii z poziomu jakości (Turris) i jakości HU.</summary>
+        public float QualityFactor => (1f + 0.15f * level) * HuQualityFactor;
+
+        public float HuQualityFactor => 1f + 0.25f * huQuality;
 
         public IEnumerable<StatModifier> Modifiers
         {
-            get { foreach (var m in definition.modifiers) yield return m.Scaled(QualityFactor); }
+            get
+            {
+                foreach (var m in definition.modifiers) yield return m.Scaled(QualityFactor);
+                foreach (var m in affixes) yield return m.Scaled(HuQualityFactor);
+            }
         }
 
-        public float WeaponLevelFactor => 1f + 0.1f * level;
+        /// <summary>Obrażenia broni z poziomu: +20% za poziom, jak w Hell Unleashed (poziomy 0–4 = HU 1–5).</summary>
+        public float WeaponLevelFactor => 1f + 0.2f * level;
     }
 
     /// <summary>Sloty wyposażenia z kontrolą zgodności i obsługą broni dwuręcznej.</summary>

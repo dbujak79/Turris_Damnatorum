@@ -137,7 +137,7 @@ namespace Turris.Tests
                 Assert.AreSame(hu, s.HuData, hu.id);
                 if (!hu.IsSignature && hu.shop) Assert.Contains(s, fx.Cfg.baseSpellPool, $"{s.id} w puli nagród");
             }
-            Assert.AreEqual(3, fx.Get<SpellDefinition>("hu_whirlwind").minFloor, "MinWave 16 → po trzecim piętrze");
+            Assert.AreEqual(15, fx.Get<SpellDefinition>("hu_whirlwind").minFloor, "MinWave 16 → piętro 16 (oferta po ukończeniu 15.)");
             Assert.AreEqual(0, fx.Get<SpellDefinition>("hu_volley").minFloor);
         }
 

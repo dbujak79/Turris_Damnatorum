@@ -18,19 +18,22 @@ MonoBehaviour:
   tags: 0
   floors:
   - name: "I. Wrota Otch\u0142ani"
-    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
+    arena: {fileID: 11400000, guid: 49f88cb9077444547aaadd61845c20d8, type: 2}
     enemies: []
     extraWaves: []
     statScale: 1
+    damageScale: 1
+    speedScale: 1
+    soulScale: 0.8
     isDuel: 0
     isBoss: 0
     restAfter: 0
     ashReward: 3
     portals:
       enabled: 1
-      duration: 75
-      budget: 30
-      groupInterval: 3.18
+      duration: 150
+      budget: 24
+      groupInterval: 6.36
       minGroup: 1
       maxGroup: 2
       maxAlive: 30
@@ -43,16 +46,19 @@ MonoBehaviour:
     arena: {fileID: 11400000, guid: 4154374c7a45b5d4a804c84f8b75c3c0, type: 2}
     enemies: []
     extraWaves: []
-    statScale: 1.05
+    statScale: 1.07
+    damageScale: 1.04
+    speedScale: 1.01
+    soulScale: 0.81
     isDuel: 0
     isBoss: 0
     restAfter: 0
-    ashReward: 6
+    ashReward: 4
     portals:
       enabled: 1
-      duration: 78
-      budget: 41
-      groupInterval: 2.91
+      duration: 156
+      budget: 35.2
+      groupInterval: 5.82
       minGroup: 1
       maxGroup: 2
       maxAlive: 30
@@ -70,11 +76,14 @@ MonoBehaviour:
     enemies:
     - {fileID: 11400000, guid: d87b74f1e7ce2d44ebf2993a7b2df8fe, type: 2}
     extraWaves: []
-    statScale: 1
+    statScale: 0.67
+    damageScale: 0.99
+    speedScale: 1
+    soulScale: 0.68
     isDuel: 1
     isBoss: 0
     restAfter: 1
-    ashReward: 10
+    ashReward: 5
     portals:
       enabled: 0
       duration: 75
@@ -86,64 +95,335 @@ MonoBehaviour:
       minDistance: 7
       eliteEvery: {x: 20, y: 30}
       composition: []
-  - name: IV. Zbrojownia
+  - name: "IV. Psiarnia Piekie\u0142"
     arena: {fileID: 11400000, guid: 4154374c7a45b5d4a804c84f8b75c3c0, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 1.0370001
+    damageScale: 1.008
+    speedScale: 1.02
+    soulScale: 0.82
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 6
+    portals:
+      enabled: 1
+      duration: 168
+      budget: 45.600002
+      groupInterval: 5.06
+      minGroup: 1
+      maxGroup: 2
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 3.4
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 2.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2.5
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 2.7
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1.8
+  - name: "V. Psiarnia Piekie\u0142"
+    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 1.105
+    damageScale: 1.0439999
+    speedScale: 1.02
+    soulScale: 0.83
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 7
+    portals:
+      enabled: 1
+      duration: 174
+      budget: 56
+      groupInterval: 6.36
+      minGroup: 1
+      maxGroup: 3
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 3.25
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 2.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2.5
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
+        weight: 2.7
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+        weight: 1.2
+  - name: VI. Pan Sfory
+    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
     enemies:
-    - {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
-    - {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
-    - {fileID: 11400000, guid: d319f454e72c6b542a30bb9cec6a4157, type: 2}
-    extraWaves:
-    - enemies:
-      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
-      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
-      - {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
-    - enemies:
-      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
-      - {fileID: 11400000, guid: 885fc90c41534d1408fdb3a251354b9a, type: 2}
-      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
-      - {fileID: 11400000, guid: 577089ab3c667f14f9d827e8fd90485e, type: 2}
-      - {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
-    - enemies:
-      - {fileID: 11400000, guid: 0f03c0977312be74c92e3e218d770a73, type: 2}
-    statScale: 0.95
+    - {fileID: 11400000, guid: e008a6479d483684390959b410ea40d5, type: 2}
+    extraWaves: []
+    statScale: 0.84150004
+    damageScale: 1.125
+    speedScale: 1
+    soulScale: 1.81
+    isDuel: 1
+    isBoss: 0
+    restAfter: 1
+    ashReward: 8
+    portals:
+      enabled: 0
+      duration: 75
+      budget: 30
+      groupInterval: 3
+      minGroup: 1
+      maxGroup: 2
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition: []
+  - name: "VII. Zatopione Kru\u017Cganki"
+    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 1.47
+    damageScale: 1.24
+    speedScale: 1.04
+    soulScale: 0.85
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 9
+    portals:
+      enabled: 1
+      duration: 186
+      budget: 75.200005
+      groupInterval: 5.78
+      minGroup: 1
+      maxGroup: 3
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 2.95
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 2.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2.5
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
+        weight: 2.7
+      - enemy: {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 0ff76ed6ed1d2114ea7d6cfd22573a97, type: 2}
+        weight: 0.5
+  - name: "VIII. Zatopione Kru\u017Cganki"
+    arena: {fileID: 11400000, guid: 4154374c7a45b5d4a804c84f8b75c3c0, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 1.56
+    damageScale: 1.28
+    speedScale: 1.04
+    soulScale: 0.86
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 10
+    portals:
+      enabled: 1
+      duration: 192
+      budget: 96.8
+      groupInterval: 5.54
+      minGroup: 1
+      maxGroup: 3
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 2.8
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 2.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2.5
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 93bdabd328211874caf88bd76620c980, type: 2}
+        weight: 3.24
+      - enemy: {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 0ff76ed6ed1d2114ea7d6cfd22573a97, type: 2}
+        weight: 0.6
+  - name: "IX. Kr\xF3lowa Topieli"
+    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
+    enemies:
+    - {fileID: 11400000, guid: 836f0e42e4ab2394581488880af48048, type: 2}
+    extraWaves: []
+    statScale: 0.83
+    damageScale: 0.94
+    speedScale: 1
+    soulScale: 0.59
+    isDuel: 1
+    isBoss: 0
+    restAfter: 1
+    ashReward: 11
+    portals:
+      enabled: 0
+      duration: 75
+      budget: 30
+      groupInterval: 3
+      minGroup: 1
+      maxGroup: 2
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition: []
+  - name: "X. Rze\u017Ania"
+    arena: {fileID: 11400000, guid: 4154374c7a45b5d4a804c84f8b75c3c0, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 1.75
+    damageScale: 1.36
+    speedScale: 1.06
+    soulScale: 0.87
     isDuel: 0
     isBoss: 0
     restAfter: 0
     ashReward: 12
     portals:
-      enabled: 0
-      duration: 75
-      budget: 30
-      groupInterval: 3
-      minGroup: 1
-      maxGroup: 2
+      enabled: 1
+      duration: 204
+      budget: 114.8
+      groupInterval: 6.42
+      minGroup: 2
+      maxGroup: 4
       maxAlive: 30
       minDistance: 7
       eliteEvery: {x: 20, y: 30}
-      composition: []
-  - name: "V. Brama Stra\u017Cnika"
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 2.65
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 2.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2.5
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 93bdabd328211874caf88bd76620c980, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: 0ff76ed6ed1d2114ea7d6cfd22573a97, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: b37ea41ddcf0ff44c88eff6dede79feb, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 12c08c3be0aa8d447ae70b9eec8a18c8, type: 2}
+        weight: 0.8
+  - name: "XI. Rze\u017Ania"
+    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 1.8256578
+    damageScale: 1.4
+    speedScale: 1.06
+    soulScale: 0.88
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 13
+    portals:
+      enabled: 1
+      duration: 210
+      budget: 127.200005
+      groupInterval: 7.52
+      minGroup: 2
+      maxGroup: 4
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 2.35
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 2.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2.5
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 93bdabd328211874caf88bd76620c980, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 9a2f7113840d4c84988906a80b5618e4, type: 2}
+        weight: 2.16
+      - enemy: {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: 0ff76ed6ed1d2114ea7d6cfd22573a97, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: b37ea41ddcf0ff44c88eff6dede79feb, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 12c08c3be0aa8d447ae70b9eec8a18c8, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: de179eaf2380ada4f8b19d12c19009f4, type: 2}
+        weight: 0.8
+  - name: "XII. Rze\u017Anik"
     arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
     enemies:
-    - {fileID: 11400000, guid: 0f03c0977312be74c92e3e218d770a73, type: 2}
-    extraWaves:
-    - enemies:
-      - {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
-      - {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
-      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
-    - enemies:
-      - {fileID: 11400000, guid: b1fb0ab47c167f24ab28710512197ba7, type: 2}
-      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
-      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
-      - {fileID: 11400000, guid: de179eaf2380ada4f8b19d12c19009f4, type: 2}
-    - enemies:
-      - {fileID: 11400000, guid: 0f03c0977312be74c92e3e218d770a73, type: 2}
-      - {fileID: 11400000, guid: 15a2bfc58a7d9d744ae5bd1b7db5d888, type: 2}
-      - {fileID: 11400000, guid: 12c08c3be0aa8d447ae70b9eec8a18c8, type: 2}
-    statScale: 1.12
+    - {fileID: 11400000, guid: 063ee070fca91cc42b6cbdc283613160, type: 2}
+    extraWaves: []
+    statScale: 1
+    damageScale: 1.25
+    speedScale: 1
+    soulScale: 1.92
     isDuel: 1
     isBoss: 0
     restAfter: 1
-    ashReward: 15
+    ashReward: 14
     portals:
       enabled: 0
       duration: 75
@@ -155,16 +435,915 @@ MonoBehaviour:
       minDistance: 7
       eliteEvery: {x: 20, y: 30}
       composition: []
-  - name: "VI. Szczyt Wie\u017Cy"
-    arena: {fileID: 11400000, guid: d0a20cbccaa75fb47804f5f8af05e300, type: 2}
+  - name: XIII. Kamienne Trzewia
+    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 1.9786842
+    damageScale: 1.48
+    speedScale: 1.07
+    soulScale: 0.9
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 15
+    portals:
+      enabled: 1
+      duration: 222
+      budget: 158.40001
+      groupInterval: 7.12
+      minGroup: 2
+      maxGroup: 4
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 2.05
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2.5
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 93bdabd328211874caf88bd76620c980, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 9a2f7113840d4c84988906a80b5618e4, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: e752f2c4644d160409e3d81e083ef493, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 4c2bbd8ea97cd374f949354f9f2b3959, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 2c4587e6b0dedb3488e7819435e51ab6, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: 0ff76ed6ed1d2114ea7d6cfd22573a97, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: b37ea41ddcf0ff44c88eff6dede79feb, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 12c08c3be0aa8d447ae70b9eec8a18c8, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: de179eaf2380ada4f8b19d12c19009f4, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: b1fb0ab47c167f24ab28710512197ba7, type: 2}
+        weight: 1
+  - name: XIV. Kamienne Trzewia
+    arena: {fileID: 11400000, guid: 4154374c7a45b5d4a804c84f8b75c3c0, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 2.046316
+    damageScale: 1.52
+    speedScale: 1.08
+    soulScale: 0.9
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 16
+    portals:
+      enabled: 1
+      duration: 228
+      budget: 165.6
+      groupInterval: 6.96
+      minGroup: 2
+      maxGroup: 4
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 1.9
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2.5
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 93bdabd328211874caf88bd76620c980, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 9a2f7113840d4c84988906a80b5618e4, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: e752f2c4644d160409e3d81e083ef493, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 4c2bbd8ea97cd374f949354f9f2b3959, type: 2}
+        weight: 1.3
+      - enemy: {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 2c4587e6b0dedb3488e7819435e51ab6, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: 0ff76ed6ed1d2114ea7d6cfd22573a97, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: b37ea41ddcf0ff44c88eff6dede79feb, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 12c08c3be0aa8d447ae70b9eec8a18c8, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: de179eaf2380ada4f8b19d12c19009f4, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: b1fb0ab47c167f24ab28710512197ba7, type: 2}
+        weight: 1
+  - name: "XV. Tytan Otch\u0142ani"
+    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
     enemies:
-    - {fileID: 11400000, guid: 683e4e057c00765458c223ee2667f1a4, type: 2}
+    - {fileID: 11400000, guid: f1d9f7f444a2dd04abb2ca16fedac056, type: 2}
+    extraWaves: []
+    statScale: 0.66
+    damageScale: 0.9
+    speedScale: 1
+    soulScale: 0.96
+    isDuel: 1
+    isBoss: 0
+    restAfter: 1
+    ashReward: 17
+    portals:
+      enabled: 0
+      duration: 75
+      budget: 30
+      groupInterval: 3
+      minGroup: 1
+      maxGroup: 2
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition: []
+  - name: "XVI. Wie\u017Ca Burz"
+    arena: {fileID: 11400000, guid: 4154374c7a45b5d4a804c84f8b75c3c0, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 2.2013159
+    damageScale: 1.6
+    speedScale: 1.09
+    soulScale: 0.92
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 18
+    portals:
+      enabled: 1
+      duration: 240
+      budget: 196.40001
+      groupInterval: 6.66
+      minGroup: 2
+      maxGroup: 4
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 93bdabd328211874caf88bd76620c980, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 9a2f7113840d4c84988906a80b5618e4, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: e752f2c4644d160409e3d81e083ef493, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 4c2bbd8ea97cd374f949354f9f2b3959, type: 2}
+        weight: 1.3
+      - enemy: {fileID: 11400000, guid: 885fc90c41534d1408fdb3a251354b9a, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 2c4587e6b0dedb3488e7819435e51ab6, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: 0ff76ed6ed1d2114ea7d6cfd22573a97, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: b37ea41ddcf0ff44c88eff6dede79feb, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 12c08c3be0aa8d447ae70b9eec8a18c8, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: de179eaf2380ada4f8b19d12c19009f4, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: b1fb0ab47c167f24ab28710512197ba7, type: 2}
+        weight: 1
+  - name: "XVII. Wie\u017Ca Burz"
+    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 2.2697368
+    damageScale: 1.64
+    speedScale: 1.1
+    soulScale: 0.93
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 19
+    portals:
+      enabled: 1
+      duration: 246
+      budget: 206
+      groupInterval: 6.52
+      minGroup: 2
+      maxGroup: 4
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 1.45
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 93bdabd328211874caf88bd76620c980, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 9a2f7113840d4c84988906a80b5618e4, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: e752f2c4644d160409e3d81e083ef493, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 4c2bbd8ea97cd374f949354f9f2b3959, type: 2}
+        weight: 1.3
+      - enemy: {fileID: 11400000, guid: 885fc90c41534d1408fdb3a251354b9a, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 2c4587e6b0dedb3488e7819435e51ab6, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: 0ff76ed6ed1d2114ea7d6cfd22573a97, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: b37ea41ddcf0ff44c88eff6dede79feb, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 12c08c3be0aa8d447ae70b9eec8a18c8, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: de179eaf2380ada4f8b19d12c19009f4, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: b1fb0ab47c167f24ab28710512197ba7, type: 2}
+        weight: 1
+  - name: XVIII. Matka Burz
+    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
+    enemies:
+    - {fileID: 11400000, guid: 28fbecb7ebb93904280bd1403e6414f9, type: 2}
     extraWaves: []
     statScale: 1
+    damageScale: 1.25
+    speedScale: 1
+    soulScale: 1.62
+    isDuel: 1
+    isBoss: 0
+    restAfter: 1
+    ashReward: 20
+    portals:
+      enabled: 0
+      duration: 75
+      budget: 30
+      groupInterval: 3
+      minGroup: 1
+      maxGroup: 2
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition: []
+  - name: XIX. Kostnica
+    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 2.4243422
+    damageScale: 1.72
+    speedScale: 1.11
+    soulScale: 0.94
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 21
+    portals:
+      enabled: 1
+      duration: 258
+      budget: 226
+      groupInterval: 7.36
+      minGroup: 2
+      maxGroup: 5
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 1.15
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 93bdabd328211874caf88bd76620c980, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 9a2f7113840d4c84988906a80b5618e4, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: e752f2c4644d160409e3d81e083ef493, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 4c2bbd8ea97cd374f949354f9f2b3959, type: 2}
+        weight: 1.3
+      - enemy: {fileID: 11400000, guid: 885fc90c41534d1408fdb3a251354b9a, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 2c4587e6b0dedb3488e7819435e51ab6, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1
+      - enemy: {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: 0ff76ed6ed1d2114ea7d6cfd22573a97, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: b37ea41ddcf0ff44c88eff6dede79feb, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 12c08c3be0aa8d447ae70b9eec8a18c8, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: de179eaf2380ada4f8b19d12c19009f4, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: b1fb0ab47c167f24ab28710512197ba7, type: 2}
+        weight: 1
+  - name: XX. Kostnica
+    arena: {fileID: 11400000, guid: 4154374c7a45b5d4a804c84f8b75c3c0, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 2.5010529
+    damageScale: 1.76
+    speedScale: 1.12
+    soulScale: 0.95
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 22
+    portals:
+      enabled: 1
+      duration: 264
+      budget: 242
+      groupInterval: 7.24
+      minGroup: 2
+      maxGroup: 5
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 1.15
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 93bdabd328211874caf88bd76620c980, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 9a2f7113840d4c84988906a80b5618e4, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: e752f2c4644d160409e3d81e083ef493, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 4c2bbd8ea97cd374f949354f9f2b3959, type: 2}
+        weight: 1.3
+      - enemy: {fileID: 11400000, guid: 885fc90c41534d1408fdb3a251354b9a, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 2c4587e6b0dedb3488e7819435e51ab6, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1
+      - enemy: {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: 0ff76ed6ed1d2114ea7d6cfd22573a97, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: b37ea41ddcf0ff44c88eff6dede79feb, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 12c08c3be0aa8d447ae70b9eec8a18c8, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: de179eaf2380ada4f8b19d12c19009f4, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: b1fb0ab47c167f24ab28710512197ba7, type: 2}
+        weight: 1
+  - name: "XXI. Kr\xF3l Ko\u015Bci"
+    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
+    enemies:
+    - {fileID: 11400000, guid: 1b17a512eb40d154983c68320bcc8aa1, type: 2}
+    extraWaves: []
+    statScale: 1
+    damageScale: 1.25
+    speedScale: 1
+    soulScale: 1.68
+    isDuel: 1
+    isBoss: 0
+    restAfter: 1
+    ashReward: 23
+    portals:
+      enabled: 0
+      duration: 75
+      budget: 30
+      groupInterval: 3
+      minGroup: 1
+      maxGroup: 2
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition: []
+  - name: "XXII. Ch\xF3r Cieni"
+    arena: {fileID: 11400000, guid: 4154374c7a45b5d4a804c84f8b75c3c0, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 2.6357896
+    damageScale: 1.84
+    speedScale: 1.13
+    soulScale: 0.97
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 24
+    portals:
+      enabled: 1
+      duration: 276
+      budget: 268.4
+      groupInterval: 7.04
+      minGroup: 2
+      maxGroup: 5
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 93bdabd328211874caf88bd76620c980, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 9a2f7113840d4c84988906a80b5618e4, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: e752f2c4644d160409e3d81e083ef493, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 4c2bbd8ea97cd374f949354f9f2b3959, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 885fc90c41534d1408fdb3a251354b9a, type: 2}
+        weight: 1
+      - enemy: {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 2c4587e6b0dedb3488e7819435e51ab6, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1
+      - enemy: {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 0ff76ed6ed1d2114ea7d6cfd22573a97, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: b37ea41ddcf0ff44c88eff6dede79feb, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 12c08c3be0aa8d447ae70b9eec8a18c8, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: de179eaf2380ada4f8b19d12c19009f4, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: b1fb0ab47c167f24ab28710512197ba7, type: 2}
+        weight: 1
+  - name: "XXIII. Ch\xF3r Cieni"
+    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 2.7106578
+    damageScale: 1.88
+    speedScale: 1.13
+    soulScale: 0.98
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 25
+    portals:
+      enabled: 1
+      duration: 282
+      budget: 279.6
+      groupInterval: 6.94
+      minGroup: 2
+      maxGroup: 5
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 0.55
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 93bdabd328211874caf88bd76620c980, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 9a2f7113840d4c84988906a80b5618e4, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: e752f2c4644d160409e3d81e083ef493, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 4c2bbd8ea97cd374f949354f9f2b3959, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 885fc90c41534d1408fdb3a251354b9a, type: 2}
+        weight: 1
+      - enemy: {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 2c4587e6b0dedb3488e7819435e51ab6, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1
+      - enemy: {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 0ff76ed6ed1d2114ea7d6cfd22573a97, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: b37ea41ddcf0ff44c88eff6dede79feb, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 12c08c3be0aa8d447ae70b9eec8a18c8, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: de179eaf2380ada4f8b19d12c19009f4, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: b1fb0ab47c167f24ab28710512197ba7, type: 2}
+        weight: 1
+  - name: "XXIV. Bezimienny Cie\u0144"
+    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
+    enemies:
+    - {fileID: 11400000, guid: ab6658d2d290ae0418001e84c0208ecf, type: 2}
+    extraWaves: []
+    statScale: 1.1
+    damageScale: 1.4
+    speedScale: 1
+    soulScale: 1.74
+    isDuel: 1
+    isBoss: 0
+    restAfter: 1
+    ashReward: 26
+    portals:
+      enabled: 0
+      duration: 75
+      budget: 30
+      groupInterval: 3
+      minGroup: 1
+      maxGroup: 2
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition: []
+  - name: "XXV. Ku\u017Ania Piekie\u0142"
+    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 2.8413157
+    damageScale: 1.96
+    speedScale: 1.14
+    soulScale: 0.99
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 27
+    portals:
+      enabled: 1
+      duration: 294
+      budget: 299.2
+      groupInterval: 6.78
+      minGroup: 2
+      maxGroup: 5
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 0.5
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 93bdabd328211874caf88bd76620c980, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 9a2f7113840d4c84988906a80b5618e4, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: e752f2c4644d160409e3d81e083ef493, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 4c2bbd8ea97cd374f949354f9f2b3959, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 885fc90c41534d1408fdb3a251354b9a, type: 2}
+        weight: 1
+      - enemy: {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 2c4587e6b0dedb3488e7819435e51ab6, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1
+      - enemy: {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 0ff76ed6ed1d2114ea7d6cfd22573a97, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: b37ea41ddcf0ff44c88eff6dede79feb, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 12c08c3be0aa8d447ae70b9eec8a18c8, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: de179eaf2380ada4f8b19d12c19009f4, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: b1fb0ab47c167f24ab28710512197ba7, type: 2}
+        weight: 1
+  - name: "XXVI. Ku\u017Ania Piekie\u0142"
+    arena: {fileID: 11400000, guid: 4154374c7a45b5d4a804c84f8b75c3c0, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 2.913158
+    damageScale: 2
+    speedScale: 1.15
+    soulScale: 1
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 28
+    portals:
+      enabled: 1
+      duration: 300
+      budget: 308.4
+      groupInterval: 6.7
+      minGroup: 2
+      maxGroup: 5
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 0.5
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 93bdabd328211874caf88bd76620c980, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 9a2f7113840d4c84988906a80b5618e4, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: e752f2c4644d160409e3d81e083ef493, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 4c2bbd8ea97cd374f949354f9f2b3959, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 885fc90c41534d1408fdb3a251354b9a, type: 2}
+        weight: 1
+      - enemy: {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 2c4587e6b0dedb3488e7819435e51ab6, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1
+      - enemy: {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 0ff76ed6ed1d2114ea7d6cfd22573a97, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: b37ea41ddcf0ff44c88eff6dede79feb, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 12c08c3be0aa8d447ae70b9eec8a18c8, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: de179eaf2380ada4f8b19d12c19009f4, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: b1fb0ab47c167f24ab28710512197ba7, type: 2}
+        weight: 1
+  - name: "XXVII. Kowal Piekie\u0142"
+    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
+    enemies:
+    - {fileID: 11400000, guid: dff199844e623a5419bf0082e917f058, type: 2}
+    extraWaves: []
+    statScale: 0.8
+    damageScale: 1.25
+    speedScale: 1
+    soulScale: 1.7
+    isDuel: 1
+    isBoss: 0
+    restAfter: 1
+    ashReward: 29
+    portals:
+      enabled: 0
+      duration: 75
+      budget: 30
+      groupInterval: 3
+      minGroup: 1
+      maxGroup: 2
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition: []
+  - name: XXVIII. Tron Arcydemona
+    arena: {fileID: 11400000, guid: 4154374c7a45b5d4a804c84f8b75c3c0, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 3.0373685
+    damageScale: 2.08
+    speedScale: 1.15
+    soulScale: 1.02
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 30
+    portals:
+      enabled: 1
+      duration: 300
+      budget: 327.6
+      groupInterval: 6.32
+      minGroup: 2
+      maxGroup: 5
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 0.5
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 93bdabd328211874caf88bd76620c980, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 9a2f7113840d4c84988906a80b5618e4, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: e752f2c4644d160409e3d81e083ef493, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 4c2bbd8ea97cd374f949354f9f2b3959, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 885fc90c41534d1408fdb3a251354b9a, type: 2}
+        weight: 1
+      - enemy: {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 2c4587e6b0dedb3488e7819435e51ab6, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1
+      - enemy: {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 0ff76ed6ed1d2114ea7d6cfd22573a97, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: b37ea41ddcf0ff44c88eff6dede79feb, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 12c08c3be0aa8d447ae70b9eec8a18c8, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: de179eaf2380ada4f8b19d12c19009f4, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: b1fb0ab47c167f24ab28710512197ba7, type: 2}
+        weight: 1
+  - name: XXIX. Tron Arcydemona
+    arena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}
+    enemies: []
+    extraWaves: []
+    statScale: 3.105
+    damageScale: 2.12
+    speedScale: 1.15
+    soulScale: 1.02
+    isDuel: 0
+    isBoss: 0
+    restAfter: 0
+    ashReward: 31
+    portals:
+      enabled: 1
+      duration: 300
+      budget: 337.6
+      groupInterval: 6.12
+      minGroup: 2
+      maxGroup: 5
+      maxAlive: 30
+      minDistance: 7
+      eliteEvery: {x: 20, y: 30}
+      composition:
+      - enemy: {fileID: 11400000, guid: 8f59ef3223a8c5a46abbdabee867ba25, type: 2}
+        weight: 0.5
+      - enemy: {fileID: 11400000, guid: 128b0ef583d7d8846803af10351ac013, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: c40b566afd5573346bfaf967807582d0, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 20f07312dc73b8349b8d80b01473b655, type: 2}
+        weight: 1.5
+      - enemy: {fileID: 11400000, guid: 458f583decc259543ba8382431a3d1fd, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: bf1a67cb75c91a142a0d9125909154e7, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 60779f3a7d3d11e428cc8e5bbc1cc675, type: 2}
+        weight: 2
+      - enemy: {fileID: 11400000, guid: 93bdabd328211874caf88bd76620c980, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 9a2f7113840d4c84988906a80b5618e4, type: 2}
+        weight: 1.6
+      - enemy: {fileID: 11400000, guid: e752f2c4644d160409e3d81e083ef493, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 4c2bbd8ea97cd374f949354f9f2b3959, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 885fc90c41534d1408fdb3a251354b9a, type: 2}
+        weight: 1
+      - enemy: {fileID: 11400000, guid: c7e0a712789c14d4085e5109f6506af3, type: 2}
+        weight: 1.4
+      - enemy: {fileID: 11400000, guid: 2c4587e6b0dedb3488e7819435e51ab6, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 9a34a74d10a12b54498e42d3f96294ce, type: 2}
+        weight: 1
+      - enemy: {fileID: 11400000, guid: 1d3dc6f58c51c3f42975f477555d632c, type: 2}
+        weight: 1.8
+      - enemy: {fileID: 11400000, guid: 0ff76ed6ed1d2114ea7d6cfd22573a97, type: 2}
+        weight: 0.7
+      - enemy: {fileID: 11400000, guid: b37ea41ddcf0ff44c88eff6dede79feb, type: 2}
+        weight: 1.2
+      - enemy: {fileID: 11400000, guid: 12c08c3be0aa8d447ae70b9eec8a18c8, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: de179eaf2380ada4f8b19d12c19009f4, type: 2}
+        weight: 0.8
+      - enemy: {fileID: 11400000, guid: b1fb0ab47c167f24ab28710512197ba7, type: 2}
+        weight: 1
+  - name: "XXX. Arcydiabe\u0142"
+    arena: {fileID: 11400000, guid: d0a20cbccaa75fb47804f5f8af05e300, type: 2}
+    enemies:
+    - {fileID: 11400000, guid: ece87b0878d33c547aa45837013f20a2, type: 2}
+    extraWaves: []
+    statScale: 1
+    damageScale: 1.25
+    speedScale: 1
+    soulScale: 1.3
     isDuel: 1
     isBoss: 1
     restAfter: 0
-    ashReward: 30
+    ashReward: 50
     portals:
       enabled: 0
       duration: 75

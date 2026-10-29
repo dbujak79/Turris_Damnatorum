@@ -16,6 +16,7 @@ MonoBehaviour:
   displayName: "Koj\u0105ce \u015Bwiat\u0142o"
   description: "Leczenie roz\u0142o\u017Cone w czasie \u2013 ryzykowne w walce."
   tags: 66
+  requiredTags: 4096
   kind: 2
   manaCost: 30
   castTime: 0.9

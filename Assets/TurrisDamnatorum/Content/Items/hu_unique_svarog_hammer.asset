@@ -159,6 +159,6 @@ MonoBehaviour:
   model: {fileID: 919132149155446097, guid: d64fc3b53740c074da46c750824d6457, type: 3}
   modelScale: 0.85
   modelGripShift: 0.24
-  minFloor: 1
+  minFloor: 7
   offerWeight: 0.35
   grantedSkill: {fileID: 0}

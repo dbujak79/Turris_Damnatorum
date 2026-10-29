@@ -105,13 +105,12 @@ namespace Turris.Tests
             yield return Press(GamepadButton.East);
             Assert.AreEqual(GameScreen.Playing, root.Screen);
 
-            // Nagroda: fokus od razu widoczny, A wybiera pierwszą kartę.
+            // HU: po piętrze od razu sklep (bez ekranu nagrody).
             root.DebugCompleteFloorNow();
+            root.Run.souls = 5000;
             yield return null;
-            Assert.AreEqual(GameScreen.Reward, root.Screen);
+            Assert.AreEqual(GameScreen.Intermission, root.Screen, "po piętrze – od razu postój ze sklepem");
             yield return null;
-            yield return Press(GamepadButton.South);
-            Assert.AreEqual(GameScreen.Intermission, root.Screen, "A wybiera nagrodę");
 
             // Ekwipunek: A otwiera (pierwszy przycisk), B zamyka.
             yield return Press(GamepadButton.South);
@@ -133,7 +132,7 @@ namespace Turris.Tests
             yield return null;
             // W dół do "Wejdź wyżej".
             // Kolumna bohatera: typy, specjalizacje, broń i skill startowy – w dół aż do „Wróć” (nadmiarowe naciśnięcia zostają na dole).
-            yield return PressTimes(GamepadButton.DpadDown, 14);
+            yield return PressTimes(GamepadButton.DpadDown, 22); // zapas – nadmiarowe naciśnięcia zostają na „Wejdź wyżej”
             yield return Press(GamepadButton.South);
             Assert.AreEqual(GameScreen.Playing, root.Screen);
             Assert.AreEqual(1, root.Run.floorIndex);

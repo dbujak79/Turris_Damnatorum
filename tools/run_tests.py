@@ -13,6 +13,7 @@ Tryby:
 Wymagania: projekt NIE może być otwarty w edytorze Unity (blokada projektu).
 Ścieżkę do Unity można podać zmienną UNITY_EXE. Galerie zrzutów włącza zmienna TURRIS_SHOT_DIR.
 Wyniki: TestResults/<platforma>.xml i TestResults/<platforma>.log.
+TURRIS_TEST_RESULT_DIR wskazuje osobny katalog wyników (np. dla niezależnych zadań).
 """
 import os
 import subprocess
@@ -35,7 +36,7 @@ def main():
     mode = sys.argv[2] if len(sys.argv) > 2 else "batch"
     test_filter = sys.argv[3] if len(sys.argv) > 3 else None
 
-    out_dir = os.path.join(ROOT, "TestResults")
+    out_dir = os.environ.get("TURRIS_TEST_RESULT_DIR") or os.path.join(ROOT, "TestResults")
     os.makedirs(out_dir, exist_ok=True)
     xml_path = os.path.join(out_dir, platform + ".xml")
     log_path = os.path.join(out_dir, platform + ".log")

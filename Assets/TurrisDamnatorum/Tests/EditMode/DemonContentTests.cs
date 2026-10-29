@@ -18,8 +18,9 @@ namespace Turris.Tests
             Assert.IsTrue(f[0].portals.enabled && f[1].portals.enabled, "piętra I–II: portale");
             CollectionAssert.AreEquivalent(new[] { "enemy_imp" }, f[0].portals.composition.Select(c => c.enemy.id));
             CollectionAssert.AreEquivalent(new[] { "enemy_imp", "enemy_hu_cultist", "enemy_worm" }, f[1].portals.composition.Select(c => c.enemy.id));
-            Assert.AreEqual(75f, f[0].portals.duration); Assert.AreEqual(30f, f[0].portals.budget);
-            Assert.AreEqual(78f, f[1].portals.duration); Assert.AreEqual(41f, f[1].portals.budget);
+            // Fale HU 1–2: czas ×2 (tempo wychodzenia o połowę wolniejsze), budżet ×0,8 (o 20% mniej demonów).
+            Assert.AreEqual(75f / HellTower.SpawnTempoScale, f[0].portals.duration, 1e-3f); Assert.AreEqual(30f * HellTower.MonsterCountScale, f[0].portals.budget, 1e-3f);
+            Assert.AreEqual(78f / HellTower.SpawnTempoScale, f[1].portals.duration, 1e-3f); Assert.AreEqual(44f * HellTower.MonsterCountScale, f[1].portals.budget, 1e-3f);
             Assert.AreEqual("enemy_gatelord", f[2].enemies.Single().id, "piętro III: Władca Bramy");
             Assert.IsFalse(f[2].isBoss, "Władca Bramy nie kończy podejścia");
             Assert.IsTrue(f[f.Count - 1].isBoss, "ostatnie piętro – boss Turris");
@@ -47,7 +48,8 @@ namespace Turris.Tests
             Assert.AreEqual(2.5f, worm.spawnCost);
             var latch = worm.attacks.Single(a => a.special == EnemySpecial.Latch);
             Assert.IsTrue(latch.eliteOnly, "na piętrach I–III specjał znają tylko elity (HU: od fali 4)");
-            Assert.AreEqual(7f, worm.eliteHealthMultiplier);
+            Assert.AreEqual(4.5f, worm.eliteHealthMultiplier, "HU balans 2.0: elity ×4,5 życia");
+            Assert.AreEqual(1.45f, worm.eliteDamageMultiplier, 1e-4f);
 
             var lord = fx.Get<EnemyDefinition>("enemy_gatelord");
             Assert.IsTrue(lord.isBoss);

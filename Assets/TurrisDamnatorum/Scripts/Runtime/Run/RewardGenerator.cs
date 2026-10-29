@@ -12,141 +12,6 @@ namespace Turris
         public readonly List<SpellDefinition> spells = new List<SpellDefinition>();
     }
 
-    public class RewardOption
-    {
-        public RewardKind kind;
-        public ItemInstance item;
-        public BoonDefinition boon;
-        public SpellDefinition spell;
-        public SpellInstance spellToUpgrade;
-
-        public string Title
-        {
-            get
-            {
-                switch (kind)
-                {
-                    case RewardKind.Item: return item.Name;
-                    case RewardKind.Boon: return boon.displayName;
-                    case RewardKind.LearnSpell: return spell.displayName;
-                    default: return $"Ulepszenie: {spellToUpgrade.definition.displayName} → +{spellToUpgrade.level + 1}";
-                }
-            }
-        }
-
-        public string Category
-        {
-            get
-            {
-                switch (kind)
-                {
-                    case RewardKind.Item: return "PRZEDMIOT";
-                    case RewardKind.Boon: return "WZMOCNIENIE";
-                    case RewardKind.LearnSpell: return $"UMIEJĘTNOŚĆ ({Names.SkillCategory(spell.category).ToUpperInvariant()}) – NA TO PODEJŚCIE";
-                    default: return "ULEPSZENIE UMIEJĘTNOŚCI";
-                }
-            }
-        }
-
-        public void Apply(RunState run)
-        {
-            switch (kind)
-            {
-                case RewardKind.Item: run.AddItem(item, true); break;
-                case RewardKind.Boon: run.AddBoon(boon); break;
-                case RewardKind.LearnSpell: run.LearnSpell(spell); break;
-                case RewardKind.UpgradeSpell:
-                    if (!spellToUpgrade.IsMaxLevel) spellToUpgrade.level++;
-                    break;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Losuje trzy nagrody: przedmiot, wzmocnienie i umiejętność (nowa na to podejście lub ulepszenie).
-    /// Umiejętności wymagające wyposażenia, którego postać nie ma (np. tarczy), nie są proponowane.
-    /// Waga opcji rośnie, gdy pasują do tagów AKTUALNEGO buildu (wyposażenie, znane czary) i pustych slotów.
-    /// Klasa startowa nie jest brana pod uwagę. Z prawdopodobieństwem rewardExplorationChance wybór jest
-    /// całkowicie losowy – to zostawia szansę na zmianę kierunku rozwoju.
-    /// </summary>
-    public static class RewardGenerator
-    {
-        public static List<RewardOption> Generate(RunState run, BuildSnapshot snap, RewardPools pools, GameConfig cfg, Random rng)
-        {
-            var b = cfg.balance;
-            var tags = run.CurrentTags(snap);
-            var result = new List<RewardOption>();
-
-            // 1. Przedmiot
-            var itemDef = PickWeighted(pools.items.Where(i => run.floorsCleared >= i.minFloor).ToList(), rng, b.rewardExplorationChance, i =>
-            {
-                float w = (1f + 2f * Overlap(i.tags, tags)) * Math.Max(0.05f, i.offerWeight);
-                if (run.equipment.Get(i.DefaultSlot) == null && !(i.kind == ItemKind.Ring && run.equipment.Get(EquipSlot.Ring2) != null)) w += 1.5f;
-                return w;
-            });
-            if (itemDef != null)
-            {
-                int diffBonus = run.difficulty != null ? run.difficulty.itemQualityBonus : 0;
-                int level = run.floorIndex / 2 + diffBonus + (rng.NextDouble() < 0.3 ? 1 : 0);
-                level = Math.Min(level, b.maxItemLevel);
-                result.Add(new RewardOption { kind = RewardKind.Item, item = new ItemInstance(itemDef, level) });
-            }
-
-            // 2. Wzmocnienie
-            var boonCandidates = pools.boons.Where(x => run.BoonStacks(x) < x.maxStacks).ToList();
-            var boon = PickWeighted(boonCandidates, rng, b.rewardExplorationChance, x => 1f + 2f * Overlap(x.tags, tags));
-            if (boon != null) result.Add(new RewardOption { kind = RewardKind.Boon, boon = boon });
-
-            // 3. Umiejętność: ulepszenie znanej lub nauka nowej
-            var upgradable = run.knownSpells.Where(s => !s.IsMaxLevel).ToList();
-            var unknown = pools.spells.Where(s => run.FindSpell(s) == null && (s.requiredTags & tags) == s.requiredTags && run.floorsCleared >= s.minFloor).ToList();
-            bool learn = unknown.Count > 0 && (upgradable.Count == 0 || rng.NextDouble() < b.learnNewSpellChance);
-            if (learn)
-            {
-                var s = PickWeighted(unknown, rng, b.rewardExplorationChance, x => 1f + Overlap(x.tags, tags));
-                result.Add(new RewardOption { kind = RewardKind.LearnSpell, spell = s });
-            }
-            else if (upgradable.Count > 0)
-            {
-                // Preferuj umiejętności w slotach (faktycznie używane).
-                var attuned = upgradable.Where(s => run.SlotOf(s) >= 0).ToList();
-                var from = attuned.Count > 0 && rng.NextDouble() < 0.75 ? attuned : upgradable;
-                result.Add(new RewardOption { kind = RewardKind.UpgradeSpell, spellToUpgrade = from[rng.Next(from.Count)] });
-            }
-            else
-            {
-                // Brak opcji czaru – drugie, inne wzmocnienie.
-                var other = boonCandidates.Where(x => x != boon).ToList();
-                var extra = PickWeighted(other, rng, 1f, x => 1f);
-                if (extra != null) result.Add(new RewardOption { kind = RewardKind.Boon, boon = extra });
-            }
-            return result;
-        }
-
-        static float Overlap(BuildTag a, BuildTag b)
-        {
-            int v = (int)(a & b), n = 0;
-            while (v != 0) { n += v & 1; v >>= 1; }
-            return n;
-        }
-
-        static T PickWeighted<T>(IList<T> list, Random rng, float explorationChance, Func<T, float> weight) where T : class
-        {
-            if (list == null || list.Count == 0) return null;
-            if (rng.NextDouble() < explorationChance) return list[rng.Next(list.Count)];
-            float total = 0;
-            foreach (var x in list) total += Math.Max(0.01f, weight(x));
-            double roll = rng.NextDouble() * total;
-            foreach (var x in list)
-            {
-                roll -= Math.Max(0.01f, weight(x));
-                if (roll <= 0) return x;
-            }
-            return list[list.Count - 1];
-        }
-    }
-
-    /// <summary>Opisy przedmiotów, czarów i wzmocnień do UI.</summary>
     public static class Describe
     {
         public static string Item(ItemInstance inst, StatSheet stats, BalanceConfig b)
@@ -154,6 +19,9 @@ namespace Turris
             var d = inst.definition;
             var sb = new StringBuilder();
             sb.Append(KindName(d)).Append(d.twoHanded ? " (dwuręczna)" : "").Append($", waga {d.weight:0.#}\n");
+            if (inst.rarity != ItemRarity.Common || inst.huQuality > 0)
+                sb.Append($"Rzadkość: {HellEconomy.RarityName(inst.rarity)}{(inst.huQuality > 0 ? $", jakość {inst.huQuality}" : "")}{(inst.affixNames.Count > 0 ? " – " + string.Join(", ", inst.affixNames) : "")}\n");
+            if (d.IsWeapon) sb.Append($"Poziom broni {inst.level + 1}/{HellEconomy.MaxLevelOf(d) + 1} (+20% obrażeń za poziom)\n");
             if (d.IsWeapon)
             {
                 var w = d.weapon;
@@ -322,23 +190,13 @@ namespace Turris
             return sb.ToString().TrimEnd();
         }
 
-        public static string Reward(RewardOption o, RunState run, StatSheet stats, BalanceConfig b)
+        /// <summary>Co da kolejny poziom umiejętności (ulepszenie w sklepie dusz).</summary>
+        public static string Upgrade(SpellInstance s, StatSheet stats, BalanceConfig b)
         {
-            switch (o.kind)
-            {
-                case RewardKind.Item: return Item(o.item, stats, b);
-                case RewardKind.Boon: return Boon(o.boon, run.BoonStacks(o.boon));
-                case RewardKind.LearnSpell:
-                    return Spell(o.spell, 0, stats, b) + "\n<color=#e8c070>Trafia do kolekcji na to podejście (pierwszy wolny slot). Na stałe – odblokowanie za popiół.</color>";
-                default:
-                {
-                    var s = o.spellToUpgrade;
-                    var d = s.definition;
-                    string extra = d.extraChargeAtLevel > 0 && s.level + 1 == d.extraChargeAtLevel ? ", <b>+1 ładunek</b>" : "";
-                    foreach (var f in d.levelFeatures) if (f.level == s.level + 1) extra += $", <b>nowa cecha: {Names.LevelFeature(f)}</b>";
-                    return $"Moc +{d.powerPerLevel * 100:0}%, koszt −{d.costReductionPerLevel * 100:0}%, odnowienie −{d.cooldownReductionPerLevel * 100:0}%{extra}\n" + Spell(d, s.level + 1, stats, b);
-                }
-            }
+            var d = s.definition;
+            string extra = d.extraChargeAtLevel > 0 && s.level + 1 == d.extraChargeAtLevel ? ", <b>+1 ładunek</b>" : "";
+            foreach (var f in d.levelFeatures) if (f.level == s.level + 1) extra += $", <b>nowa cecha: {Names.LevelFeature(f)}</b>";
+            return $"Moc +{d.powerPerLevel * 100:0}%, koszt −{d.costReductionPerLevel * 100:0}%, odnowienie −{d.cooldownReductionPerLevel * 100:0}%{extra}\n" + Spell(d, s.level + 1, stats, b);
         }
 
         public static string KindName(ItemDefinition d)

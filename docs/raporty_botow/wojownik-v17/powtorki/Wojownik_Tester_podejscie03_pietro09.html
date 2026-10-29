@@ -1,0 +1,247 @@
+<title>Powtórka piętra</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Układ: mapa areny z góry (lewa, kwadrat) + panel stanu i dziennik walki (prawa); na telefonie jedna kolumna. */
+:root {
+  --bg: #f3f1f4; --panel: #ffffff; --ink: #221d26; --muted: #6d6474; --line: #ddd6e0;
+  --floor: #ebe7ee; --grid: #d6cfdb; --hero: #1f6fd1; --hurt: #c8322b; --hp: #2f9a5b; --st: #c99a1c; --accent: #8a2f4a;
+  --shot-enemy: #e0702a; --shot-hero: #1aa3b8;
+  --f-display: "IM Fell English SC", "Palatino Linotype", Georgia, serif;
+  --f-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-data: "JetBrains Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #16131a; --panel: #1f1b24; --ink: #ece6ef; --muted: #a59bac; --line: #352e3b;
+  --floor: #221d28; --grid: #2f2836; --hero: #5aa2ff; --hurt: #ff5d55; --hp: #4cc581; --st: #e6b83c; --accent: #d77394;
+  --shot-enemy: #ff9a52; --shot-hero: #4fd4e6; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #16131a; --panel: #1f1b24; --ink: #ece6ef; --muted: #a59bac; --line: #352e3b;
+  --floor: #221d28; --grid: #2f2836; --hero: #5aa2ff; --hurt: #ff5d55; --hp: #4cc581; --st: #e6b83c; --accent: #d77394;
+  --shot-enemy: #ff9a52; --shot-hero: #4fd4e6; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 20px 32px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 16px; }
+header { display: grid; gap: 4px; }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(22px, 3.2vw, 32px); margin: 0; text-wrap: balance; }
+.meta { color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.meta b { color: var(--ink); font-weight: 600; }
+.verdict { color: var(--hurt); font-weight: 600; }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+@media (max-width: 860px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.stage { display: grid; gap: 10px; min-width: 0; }
+canvas { width: 100%; max-width: 100%; aspect-ratio: 1 / 1; background: var(--floor); border: 1px solid var(--line); border-radius: 6px; display: block; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+button { font: 600 14px var(--f-body); color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 5px; padding: 6px 12px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button[aria-pressed="true"] { background: var(--accent); color: var(--panel); border-color: var(--accent); }
+.time { font-family: var(--f-data); font-variant-numeric: tabular-nums; color: var(--muted); margin-left: auto; }
+.timeline { position: relative; }
+#scrub { width: 100%; accent-color: var(--accent); }
+#ticks { position: relative; height: 8px; margin: 0 8px; }
+#ticks i { position: absolute; top: 0; width: 2px; height: 8px; border-radius: 1px; }
+aside { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px; display: grid; gap: 14px; min-width: 0; }
+.label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.bar { height: 10px; background: var(--grid); border-radius: 5px; overflow: hidden; }
+.bar > div { height: 100%; transition: width .1s linear; }
+.barrow { display: grid; gap: 4px; }
+.barrow .val { font-family: var(--f-data); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+#log { list-style: none; margin: 0; padding: 0; max-height: 360px; overflow-y: auto; font-size: 13px; display: grid; gap: 2px; }
+#log li { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 8px; padding: 3px 6px; border-radius: 4px; cursor: pointer; }
+#log li .t { font-family: var(--f-data); color: var(--muted); font-variant-numeric: tabular-nums; }
+#log li .v { font-family: var(--f-data); font-variant-numeric: tabular-nums; }
+#log li.hurt .v, #log li.death { color: var(--hurt); }
+#log li.now { background: var(--grid); }
+#log li.future { opacity: .45; }
+.empty { color: var(--muted); padding: 40px 0; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > div { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1 id="title">Powtórka piętra</h1>
+    <div class="meta" id="meta"></div>
+  </header>
+  <div class="main" id="main">
+    <div class="stage">
+      <canvas id="map" width="900" height="900" aria-label="Arena z góry: bohater i demony"></canvas>
+      <div class="timeline">
+        <input id="scrub" type="range" min="0" max="1000" value="0" step="1" aria-label="Oś czasu walki">
+        <div id="ticks"></div>
+      </div>
+      <div class="controls">
+        <button id="play" type="button">Pauza</button>
+        <button type="button" data-speed="0.5">0,5×</button>
+        <button type="button" data-speed="1" aria-pressed="true">1×</button>
+        <button type="button" data-speed="2">2×</button>
+        <button type="button" data-speed="4">4×</button>
+        <button id="toDeath" type="button">Ostatnie 8 s</button>
+        <span class="time" id="clock">0,0 s</span>
+      </div>
+    </div>
+    <aside>
+      <div class="barrow"><span class="label">Życie bohatera</span><div class="bar"><div id="hpbar" style="background: var(--hp)"></div></div><span class="val" id="hpval"></span></div>
+      <div class="barrow"><span class="label">Wytrzymałość</span><div class="bar"><div id="stbar" style="background: var(--st)"></div></div><span class="val" id="stval"></span></div>
+      <div><div class="label">Na arenie</div><div class="legend" id="legend"></div></div>
+      <div><div class="label">Dziennik walki</div><ul id="log"></ul></div>
+    </aside>
+  </div>
+</div>
+
+<script>
+const DATA = {"title":"Wojownik (Tester QA), podejście 3: piętro 9 „IX. Królowa Topieli”, próba 3/3","className":"Wojownik","persona":"Tester","floorName":"IX. Królowa Topieli","result":"Śmierć","killer":"Królowa Topieli: Królowa Topieli: Volley – Hit","created":"2026-10-28 18:33","floorIndex":8,"attempt":3,"run":3,"heroMaxHp":440.0,"heroMaxSt":135.25,"types":[{"id":"enemy_hu_boss_tide","name":"Królowa Topieli","boss":true,"radius":0.8999999761581421}],"frames":[{"t":0.017578125,"x":0.0,"z":-10.484874725341797,"yaw":0.0,"hp":440.0,"st":135.25,"act":"","e":[1.0,0.0,0.0,10.5,1.0,0.0],"p":[]},{"t":0.12890625,"x":0.0,"z":-10.076499938964844,"yaw":0.0,"hp":440.0,"st":133.92999267578125,"act":"","e":[1.0,0.0,0.0,10.5,1.0,0.0],"p":[]},{"t":0.23828125,"x":0.0,"z":-9.22830867767334,"yaw":0.0,"hp":440.0,"st":132.6099853515625,"act":"","e":[1.0,0.0,0.0,10.5,1.0,0.0],"p":[]},{"t":0.34765625,"x":0.0,"z":-8.341708183288574,"yaw":0.0,"hp":440.0,"st":131.28997802734375,"act":"","e":[1.0,0.0,0.0,10.5,1.0,0.0],"p":[]},{"t":0.458984375,"x":0.0,"z":-7.455108642578125,"yaw":0.0,"hp":440.0,"st":129.969970703125,"act":"","e":[1.0,0.0,0.0,10.5,1.0,0.0],"p":[]},{"t":0.568359375,"x":0.0,"z":-6.568508625030518,"yaw":0.0,"hp":440.0,"st":128.64996337890625,"act":"","e":[1.0,0.0,0.0,10.5,1.0,0.0],"p":[]},{"t":0.677734375,"x":0.0,"z":-5.681909084320068,"yaw":0.0,"hp":440.0,"st":127.3299560546875,"act":"","e":[1.0,0.0,0.0,10.5,1.0,0.0],"p":[]},{"t":0.7890625,"x":0.0,"z":-4.795309066772461,"yaw":0.0,"hp":440.0,"st":126.00994873046875,"act":"","e":[1.0,0.0,0.0,10.5,1.0,0.0],"p":[]},{"t":0.8984375,"x":0.0,"z":-3.9087090492248535,"yaw":0.0,"hp":440.0,"st":124.68994140625,"act":"","e":[1.0,0.0,0.0,10.5,1.0,0.0],"p":[]},{"t":1.0078125,"x":0.0,"z":-3.022109270095825,"yaw":0.0,"hp":440.0,"st":123.36993408203125,"act":"","e":[1.0,0.0,0.0,10.460000038146973,1.0,0.0],"p":[]},{"t":1.119140625,"x":0.0,"z":-2.1355092525482178,"yaw":0.0,"hp":440.0,"st":122.0499267578125,"act":"","e":[1.0,0.0,0.0,10.1899995803833,1.0,0.0],"p":[]},{"t":1.228515625,"x":0.0,"z":-1.2489093542099,"yaw":0.0,"hp":440.0,"st":120.72991943359375,"act":"","e":[1.0,0.0,0.0,10.029999732971191,1.0,2.0],"p":[]},{"t":1.337890625,"x":0.0,"z":-0.3623094856739044,"yaw":0.0,"hp":440.0,"st":119.409912109375,"act":"","e":[1.0,0.0,0.0,9.970000267028809,1.0,2.0],"p":[]},{"t":1.44921875,"x":0.0,"z":0.5242904424667358,"yaw":0.0,"hp":440.0,"st":118.08990478515625,"act":"","e":[1.0,0.0,0.0,9.899999618530273,1.0,2.0],"p":[]},{"t":1.55859375,"x":0.0,"z":1.4108903408050537,"yaw":0.0,"hp":440.0,"st":116.7698974609375,"act":"","e":[1.0,0.0,0.0,9.84000015258789,1.0,2.0],"p":[]},{"t":1.66796875,"x":0.0,"z":2.2773234844207764,"yaw":0.0,"hp":440.0,"st":115.44989013671875,"act":"","e":[1.0,0.0,0.0,9.770000457763672,1.0,2.0],"p":[]},{"t":1.779296875,"x":0.0,"z":2.8614234924316406,"yaw":0.0,"hp":440.0,"st":115.44989013671875,"act":"","e":[1.0,0.0,0.0,9.710000038146973,1.0,2.0],"p":[]},{"t":1.888671875,"x":0.0,"z":3.4334235191345215,"yaw":0.0,"hp":440.0,"st":115.44989013671875,"act":"","e":[1.0,0.0,0.0,9.649999618530273,1.0,2.0],"p":[]},{"t":1.998046875,"x":0.0,"z":3.6827566623687744,"yaw":0.0,"hp":368.0899963378906,"st":115.44989013671875,"act":"Flinch","e":[1.0,0.0,0.0,9.609999656677246,1.0,2.0],"p":[]},{"t":2.107421875,"x":0.0,"z":3.462756633758545,"yaw":0.0,"hp":368.0899963378906,"st":115.44989013671875,"act":"Flinch","e":[1.0,0.0,0.0,9.550000190734863,1.0,2.0],"p":[]},{"t":2.21875,"x":0.0,"z":3.2995901107788086,"yaw":0.0,"hp":368.0899963378906,"st":115.44989013671875,"act":"Flinch","e":[1.0,0.0,0.0,9.550000190734863,1.0,2.0],"p":[]},{"t":2.328125,"x":0.0,"z":3.2995901107788086,"yaw":0.0,"hp":296.17999267578125,"st":115.44989013671875,"act":"Flinch","e":[1.0,0.0,0.0,9.550000190734863,1.0,2.0],"p":[]},{"t":2.4375,"x":0.0,"z":3.079590082168579,"yaw":0.0,"hp":296.17999267578125,"st":115.44989013671875,"act":"Flinch","e":[1.0,0.0,0.0,9.550000190734863,1.0,2.0],"p":[]},{"t":2.548828125,"x":0.0,"z":2.9164233207702637,"yaw":0.0,"hp":296.17999267578125,"st":115.44989013671875,"act":"Flinch","e":[1.0,0.0,0.0,9.550000190734863,1.0,2.0],"p":[]},{"t":2.658203125,"x":0.0,"z":2.9164233207702637,"yaw":0.0,"hp":296.17999267578125,"st":115.44989013671875,"act":"Flinch","e":[1.0,0.0,0.0,9.550000190734863,1.0,2.0],"p":[]},{"t":2.767578125,"x":0.0,"z":2.9164233207702637,"yaw":0.0,"hp":296.17999267578125,"st":115.44989013671875,"act":"Flinch","e":[1.0,0.0,0.0,9.550000190734863,1.0,2.0],"p":[]},{"t":2.87890625,"x":0.0,"z":3.0071732997894287,"yaw":0.0,"hp":296.17999267578125,"st":117.93863677978516,"act":"","e":[1.0,0.0,0.0,9.329999923706055,1.0,0.0],"p":[]},{"t":2.98828125,"x":0.0,"z":3.4013400077819824,"yaw":0.0,"hp":296.17999267578125,"st":122.91613006591797,"act":"","e":[1.0,0.0,0.0,9.0600004196167,1.0,0.0],"p":[]},{"t":3.09765625,"x":0.0,"z":3.8017399311065674,"yaw":0.0,"hp":296.17999267578125,"st":127.89362335205078,"act":"","e":[1.0,0.0,0.0,8.789999961853027,1.0,0.0],"p":[]},{"t":3.208984375,"x":0.0,"z":4.202139854431152,"yaw":0.0,"hp":296.17999267578125,"st":132.87115478515625,"act":"","e":[1.0,0.0,0.0,8.520000457763672,1.0,0.0],"p":[]},{"t":3.318359375,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":109.70074462890625,"act":"Cast","e":[1.0,0.0,0.0,8.25,1.0,0.0],"p":[]},{"t":3.427734375,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":109.70074462890625,"act":"Cast","e":[1.0,0.0,0.0,7.980000019073486,1.0,0.0],"p":[]},{"t":3.5390625,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":109.70074462890625,"act":"Cast","e":[1.0,0.0,0.0,7.710000038146973,1.0,0.0],"p":[]},{"t":3.6484375,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":109.70074462890625,"act":"Cast","e":[1.0,0.0,0.0,7.5,1.0,0.0],"p":[]},{"t":3.7578125,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":109.70074462890625,"act":"Cast","e":[1.0,0.0,0.0,7.429999828338623,1.0,0.0],"p":[]},{"t":3.869140625,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":109.70074462890625,"act":"Cast","e":[1.0,0.0,0.0,7.429999828338623,1.0,0.0],"p":[]},{"t":3.978515625,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":109.70074462890625,"act":"Cast","e":[1.0,0.0,0.0,7.429999828338623,1.0,0.0],"p":[]},{"t":4.087890625,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":97.33032989501953,"act":"Cast","e":[1.0,0.0,0.0,7.429999828338623,1.0,0.0],"p":[]},{"t":4.19921875,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":97.33032989501953,"act":"Cast","e":[1.0,0.0,0.0,7.429999828338623,1.0,0.0],"p":[]},{"t":4.30859375,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":97.33032989501953,"act":"Cast","e":[1.0,0.0,0.0,7.429999828338623,1.0,0.0],"p":[]},{"t":4.41796875,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":97.33032989501953,"act":"Cast","e":[1.0,0.0,0.0,7.429999828338623,0.9800000190734863,0.0],"p":[]},{"t":4.529296875,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":97.33032989501953,"act":"Cast","e":[1.0,0.0,0.0,7.420000076293945,0.9800000190734863,0.0],"p":[]},{"t":4.638671875,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":97.33032989501953,"act":"Cast","e":[1.0,0.0,0.0,7.420000076293945,0.9800000190734863,0.0],"p":[]},{"t":4.748046875,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":97.33032989501953,"act":"Cast","e":[1.0,0.0,0.0,7.420000076293945,0.9800000190734863,0.0],"p":[]},{"t":4.857421875,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":98.159912109375,"act":"Cast","e":[1.0,0.0,0.0,7.380000114440918,0.9800000190734863,2.0],"p":[]},{"t":4.96875,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":98.159912109375,"act":"Cast","e":[1.0,0.0,0.0,7.320000171661377,0.9800000190734863,2.0],"p":[]},{"t":5.078125,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":98.159912109375,"act":"Cast","e":[1.0,0.0,0.0,7.260000228881836,0.9800000190734863,2.0],"p":[]},{"t":5.1875,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":135.25,"act":"Cast","e":[1.0,0.0,0.0,7.190000057220459,0.9800000190734863,2.0],"p":[]},{"t":5.298828125,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":135.25,"act":"Cast","e":[1.0,0.0,0.0,7.130000114440918,0.9800000190734863,2.0],"p":[]},{"t":5.408203125,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":135.25,"act":"Cast","e":[1.0,0.0,0.0,7.059999942779541,0.9800000190734863,2.0],"p":[]},{"t":5.517578125,"x":0.0,"z":4.348073482513428,"yaw":0.0,"hp":296.17999267578125,"st":135.25,"act":"Block","e":[1.0,0.0,0.0,7.0,0.9800000190734863,2.0],"p":[]},{"t":5.62890625,"x":0.0,"z":4.329740047454834,"yaw":0.0,"hp":251.4359893798828,"st":102.0,"act":"Block","e":[1.0,0.0,0.0,6.929999828338623,0.9800000190734863,2.0],"p":[]},{"t":5.73828125,"x":0.0,"z":4.21973991394043,"yaw":0.0,"hp":251.4359893798828,"st":102.0,"act":"Block","e":[1.0,0.0,0.0,6.909999847412109,0.9800000190734863,2.0],"p":[]},{"t":5.84765625,"x":0.0,"z":4.146406650543213,"yaw":0.0,"hp":251.4359893798828,"st":83.19999694824219,"act":"Cast","e":[1.0,0.0,0.0,6.909999847412109,0.9800000190734863,2.0],"p":[]},{"t":5.958984375,"x":0.0,"z":4.146406650543213,"yaw":0.0,"hp":251.4359893798828,"st":83.19999694824219,"act":"Cast","e":[1.0,0.0,0.0,6.909999847412109,0.9700000286102295,2.0],"p":[]},{"t":6.068359375,"x":0.0,"z":4.146406650543213,"yaw":0.0,"hp":251.4359893798828,"st":83.19999694824219,"act":"Cast","e":[1.0,0.0,0.0,6.920000076293945,0.949999988079071,2.0],"p":[]},{"t":6.177734375,"x":0.0,"z":4.146406650543213,"yaw":0.0,"hp":251.4359893798828,"st":83.19999694824219,"act":"Cast","e":[1.0,0.0,0.0,6.960000038146973,0.949999988079071,2.0],"p":[]},{"t":6.2890625,"x":0.0,"z":4.146406650543213,"yaw":0.0,"hp":251.4359893798828,"st":83.19999694824219,"act":"Cast","e":[1.0,0.0,0.0,6.980000019073486,0.949999988079071,2.0],"p":[]},{"t":6.3984375,"x":0.0,"z":4.146406650543213,"yaw":0.0,"hp":251.4359893798828,"st":83.19999694824219,"act":"Cast","e":[1.0,0.0,0.0,6.980000019073486,0.949999988079071,0.0],"p":[]},{"t":6.5078125,"x":0.0,"z":4.159289836883545,"yaw":0.0,"hp":251.4359893798828,"st":58.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,6.980000019073486,0.949999988079071,0.0],"p":[]},{"t":6.619140625,"x":0.0,"z":4.191877365112305,"yaw":0.0,"hp":251.4359893798828,"st":58.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,6.980000019073486,0.949999988079071,0.0],"p":[]},{"t":6.728515625,"x":0.0,"z":4.21568489074707,"yaw":0.0,"hp":251.4359893798828,"st":58.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,6.980000019073486,0.949999988079071,0.0],"p":[]},{"t":6.837890625,"x":0.0,"z":4.2781081199646,"yaw":0.0,"hp":251.4359893798828,"st":58.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,6.980000019073486,0.949999988079071,0.0],"p":[]},{"t":6.94921875,"x":0.0,"z":4.337939262390137,"yaw":0.0,"hp":251.4359893798828,"st":58.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,6.980000019073486,0.9200000166893005,0.0],"p":[]},{"t":7.05859375,"x":0.0,"z":4.405167102813721,"yaw":0.0,"hp":251.4359893798828,"st":58.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,7.010000228881836,0.9200000166893005,0.0],"p":[]},{"t":7.16796875,"x":0.0,"z":4.485240936279297,"yaw":0.0,"hp":251.4359893798828,"st":58.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,7.059999942779541,0.9200000166893005,0.0],"p":[]},{"t":7.279296875,"x":0.0,"z":4.5027618408203125,"yaw":0.0,"hp":251.4359893798828,"st":58.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,7.059999942779541,0.9200000166893005,0.0],"p":[]},{"t":7.388671875,"x":0.0,"z":4.5027618408203125,"yaw":0.0,"hp":251.4359893798828,"st":32.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,7.059999942779541,0.9200000166893005,0.0],"p":[]},{"t":7.498046875,"x":0.0,"z":4.515935897827148,"yaw":0.0,"hp":251.4359893798828,"st":32.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,7.059999942779541,0.9200000166893005,0.0],"p":[]},{"t":7.607421875,"x":0.0,"z":4.622220039367676,"yaw":0.0,"hp":251.4359893798828,"st":32.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,7.059999942779541,0.9200000166893005,0.0],"p":[]},{"t":7.71875,"x":0.0,"z":4.887302398681641,"yaw":0.0,"hp":251.4359893798828,"st":32.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,7.059999942779541,0.9200000166893005,0.0],"p":[]},{"t":7.828125,"x":0.0,"z":5.0543437004089355,"yaw":0.0,"hp":251.4359893798828,"st":32.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,7.059999942779541,0.8999999761581421,0.0],"p":[]},{"t":7.9375,"x":0.0,"z":5.117847919464111,"yaw":0.0,"hp":251.4359893798828,"st":32.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,7.090000152587891,0.8999999761581421,0.0],"p":[]},{"t":8.048828125,"x":0.0,"z":5.273647785186768,"yaw":0.0,"hp":251.4359893798828,"st":32.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,7.139999866485596,0.8999999761581421,0.0],"p":[]},{"t":8.158203125,"x":0.0,"z":5.460663318634033,"yaw":0.0,"hp":251.4359893798828,"st":32.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,7.139999866485596,0.8999999761581421,0.0],"p":[]},{"t":8.267578125,"x":0.0,"z":5.614385604858398,"yaw":0.0,"hp":251.4359893798828,"st":32.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,7.139999866485596,0.8999999761581421,0.0],"p":[]},{"t":8.37890625,"x":0.0,"z":5.727354526519775,"yaw":0.0,"hp":251.4359893798828,"st":32.029579162597656,"act":"LightAttack","e":[1.0,0.0,0.0,7.139999866485596,0.8999999761581421,0.0],"p":[]},{"t":8.48828125,"x":0.0,"z":5.68210506439209,"yaw":0.0,"hp":251.4359893798828,"st":34.51832580566406,"act":"","e":[1.0,0.0,0.0,7.139999866485596,0.8999999761581421,0.0],"p":[]},{"t":8.59765625,"x":0.0,"z":5.562556266784668,"yaw":0.0,"hp":251.4359893798828,"st":11.007072448730469,"act":"LightAttack","e":[1.0,0.0,0.0,7.139999866485596,0.8999999761581421,0.0],"p":[]},{"t":8.708984375,"x":0.0,"z":5.568000793457031,"yaw":0.0,"hp":251.4359893798828,"st":11.007072448730469,"act":"LightAttack","e":[1.0,0.0,0.0,7.139999866485596,0.8999999761581421,0.0],"p":[]},{"t":8.818359375,"x":0.0,"z":5.597504138946533,"yaw":0.0,"hp":251.4359893798828,"st":11.007072448730469,"act":"LightAttack","e":[1.0,0.0,0.0,7.139999866485596,0.8999999761581421,0.0],"p":[]},{"t":8.927734375,"x":0.0,"z":5.663424968719482,"yaw":0.0,"hp":251.4359893798828,"st":11.007072448730469,"act":"LightAttack","e":[1.0,0.0,0.0,7.139999866485596,0.8999999761581421,0.0],"p":[]},{"t":9.0390625,"x":0.0,"z":5.713181495666504,"yaw":0.0,"hp":251.4359893798828,"st":11.007072448730469,"act":"LightAttack","e":[1.0,0.0,0.0,7.139999866485596,0.8799999952316284,0.0],"p":[]},{"t":9.1484375,"x":0.0,"z":5.80270528793335,"yaw":0.0,"hp":251.4359893798828,"st":11.007072448730469,"act":"LightAttack","e":[1.0,0.0,0.0,7.179999828338623,0.8799999952316284,0.0],"p":[]},{"t":9.2578125,"x":0.0,"z":5.865645408630371,"yaw":0.0,"hp":251.4359893798828,"st":11.007072448730469,"act":"LightAttack","e":[1.0,0.0,0.0,7.21999979019165,0.8799999952316284,0.0],"p":[]},{"t":9.369140625,"x":0.0,"z":5.87800407409668,"yaw":0.0,"hp":251.4359893798828,"st":11.007072448730469,"act":"LightAttack","e":[1.0,0.0,0.0,7.21999979019165,0.8799999952316284,0.0],"p":[]},{"t":9.478515625,"x":0.0,"z":5.87800407409668,"yaw":0.0,"hp":251.4359893798828,"st":0.0,"act":"Cast","e":[1.0,0.0,0.0,7.21999979019165,0.8799999952316284,0.0],"p":[]},{"t":9.587890625,"x":0.0,"z":5.87800407409668,"yaw":0.0,"hp":251.4359893798828,"st":0.0,"act":"Cast","e":[1.0,0.0,0.0,7.21999979019165,0.8799999952316284,0.0],"p":[]},{"t":9.69921875,"x":0.0,"z":5.87800407409668,"yaw":0.0,"hp":251.4359893798828,"st":0.0,"act":"Cast","e":[1.0,0.0,0.0,7.239999771118164,0.8500000238418579,0.0],"p":[]},{"t":9.80859375,"x":0.0,"z":5.87800407409668,"yaw":0.0,"hp":251.4359893798828,"st":0.0,"act":"Cast","e":[1.0,0.0,0.0,7.28000020980835,0.8500000238418579,0.0],"p":[]},{"t":9.91796875,"x":0.0,"z":5.87800407409668,"yaw":0.0,"hp":251.4359893798828,"st":0.0,"act":"Cast","e":[1.0,0.0,0.0,7.289999961853027,0.8500000238418579,0.0],"p":[]},{"t":10.029296875,"x":-0.10008958727121353,"z":5.7646484375,"yaw":1.5600323677062988,"hp":251.4359893798828,"st":0.0,"act":"","e":[1.0,0.0,0.0,7.289999961853027,0.8500000238418579,0.0],"p":[]},{"t":10.138671875,"x":-0.5130195021629333,"z":5.407268524169922,"yaw":8.948720932006836,"hp":251.4359893798828,"st":4.977499485015869,"act":"","e":[1.0,0.0,0.0,7.289999961853027,0.8500000238418579,0.0],"p":[]},{"t":10.248046875,"x":-1.008203387260437,"z":5.122326850891113,"yaw":18.775196075439453,"hp":251.4359893798828,"st":9.954998970031738,"act":"","e":[1.0,0.0,0.0,7.289999961853027,0.8500000238418579,0.0],"p":[]},{"t":10.357421875,"x":-1.5420209169387817,"z":4.918168544769287,"yaw":27.861520767211914,"hp":251.4359893798828,"st":14.93249797821045,"act":"","e":[1.0,0.0,0.0,7.289999961853027,0.8500000238418579,0.0],"p":[]},{"t":10.46875,"x":-2.0982320308685303,"z":4.7862043380737305,"yaw":35.757755279541016,"hp":251.4359893798828,"st":19.910001754760742,"act":"","e":[1.0,0.0,-0.07999999821186066,7.179999828338623,0.8500000238418579,0.0],"p":[]},{"t":10.578125,"x":-2.0623626708984375,"z":4.919314861297607,"yaw":41.17124938964844,"hp":251.4359893798828,"st":0.0,"act":"HeavyAttack","e":[1.0,0.0,-0.14000000059604645,7.110000133514404,0.8500000238418579,0.0],"p":[]},{"t":10.6875,"x":-1.84853994846344,"z":5.1638102531433105,"yaw":41.17124938964844,"hp":251.4359893798828,"st":0.0,"act":"HeavyAttack","e":[1.0,0.0,-0.15000000596046448,7.110000133514404,0.8399999737739563,2.0],"p":[]},{"t":10.798828125,"x":-1.6170413494110107,"z":5.428516864776611,"yaw":41.17124938964844,"hp":251.4359893798828,"st":0.0,"act":"HeavyAttack","e":[1.0,0.0,-0.17000000178813934,7.090000152587891,0.8399999737739563,2.0],"p":[]},{"t":10.908203125,"x":-1.4236366748809814,"z":5.649664878845215,"yaw":41.17124938964844,"hp":251.4359893798828,"st":0.0,"act":"HeavyAttack","e":[1.0,0.0,-0.17000000178813934,7.090000152587891,0.8399999737739563,2.0],"p":[]},{"t":11.017578125,"x":-1.222292184829712,"z":5.879891872406006,"yaw":41.17124938964844,"hp":251.4359893798828,"st":0.0,"act":"HeavyAttack","e":[1.0,0.0,-0.17000000178813934,7.090000152587891,0.8399999737739563,2.0],"p":[]},{"t":11.12890625,"x":-1.0604215860366821,"z":6.0649824142456055,"yaw":41.17124938964844,"hp":251.4359893798828,"st":0.0,"act":"HeavyAttack","e":[1.0,0.0,-0.17000000178813934,7.090000152587891,0.8399999737739563,2.0],"p":[]},{"t":11.23828125,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":251.4359893798828,"st":0.0,"act":"HeavyAttack","e":[1.0,0.0,-0.17000000178813934,7.090000152587891,0.8299999833106995,2.0],"p":[]},{"t":11.34765625,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":251.4359893798828,"st":0.0,"act":"HeavyAttack","e":[1.0,0.0,-0.17000000178813934,7.090000152587891,0.8299999833106995,2.0],"p":[-0.6299999952316284,6.559999942779541,0.0,-0.6299999952316284,6.559999942779541,0.0,-0.6299999952316284,6.559999942779541,0.0,-0.6299999952316284,6.559999942779541,0.0,-0.6299999952316284,6.559999942779541,0.0,-0.6299999952316284,6.559999942779541,0.0,-0.6299999952316284,6.559999942779541,0.0,-0.6299999952316284,6.559999942779541,0.0,-0.6299999952316284,6.559999942779541,0.0,-0.6299999952316284,6.559999942779541,0.0,-0.6299999952316284,6.559999942779541,0.0]},{"t":11.458984375,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":0.0,"st":0.0,"act":"Dead","e":[1.0,0.0,-0.17000000178813934,7.090000152587891,0.8100000023841858,0.0],"p":[-0.4699999988079071,6.110000133514404,0.0,-1.090000033378601,6.449999809265137,0.0,-1.1100000143051147,6.550000190734863,0.0,-1.100000023841858,6.650000095367432,0.0]},{"t":11.568359375,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":0.0,"st":0.0,"act":"Dead","e":[1.0,0.0,-0.10999999940395355,7.150000095367432,0.8100000023841858,0.0],"p":[-0.3199999928474426,5.659999847412109,0.0,-1.559999942779541,6.349999904632568,0.0,-1.5800000429153442,6.550000190734863,0.0,-1.5700000524520874,6.75,0.0]},{"t":11.677734375,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":0.0,"st":0.0,"act":"Dead","e":[1.0,0.0,-0.07000000029802322,7.199999809265137,0.8100000023841858,0.0],"p":[]},{"t":11.7890625,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":0.0,"st":0.0,"act":"Dead","e":[1.0,0.0,-0.07000000029802322,7.199999809265137,0.800000011920929,0.0],"p":[]},{"t":11.8984375,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":0.0,"st":0.0,"act":"Dead","e":[1.0,0.0,-0.07000000029802322,7.199999809265137,0.800000011920929,0.0],"p":[]},{"t":12.0078125,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":0.0,"st":0.0,"act":"Dead","e":[1.0,0.0,-0.07000000029802322,7.199999809265137,0.800000011920929,0.0],"p":[]},{"t":12.119140625,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":0.0,"st":0.0,"act":"Dead","e":[1.0,0.0,-0.07000000029802322,7.199999809265137,0.800000011920929,0.0],"p":[]},{"t":12.228515625,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":0.0,"st":0.0,"act":"Dead","e":[1.0,0.0,-0.07000000029802322,7.199999809265137,0.800000011920929,0.0],"p":[]},{"t":12.337890625,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":0.0,"st":0.0,"act":"Dead","e":[1.0,0.0,-0.07000000029802322,7.199999809265137,0.7900000214576721,0.0],"p":[]},{"t":12.44921875,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":0.0,"st":0.0,"act":"Dead","e":[1.0,0.0,-0.07000000029802322,7.199999809265137,0.7900000214576721,0.0],"p":[]},{"t":12.55859375,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":0.0,"st":0.0,"act":"Dead","e":[1.0,0.0,-0.07000000029802322,7.199999809265137,0.7900000214576721,0.0],"p":[]},{"t":12.66796875,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":0.0,"st":0.0,"act":"Dead","e":[1.0,0.0,-0.07000000029802322,7.199999809265137,0.7900000214576721,0.0],"p":[]},{"t":12.779296875,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":0.0,"st":0.0,"act":"Dead","e":[1.0,0.0,-0.07000000029802322,7.199999809265137,0.7900000214576721,0.0],"p":[]},{"t":12.888671875,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":0.0,"st":0.0,"act":"Dead","e":[1.0,0.0,-0.07000000029802322,7.199999809265137,0.7900000214576721,0.0],"p":[]},{"t":12.998046875,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":0.0,"st":0.0,"act":"Dead","e":[1.0,0.0,-0.07000000029802322,7.199999809265137,0.7900000214576721,0.0],"p":[]},{"t":13.107421875,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":0.0,"st":0.0,"act":"Dead","e":[1.0,0.0,-0.07000000029802322,7.199999809265137,0.7900000214576721,0.0],"p":[]},{"t":13.21875,"x":-1.0151524543762207,"z":6.116745471954346,"yaw":41.17124938964844,"hp":0.0,"st":0.0,"act":"Dead","e":[1.0,0.0,-0.07000000029802322,7.199999809265137,0.7900000214576721,0.0],"p":[]}],"events":[{"t":1.943359375,"x":0.0,"z":3.719423294067383,"v":71.91000366210938,"kind":"hurt","text":"Królowa Topieli: Królowa Topieli: TidalWave – Hit"},{"t":2.328125,"x":0.0,"z":3.2995901107788086,"v":71.91000366210938,"kind":"hurt","text":"Królowa Topieli: Królowa Topieli: TidalWave – Hit"},{"t":3.2265625,"x":0.0,"z":4.26887321472168,"v":0.0,"kind":"skill","text":"Okrzyk bojowy"},{"t":3.59375,"x":0.0,"z":7.624347686767578,"v":25.712499618530273,"kind":"hit","text":"Okrzyk bojowy → Królowa Topieli"},{"t":4.326171875,"x":0.0,"z":7.425343036651611,"v":115.70624542236328,"kind":"hit","text":"Rozpłatanie → Królowa Topieli"},{"t":5.5546875,"x":0.0,"z":4.348073482513428,"v":0.0,"kind":"hurt","text":"Królowa Topieli: Królowa Topieli: TidalWave – Dodged"},{"t":5.5546875,"x":0.0,"z":4.348073482513428,"v":44.74399948120117,"kind":"hurt","text":"Królowa Topieli: Królowa Topieli: TidalWave – Blocked"},{"t":5.79296875,"x":0.0,"z":4.164740085601807,"v":0.0,"kind":"skill","text":"Krwawe cięcie"},{"t":6.068359375,"x":0.0,"z":6.912981033325195,"v":196.1228485107422,"kind":"hit","text":"Krwawe cięcie → Królowa Topieli"},{"t":6.94921875,"x":0.0,"z":6.977002143859863,"v":142.1179962158203,"kind":"hit","text":"Zamach → Królowa Topieli"},{"t":7.828125,"x":0.0,"z":7.057392120361328,"v":142.1179962158203,"kind":"hit","text":"Zamach → Królowa Topieli"},{"t":9.01953125,"x":0.0,"z":7.137782573699951,"v":142.1179962158203,"kind":"hit","text":"Zamach → Królowa Topieli"},{"t":9.423828125,"x":0.0,"z":5.87800407409668,"v":0.0,"kind":"skill","text":"Rozpłatanie"},{"t":9.662109375,"x":0.0,"z":7.218172550201416,"v":216.94921875,"kind":"hit","text":"Rozpłatanie → Królowa Topieli"},{"t":11.3671875,"x":-0.16593006253242493,"z":7.08778715133667,"v":241.44012451171875,"kind":"hit","text":"Egzekucja → Królowa Topieli"},{"t":11.404296875,"x":-1.0151524543762207,"z":6.116745471954346,"v":42.29999923706055,"kind":"hurt","text":"Królowa Topieli: Królowa Topieli: Volley – Hit"},{"t":11.404296875,"x":-1.0151524543762207,"z":6.116745471954346,"v":35.25,"kind":"hurt","text":"Królowa Topieli: Królowa Topieli: Volley – Hit"},{"t":11.404296875,"x":-1.0151524543762207,"z":6.116745471954346,"v":35.25,"kind":"hurt","text":"Królowa Topieli: Królowa Topieli: Volley – Hit"},{"t":11.404296875,"x":-1.0151524543762207,"z":6.116745471954346,"v":35.25,"kind":"hurt","text":"Królowa Topieli: Królowa Topieli: Volley – Hit"},{"t":11.404296875,"x":-1.0151524543762207,"z":6.116745471954346,"v":35.25,"kind":"hurt","text":"Królowa Topieli: Królowa Topieli: Volley – Hit"},{"t":11.421875,"x":-1.0151524543762207,"z":6.116745471954346,"v":35.25,"kind":"hurt","text":"Królowa Topieli: Królowa Topieli: Volley – Hit"},{"t":11.421875,"x":-1.0151524543762207,"z":6.116745471954346,"v":35.25,"kind":"hurt","text":"Królowa Topieli: Królowa Topieli: Volley – Hit"}]};
+(function () {
+  const $ = id => document.getElementById(id);
+  if (!DATA || !DATA.frames || DATA.frames.length === 0) {
+    $('main').innerHTML = '<p class="empty">Brak danych powtórki. Ten plik to szablon: bot wkleja do niego zapis walki po porażce na piętrze.</p>';
+    return;
+  }
+  const css = getComputedStyle(document.documentElement);
+  const tok = n => css.getPropertyValue(n).trim();
+  const fmt = (v, d = 1) => v.toFixed(d).replace('.', ',');
+  const frames = DATA.frames, events = DATA.events || [], types = DATA.types || [];
+  const T = frames[frames.length - 1].t;
+  // Zabójca: z zapisu albo z ostatniego trafienia w bohatera.
+  const lastHurt = [...events].reverse().find(e => e.kind === 'hurt');
+  const killer = DATA.killer && DATA.killer.replace(/[\s–-]/g, '') ? DATA.killer : (lastHurt ? lastHurt.text.split(' – ')[0] : '');
+  const ACT = { LightAttack: 'cios', HeavyAttack: 'mocny cios', Cast: 'skill', Dodge: 'unik', Flask: 'flaszka', Block: 'blok', Parry: 'parowanie' };
+  const KIND = { hurt: 'trafienie w bohatera', hit: 'trafienie', kill: 'zabity', skill: 'skill', dodge: 'unik', flask: 'flaszka', death: 'śmierć' };
+
+  $('title').textContent = DATA.title || 'Powtórka piętra';
+  $('meta').innerHTML = `<span>Klasa <b>${DATA.className}</b></span><span>Bot <b>${DATA.persona}</b></span>` +
+    `<span>Piętro <b>${DATA.floorIndex + 1}. ${DATA.floorName}</b></span><span>Próba <b>${DATA.attempt}</b></span>` +
+    `<span>Czas walki <b>${fmt(T)} s</b></span><span class="verdict">${DATA.result}${killer ? ', ostatni cios: ' + killer : ''}</span>`;
+
+  // Kolor rodzaju demona: równomiernie po kole barw, boss zawsze w akcencie.
+  const typeColor = types.map((t, i) => t.boss ? tok('--accent') : `hsl(${Math.round((i * 137.5 + 20) % 360)} 55% 52%)`);
+  const seen = new Set();
+  frames.forEach(f => { for (let i = 0; i < f.e.length; i += 6) seen.add(f.e[i + 1]); });
+  $('legend').innerHTML = `<span><i style="background: var(--hero)"></i>bohater</span>` +
+    [...seen].map(i => `<span><i style="background:${typeColor[i]}"></i>${types[i].name}</span>`).join('');
+
+  // Granice mapy z wszystkich pozycji (metry), kwadrat z marginesem.
+  let minX = 1e9, maxX = -1e9, minZ = 1e9, maxZ = -1e9;
+  const grow = (x, z) => { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z); };
+  frames.forEach(f => { grow(f.x, f.z); for (let i = 0; i < f.e.length; i += 6) grow(f.e[i + 2], f.e[i + 3]); });
+  const span = Math.max(maxX - minX, maxZ - minZ, 8) + 3, cx = (minX + maxX) / 2, cz = (minZ + maxZ) / 2;
+  const cv = $('map'), g = cv.getContext('2d'), S = cv.width;
+  const px = x => (x - cx) / span * S + S / 2, pz = z => S / 2 - (z - cz) / span * S, m = S / span;
+
+  // Dziennik.
+  const log = $('log');
+  events.forEach((e, i) => {
+    const li = document.createElement('li');
+    li.className = e.kind; li.dataset.i = i;
+    li.innerHTML = `<span class="t">${fmt(e.t)}</span><span>${e.text}</span><span class="v">${e.v ? (e.kind === 'hurt' ? '−' : '') + Math.round(e.v) : ''}</span>`;
+    li.title = KIND[e.kind] || e.kind;
+    li.addEventListener('click', () => seek(Math.max(0, e.t - 1)));
+    log.appendChild(li);
+  });
+  const ticks = $('ticks');
+  events.filter(e => e.kind === 'hurt' || e.kind === 'death').forEach(e => {
+    const i = document.createElement('i');
+    i.style.left = `${e.t / T * 100}%`;
+    i.style.background = e.kind === 'death' ? tok('--hurt') : tok('--st');
+    ticks.appendChild(i);
+  });
+
+  function frameAt(t) {
+    let lo = 0, hi = frames.length - 1;
+    while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (frames[mid].t <= t) lo = mid; else hi = mid - 1; }
+    return lo;
+  }
+  function enemiesOf(f) { const m = new Map(); for (let i = 0; i < f.e.length; i += 6) m.set(f.e[i], f.e.slice(i, i + 6)); return m; }
+
+  function draw(t) {
+    const i = frameAt(t), a = frames[i], b = frames[Math.min(i + 1, frames.length - 1)];
+    const k = b.t > a.t ? Math.min(1, (t - a.t) / (b.t - a.t)) : 0, lerp = (u, v) => u + (v - u) * k;
+    g.clearRect(0, 0, S, S);
+    // Siatka co 2 m z podziałką.
+    g.strokeStyle = tok('--grid'); g.lineWidth = 1;
+    const step = 2;
+    for (let x = Math.ceil((cx - span / 2) / step) * step; x <= cx + span / 2; x += step) { g.beginPath(); g.moveTo(px(x), 0); g.lineTo(px(x), S); g.stroke(); }
+    for (let z = Math.ceil((cz - span / 2) / step) * step; z <= cz + span / 2; z += step) { g.beginPath(); g.moveTo(0, pz(z)); g.lineTo(S, pz(z)); g.stroke(); }
+    g.fillStyle = tok('--muted'); g.font = `22px ${tok('--f-data')}`;
+    g.fillRect(24, S - 30, 2 * m, 4); g.fillText('2 m', 24, S - 40);
+
+    // Wrogowie (interpolacja po uid).
+    const ea = enemiesOf(a), eb = enemiesOf(b);
+    ea.forEach((e, id) => {
+      const n = eb.get(id) || e, dead = e[5] & 4;
+      if (dead) return;
+      const x = px(lerp(e[2], n[2])), z = pz(lerp(e[3], n[3])), type = types[e[1]] || { radius: .45 }, r = Math.max(7, type.radius * m);
+      g.beginPath(); g.arc(x, z, r, 0, Math.PI * 2); g.fillStyle = typeColor[e[1]]; g.fill();
+      if (e[5] & 2) { g.lineWidth = 4; g.strokeStyle = tok('--hurt'); g.stroke(); }
+      if (e[5] & 1) { g.lineWidth = 3; g.strokeStyle = tok('--st'); g.beginPath(); g.arc(x, z, r + 5, 0, Math.PI * 2); g.stroke(); }
+      if (type.boss) { g.lineWidth = 2; g.strokeStyle = tok('--ink'); g.beginPath(); g.arc(x, z, r + 9, 0, Math.PI * 2); g.stroke(); }
+      g.fillStyle = tok('--grid'); g.fillRect(x - r, z - r - 9, 2 * r, 4);
+      g.fillStyle = tok('--hp'); g.fillRect(x - r, z - r - 9, 2 * r * e[4], 4);
+    });
+    // Pociski.
+    for (let j = 0; j < a.p.length; j += 3) {
+      g.beginPath(); g.arc(px(a.p[j]), pz(a.p[j + 1]), 5, 0, Math.PI * 2);
+      g.fillStyle = a.p[j + 2] ? tok('--shot-hero') : tok('--shot-enemy'); g.fill();
+    }
+    // Bohater: trójkąt w kierunku patrzenia (yaw 0 = +z).
+    const hx = px(lerp(a.x, b.x)), hz = pz(lerp(a.z, b.z)), yaw = a.yaw * Math.PI / 180, R = Math.max(12, .5 * m);
+    g.save(); g.translate(hx, hz); g.rotate(yaw);
+    g.beginPath(); g.moveTo(0, -R * 1.4); g.lineTo(R, R); g.lineTo(-R, R); g.closePath();
+    g.fillStyle = tok('--hero'); g.fill(); g.restore();
+
+    // Zdarzenia z ostatnich 0,8 s: obrażenia, skille, zabici.
+    g.font = `600 22px ${tok('--f-body')}`; g.textAlign = 'center';
+    events.forEach(e => {
+      const age = t - e.t;
+      if (age < 0 || age > .8) return;
+      const alpha = 1 - age / .8, x = px(e.x), z = pz(e.z) - age * 40;
+      g.globalAlpha = alpha;
+      if (e.kind === 'hurt') { g.fillStyle = tok('--hurt'); g.fillText('−' + Math.round(e.v), x, z - 26); g.strokeStyle = tok('--hurt'); g.lineWidth = 3; g.beginPath(); g.arc(hx, hz, R * 2 + age * 30, 0, Math.PI * 2); g.stroke(); }
+      else if (e.kind === 'hit') { g.fillStyle = tok('--ink'); g.fillText(Math.round(e.v), x, z - 20); }
+      else if (e.kind === 'skill') { g.fillStyle = tok('--shot-hero'); g.fillText(e.text, hx, hz - R * 2.4 - age * 30); }
+      else if (e.kind === 'kill') { g.strokeStyle = tok('--muted'); g.lineWidth = 3; g.beginPath(); g.moveTo(x - 9, z - 9); g.lineTo(x + 9, z + 9); g.moveTo(x + 9, z - 9); g.lineTo(x - 9, z + 9); g.stroke(); }
+      g.globalAlpha = 1;
+    });
+    g.textAlign = 'left';
+
+    // Panel.
+    const hp = lerp(a.hp, b.hp), st = lerp(a.st, b.st);
+    $('hpbar').style.width = `${Math.max(0, hp / DATA.heroMaxHp * 100)}%`;
+    $('stbar').style.width = `${Math.max(0, st / DATA.heroMaxSt * 100)}%`;
+    $('hpval').textContent = `${Math.round(hp)} / ${Math.round(DATA.heroMaxHp)}${a.act ? ' · ' + (ACT[a.act] || a.act) : ''}`;
+    $('stval').textContent = `${Math.round(st)} / ${Math.round(DATA.heroMaxSt)}`;
+    $('clock').textContent = `${fmt(t)} / ${fmt(T)} s`;
+    let last = -1;
+    log.querySelectorAll('li').forEach(li => {
+      const e = events[+li.dataset.i];
+      li.classList.toggle('future', e.t > t);
+      if (e.t <= t) last = +li.dataset.i;
+      li.classList.remove('now');
+    });
+    if (last >= 0) { const li = log.querySelector(`li[data-i="${last}"]`); li.classList.add('now'); if (playing) li.scrollIntoView({ block: 'nearest' }); }
+  }
+
+  let t = Math.max(0, T - 8), speed = 1, playing = true, prev = performance.now();
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function seek(v) { t = Math.min(T, Math.max(0, v)); $('scrub').value = Math.round(t / T * 1000); draw(t); }
+  function loop(now) {
+    const dt = Math.min(.1, (now - prev) / 1000); prev = now;
+    if (playing) { t += dt * speed; if (t >= T) { t = T; playing = false; $('play').textContent = 'Odtwórz'; } $('scrub').value = Math.round(t / T * 1000); draw(t); }
+    requestAnimationFrame(loop);
+  }
+  $('play').addEventListener('click', () => { if (t >= T) t = 0; playing = !playing; $('play').textContent = playing ? 'Pauza' : 'Odtwórz'; });
+  $('toDeath').addEventListener('click', () => { seek(T - 8); playing = true; $('play').textContent = 'Pauza'; });
+  $('scrub').addEventListener('input', e => { seek(e.target.value / 1000 * T); });
+  document.querySelectorAll('[data-speed]').forEach(btn => btn.addEventListener('click', () => {
+    speed = +btn.dataset.speed;
+    document.querySelectorAll('[data-speed]').forEach(x => x.setAttribute('aria-pressed', x === btn ? 'true' : 'false'));
+  }));
+  if (reduce) { playing = false; $('play').textContent = 'Odtwórz'; }
+  seek(t);
+  requestAnimationFrame(loop);
+})();
+</script>

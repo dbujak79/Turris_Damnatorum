@@ -95,7 +95,7 @@ MonoBehaviour:
   extraWaveShare: 0
   extraWaveDelay: 0.25
   dashTime: 0.16
-  minFloor: 1
+  minFloor: 6
   levelFeatures: []
   maxLevel: 2
   powerPerLevel: 0

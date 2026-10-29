@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9713eabedc811e74eb31146a53f52ecf, type: 3}
+  m_Name: hu_perk_armour
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.BoonDefinition
+  id: hu_perk_armour
+  displayName: Pancerz
+  description: "+1,5 pancerza i +3% redukcji obra\u017Ce\u0144. Pancerz odejmuje si\u0119 od ka\u017Cdego ciosu, redukcja \u015Bcina jego cz\u0119\u015B\u0107."
+  tags: 0
+  maxStacks: 5
+  modifiers:
+  - stat: 12
+    mode: 0
+    value: 9
+  - stat: 31
+    mode: 0
+    value: 3
+  effects: []
+  extraHealthFlasks: 0
+  extraManaFlasks: 0

@@ -39,8 +39,14 @@ namespace Turris
             return SpellKind.Zone;
         }
 
-        /// <summary>Pierwsza fala HU, w której skill może trafić do sklepu → piętro Turris (30 fal HU ≈ 6 pięter).</summary>
-        public static int MinFloorFor(int minWave) => minWave >= 16 ? 3 : minWave >= 7 ? 1 : 0;
+        /// <summary>
+        /// Pierwsza fala HU, w której skill/broń może trafić do oferty → próg pięter Turris (liczba ukończonych pięter).
+        /// Wieża to 30 fal HU, więc fala N = piętro N: oferta po ukończeniu fali N−1.
+        /// </summary>
+        public static int MinFloorFor(int minWave) => Mathf.Max(0, minWave - 1);
+
+        /// <summary>Progi treści Turris pisane dla wieży 6-piętrowej (piętra 1–5) → wieża 30 pięter.</summary>
+        public const int LegacyFloorScale = 5;
 
         static SpellDefinition FromHu(HuSkillData hu)
         {

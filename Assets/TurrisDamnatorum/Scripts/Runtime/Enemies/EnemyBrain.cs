@@ -112,6 +112,7 @@ namespace Turris
         public EnemyAttackEntry CurrentAttack => CurrentState == State.Attacking ? current : null;
         public bool IsTelegraphing => CurrentState == State.Attacking && attackPhase == ActionPhase.Startup;
 
+        float floorSpeedMult = 1f;
         float SpeedMult => PhaseIndex > 0 && PhaseIndex - 1 < Def.phases.Count ? Def.phases[PhaseIndex - 1].speedMultiplier : 1f;
         float GlobalMoveMult => rules != null ? rules.enemyMoveSpeedMultiplier : 1f;
         float AttackSpeedMult => Mathf.Min(HellMaxTempo(), SpeedMult * (rules != null ? rules.enemyAttackSpeedMultiplier : 1f)
@@ -119,8 +120,12 @@ namespace Turris
         public float AttackWindupDuration => current != null ? current.attack.windup / Mathf.Max(0.1f, AttackSpeedMult) : 0;
         float PhaseAggression => PhaseIndex > 0 && PhaseIndex - 1 < Def.phases.Count ? Def.phases[PhaseIndex - 1].aggressionMultiplier : 1f;
 
-        public void Setup(EnemyDefinition def, PlayerCombat target, float floorScale, DifficultyDefinition difficulty, bool elite, BalanceConfig balance)
+        /// <param name="floorDamageScale">Obrażenia piętra (ujemne – jak <paramref name="floorScale"/>).</param>
+        /// <param name="floorSpeedScale">Prędkość ruchu piętra (fala HU).</param>
+        public void Setup(EnemyDefinition def, PlayerCombat target, float floorScale, DifficultyDefinition difficulty, bool elite, BalanceConfig balance,
+            float floorDamageScale = -1f, float floorSpeedScale = 1f)
         {
+            floorSpeedMult = floorSpeedScale;
             Def = def;
             player = target;
             rules = balance;
@@ -133,7 +138,7 @@ namespace Turris
 
             if (def.isMinion || def.isBoss || !def.huCanBeElite) IsElite = elite = false;
             float hpMult = floorScale * (difficulty != null ? difficulty.enemyHealthMultiplier : 1f) * (elite ? def.eliteHealthMultiplier : 1f);
-            damageMult = floorScale * (difficulty != null ? difficulty.enemyDamageMultiplier : 1f) * (elite ? def.eliteDamageMultiplier : 1f);
+            damageMult = (floorDamageScale >= 0f ? floorDamageScale : floorScale) * (difficulty != null ? difficulty.enemyDamageMultiplier : 1f) * (elite ? def.eliteDamageMultiplier : 1f);
             aggressionMult = (difficulty != null ? difficulty.enemyAggressionMultiplier : 1f) * (elite ? 1.25f : 1f);
             bossExtra = def.isBoss && difficulty != null && difficulty.bossExtraBehavior;
 
@@ -152,6 +157,8 @@ namespace Turris
 
             All.Add(this);
         }
+
+        void OnDisable() => ReleaseAggression();
 
         void OnDestroy()
         {
@@ -172,6 +179,8 @@ namespace Turris
             if (Def == null) return;
             if (player == null) { UpdateVisuals(); return; } // bez celu (np. podgląd) – tylko wygląd
             if (dt <= 0) return;
+            // Miejsce u reżysera ataków wraca, gdy cios przeszedł w odzyskanie, został przerwany albo demon zginął.
+            if (aggression != null && (CurrentState != State.Attacking || attackPhase == ActionPhase.Recovery)) ReleaseAggression();
 
             if (CurrentState == State.Dead)
             {
@@ -334,12 +343,17 @@ namespace Turris
             if (Time.time >= nextAttackTime)
             {
                 int idx = ChooseAttack(dist);
-                if (idx >= 0) { StartAttack(idx); return Vector3.zero; }
+                if (idx >= 0)
+                {
+                    if (AcquireAggression(Def.attacks[idx])) { StartAttack(idx); return Vector3.zero; }
+                    // Za dużo ciosów już w drodze (reżyser ataków): krąż chwilę i spróbuj znowu.
+                    nextAttackTime = Time.time + 0.2f + 0.3f * Random.value;
+                }
             }
 
             Vector3 to = player.transform.position - transform.position; to.y = 0;
             Vector3 dir = to.sqrMagnitude > 0.001f ? to.normalized : transform.forward;
-            float speed = Def.moveSpeed * SpeedMult * GlobalMoveMult * Status.MoveMultiplier(rules) * (hellFrenzy > 0 ? 1.4f : 1f);
+            float speed = Def.moveSpeed * SpeedMult * floorSpeedMult * GlobalMoveMult * Status.MoveMultiplier(rules) * (hellFrenzy > 0 ? 1.4f : 1f);
 
             if (HellSummonerSpent) return dist > 1.2f ? dir * speed : Vector3.zero;
             if (Def.retreatRange > 0 && dist < Def.retreatRange) return -dir * speed * 0.9f;
@@ -409,6 +423,27 @@ namespace Turris
             if (e.eliteOnly && !IsElite) return false;
             if (e.bossExtraOnly && !bossExtra) return false;
             return dist >= e.minRange && dist <= e.maxRange;
+        }
+
+        /// <summary>Miejsce u reżysera ataków, które demon trzyma od zapowiedzi do końca fazy aktywnej (null – brak).</summary>
+        AggressionKind? aggression;
+
+        /// <summary>Prośba o miejsce u reżysera ataków; bossowie, sługi bez gracza i demon już trzymający miejsce (seria) – bez limitu.</summary>
+        bool AcquireAggression(EnemyAttackEntry entry)
+        {
+            if (Def.isBoss || aggression != null || entry == null) return true;
+            var kind = entry.special != EnemySpecial.None ? AggressionKind.Special
+                : entry.attack.delivery == AttackDelivery.Projectile ? AggressionKind.Ranged : AggressionKind.Melee;
+            if (!AttackDirector.TryAcquire(kind)) return false;
+            if (AttackDirector.Enabled) aggression = kind;
+            return true;
+        }
+
+        void ReleaseAggression()
+        {
+            if (aggression == null) return;
+            AttackDirector.Release(aggression.Value);
+            aggression = null;
         }
 
         void StartAttack(int idx, bool chained = false)
@@ -661,6 +696,7 @@ namespace Turris
             if (hit.element != Element.None && hit.magic > 0)
             {
                 float m = Def.ElementMultiplier(hit.element);
+                if (m < 1f && hit.penetration > 0f) m = Mathf.Min(1f, m + hit.penetration); // przebicie: odporność nie spada poniżej 0
                 hit.magic *= m;
                 if (m > 1.01f && !IsDead) CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.4f, "SŁABOŚĆ", Names.ElementColor(hit.element));
             }
@@ -672,7 +708,9 @@ namespace Turris
             }
             string reaction = Status.ModifyIncoming(ref hit, rules);
 
-            var r = DamageResolver.Resolve(hit, CurrentDefense(), rules);
+            var defense = CurrentDefense();
+            if (hit.physicalPenetration > 0f && defense.physicalResist > 0f) defense.physicalResist = Mathf.Max(0f, defense.physicalResist - hit.physicalPenetration);
+            var r = DamageResolver.Resolve(hit, defense, rules);
             if (r.outcome == HitOutcome.Ignored) return r;
             r.healthDamage = AbsorbHellWard(r.healthDamage);
             if (!hit.isStatusTick && !hit.isReaction && r.healthDamage > 0) hellDirectHits++;
@@ -739,6 +777,8 @@ namespace Turris
                 case HitOutcome.Blocked:
                     break;
             }
+            // Powalenie ze skilla (down_seconds): po zachwianiu, żeby krótsze drgnięcie go nie skróciło.
+            if (hit.knockdown > 0f && (r.outcome == HitOutcome.Hit || r.outcome == HitOutcome.GuardBroken)) HuThrowDown(hit.knockdown);
             CombatEvents.RaiseHit(AimPoint, r, false);
             return r;
         }
@@ -903,6 +943,7 @@ namespace Turris
         void Die()
         {
             if (IsDead) return;
+            ReleaseAggression();
             ClearHell();
             if (Def.huSplitCount > 0 && Def.huSummon != null)
             {

@@ -51,8 +51,6 @@ namespace Turris.EditorTools
             foreach (var row in HellEnemyCatalog.Rows)
                 if (real.TryGetValue(row.targetId, out var value) && value is EnemyDefinition enemy && !cfg.enemyCatalog.Contains(enemy)) cfg.enemyCatalog.Add(enemy);
             EditorUtility.SetDirty(cfg);
-            HellEncounters.ExtendTower(cfg, real);
-            EditorUtility.SetDirty(cfg.tower);
             AssetDatabase.SaveAssets();
             ExportAudit();
         }

@@ -574,7 +574,7 @@ namespace Turris
             this.cast = cast; this.dir = dir.sqrMagnitude > 0.001f ? dir.normalized : Vector3.forward; this.speed = speed;
             this.seconds = Mathf.Max(0.5f, seconds); this.interval = Mathf.Max(0.1f, interval); halfWidth = Mathf.Max(0.3f, width * 0.5f);
             hit = cast.Hit(share * this.interval);
-            hit.knockback = 0f; hit.poiseDamage *= 0.1f; hit.explosionRadius = 0f;
+            hit.knockback = 0f; hit.knockdown = 0f; hit.poiseDamage *= 0.1f; hit.explosionRadius = 0f;
             center = HuWorld.Ground(center);
             if (ringRadius > 0f)
             {

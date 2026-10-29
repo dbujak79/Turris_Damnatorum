@@ -373,7 +373,11 @@ namespace Turris
             if (attackOffhand) atk = Build.offWeapon.definition.weapon.light;
             currentAttack = atk;
             // Zręczność przyspiesza ataki bronią; broń bez wymaganych cech – wolniejsza.
-            float aspd = Mathf.Max(0.3f, Build.attackSpeed);
+            // Rozpęd (perk HU): seria zamachów bez trafienia zeruje warstwy.
+            if (swingOpen && !swingLanded) momentumStacks = 0;
+            swingOpen = type == ActionType.LightAttack || type == ActionType.HeavyAttack;
+            swingLanded = false;
+            float aspd = Mathf.Max(0.3f, Build.attackSpeed + MomentumBonus);
             AttackWindup = ScaleStartup(atk.windup) / aspd;
             AttackActive = ScaleStartup(atk.active) / aspd;
             Actions.TryStart(type, AttackWindup, AttackActive, ScaleRecovery(atk.recovery) / aspd, ScaleRecovery(atk.cancelAfter) / aspd);
@@ -382,6 +386,45 @@ namespace Turris
         }
 
         bool attackOffhand;
+
+        // Rozpęd (perk HU): każdy zamach wręcz, który trafił, dodaje warstwę (do 5); pudło albo 1,5 s bez trafienia zeruje.
+        int momentumStacks;
+        float momentumLastHit;
+        bool swingOpen, swingLanded;
+
+        /// <summary>Premia rozpędu do mnożnika szybkości ataku.</summary>
+        public float MomentumBonus => clock - momentumLastHit > PerkMechanics.MomentumTimeout ? 0f
+            : momentumStacks * Build.effects[PassiveEffectType.MomentumAttackSpeed] / 100f;
+
+        /// <summary>Perki zwykłego ataku bronią (HU zakres „broń główna”): konwersja, efekty trafienia, odrzut.</summary>
+        void BasicAttackPerks(ref HitData hit, bool melee, IHitReceiver target)
+        {
+            var fx = Build.effects;
+            if (melee)
+            {
+                float conv = Mathf.Min(1f, fx[PassiveEffectType.ConvertPhysicalToFire]);
+                if (conv > 0f && hit.physical > 0f && (hit.element == Element.None || hit.element == Element.Fire))
+                {
+                    float moved = hit.physical * conv;
+                    hit.physical -= moved; hit.magic += moved; hit.element = Element.Fire;
+                }
+                if (fx[PassiveEffectType.BleedOnHit] > 0f) AddStatus(ref hit, StatusKind.Bleed);
+                float kb = fx[PassiveEffectType.MeleeKnockback];
+                if (kb > 0f && target is EnemyBrain e) hit.knockback += kb * (e.Def.isBoss ? 0.25f : e.IsElite ? 0.5f : 1f);
+            }
+            if (fx[PassiveEffectType.BurnOnHit] > 0f) AddStatus(ref hit, StatusKind.Burn);
+            if (fx[PassiveEffectType.ChillOnHit] > 0f) AddStatus(ref hit, StatusKind.Chill);
+            if (fx[PassiveEffectType.StaggerOnHit] > 0f) AddStatus(ref hit, StatusKind.Stagger);
+        }
+
+        /// <summary>Dokłada efekt do trafienia, jeśli atak go jeszcze nie nakłada (HU: perk nie dubluje efektu broni).</summary>
+        static void AddStatus(ref HitData hit, StatusKind kind)
+        {
+            if (hit.statuses != null && hit.statuses.Exists(s => s.kind == kind)) return;
+            var merged = hit.statuses != null ? new List<StatusApplication>(hit.statuses) : new List<StatusApplication>();
+            merged.Add(new StatusApplication(kind));
+            hit.statuses = merged;
+        }
 
         /// <summary>Czas fazy aktywnej umiejętności: szarża i młynek trwają, reszta działa w jednej chwili.</summary>
         float SkillActiveTime(SpellDefinition def)
@@ -856,7 +899,9 @@ namespace Turris
 
         /// <summary>Wartość cechy poziomu umiejętności (0, gdy nieodblokowana).</summary>
         static float F(SpellRuntime sk, LevelFeatureKind k) => sk == null ? 0f : sk.Def.Feature(k, sk.instance.level);
-        static float Radius(SpellRuntime sk, float r) => r * (1f + F(sk, LevelFeatureKind.RadiusBonus));
+        /// <summary>Promień umiejętności: cecha poziomu i Szeroki zasięg (perk HU).</summary>
+        float Radius(SpellRuntime sk, float r) => r * (1f + F(sk, LevelFeatureKind.RadiusBonus)) * AreaFactor;
+        float AreaFactor => 1f + Build.effects[PassiveEffectType.AreaSize] / 100f;
         static float Duration(SpellRuntime sk, float d) => d + F(sk, LevelFeatureKind.DurationBonus);
 
         /// <summary>Broń wraca do dłoni po ciężkim rzucie.</summary>
@@ -926,9 +971,17 @@ namespace Turris
         /// </summary>
         void PrepareOutgoing(ref HitData hit)
         {
+            var st = Build.stats; var fx = Build.effects;
+            // Przemiana w parę (perk HU): ogień staje się mrozem – przed premiami do żywiołu.
+            if (hit.element == Element.Fire && fx[PassiveEffectType.ConvertFireToFrost] >= 0.5f) hit.element = Element.Frost;
             HeroOutgoing(ref hit);
             GearOutgoing(ref hit);
-            var st = Build.stats; var fx = Build.effects;
+            if (hit.fromMeleeWeapon && fx[PassiveEffectType.SunderOnHit] > 0f) AddStatus(ref hit, StatusKind.Sunder);
+            hit.physicalPenetration = fx[PassiveEffectType.PenetrationPhysical] / 100f;
+            hit.penetration = hit.element == Element.Fire ? fx[PassiveEffectType.PenetrationFire] / 100f
+                : hit.element == Element.Frost ? fx[PassiveEffectType.PenetrationFrost] / 100f
+                : hit.element == Element.Lightning ? fx[PassiveEffectType.PenetrationLightning] / 100f
+                : hit.element == Element.Earth ? fx[PassiveEffectType.PenetrationEarth] / 100f : 0f;
             if (hit.element != Element.None && hit.magic > 0) hit.magic *= 1f + st[Names.ElementDamageStat(hit.element)] / 100f;
             if (DamageBuffTime > 0) { float m = 1f + DamageBuffPct / 100f; hit.physical *= m; hit.magic *= m; }
             if (Status.Burning && fx[PassiveEffectType.BurningDamageBonus] > 0)
@@ -1073,22 +1126,41 @@ namespace Turris
             Vector3 origin = transform.position + Vector3.up * 1.3f + transform.forward * 0.7f;
             Vector3 aim = LockTarget != null ? (LockTarget.AimPoint - origin) : transform.forward;
             if (LockTarget == null) aim.y = 0f;
-            int count = Mathf.Max(1, atk.projectileCount);
+            var fx = Build.effects;
+            // Rozszczepienie (perk HU): łącznie 2/3/5/8 pocisków – wachlarz co 15°, od 8 pierścień; boczne za 40%.
+            int volley = fx[PassiveEffectType.ProjectileVolley] > 0f ? PerkMechanics.VolleyCount(fx[PassiveEffectType.ProjectileVolley]) : 0;
+            int count = Mathf.Max(1, Mathf.Max(atk.projectileCount, volley));
+            float explosionShare = PerkMechanics.ExplosionShare(fx[PassiveEffectType.ProjectileExplosion]);
+            var opts = new ProjectileOptions
+            {
+                pierce = Mathf.RoundToInt(fx[PassiveEffectType.ProjectilePierce]),
+                ricochet = Mathf.RoundToInt(fx[PassiveEffectType.ProjectileRicochet]),
+                split = fx[PassiveEffectType.ProjectileSplit] > 0f,
+                explosionShare = explosionShare,
+                explosionRadius = explosionShare > 0f ? Mathf.Max(atk.explosionRadius, PerkMechanics.MinExplosionRadius) * AreaFactor : 0f,
+                residue = fx[PassiveEffectType.ProjectileResidue] > 0f,
+            };
             for (int i = 0; i < count; i++)
             {
-                float angle = count == 1 ? 0 : Mathf.Lerp(-atk.spreadAngle, atk.spreadAngle, i / (float)(count - 1));
+                float angle, share = 1f;
+                if (volley > 0)
+                {
+                    angle = count >= 8 ? i * 360f / count : (i == 0 ? 0f : ((i + 1) / 2) * 15f * (i % 2 == 1 ? 1f : -1f));
+                    if (i > 0) share = PerkMechanics.VolleySideShare;
+                }
+                else angle = count == 1 ? 0 : Mathf.Lerp(-atk.spreadAngle, atk.spreadAngle, i / (float)(count - 1));
                 Vector3 dir = Quaternion.Euler(0, angle, 0) * aim.normalized;
-                var hit = HitData.FromAttack(atk, Build.WeaponDamage(atk), origin, this);
+                var hit = HitData.FromAttack(atk, Build.WeaponDamage(atk) * share, origin, this);
                 hit.weapon = HeldWeaponModel;
+                if (hit.explosionRadius > 0f) hit.explosionRadius *= AreaFactor;
                 ApplyWeaponBuff(ref hit);
+                BasicAttackPerks(ref hit, false, null);
                 PrepareOutgoing(ref hit);
                 // Łuk – strzały; różdżka (pocisk magiczny) – świecący pocisk w barwie żywiołu.
                 bool arrow = atk.damageType == DamageType.Physical;
                 Color col = WeaponBuffTime > 0 ? WeaponBuffColor : arrow ? new Color(1f, 0.95f, 0.85f) : Names.ElementColor(atk.element);
-                int pierce = Mathf.RoundToInt(Build.effects[PassiveEffectType.ProjectilePierce]);
                 Projectile.Spawn(origin, dir, atk.projectileSpeed, hit, Faction.Player, this, col,
-                    arrow ? 0.12f : 0.18f, 3f, LockTarget, LockTarget != null ? (arrow ? 60f : 90f) : 0f, arrow,
-                    new ProjectileOptions { pierce = pierce });
+                    arrow ? 0.12f : 0.18f, 3f, i == 0 ? LockTarget : null, i == 0 && LockTarget != null ? (arrow ? 60f : 90f) : 0f, arrow, opts);
             }
         }
 
@@ -1142,7 +1214,8 @@ namespace Turris
             var atk = currentAttack;
             if (atk == null || atk.delivery == AttackDelivery.Projectile) return;
             Vector3 from = transform.position + Vector3.up * 1.0f + transform.forward * 0.3f;
-            Vector3 to = transform.position + Vector3.up * 1.0f + transform.forward * atk.reach;
+            float reach = atk.reach * (1f + Build.effects[PassiveEffectType.MeleeRange] / 100f); // Długie ostrze (perk HU)
+            Vector3 to = transform.position + Vector3.up * 1.0f + transform.forward * reach;
             HitQuery.Capsule(from, to, atk.radius, Faction.Player, tracker, target =>
             {
                 float dmg = attackOffhand ? Build.OffWeaponDamage(atk) : Build.WeaponDamage(atk);
@@ -1150,6 +1223,7 @@ namespace Turris
                 hit.fromMeleeWeapon = true;
                 hit.weapon = HeldWeaponModel;
                 ApplyWeaponBuff(ref hit);
+                BasicAttackPerks(ref hit, true, target);
                 PrepareOutgoing(ref hit);
                 HitQuery.Apply(this, target, hit, true);
             });
@@ -1158,6 +1232,14 @@ namespace Turris
         public void OnHitResolved(IHitReceiver target, in HitData hit, in HitResult result)
         {
             HeroOnHitResolved(target, hit, result);
+            if (hit.fromMeleeWeapon && hit.weapon != WeaponModel.Auto && !swingLanded && swingOpen
+                && (result.outcome == HitOutcome.Hit || result.outcome == HitOutcome.GuardBroken || result.outcome == HitOutcome.Blocked))
+            {
+                swingLanded = true;
+                if (clock - momentumLastHit > PerkMechanics.MomentumTimeout) momentumStacks = 0;
+                momentumStacks = Mathf.Min(PerkMechanics.MomentumMaxStacks, momentumStacks + 1);
+                momentumLastHit = clock;
+            }
             if (result.outcome == HitOutcome.Hit || result.outcome == HitOutcome.GuardBroken) GearOnLanded(target, hit, result);
             if (hit.fromMeleeWeapon && (result.outcome == HitOutcome.Hit || result.outcome == HitOutcome.GuardBroken || result.outcome == HitOutcome.Blocked))
             {
@@ -1168,12 +1250,12 @@ namespace Turris
             if (hit.fromMeleeWeapon && result.outcome == HitOutcome.Hit && target is EnemyBrain bleeding && bleeding.Status.BleedStacks > 0)
             {
                 float heal = Build.effects[PassiveEffectType.BleedingHitHeal];
-                if (heal > 0) Health.Restore(heal);
+                if (heal > 0) PassiveHeal(heal);
             }
             if (target.IsDead)
             {
                 float h = Build.effects[PassiveEffectType.HealOnKill];
-                if (h > 0) Health.Restore(h);
+                if (h > 0) PassiveHeal(h);
                 GearOnKill(target);
                 if (!hit.huTriggered) HuTrigger("kill", target.Transform.position);
             }
@@ -1205,6 +1287,14 @@ namespace Turris
                 dead = IsDead,
             };
         }
+
+        float shieldReadyAt;
+
+        /// <summary>Bezpośredni cios zabrał życie (nie tyknięcie) – dojrzewające dusze tracą część (HU).</summary>
+        public event System.Action<float> HealthHit;
+
+        /// <summary>Tylko testy: bez losowego bloku biernego tarczy (deterministyczne trafienia).</summary>
+        public bool DebugNoPassiveBlock { get; set; }
 
         public HitResult ReceiveHit(HitData hit)
         {
@@ -1241,9 +1331,28 @@ namespace Turris
                 return miss;
             }
 
-            // Odporność na żywioł redukuje część z żywiołem (limit maxElementResist).
+            // Bezpośredni cios zawsze zostawia część surowych obrażeń (HU balans 2.0) – liczoną od ciosu przed obroną.
+            float minimumDamage = !hit.isStatusTick && !hit.isReaction && hit.attacker != null ? hit.Total * B.directHitMinimumDamage : 0f;
+            // Blok bierny z tarczą (HU): szansa na zatrzymanie całego bezpośredniego ciosu; ładunek odnawia się 1 / 0,92 / 0,85 s.
+            // Kolejność HU: unik (niewrażliwość) i parowanie mają pierwszeństwo – blok bierny nie zabiera im ciosu.
+            var cur = Actions.Current;
+            bool covered = cur == ActionType.Block || cur == ActionType.Parry || cur == ActionType.Riposte
+                           || (cur == ActionType.Dodge && Actions.Phase == ActionPhase.Active) || HeroInvulnerable;
+            if (!hit.isStatusTick && !hit.isReaction && hit.blockable && hit.attacker != null && !IsDead && Build.passiveBlockChance > 0f && !covered
+                && !DebugNoPassiveBlock && clock >= shieldReadyAt && UnityEngine.Random.value < Build.passiveBlockChance)
+            {
+                shieldReadyAt = clock + PerkMechanics.ShieldBlockCooldown(Build.shieldLevel);
+                var blocked = new HitResult { outcome = HitOutcome.Blocked };
+                CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.5f, "BLOK", new Color(0.85f, 0.85f, 0.95f));
+                CombatEvents.RaiseHit(AimPoint, blocked, true);
+                Sfx.Play(SoundId.Block, AimPoint, 0.6f);
+                HuTrigger("defend");
+                return blocked;
+            }
+
+            // Odporność na żywioł redukuje część z żywiołem (pełna do 40%, dalej połowa, limit 65%).
             if (hit.element != Element.None && hit.magic > 0)
-                hit.magic *= 1f - Mathf.Clamp(Build.stats[Names.ElementResistStat(hit.element)], -100f, B.maxElementResist) / 100f;
+                hit.magic *= 1f - B.HeroResist(Build.stats[Names.ElementResistStat(hit.element)]) / 100f;
             string reaction = Status.ModifyIncoming(ref hit, B);
             var defense = CurrentDefense();
             // Blok: cios z boku (nie z pleców) – bohater błyskawicznie obraca się do napastnika i zasłania go tarczą/bronią.
@@ -1259,7 +1368,7 @@ namespace Turris
             }
 
             // Redukcja obrażeń klasy/okrzyku/szału, arkanowa osłona i nieśmiertelność.
-            if (r.healthDamage > 0) r.healthDamage = HeroMitigate(r.healthDamage, false);
+            if (r.healthDamage > 0) r.healthDamage = HeroMitigate(r.healthDamage, false, r.outcome == HitOutcome.Hit ? minimumDamage : 0f);
 
             // Osłona pochłania obrażenia przed utratą życia; w pełni pochłonięty cios nie wywołuje drgnięcia.
             bool absorbedAll = false;
@@ -1274,6 +1383,7 @@ namespace Turris
 
             if (r.healthDamage > 0 && TryCheatDeath(r.healthDamage)) r.healthDamage = 0f;
             Health.Drain(r.healthDamage);
+            if (r.outcome == HitOutcome.Hit && r.healthDamage > 0f && !hit.isStatusTick) HealthHit?.Invoke(r.healthDamage);
             if (r.staminaDamage > 0) Stamina.Drain(r.staminaDamage, B.staminaRegenDelay);
             GearOnStruck(hit, r);
 

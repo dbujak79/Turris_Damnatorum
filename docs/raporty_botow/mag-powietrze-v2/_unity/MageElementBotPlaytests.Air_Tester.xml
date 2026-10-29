@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="1" result="Passed" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-29 17:15:07Z" end-time="2026-10-29 17:44:51Z" duration="1784,5424729">
+  <test-suite type="TestSuite" id="1230" name="Turris Damnatorum" fullname="Turris Damnatorum" runstate="Runnable" testcasecount="186" result="Passed" start-time="2026-10-29 17:15:07Z" end-time="2026-10-29 17:44:51Z" duration="1784.542473" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1453" name="TurrisDamnatorum.Tests.PlayMode.dll" fullname="C:/GIT/Gry/Turris_Damnatorum_kopie/kopia2/Library/ScriptAssemblies/TurrisDamnatorum.Tests.PlayMode.dll" runstate="Runnable" testcasecount="186" result="Passed" start-time="2026-10-29 17:15:07Z" end-time="2026-10-29 17:44:51Z" duration="1784.534584" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="40908" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1454" name="Turris" fullname="Turris" runstate="Runnable" testcasecount="186" result="Passed" start-time="2026-10-29 17:15:07Z" end-time="2026-10-29 17:44:51Z" duration="1784.532648" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="SetUpFixture" id="1414" name="Tests" fullname="Turris.Tests.MuteDuringTests" classname="Turris.Tests.MuteDuringTests" runstate="Runnable" testcasecount="186" result="Passed" start-time="2026-10-29 17:15:07Z" end-time="2026-10-29 17:44:51Z" duration="1784.530509" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1456" name="Bots" fullname="Turris.Tests.Bots" runstate="Runnable" testcasecount="13" result="Passed" start-time="2026-10-29 17:15:07Z" end-time="2026-10-29 17:44:51Z" duration="1784.518088" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1439" name="MageElementBotPlaytests" fullname="Turris.Tests.Bots.MageElementBotPlaytests" classname="Turris.Tests.Bots.MageElementBotPlaytests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-10-29 17:15:07Z" end-time="2026-10-29 17:44:51Z" duration="1784.516842" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1445" name="Air_Tester" fullname="Turris.Tests.Bots.MageElementBotPlaytests.Air_Tester" methodname="Air_Tester" classname="Turris.Tests.Bots.MageElementBotPlaytests" runstate="Runnable" seed="1503084952" result="Passed" start-time="2026-10-29 17:15:07Z" end-time="2026-10-29 17:44:51Z" duration="1784.507156" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="Timeout" value="172800000" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[
+IgnoreFailingMessages:true
+BOT class_hu_mage_air/Tester #1: Zwycięstwo, piętro 30 (XXX. Arcydiabeł), zabici 1571, czas gry 3508 s, czas rzeczywisty 120 s
+BOT class_hu_mage_air/Tester #2: Śmierć, piętro 14 (XIV. Kamienne Trzewia), zabici 471, czas gry 1447 s, czas rzeczywisty 48 s, zabójca Miotacz głazów – Miotacz głazów: Rockfall
+BOT class_hu_mage_air/Tester #3: Śmierć, piętro 10 (X. Rzeźnia), zabici 326, czas gry 1073 s, czas rzeczywisty 37 s, zabójca Ognisty chochlik – Pazury
+BOT class_hu_mage_air/Tester #4: Śmierć, piętro 11 (XI. Rzeźnia), zabici 335, czas gry 1268 s, czas rzeczywisty 45 s, zabójca Miotacz głazów – Miotacz głazów: Rockfall
+BOT class_hu_mage_air/Tester #5: Śmierć, piętro 10 (X. Rzeźnia), zabici 308, czas gry 978 s, czas rzeczywisty 34 s, zabójca Gnilec – Gnilec: Vomit
+BOT class_hu_mage_air/Tester #6: Śmierć, piętro 13 (XIII. Kamienne Trzewia), zabici 418, czas gry 1471 s, czas rzeczywisty 52 s, zabójca Tkaczka – Tkaczka: Cocoon
+BOT class_hu_mage_air/Tester #7: Zwycięstwo, piętro 30 (XXX. Arcydiabeł), zabici 1603, czas gry 4237 s, czas rzeczywisty 167 s
+BOT class_hu_mage_air/Tester #8: Śmierć, piętro 11 (XI. Rzeźnia), zabici 356, czas gry 1030 s, czas rzeczywisty 35 s, zabójca Miotacz głazów – Miotacz głazów
+BOT class_hu_mage_air/Tester #9: Śmierć, piętro 17 (XVII. Wieża Burz), zabici 660, czas gry 2360 s, czas rzeczywisty 88 s, zabójca Miotacz głazów – Miotacz głazów
+BOT class_hu_mage_air/Tester #10: Śmierć, piętro 20 (XX. Kostnica), zabici 890, czas gry 2741 s, czas rzeczywisty 104 s, zabójca Kultysta topieli – Kultysta topieli: Zones
+BOT class_hu_mage_air/Tester #11: Limit czasu, piętro 20 (XX. Kostnica), zabici 0, czas gry 2690 s, czas rzeczywisty 91 s
+BOT class_hu_mage_air/Tester #12: Zwycięstwo, piętro 30 (XXX. Arcydiabeł), zabici 1677, czas gry 3636 s, czas rzeczywisty 140 s
+BOT class_hu_mage_air/Tester #13: Śmierć, piętro 11 (XI. Rzeźnia), zabici 358, czas gry 1373 s, czas rzeczywisty 47 s, zabójca Miotacz głazów – Miotacz głazów
+BOT class_hu_mage_air/Tester #14: Śmierć, piętro 14 (XIV. Kamienne Trzewia), zabici 501, czas gry 1594 s, czas rzeczywisty 57 s, zabójca Grzebacz – Grzebacz: StoneSpikes
+BOT class_hu_mage_air/Tester #15: Śmierć, piętro 22 (XXII. Chór Cieni), zabici 971, czas gry 3093 s, czas rzeczywisty 113 s, zabójca Kultysta – Kula ognia
+BOT class_hu_mage_air/Tester #16: Śmierć, piętro 13 (XIII. Kamienne Trzewia), zabici 478, czas gry 1609 s, czas rzeczywisty 58 s, zabójca Miotacz głazów – Miotacz głazów
+BOT class_hu_mage_air/Tester #17: Zwycięstwo, piętro 30 (XXX. Arcydiabeł), zabici 1581, czas gry 4065 s, czas rzeczywisty 148 s
+BOT class_hu_mage_air/Tester #18: Śmierć, piętro 20 (XX. Kostnica), zabici 844, czas gry 2612 s, czas rzeczywisty 96 s, zabójca Ogar otchłani – Ogar otchłani
+BOT class_hu_mage_air/Tester #19: Zwycięstwo, piętro 30 (XXX. Arcydiabeł), zabici 1580, czas gry 4276 s, czas rzeczywisty 159 s
+BOT class_hu_mage_air/Tester #20: Zwycięstwo, piętro 30 (XXX. Arcydiabeł), zabici 1599, czas gry 3624 s, czas rzeczywisty 137 s
+
+IgnoreFailingMessages:false
+<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: C:/Users/Dawid/AppData/LocalLow/DefaultCompany/Turris Damnatorum\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

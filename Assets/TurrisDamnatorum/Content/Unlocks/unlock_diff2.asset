@@ -21,5 +21,5 @@ MonoBehaviour:
   ashCost: 45
   loadoutCost: 0
   unlockedByDefault: 0
-  requiredBestFloor: 5
+  requiredBestFloor: 25
   requiredVictoryTier: -1

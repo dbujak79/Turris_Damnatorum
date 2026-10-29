@@ -1,0 +1,247 @@
+<title>Powtórka piętra</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Układ: mapa areny z góry (lewa, kwadrat) + panel stanu i dziennik walki (prawa); na telefonie jedna kolumna. */
+:root {
+  --bg: #f3f1f4; --panel: #ffffff; --ink: #221d26; --muted: #6d6474; --line: #ddd6e0;
+  --floor: #ebe7ee; --grid: #d6cfdb; --hero: #1f6fd1; --hurt: #c8322b; --hp: #2f9a5b; --st: #c99a1c; --accent: #8a2f4a;
+  --shot-enemy: #e0702a; --shot-hero: #1aa3b8;
+  --f-display: "IM Fell English SC", "Palatino Linotype", Georgia, serif;
+  --f-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-data: "JetBrains Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #16131a; --panel: #1f1b24; --ink: #ece6ef; --muted: #a59bac; --line: #352e3b;
+  --floor: #221d28; --grid: #2f2836; --hero: #5aa2ff; --hurt: #ff5d55; --hp: #4cc581; --st: #e6b83c; --accent: #d77394;
+  --shot-enemy: #ff9a52; --shot-hero: #4fd4e6; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #16131a; --panel: #1f1b24; --ink: #ece6ef; --muted: #a59bac; --line: #352e3b;
+  --floor: #221d28; --grid: #2f2836; --hero: #5aa2ff; --hurt: #ff5d55; --hp: #4cc581; --st: #e6b83c; --accent: #d77394;
+  --shot-enemy: #ff9a52; --shot-hero: #4fd4e6; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 20px 32px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 16px; }
+header { display: grid; gap: 4px; }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(22px, 3.2vw, 32px); margin: 0; text-wrap: balance; }
+.meta { color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.meta b { color: var(--ink); font-weight: 600; }
+.verdict { color: var(--hurt); font-weight: 600; }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+@media (max-width: 860px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.stage { display: grid; gap: 10px; min-width: 0; }
+canvas { width: 100%; max-width: 100%; aspect-ratio: 1 / 1; background: var(--floor); border: 1px solid var(--line); border-radius: 6px; display: block; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+button { font: 600 14px var(--f-body); color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 5px; padding: 6px 12px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button[aria-pressed="true"] { background: var(--accent); color: var(--panel); border-color: var(--accent); }
+.time { font-family: var(--f-data); font-variant-numeric: tabular-nums; color: var(--muted); margin-left: auto; }
+.timeline { position: relative; }
+#scrub { width: 100%; accent-color: var(--accent); }
+#ticks { position: relative; height: 8px; margin: 0 8px; }
+#ticks i { position: absolute; top: 0; width: 2px; height: 8px; border-radius: 1px; }
+aside { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px; display: grid; gap: 14px; min-width: 0; }
+.label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.bar { height: 10px; background: var(--grid); border-radius: 5px; overflow: hidden; }
+.bar > div { height: 100%; transition: width .1s linear; }
+.barrow { display: grid; gap: 4px; }
+.barrow .val { font-family: var(--f-data); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+#log { list-style: none; margin: 0; padding: 0; max-height: 360px; overflow-y: auto; font-size: 13px; display: grid; gap: 2px; }
+#log li { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 8px; padding: 3px 6px; border-radius: 4px; cursor: pointer; }
+#log li .t { font-family: var(--f-data); color: var(--muted); font-variant-numeric: tabular-nums; }
+#log li .v { font-family: var(--f-data); font-variant-numeric: tabular-nums; }
+#log li.hurt .v, #log li.death { color: var(--hurt); }
+#log li.now { background: var(--grid); }
+#log li.future { opacity: .45; }
+.empty { color: var(--muted); padding: 40px 0; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > div { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1 id="title">Powtórka piętra</h1>
+    <div class="meta" id="meta"></div>
+  </header>
+  <div class="main" id="main">
+    <div class="stage">
+      <canvas id="map" width="900" height="900" aria-label="Arena z góry: bohater i demony"></canvas>
+      <div class="timeline">
+        <input id="scrub" type="range" min="0" max="1000" value="0" step="1" aria-label="Oś czasu walki">
+        <div id="ticks"></div>
+      </div>
+      <div class="controls">
+        <button id="play" type="button">Pauza</button>
+        <button type="button" data-speed="0.5">0,5×</button>
+        <button type="button" data-speed="1" aria-pressed="true">1×</button>
+        <button type="button" data-speed="2">2×</button>
+        <button type="button" data-speed="4">4×</button>
+        <button id="toDeath" type="button">Ostatnie 8 s</button>
+        <span class="time" id="clock">0,0 s</span>
+      </div>
+    </div>
+    <aside>
+      <div class="barrow"><span class="label">Życie bohatera</span><div class="bar"><div id="hpbar" style="background: var(--hp)"></div></div><span class="val" id="hpval"></span></div>
+      <div class="barrow"><span class="label">Wytrzymałość</span><div class="bar"><div id="stbar" style="background: var(--st)"></div></div><span class="val" id="stval"></span></div>
+      <div><div class="label">Na arenie</div><div class="legend" id="legend"></div></div>
+      <div><div class="label">Dziennik walki</div><ul id="log"></ul></div>
+    </aside>
+  </div>
+</div>
+
+<script>
+const DATA = /*DANE_POWTORKI*/null;
+(function () {
+  const $ = id => document.getElementById(id);
+  if (!DATA || !DATA.frames || DATA.frames.length === 0) {
+    $('main').innerHTML = '<p class="empty">Brak danych powtórki. Ten plik to szablon: bot wkleja do niego zapis walki po porażce na piętrze.</p>';
+    return;
+  }
+  const css = getComputedStyle(document.documentElement);
+  const tok = n => css.getPropertyValue(n).trim();
+  const fmt = (v, d = 1) => v.toFixed(d).replace('.', ',');
+  const frames = DATA.frames, events = DATA.events || [], types = DATA.types || [];
+  const T = frames[frames.length - 1].t;
+  // Zabójca: z zapisu albo z ostatniego trafienia w bohatera.
+  const lastHurt = [...events].reverse().find(e => e.kind === 'hurt');
+  const killer = DATA.killer && DATA.killer.replace(/[\s–-]/g, '') ? DATA.killer : (lastHurt ? lastHurt.text.split(' – ')[0] : '');
+  const ACT = { LightAttack: 'cios', HeavyAttack: 'mocny cios', Cast: 'skill', Dodge: 'unik', Flask: 'flaszka', Block: 'blok', Parry: 'parowanie' };
+  const KIND = { hurt: 'trafienie w bohatera', hit: 'trafienie', kill: 'zabity', skill: 'skill', dodge: 'unik', flask: 'flaszka', death: 'śmierć' };
+
+  $('title').textContent = DATA.title || 'Powtórka piętra';
+  $('meta').innerHTML = `<span>Klasa <b>${DATA.className}</b></span><span>Bot <b>${DATA.persona}</b></span>` +
+    `<span>Piętro <b>${DATA.floorIndex + 1}. ${DATA.floorName}</b></span><span>Próba <b>${DATA.attempt}</b></span>` +
+    `<span>Czas walki <b>${fmt(T)} s</b></span><span class="verdict">${DATA.result}${killer ? ', ostatni cios: ' + killer : ''}</span>`;
+
+  // Kolor rodzaju demona: równomiernie po kole barw, boss zawsze w akcencie.
+  const typeColor = types.map((t, i) => t.boss ? tok('--accent') : `hsl(${Math.round((i * 137.5 + 20) % 360)} 55% 52%)`);
+  const seen = new Set();
+  frames.forEach(f => { for (let i = 0; i < f.e.length; i += 6) seen.add(f.e[i + 1]); });
+  $('legend').innerHTML = `<span><i style="background: var(--hero)"></i>bohater</span>` +
+    [...seen].map(i => `<span><i style="background:${typeColor[i]}"></i>${types[i].name}</span>`).join('');
+
+  // Granice mapy z wszystkich pozycji (metry), kwadrat z marginesem.
+  let minX = 1e9, maxX = -1e9, minZ = 1e9, maxZ = -1e9;
+  const grow = (x, z) => { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z); };
+  frames.forEach(f => { grow(f.x, f.z); for (let i = 0; i < f.e.length; i += 6) grow(f.e[i + 2], f.e[i + 3]); });
+  const span = Math.max(maxX - minX, maxZ - minZ, 8) + 3, cx = (minX + maxX) / 2, cz = (minZ + maxZ) / 2;
+  const cv = $('map'), g = cv.getContext('2d'), S = cv.width;
+  const px = x => (x - cx) / span * S + S / 2, pz = z => S / 2 - (z - cz) / span * S, m = S / span;
+
+  // Dziennik.
+  const log = $('log');
+  events.forEach((e, i) => {
+    const li = document.createElement('li');
+    li.className = e.kind; li.dataset.i = i;
+    li.innerHTML = `<span class="t">${fmt(e.t)}</span><span>${e.text}</span><span class="v">${e.v ? (e.kind === 'hurt' ? '−' : '') + Math.round(e.v) : ''}</span>`;
+    li.title = KIND[e.kind] || e.kind;
+    li.addEventListener('click', () => seek(Math.max(0, e.t - 1)));
+    log.appendChild(li);
+  });
+  const ticks = $('ticks');
+  events.filter(e => e.kind === 'hurt' || e.kind === 'death').forEach(e => {
+    const i = document.createElement('i');
+    i.style.left = `${e.t / T * 100}%`;
+    i.style.background = e.kind === 'death' ? tok('--hurt') : tok('--st');
+    ticks.appendChild(i);
+  });
+
+  function frameAt(t) {
+    let lo = 0, hi = frames.length - 1;
+    while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (frames[mid].t <= t) lo = mid; else hi = mid - 1; }
+    return lo;
+  }
+  function enemiesOf(f) { const m = new Map(); for (let i = 0; i < f.e.length; i += 6) m.set(f.e[i], f.e.slice(i, i + 6)); return m; }
+
+  function draw(t) {
+    const i = frameAt(t), a = frames[i], b = frames[Math.min(i + 1, frames.length - 1)];
+    const k = b.t > a.t ? Math.min(1, (t - a.t) / (b.t - a.t)) : 0, lerp = (u, v) => u + (v - u) * k;
+    g.clearRect(0, 0, S, S);
+    // Siatka co 2 m z podziałką.
+    g.strokeStyle = tok('--grid'); g.lineWidth = 1;
+    const step = 2;
+    for (let x = Math.ceil((cx - span / 2) / step) * step; x <= cx + span / 2; x += step) { g.beginPath(); g.moveTo(px(x), 0); g.lineTo(px(x), S); g.stroke(); }
+    for (let z = Math.ceil((cz - span / 2) / step) * step; z <= cz + span / 2; z += step) { g.beginPath(); g.moveTo(0, pz(z)); g.lineTo(S, pz(z)); g.stroke(); }
+    g.fillStyle = tok('--muted'); g.font = `22px ${tok('--f-data')}`;
+    g.fillRect(24, S - 30, 2 * m, 4); g.fillText('2 m', 24, S - 40);
+
+    // Wrogowie (interpolacja po uid).
+    const ea = enemiesOf(a), eb = enemiesOf(b);
+    ea.forEach((e, id) => {
+      const n = eb.get(id) || e, dead = e[5] & 4;
+      if (dead) return;
+      const x = px(lerp(e[2], n[2])), z = pz(lerp(e[3], n[3])), type = types[e[1]] || { radius: .45 }, r = Math.max(7, type.radius * m);
+      g.beginPath(); g.arc(x, z, r, 0, Math.PI * 2); g.fillStyle = typeColor[e[1]]; g.fill();
+      if (e[5] & 2) { g.lineWidth = 4; g.strokeStyle = tok('--hurt'); g.stroke(); }
+      if (e[5] & 1) { g.lineWidth = 3; g.strokeStyle = tok('--st'); g.beginPath(); g.arc(x, z, r + 5, 0, Math.PI * 2); g.stroke(); }
+      if (type.boss) { g.lineWidth = 2; g.strokeStyle = tok('--ink'); g.beginPath(); g.arc(x, z, r + 9, 0, Math.PI * 2); g.stroke(); }
+      g.fillStyle = tok('--grid'); g.fillRect(x - r, z - r - 9, 2 * r, 4);
+      g.fillStyle = tok('--hp'); g.fillRect(x - r, z - r - 9, 2 * r * e[4], 4);
+    });
+    // Pociski.
+    for (let j = 0; j < a.p.length; j += 3) {
+      g.beginPath(); g.arc(px(a.p[j]), pz(a.p[j + 1]), 5, 0, Math.PI * 2);
+      g.fillStyle = a.p[j + 2] ? tok('--shot-hero') : tok('--shot-enemy'); g.fill();
+    }
+    // Bohater: trójkąt w kierunku patrzenia (yaw 0 = +z).
+    const hx = px(lerp(a.x, b.x)), hz = pz(lerp(a.z, b.z)), yaw = a.yaw * Math.PI / 180, R = Math.max(12, .5 * m);
+    g.save(); g.translate(hx, hz); g.rotate(yaw);
+    g.beginPath(); g.moveTo(0, -R * 1.4); g.lineTo(R, R); g.lineTo(-R, R); g.closePath();
+    g.fillStyle = tok('--hero'); g.fill(); g.restore();
+
+    // Zdarzenia z ostatnich 0,8 s: obrażenia, skille, zabici.
+    g.font = `600 22px ${tok('--f-body')}`; g.textAlign = 'center';
+    events.forEach(e => {
+      const age = t - e.t;
+      if (age < 0 || age > .8) return;
+      const alpha = 1 - age / .8, x = px(e.x), z = pz(e.z) - age * 40;
+      g.globalAlpha = alpha;
+      if (e.kind === 'hurt') { g.fillStyle = tok('--hurt'); g.fillText('−' + Math.round(e.v), x, z - 26); g.strokeStyle = tok('--hurt'); g.lineWidth = 3; g.beginPath(); g.arc(hx, hz, R * 2 + age * 30, 0, Math.PI * 2); g.stroke(); }
+      else if (e.kind === 'hit') { g.fillStyle = tok('--ink'); g.fillText(Math.round(e.v), x, z - 20); }
+      else if (e.kind === 'skill') { g.fillStyle = tok('--shot-hero'); g.fillText(e.text, hx, hz - R * 2.4 - age * 30); }
+      else if (e.kind === 'kill') { g.strokeStyle = tok('--muted'); g.lineWidth = 3; g.beginPath(); g.moveTo(x - 9, z - 9); g.lineTo(x + 9, z + 9); g.moveTo(x + 9, z - 9); g.lineTo(x - 9, z + 9); g.stroke(); }
+      g.globalAlpha = 1;
+    });
+    g.textAlign = 'left';
+
+    // Panel.
+    const hp = lerp(a.hp, b.hp), st = lerp(a.st, b.st);
+    $('hpbar').style.width = `${Math.max(0, hp / DATA.heroMaxHp * 100)}%`;
+    $('stbar').style.width = `${Math.max(0, st / DATA.heroMaxSt * 100)}%`;
+    $('hpval').textContent = `${Math.round(hp)} / ${Math.round(DATA.heroMaxHp)}${a.act ? ' · ' + (ACT[a.act] || a.act) : ''}`;
+    $('stval').textContent = `${Math.round(st)} / ${Math.round(DATA.heroMaxSt)}`;
+    $('clock').textContent = `${fmt(t)} / ${fmt(T)} s`;
+    let last = -1;
+    log.querySelectorAll('li').forEach(li => {
+      const e = events[+li.dataset.i];
+      li.classList.toggle('future', e.t > t);
+      if (e.t <= t) last = +li.dataset.i;
+      li.classList.remove('now');
+    });
+    if (last >= 0) { const li = log.querySelector(`li[data-i="${last}"]`); li.classList.add('now'); if (playing) li.scrollIntoView({ block: 'nearest' }); }
+  }
+
+  let t = Math.max(0, T - 8), speed = 1, playing = true, prev = performance.now();
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function seek(v) { t = Math.min(T, Math.max(0, v)); $('scrub').value = Math.round(t / T * 1000); draw(t); }
+  function loop(now) {
+    const dt = Math.min(.1, (now - prev) / 1000); prev = now;
+    if (playing) { t += dt * speed; if (t >= T) { t = T; playing = false; $('play').textContent = 'Odtwórz'; } $('scrub').value = Math.round(t / T * 1000); draw(t); }
+    requestAnimationFrame(loop);
+  }
+  $('play').addEventListener('click', () => { if (t >= T) t = 0; playing = !playing; $('play').textContent = playing ? 'Pauza' : 'Odtwórz'; });
+  $('toDeath').addEventListener('click', () => { seek(T - 8); playing = true; $('play').textContent = 'Pauza'; });
+  $('scrub').addEventListener('input', e => { seek(e.target.value / 1000 * T); });
+  document.querySelectorAll('[data-speed]').forEach(btn => btn.addEventListener('click', () => {
+    speed = +btn.dataset.speed;
+    document.querySelectorAll('[data-speed]').forEach(x => x.setAttribute('aria-pressed', x === btn ? 'true' : 'false'));
+  }));
+  if (reduce) { playing = false; $('play').textContent = 'Odtwórz'; }
+  seek(t);
+  requestAnimationFrame(loop);
+})();
+</script>

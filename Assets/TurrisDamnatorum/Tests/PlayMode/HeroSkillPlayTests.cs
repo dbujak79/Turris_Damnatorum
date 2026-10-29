@@ -90,7 +90,7 @@ namespace Turris.Tests
             yield return new WaitForSeconds(1.1f); // koniec uśpienia po pojawieniu się
             warrior.transform.rotation = Quaternion.identity;
             int slot = Slot(warrior, "hu_cleave");
-            Assert.AreEqual(4f, warrior.Skill(slot).instance.Cooldown, 0.01f, "odnowienie Rozpłatania 4 s");
+            Assert.AreEqual(5f, warrior.Skill(slot).instance.Cooldown, 0.01f, "odnowienie Rozpłatania 5 s (balans po serii 5)");
             warrior.RequestSkill(slot);
             float t = 0f;
             while (demon.Health.Current >= 5000f && t < 1.5f) { t += Time.deltaTime; yield return null; }

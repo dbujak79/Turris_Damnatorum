@@ -70,10 +70,7 @@ namespace Turris.Tests
                 root.DebugCompleteFloorNow();
                 yield return null;
                 if (floor == last) break;
-                Assert.AreEqual(GameScreen.Reward, root.Screen);
-                Assert.AreEqual(3, root.Rewards.Count);
-                root.ChooseReward(0);
-                Assert.AreEqual(GameScreen.Intermission, root.Screen);
+                Assert.AreEqual(GameScreen.Intermission, root.Screen, "HU: po piętrze od razu sklep");
                 root.NextFloor();
                 yield return null;
             }
@@ -95,7 +92,7 @@ namespace Turris.Tests
         {
             var root = CreateGame(out var bundle);
             root.Meta.DebugAddAsh(500);
-            root.Meta.RecordReachedFloor(4);
+            root.Meta.RecordReachedFloor(14); // trudność 1: dotarcie na piętro 15 z 30
             Assert.IsTrue(root.Meta.Purchase(bundle.Get<UnlockDefinition>("unlock_diff1")));
             int startAsh = root.Meta.Profile.ash;
 
@@ -119,15 +116,13 @@ namespace Turris.Tests
         {
             var root = CreateGame(out var bundle);
             root.Meta.DebugAddAsh(500);
-            root.Meta.RecordReachedFloor(4);
+            root.Meta.RecordReachedFloor(14); // trudność 1: dotarcie na piętro 15 z 30
             Assert.IsTrue(root.Meta.Purchase(bundle.Get<UnlockDefinition>("unlock_diff1")));
-            var floors = bundle.config.tower.floors;
-            int duel = floors.FindIndex(f => f.isDuel && !f.isBoss && f.enemies.Count > 0 && !f.enemies[0].isBoss);
-            Assert.GreaterOrEqual(duel, 0, "brak pojedynku bez bossa");
+            // Wieża z fal HU nie ma pojedynków bez bossa – reguła dotyczy treści, która je ma (piętro ustawione w teście).
+            var first = bundle.config.tower.floors[0];
+            first.portals.enabled = false; first.isDuel = true; first.enemies.Clear(); first.enemies.Add(bundle.Get<EnemyDefinition>("enemy_ghoul"));
             root.StartRun(new LoadoutPlan { classDef = bundle.Get<ClassDefinition>("legacy_mage"), difficulty = bundle.config.difficulties[1] });
             yield return null;
-            for (int i = 0; i < duel; i++) { root.DebugCompleteFloorNow(); root.ChooseReward(0); root.NextFloor(); yield return null; }
-            Assert.AreEqual(duel, root.Run.floorIndex);
             float wait = 0f;
             while (root.Enemies.Count == 0 && wait < 5f) { wait += Time.deltaTime; yield return null; }
             Assert.IsTrue(root.Enemies[0].IsElite, "Trudność 1 dodaje elity w pojedynkach");
@@ -144,7 +139,6 @@ namespace Turris.Tests
             yield return new WaitForSeconds(2.4f);
             Assert.Greater(root.Enemies.Count, 0, "z portalu nie wyszedł żaden demon");
             root.DebugCompleteFloorNow();
-            root.ChooseReward(0);
             root.NextFloor();
             yield return null;
             int ashKept = root.Meta.Profile.ash;
@@ -330,6 +324,7 @@ namespace Turris.Tests
 
         SpellInstance Equip(PlayerCombat pc, DefaultContent.Bundle bundle, string id, int slot)
         {
+            TestWeapons.EnsureFor(pc.Run, bundle.Get<SpellDefinition>(id), w => bundle.Get<ItemDefinition>(w)); // skill wymaga rodzaju broni
             var s = pc.Run.LearnSpell(bundle.Get<SpellDefinition>(id));
             pc.Run.AssignSlot(s, slot);
             pc.RefreshBuild();
@@ -448,11 +443,16 @@ namespace Turris.Tests
         public IEnumerator Floor_WavesComeOneAfterAnother_ThenReward()
         {
             var root = CreateGame(out var bundle);
+            // Wieża to fale HU (portale); fale po kolei zostają mechaniką treści – piętro z trzema falami ustawione w teście.
+            var ghoul = bundle.Get<EnemyDefinition>("enemy_ghoul");
+            var first = bundle.config.tower.floors[0];
+            first.portals.enabled = false; first.isDuel = false;
+            first.enemies.Clear(); first.enemies.Add(ghoul); first.enemies.Add(ghoul);
+            first.extraWaves.Clear();
+            for (int i = 0; i < 2; i++) { var w = new EnemyWave(); w.enemies.Add(ghoul); w.enemies.Add(ghoul); first.extraWaves.Add(w); }
             var plan = new LoadoutPlan { classDef = bundle.Get<ClassDefinition>("legacy_knight"), difficulty = bundle.config.difficulties[0] };
             Assert.IsTrue(root.TryStartRun(plan, out var reason), reason);
             yield return null;
-            // Piętra I–III to areny Hell Unleashed (portale, boss) – fale po kolei są od Zbrojowni.
-            while (root.CurrentFloor.WaveCount < 3) { root.DebugCompleteFloorNow(); root.ChooseReward(0); root.NextFloor(); yield return null; }
             var floor = root.CurrentFloor;
             Assert.GreaterOrEqual(floor.WaveCount, 3);
             for (int wave = 0; wave < floor.WaveCount; wave++)
@@ -473,7 +473,7 @@ namespace Turris.Tests
                 float t = 0;
                 while (t < 4f && root.Screen == GameScreen.Playing && root.WaveIndex == wave) { t += Time.deltaTime; yield return null; }
             }
-            Assert.AreEqual(GameScreen.Reward, root.Screen, "Po ostatniej fali – nagroda");
+            Assert.AreEqual(GameScreen.Intermission, root.Screen, "Po ostatniej fali – sklep (HU, bez nagrody)");
         }
 
         [UnityTest]

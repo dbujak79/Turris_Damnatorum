@@ -10,7 +10,7 @@ namespace Turris.Tests.Bots
     /// kolor telegrafu i początek zamachu – reaguje z opóźnieniem i błędem wyczucia zależnymi od osobowości.
     /// Klasy pochodne (np. <see cref="WarriorBot"/>) dokładają wybór zestawu, rozwój cech i użycie skilli klasy.
     /// </summary>
-    public abstract class HeroBot : MonoBehaviour, IPlayerDriver
+    public abstract partial class HeroBot : MonoBehaviour, IPlayerDriver
     {
         public GameRoot Root { get; private set; }
         public PersonaProfile P { get; private set; }
@@ -48,6 +48,18 @@ namespace Turris.Tests.Bots
         Vector3 evacuateDir;
         bool pendingDodge;
         Vector3 pendingDodgeDir;
+
+        /// <summary>Unik z inicjatywy klasy (np. mag wabi wrogów pod czar obszarowy): kierunek teraz, przycisk w następnej klatce.</summary>
+        protected bool RequestDodge(Vector3 dir, string reason)
+        {
+            if (pendingDodge || Pc.Stamina.Current < Pc.Build.dodge.staminaCost || !(Pc.Actions.IsIdle || Pc.Actions.PastCancelPoint)) return false;
+            dir.y = 0f;
+            pendingDodge = true;
+            pendingDodgeDir = dir.sqrMagnitude > 1e-4f ? dir.normalized : -transform.forward;
+            MoveWorld = pendingDodgeDir;
+            Rec.R.dodgeReasons.Add(reason);
+            return true;
+        }
         Swing blockFor;
 
         float stuckT;
@@ -89,15 +101,31 @@ namespace Turris.Tests.Bots
             shots.Clear(); shotResponse.Clear();
             refused.Clear();
             slotsFixed = false;
+            origin.Clear();
             lastAction = ActionType.None;
             Root.Controller.Driver = this;
             lastWall = Time.realtimeSinceStartup;
         }
 
+        /// <summary>Ponowna próba piętra po śmierci (stan podejścia odtworzony z zapisu): czyste spostrzeżenia walki, ta sama telemetria.</summary>
+        public void ResumeAfterRetry()
+        {
+            swings.Clear();
+            lastSeen.Clear();
+            target = null;
+            blockUntil = evacuateUntil = unstickUntil = backOffUntil = 0f;
+            pendingDodge = false;
+            dodgeExpectedUntil = 0f; nextTacticalAt = 0f;
+            shots.Clear(); shotResponse.Clear();
+            refused.Clear();
+            lastAction = ActionType.None;
+            Root.Controller.Driver = this;
+        }
+
         public void End()
         {
             if (Root != null && Root.Controller != null && ReferenceEquals(Root.Controller.Driver, this)) Root.Controller.Driver = null;
-            if (Rec != null) Rec.Bot = null;
+            if (Rec != null) { RememberSkills(); Rec.Bot = null; }
             Rec = null;
             MoveWorld = Vector3.zero;
             BlockHeld = SprintHeld = false;
@@ -134,6 +162,8 @@ namespace Turris.Tests.Bots
                 {
                     string n = Pc.ActiveSkill.Def.displayName;
                     Rec.R.skillUses.Add(n);
+                    Rec.R.skillLevelSum.Add(n, Pc.ActiveSkill.instance.level);
+                    Rec.R.skillUsesByOrigin.Add($"{n}|{OriginOf(Pc.ActiveSkill.Def)}");
                     Rec.R.actions.Add("umiejętność");
                 }
                 else if (cur == ActionType.Flask) { Rec.R.actions.Add("flaszka (próba)"); Rec.FlaskAttempt(); }
@@ -666,6 +696,8 @@ namespace Turris.Tests.Bots
                 changed = true;
             }
             if (changed) Pc.RefreshBuild();
+            TrackOrigins(true);
+            if (P.persona != BotPersona.Tester) ArrangeSlots(); // gracz ustawia sloty przed walką wg doświadczenia z poprzednich podejść
         }
 
         bool UnusableDef(SpellInstance s)
@@ -677,8 +709,64 @@ namespace Turris.Tests.Bots
 
         // ------------------------------------------------------------------ Atak
 
-        /// <summary>Haczyk na początek decyzji w walce (np. przełączenie aury).</summary>
-        protected virtual void OnFight() { }
+        /// <summary>Haczyk na początek decyzji w walce – domyślnie: aura zdobyta po drodze włączona raz i zostawiona.</summary>
+        protected virtual void OnFight()
+        {
+            for (int slot = 0; slot < RunState.SkillSlotCount; slot++)
+            {
+                var sk = Pc.Skill(slot);
+                if (sk != null && sk.Def.IsAura && !auraTried.Contains(sk.Def) && Pc.Actions.IsIdle)
+                {
+                    auraTried.Add(sk.Def);
+                    Pc.RequestSkill(slot);
+                }
+            }
+        }
+
+        readonly HashSet<SpellDefinition> auraTried = new HashSet<SpellDefinition>();
+
+        /// <summary>Kiedy użyć skilla danego rodzaju (wspólne dla klas; działa też dla skilli kupionych po drodze).</summary>
+        protected virtual bool WantsSkill(SpellDefinition def, float d, int close, float hp)
+        {
+            float reach = Mathf.Max(def.attack.reach, def.attack.radius, 2.5f);
+            bool tester = P.persona == BotPersona.Tester;
+            switch (def.kind)
+            {
+                case SpellKind.Cone:
+                case SpellKind.Cleave:
+                case SpellKind.Flurry:
+                case SpellKind.ShieldBash:
+                case SpellKind.Quake:
+                    return d <= reach * 0.9f && (close >= 2 || tester || target.CurrentState != EnemyBrain.State.Attacking);
+                case SpellKind.Wave:
+                case SpellKind.Projectile:
+                case SpellKind.Chain:
+                case SpellKind.WeaponThrow:
+                    return d >= 3.5f && d <= reach || (close >= 2 && d <= 3f);
+                case SpellKind.Charge:
+                case SpellKind.Dash:
+                    return d >= 4f && d <= Mathf.Max(reach, 8f);
+                case SpellKind.Whirlwind:
+                case SpellKind.Nova:
+                case SpellKind.Warcry:
+                    return close >= 2 || (tester && close >= 1);
+                case SpellKind.Heal:
+                case SpellKind.Barrier:
+                case SpellKind.FrostArmor:
+                case SpellKind.Undying:
+                    return hp < 0.5f && close >= 1;
+                case SpellKind.WeaponBuff:
+                    return d <= 6f && Pc.WeaponBuffTime <= 0f;
+                case SpellKind.Aura:
+                    return false; // aury przełącza OnFight
+                case SpellKind.Zone:
+                case SpellKind.Meteor:
+                case SpellKind.Storm:
+                    return d <= reach && (close >= 2 || target.Def.isBoss);
+                default:
+                    return d <= reach;
+            }
+        }
 
         /// <summary>Skille: klasa decyduje, kiedy i który. True – w tej klatce użyto skilla.</summary>
         protected virtual bool TryUseSkills() => false;
@@ -723,7 +811,8 @@ namespace Turris.Tests.Bots
 
         protected virtual float DesiredRange => Mathf.Max(1.2f, Pc.Build.weapon.light.reach * 0.85f);
 
-        void Offense()
+        /// <summary>Atak bronią: domyślnie wręcz (podejście, seria, odskok); mag nadpisuje walką na dystans.</summary>
+        protected virtual void Offense()
         {
             float d = FlatDist(target);
             Vector3 to = DirTo(target.transform.position);
@@ -771,7 +860,7 @@ namespace Turris.Tests.Bots
             return ActionType.LightAttack;
         }
 
-        Vector3 Strafe(Vector3 to)
+        protected Vector3 Strafe(Vector3 to)
         {
             if (now >= strafeFlipAt) { strafeSign = rng.NextDouble() < 0.5 ? 1f : -1f; strafeFlipAt = now + 1.2f + (float)rng.NextDouble() * 1.5f; }
             return Vector3.Cross(Vector3.up, to) * strafeSign;
@@ -825,53 +914,31 @@ namespace Turris.Tests.Bots
             var cls = plan.classDef;
             var candidates = Root.config.unlocks
                 .Where(u => u.kind != UnlockKind.Difficulty && u.AvailableFor(cls) && meta.CanPurchase(u, out _))
-                // Czary, których klasa nie rzuci (Inteligencja) – gracz ich nie kupuje.
+                // Czary, których klasa nie rzuci (Inteligencja), i skille na broń spoza zestawów klasy – gracz ich nie kupuje.
                 .Where(u => !(u.target is SpellDefinition sd && sd.IsSpell && sd.requirements.Any(rq => rq.attribute == AttributeType.Intelligence && rq.value > cls.intelligence)))
+                .Where(u => !(u.target is SpellDefinition sk) || cls.loadouts.Count == 0 || cls.loadouts.Any(l => WeaponFamilies.Usable(sk, l.weapon, l.offHand)))
                 .OrderByDescending(u => u.classes != null && u.classes.Count > 0) // najpierw klasowe
                 .ThenBy(u => u.kind == UnlockKind.Spell ? 0 : u.kind == UnlockKind.StartingItem ? 1 : 2)
                 .ThenBy(u => u.ashCost).ToList();
             foreach (var u in candidates)
                 if (meta.Purchase(u)) bought.Add(u.displayName);
-            // Dodatki w budżecie: najdroższe, które się mieszczą (zwykle najsilniejsze).
-            foreach (var u in meta.LoadoutOptionsFor(cls).OrderByDescending(u => u.loadoutCost))
+            // Dodatki w budżecie: najdroższe, które się mieszczą (zwykle najsilniejsze). Bez broni i drugiej ręki – zastąpiłyby
+            // broń zestawu, a skill startowy wymaga jej rodzaju (miecz → Cięcie wichru).
+            foreach (var u in meta.LoadoutOptionsFor(cls).Where(u => !(u.target is ItemDefinition it && (it.IsWeapon || it.IsShield || it.kind == ItemKind.OffHand)))
+                         .OrderByDescending(u => u.loadoutCost))
                 if (!plan.extras.Contains(u) && plan.Cost + u.loadoutCost <= Root.config.balance.loadoutBudget) plan.extras.Add(u);
             meta.FillSkills(plan);
             return bought;
         }
 
-        /// <summary>Wybór nagrody po piętrze.</summary>
-        public virtual int ChooseReward(IReadOnlyList<RewardOption> options)
-        {
-            if (P.persona == BotPersona.Tester) return (Root.Run.floorIndex + Rec.R.run) % options.Count;
-            int bestI = 0; float best = float.MinValue;
-            for (int i = 0; i < options.Count; i++)
-            {
-                float s = RewardScore(options[i]) + (float)rng.NextDouble() * 0.5f;
-                if (s > best) { best = s; bestI = i; }
-            }
-            return bestI;
-        }
-
-        /// <summary>Gust gracza H&S/souls: ulepszenia używanych skilli, nowe skille do pustych slotów, potem wzmocnienia.</summary>
-        protected virtual float RewardScore(RewardOption o)
-        {
-            switch (o.kind)
-            {
-                case RewardKind.UpgradeSpell when Unusable(Pc.Build.skills.FirstOrDefault(x => x != null && x.instance == o.spellToUpgrade)):
-                    return -1f;
-                case RewardKind.UpgradeSpell: return Root.Run.SlotOf(o.spellToUpgrade) >= 0 || o.spellToUpgrade == Root.Run.signatureSkill ? 3.2f : 1f;
-                case RewardKind.LearnSpell: return System.Array.IndexOf(Root.Run.skillSlots, null) >= 0 ? 3f : 1.2f;
-                case RewardKind.Boon: return 2.4f;
-                default: return o.item != null && o.item.definition != null && o.item.definition.kind == ItemKind.Weapon ? 1.5f : 2f;
-            }
-        }
-
         /// <summary>Kolejność rozwijania cech (klasa).</summary>
         protected abstract AttributeType NextAttribute(int pointIndex);
 
-        /// <summary>Ekran między piętrami: cechy, kapliczka, sklep dusz.</summary>
+        /// <summary>Ekran między piętrami: cechy, kapliczka, sklep dusz (oferta, sloty, ulepszenia).</summary>
         public virtual void Intermission()
         {
+            auraTried.Clear();
+            TrackOrigins(false);
             int i = 0;
             while (Root.Run.attributePoints > 0 && i < 20)
             {
@@ -889,12 +956,12 @@ namespace Turris.Tests.Bots
                 Root.BuyFlask();
                 if (Root.Run.bonusHealthFlasks > flasks) Rec.R.purchases.Add("dodatkowa flaszka");
             }
-            // Ulepszenie używanych skilli; tester na zmianę kupuje też losową ofertę.
-            if (P.persona == BotPersona.Tester && Root.ShopOffer != null && SoulShop.TryBuyOffer(Root.ShopOffer, Root.Run, Root.config.balance))
-            {
-                Rec.R.purchases.Add("oferta: " + Root.ShopOffer.displayName);
-                Root.Player.RefreshBuild();
-            }
+            // Przedmioty z plecaka, oferta sklepu, potem ułożenie slotów, na końcu ulepszenia skilli, które zostały w slotach.
+            ManageGear();
+            ManageFloorShop();
+            ManageSeals();
+            ConsiderShopOffer();
+            ArrangeSlots();
             var unusable = new HashSet<SpellDefinition>(Enumerable.Range(0, RunState.SkillSlotCount).Select(Pc.Skill).Where(Unusable).Select(x => x.Def));
             foreach (var s in Root.Run.skillSlots.Concat(new[] { Root.Run.signatureSkill }).Where(s => s != null && !unusable.Contains(s.definition)).ToList())
             {

@@ -659,6 +659,6 @@ MonoBehaviour:
   visual: {fileID: 11400000, guid: 50ab812a7ee286a41b70d7b79f90020e, type: 2}
   spawnCost: 0
   packSize: 1
-  eliteHealthMultiplier: 7
-  eliteDamageMultiplier: 1.6
+  eliteHealthMultiplier: 4.5
+  eliteDamageMultiplier: 1.45
   isMinion: 0

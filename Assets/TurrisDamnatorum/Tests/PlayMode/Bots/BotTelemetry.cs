@@ -67,6 +67,10 @@ namespace Turris.Tests.Bots
         public float minHpFraction = 1f, timeBlocking, timeSprinting, timeLowStamina, distanceMoved, maxHealth;
         public Tally actions = new Tally();          // wykonane akcje (zmiana stanu gracza)
         public Tally skillUses = new Tally();        // użycia umiejętności po nazwie
+        public Tally skillLevelSum = new Tally();    // suma poziomów skilla przy użyciach (średni poziom = suma / użycia)
+        public Tally skillUsesByOrigin = new Tally(); // „skill|pochodzenie” → użycia (startowy, odblokowanie, zestaw, nagroda, sklep, przedmiot)
+        public Tally skillSwaps = new Tally();       // „wyjęty → włożony” przy układaniu slotów
+        public Tally shopOffers = new Tally();       // oferty sklepu dusz: widziana / kupiona / odrzucona / za mało dusz
         public Tally damageBySource = new Tally();   // obrażenia zadane wg nazwy ataku/umiejętności
         public Tally incoming = new Tally();         // telegraf|wynik
         public Tally responses = new Tally();        // reakcja|telegraf|wynik
@@ -81,14 +85,17 @@ namespace Turris.Tests.Bots
         public Tally reactionMargin = new Tally();
         public Tally dodgeReasons = new Tally();     // powód naciśnięcia uniku (i odmowy gry)   // telegraf|zapas czasu po reakcji bota
         public Tally messages = new Tally();         // komunikaty gry (np. „Za mało many”)
-        public Tally rewards = new Tally();          // wybrane nagrody (kategoria: tytuł)
-        public Tally rewardsSeen = new Tally();
         public Tally attributes = new Tally();
         public Tally purchases = new Tally();        // sklep dusz / kapliczka
         public Tally anomalies = new Tally();        // rodzaj anomalii → liczba
         public List<string> anomalyNotes = new List<string>();
         public List<FloorStat> floors = new List<FloorStat>();
         public List<string> metaUnlocks = new List<string>();
+        public Tally seals = new Tally();            // pieczęcie: „dar: X”, „z sakwy: X”, „kupiona: X”
+        public Tally floorRetries = new Tally();     // piętro → ponowne próby po śmierci
+        public List<string> retryNotes = new List<string>();
+        public List<string> challenges = new List<string>(); // zapisane wyzwania (piętro nieprzejęte w trzech próbach)
+        public List<string> replays = new List<string>();    // powtórki ostatecznych porażek (powtorki/*.html)
 
         public bool Victory => result == "Zwycięstwo";
 

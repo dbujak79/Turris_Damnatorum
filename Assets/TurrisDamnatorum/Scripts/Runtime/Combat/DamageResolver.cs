@@ -35,7 +35,10 @@ namespace Turris
         public StatusModifiers mods;   // modyfikatory efektów z wyposażenia atakującego
         public WeaponModel weapon;     // zwykły cios bronią (Auto = nie broń: czar, technika, pocisk) – barwa trafienia i hitstop atakującego
         public float knockback;        // odrzut trafionego wroga (m); ujemny = przyciągnięcie do źródła
+        public float knockdown;        // powalenie trafionego wroga (s; bossy odporne, potem odporność na ogłuszenie)
         public bool isProjectile;      // trafienie pociskiem (Sokole oko)
+        /// <summary>Przebicie odporności (perki HU): część żywiołu i fizyczna – w ułamku, odporność celu nie spada poniżej 0.</summary>
+        public float penetration, physicalPenetration;
 
         public float Total => physical + magic;
 

@@ -20,7 +20,7 @@ namespace Turris
         public int souls;               // waluta podejścia
         public int ashEarned;           // popiół zdobyty w tym podejściu (już zapisany w profilu)
         public int kills;
-        /// <summary>Nierozdane punkty cech (1 za każde ukończone piętro).</summary>
+        /// <summary>Nierozdane punkty cech (1 za każde ukończone piętro, za darmo).</summary>
         public int attributePoints;
 
         /// <summary>Wydaje punkt na rozwój cechy.</summary>
@@ -98,12 +98,15 @@ namespace Turris
             return changed;
         }
 
-        /// <summary>Dodaje umiejętność do kolekcji; trafia do pierwszego wolnego slotu, a przy zajętych czeka w kolekcji.</summary>
-        public SpellInstance LearnSpell(SpellDefinition def, bool permanent = false)
+        /// <summary>
+        /// Dodaje umiejętność do kolekcji; trafia do pierwszego wolnego slotu, a przy zajętych czeka w kolekcji.
+        /// <paramref name="level"/> – poziom startowy nowej (np. <see cref="SkillTiers.StartLevel"/>); znana podnosi się najwyżej do niego.
+        /// </summary>
+        public SpellInstance LearnSpell(SpellDefinition def, bool permanent = false, int level = 0)
         {
             var known = FindSpell(def);
-            if (known != null) { known.permanent |= permanent; return known; }
-            var inst = new SpellInstance(def) { permanent = permanent };
+            if (known != null) { known.permanent |= permanent; known.level = System.Math.Max(known.level, System.Math.Min(level, def.maxLevel)); return known; }
+            var inst = new SpellInstance(def, System.Math.Max(0, System.Math.Min(level, def.maxLevel))) { permanent = permanent };
             AttachSeals(inst);
             knownSpells.Add(inst);
             int free = System.Array.IndexOf(skillSlots, null);
@@ -190,16 +193,22 @@ namespace Turris
             foreach (var m in tempModifiers) yield return m;
             foreach (var m in equipment.AllModifiers()) yield return m;
             foreach (var b in boons)
+            {
+                if (!PerkMechanics.Active(b.definition, this)) continue; // uśpiony perk HU (brak pasującego wyposażenia)
                 foreach (var m in b.definition.modifiers)
                     yield return m.Scaled(b.stacks);
+            }
         }
 
         public IEnumerable<PassiveEffect> AllEffects()
         {
             foreach (var e in equipment.AllEffects()) yield return e;
             foreach (var b in boons)
+            {
+                if (!PerkMechanics.Active(b.definition, this)) continue;
                 foreach (var e in b.definition.effects)
                     yield return new PassiveEffect(e.type, e.value * b.stacks);
+            }
         }
 
         public int MaxHealthFlasks
@@ -238,6 +247,8 @@ namespace Turris
             if (snap.parry != null) t |= BuildTag.Parry;
             if (snap.loadRatio > 0.6f) t |= BuildTag.Heavy; else t |= BuildTag.Agile;
             if (snap.weapon != null && snap.weapon.light != null && snap.weapon.light.delivery == AttackDelivery.Projectile) t |= BuildTag.Ranged;
+            // Rodzaje broni z obu rąk (ostrze, ciężka broń, sztylet, łuk, fokus) – o skillach decyduje broń, nie klasa.
+            t |= WeaponFamilies.Of(equipment.Get(EquipSlot.MainHand)?.definition) | WeaponFamilies.Of(equipment.Get(EquipSlot.OffHand)?.definition);
             return t;
         }
     }

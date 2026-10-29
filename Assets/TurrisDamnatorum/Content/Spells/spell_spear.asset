@@ -16,6 +16,7 @@ MonoBehaviour:
   displayName: "W\u0142\xF3cznia pot\u0119pionych"
   description: Wolny, bardzo silny pocisk.
   tags: 2
+  requiredTags: 4096
   kind: 0
   manaCost: 30
   castTime: 0.8

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Turris
 {
-    public enum GameScreen { MainMenu, Unlocks, Loadout, Playing, Reward, Intermission, Equipment, Paused, Death, Victory, Controls, Bestiary }
+    public enum GameScreen { MainMenu, Unlocks, Loadout, Playing, Intermission, Equipment, Paused, Death, Victory, Controls, Bestiary }
 
     /// <summary>
     /// Punkt wejścia i przepływ gry: menu → przygotowanie → piętra → nagrody/kapliczka → śmierć lub zwycięstwo.
@@ -27,15 +27,12 @@ namespace Turris
         public PlayerCombat Player { get; private set; }
         public PlayerController Controller { get; private set; }
         public CameraRig CameraRig { get; private set; }
-        public List<RewardOption> Rewards { get; private set; } = new List<RewardOption>();
         FloorDefinition trialFloor;
         public bool IsEnemyTrial => trialFloor != null;
         public FloorDefinition CurrentFloor => Run != null ? trialFloor ?? (Run.floorIndex < config.tower.floors.Count ? config.tower.floors[Run.floorIndex] : null) : null;
         public bool AtRestPoint { get; private set; }
-        /// <summary>Oferta sklepu dusz: losowa umiejętność na to podejście (null = brak/kupiona).</summary>
-        public SpellDefinition ShopOffer { get; private set; }
-        /// <summary>Nagrody można przerzucić raz na piętro.</summary>
-        public bool RerollUsed { get; private set; }
+        /// <summary>Oferty skilli w sklepie dusz (HU: trzy naraz) – kupione znikają z listy.</summary>
+        public List<SpellDefinition> ShopOffers { get; private set; } = new List<SpellDefinition>();
         public string LastFloorSummary { get; private set; }
         public int LastAsh { get; private set; }
         public string ProfilePath { get; private set; }
@@ -128,6 +125,7 @@ namespace Turris
             Input.EnsureMap();
             Input.LoadOverrides(Meta.Profile.bindingOverrides);
             Player.Died += OnPlayerDied;
+            Player.HealthHit += OnPlayerHealthHit;
             p.SetActive(false);
 
             QualitySettings.pixelLightCount = Mathf.Max(QualitySettings.pixelLightCount, 8);
@@ -157,6 +155,7 @@ namespace Turris
         {
             var backdrop = config.tower.floors[config.tower.floors.Count - 1].arena;
             arena = WorldBuilder.BuildArena(backdrop, world);
+            GothicArenaBuilder.ConfigureLighting(backdrop,sun,CameraRig.Camera);
             Audio.SetArena(ArenaBuilder.StyleOf(backdrop));
             var cam = CameraRig.transform;
             CameraRig.enabled = false;
@@ -219,6 +218,29 @@ namespace Turris
             LoadFloor(0);
         }
 
+        /// <summary>
+        /// Start z zapisanego stanu podejścia (<see cref="RunSnapshot"/>): wyzwanie bota albo ponowna próba piętra –
+        /// ten sam build na zapisanym piętrze. False, gdy zapis nie pasuje do treści gry.
+        /// </summary>
+        public bool StartRunFromSnapshot(RunSnapshot snapshot)
+        {
+            var run = snapshot?.Restore(config);
+            if (run == null || run.floorIndex < 0 || run.floorIndex >= config.tower.floors.Count) return false;
+            Plan = new LoadoutPlan { classDef = run.startingClass, difficulty = run.difficulty };
+            trialFloor = null;
+            rng = new System.Random(run.seed ^ System.Environment.TickCount);
+            Run = run;
+            eliteCountdown = -1;
+            Player.gameObject.SetActive(true);
+            Player.Init(Run, config);
+            var vis = Player.GetComponent<PlayerVisuals>();
+            vis.SetBodyColor(run.startingClass.color);
+            vis.Refresh();
+            CameraRig.enabled = true;
+            LoadFloor(run.floorIndex);
+            return true;
+        }
+
         /// <summary>Szybki restart po śmierci – ten sam zestaw startowy.</summary>
         public void RetrySameLoadout()
         {
@@ -230,14 +252,14 @@ namespace Turris
         void LoadFloor(int index)
         {
             ClearWorld();
+            ResetSouls();
             Run.floorIndex = index;
             var floor = CurrentFloor;
+            AttackDirector.Reset(index + 1, floor != null && floor.enemies.Exists(e => e != null && e.isBoss));
             arena = WorldBuilder.BuildArena(floor.arena, world);
             Audio.SetArena(ArenaBuilder.StyleOf(floor.arena));
             Sfx.Ui(floor.isBoss ? SoundId.BossIntro : SoundId.FloorStart);
-            sun.color = floor.arena.lightColor;
-            RenderSettings.fogColor = floor.arena.fogColor;
-            if (CameraRig.Camera != null) { CameraRig.Camera.backgroundColor = floor.arena.fogColor; CameraRig.Camera.clearFlags = CameraClearFlags.SolidColor; }
+            GothicArenaBuilder.ConfigureLighting(floor.arena,sun,CameraRig.Camera);
 
             Controller.Teleport(WorldBuilder.PlayerSpawn(floor.arena), Quaternion.identity);
             Player.Actions.Reset();
@@ -282,7 +304,7 @@ namespace Turris
                 if (!IsEnemyTrial) Meta.RecordSeen(def);
                 var e = WorldBuilder.CreateEnemy(def, spawns[i], world);
                 e.transform.rotation = Quaternion.LookRotation(-new Vector3(spawns[i].x, 0, spawns[i].z).normalized);
-                e.Setup(def, Player, floor.statScale, Run.difficulty, elite, config.balance);
+                e.Setup(def, Player, floor.statScale, Run.difficulty, elite, config.balance, floor.DamageScale, floor.speedScale);
                 enemies.Add(e);
             }
             if (oppositePlayer) foreach (var e in enemies) if (e != null && !e.IsDead) FxLibrary.Dust(e.transform.position, 1.5f);
@@ -301,6 +323,7 @@ namespace Turris
             foreach (var st in StormEffect.Active.ToList()) Destroy(st.gameObject);
             foreach (var tw in ThrownWeapon.Active.ToList()) Destroy(tw.gameObject);
             foreach (var f in FxFade.Active.ToList()) Destroy(f.gameObject);
+            LootPickup.DiscardAll();
             arena = null;
         }
 
@@ -310,9 +333,10 @@ namespace Turris
             if (Range != null) { Range.OnDummyDied(e); return; }
             Run.kills++;
             if (!IsEnemyTrial) Meta.RecordKill(e.Def);
-            Run.souls += Mathf.RoundToInt(e.Def.soulReward * Run.difficulty.soulMultiplier * (e.IsElite ? 1.5f : 1f));
+            AddPendingSouls(e.Def.soulReward * Run.difficulty.soulMultiplier * (e.IsElite ? 1.5f : 1f) * (CurrentFloor?.soulScale ?? 1f)); // dojrzewają 3 s (HU)
             Sfx.Ui(SoundId.SoulGain);
             SealDrop(e);
+            ItemDrop(e);
             if (enemies.All(x => x == null || x.IsDead) && !Player.IsDead && !PortalsRunning)
             {
                 var floor = CurrentFloor;
@@ -328,7 +352,7 @@ namespace Turris
 
         void Update()
         {
-            if (Screen == GameScreen.Playing && Run != null) TickPortals(Time.deltaTime);
+            if (Screen == GameScreen.Playing && Run != null) { TickPortals(Time.deltaTime); TickSouls(Time.deltaTime); }
             if (Screen == GameScreen.Playing && Range != null) Range.Tick(Time.deltaTime);
             if (Screen == GameScreen.Playing && nextWaveTimer > 0)
             {
@@ -368,6 +392,9 @@ namespace Turris
             clearTimer = -1f;
             nextWaveTimer = -1f;
             var floor = CurrentFloor;
+            // HU: koniec fali – dusze dojrzewają bez kary, łup z ziemi trafia do bohatera.
+            MatureAllSouls();
+            LootPickup.CollectAll();
             Run.floorsCleared++;
             Run.attributePoints += config.balance.attributePointsPerFloor;
             LastAsh = Meta.AwardFloorClear(Run, Run.floorIndex);
@@ -394,25 +421,11 @@ namespace Turris
 
             Sfx.Ui(SoundId.FloorCleared);
             LastFloorSummary = $"{floor.name} ukończone. Popiół +{LastAsh}.";
-            Rewards = RewardGenerator.Generate(Run, Player.Build, Meta.BuildRewardPools(), config, rng);
-            RerollUsed = false;
-            ShopOffer = SoulShop.PickOffer(Run, Player.Build, Meta.BuildRewardPools(), rng, config.balance);
+            // HU: po fali od razu postój ze sklepem – bez darmowej nagrody.
+            ShopOffers = SoulShop.PickOffers(Run, Player.Build, Meta.BuildRewardPools(), rng, config.balance);
+            FloorStock = FloorShop.Generate(Run, config, rng);
             PruneGifts();
             RollSealOffers();
-            SetScreen(GameScreen.Reward);
-        }
-
-        public void ChooseReward(int index)
-        {
-            if (Screen != GameScreen.Reward) return;
-            if (Rewards.Count > 0)
-            {
-                if (index < 0 || index >= Rewards.Count) return;
-                Rewards[index].Apply(Run);
-                Sfx.Ui(SoundId.UiReward);
-            }
-            Player.RefreshBuild();
-            Rewards.Clear();
             SetScreen(GameScreen.Intermission);
         }
 
@@ -438,7 +451,9 @@ namespace Turris
 
         // ------------------------------------------------------------------ Kapliczka
 
-        public int WeaponUpgradeCost => config.balance.weaponUpgradeSoulCost * (1 + (Run.equipment.Get(EquipSlot.MainHand)?.level ?? 0));
+        /// <summary>Kolejny poziom broni w kapliczce – ta sama cena co w sklepie (HU: cena bazowa × 1,6^poziom × 2,5 × inflacja).</summary>
+        public int WeaponUpgradeCost => Run.equipment.Get(EquipSlot.MainHand) is ItemInstance w
+            ? Mathf.RoundToInt(HellEconomy.WeaponLevelPrice(w) * SoulShop.Inflation(Run, config.balance)) : 0;
         public int FlaskUpgradeCost => config.balance.flaskUpgradeSoulCost * (1 + Run.bonusHealthFlasks);
 
         public bool CanUpgradeWeapon(out string reason)
@@ -446,7 +461,7 @@ namespace Turris
             reason = null;
             var w = Run.equipment.Get(EquipSlot.MainHand);
             if (w == null) { reason = "Brak broni"; return false; }
-            if (w.level >= config.balance.maxItemLevel) { reason = "Maksymalny poziom"; return false; }
+            if (w.level >= HellEconomy.MaxLevelOf(w.definition)) { reason = "Maksymalny poziom"; return false; }
             if (Run.souls < WeaponUpgradeCost) { reason = "Za mało dusz"; return false; }
             return true;
         }
@@ -471,17 +486,6 @@ namespace Turris
 
         // ------------------------------------------------------------------ Sklep dusz
 
-        public bool CanReroll => Screen == GameScreen.Reward && !RerollUsed && Rewards.Count > 0 && Run.souls >= SoulShop.RerollCost(Run, config.balance);
-
-        public void RerollRewards()
-        {
-            if (!CanReroll) return;
-            Run.souls -= SoulShop.RerollCost(Run, config.balance);
-            Rewards = RewardGenerator.Generate(Run, Player.Build, Meta.BuildRewardPools(), config, rng);
-            RerollUsed = true;
-            Sfx.Ui(SoundId.UiBuy);
-        }
-
         public void SpendAttributePoint(AttributeType a)
         {
             if (Run.SpendAttributePoint(a)) { Player.RefreshBuild(); Sfx.Ui(SoundId.UiLevelUp); }
@@ -492,12 +496,12 @@ namespace Turris
             if (SoulShop.TryUpgrade(s, Run, config.balance)) { Player.RefreshBuild(); Sfx.Ui(SoundId.UiBuy); }
         }
 
-        public void BuyShopOffer()
+        public void BuyShopOffer(SpellDefinition offer)
         {
-            if (!SoulShop.TryBuyOffer(ShopOffer, Run, config.balance)) return;
+            if (offer == null || !ShopOffers.Contains(offer) || !SoulShop.TryBuyOffer(offer, Run, config.balance)) return;
             Sfx.Ui(SoundId.UiBuy);
-            CombatEvents.RaiseMessage($"Nowa umiejętność: {ShopOffer.displayName}", ShopOffer.color);
-            ShopOffer = null;
+            CombatEvents.RaiseMessage($"Nowa umiejętność: {offer.displayName}", offer.color);
+            ShopOffers.Remove(offer);
             Player.RefreshBuild();
         }
 
@@ -544,6 +548,7 @@ namespace Turris
         }
 
         /// <summary>Zmienia głośność (0 – ogólna, 1 – muzyka, 2 – efekty) o krok i zapisuje w profilu.</summary>
+
         public void ChangeVolume(int channel, float delta)
         {
             var p = Meta.Profile;

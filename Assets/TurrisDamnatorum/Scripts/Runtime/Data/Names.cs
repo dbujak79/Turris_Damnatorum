@@ -75,6 +75,10 @@ namespace Turris
             if ((tags & BuildTag.Parry) != 0) parts.Add("możliwości parowania");
             if ((tags & BuildTag.Magic) != 0) parts.Add("znajomości czarów");
             if ((tags & BuildTag.Ranged) != 0) parts.Add("łuku");
+            if ((tags & BuildTag.Blade) != 0) parts.Add("ostrza (miecz, szabla, sztylet)");
+            if ((tags & BuildTag.HeavyWeapon) != 0) parts.Add("ciężkiej broni (topór, młot, buława, korbacz)");
+            if ((tags & BuildTag.Dagger) != 0) parts.Add("sztyletu (lub szabli)");
+            if ((tags & BuildTag.Focus) != 0) parts.Add("fokusu (różdżka, kostur, grymuar)");
             return parts.Count == 0 ? "" : "wymaga " + string.Join(", ", parts);
         }
 
@@ -264,7 +268,32 @@ namespace Turris
                 case PassiveEffectType.FrostWard: return $"{v * 100:0}% szans: trafienie bohatera wychładza wrogów wokół";
                 case PassiveEffectType.LowHealthDamage: return $"Poniżej 35% życia: +{v * 100:0}% obrażeń";
                 case PassiveEffectType.SoulHarvest: return $"Zabicie wroga leczy {v * 100:0.#}% życia";
-                case PassiveEffectType.ProjectilePierce: return $"Strzały przebijają {v:0} wrogów";
+                case PassiveEffectType.ProjectilePierce: return $"Pociski broni przebijają {v:0} wrogów";
+                case PassiveEffectType.AreaSize: return $"+{v:0}% obszaru umiejętności i wybuchów";
+                case PassiveEffectType.Evasion: return $"+{v:0}% uchylenia";
+                case PassiveEffectType.PassiveBlockChance: return $"+{v:0}% szansy bloku biernego z tarczą";
+                case PassiveEffectType.BlockCostReduction: return $"Blok kosztuje {UnityEngine.Mathf.Min(100f, v):0}% mniej wytrzymałości";
+                case PassiveEffectType.MeleeKnockback: return $"Zwykły cios wręcz odrzuca o {v:0.#} m";
+                case PassiveEffectType.MeleeRange: return $"+{v:0}% zasięgu zwykłego ciosu wręcz";
+                case PassiveEffectType.MomentumAttackSpeed: return $"Rozpęd: każdy celny cios wręcz +{v:0}% szybkości ataku (do 5 warstw, 1,5 s)";
+                case PassiveEffectType.PenetrationPhysical: return $"Przebicie odporności fizycznej: {v:0}%";
+                case PassiveEffectType.PenetrationFire: return $"Przebicie odporności na ogień: {v:0}%";
+                case PassiveEffectType.PenetrationFrost: return $"Przebicie odporności na mróz: {v:0}%";
+                case PassiveEffectType.PenetrationLightning: return $"Przebicie odporności na błyskawice: {v:0}%";
+                case PassiveEffectType.PenetrationEarth: return $"Przebicie odporności na ziemię: {v:0}%";
+                case PassiveEffectType.ProjectileRicochet: return $"Pociski broni odbijają się do {v:0} wrogów";
+                case PassiveEffectType.ProjectileVolley: return $"Strzał broni: {PerkMechanics.VolleyCount(v)} pocisków (boczne za 40%)";
+                case PassiveEffectType.ProjectileSplit: return "Pocisk broni pęka przy trafieniu na 2 drzazgi (40%)";
+                case PassiveEffectType.ProjectileExplosion: return $"Pociski broni wybuchają za {PerkMechanics.ExplosionShare(v) * 100:0}% obrażeń";
+                case PassiveEffectType.ProjectileResidue: return "Wybuch pocisku broni zostawia strefę na 2 s";
+                case PassiveEffectType.ParryReflect: return $"Sparowany pocisk wraca do wroga za {v * 100:0}% obrażeń";
+                case PassiveEffectType.SunderOnHit: return "Ciosy wręcz nakładają pęknięcie pancerza";
+                case PassiveEffectType.BleedOnHit: return "Zwykłe ciosy wręcz nakładają krwawienie";
+                case PassiveEffectType.BurnOnHit: return "Zwykłe ataki bronią podpalają";
+                case PassiveEffectType.ChillOnHit: return "Zwykłe ataki bronią wychładzają";
+                case PassiveEffectType.StaggerOnHit: return "Zwykłe ataki bronią zachwiewają";
+                case PassiveEffectType.ConvertFireToFrost: return $"{UnityEngine.Mathf.Min(1f, v) * 100:0}% ognia staje się mrozem";
+                case PassiveEffectType.ConvertPhysicalToFire: return $"{UnityEngine.Mathf.Min(1f, v) * 100:0}% obrażeń fizycznych zwykłego ciosu wręcz staje się ogniem";
             }
             return t.ToString();
         }

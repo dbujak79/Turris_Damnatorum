@@ -1,0 +1,1798 @@
+{
+ "items": [
+  {
+   "id": "item.amulet.bone",
+   "file": "amulet_bone",
+   "sha256": "4ef137bf0eb92f60b6cf81a11eb2667a5add41c228b1fb06647f834c5430c631",
+   "name": "Kościany amulet",
+   "desc": "Wisior z kości świętego.",
+   "Kind": 4,
+   "Rarity": 0,
+   "Modifiers": [
+    "MaxHealth|Flat|12"
+   ],
+   "Tags": [],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 35,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.2,
+   "KindName": "Amulet"
+  },
+  {
+   "id": "item.amulet.obsidian",
+   "file": "amulet_obsidian",
+   "sha256": "c9d8984981a57389ec4cb08d9116aeb8908d2f3d7ed2c4f0b9728195f4545c24",
+   "name": "Obsydianowy amulet",
+   "desc": "Czarne szkło z serca wulkanu.",
+   "Kind": 4,
+   "Rarity": 0,
+   "Modifiers": [
+    "GlobalDamage|PercentAdditive|0.06"
+   ],
+   "Tags": [],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 100,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.2,
+   "KindName": "Amulet"
+  },
+  {
+   "id": "item.amulet.silver",
+   "file": "amulet_silver",
+   "sha256": "1a3d7023274aa7fa610aec7f1706262d39bf7ac63d0f035b0daa9446185ac330",
+   "name": "Srebrny amulet",
+   "desc": "Srebro, którego demony nie lubią dotykać.",
+   "Kind": 4,
+   "Rarity": 0,
+   "Modifiers": [
+    "FireResistance|Flat|0.04",
+    "WaterResistance|Flat|0.04",
+    "AirResistance|Flat|0.04",
+    "EarthResistance|Flat|0.04"
+   ],
+   "Tags": [],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 65,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.2,
+   "KindName": "Amulet"
+  },
+  {
+   "id": "item.body.heavy.t1",
+   "file": "body_heavy_t1",
+   "sha256": "85b25c95b8655d75cf8fcb142b4a201d591899885f6b52bb5b036ef48b8989b4",
+   "name": "Napierśnik",
+   "desc": "Płyta na piersi i plecach.",
+   "Kind": 1,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|4",
+    "DamageReduction|Flat|0.035",
+    "MoveSpeed|PercentAdditive|-0.04"
+   ],
+   "Tags": [
+    "heavy"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "warrior",
+   "BasePrice": 42,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 12,
+   "KindName": "Body"
+  },
+  {
+   "id": "item.body.heavy.t2",
+   "file": "body_heavy_t2",
+   "sha256": "fdc655687a685b0c61b9902569fe2fc8f1cab105c004d8533d21078ccf26af58",
+   "name": "Zbroja płytowa",
+   "desc": "Stal od szyi po kolana.",
+   "Kind": 1,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|6",
+    "DamageReduction|Flat|0.056",
+    "MoveSpeed|PercentAdditive|-0.04"
+   ],
+   "Tags": [
+    "heavy"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "warrior",
+   "BasePrice": 83,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 12,
+   "KindName": "Body"
+  },
+  {
+   "id": "item.body.heavy.t3",
+   "file": "body_heavy_t3",
+   "sha256": "08ffa3b9cd0ddfe94870d6bcb79280011a13255071955113d4a09acdd8a9254d",
+   "name": "Zbroja gotycka",
+   "desc": "Żłobkowana stal, piękna i nieprzebijalna.",
+   "Kind": 1,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|9",
+    "DamageReduction|Flat|0.077",
+    "MoveSpeed|PercentAdditive|-0.04"
+   ],
+   "Tags": [
+    "heavy"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "warrior",
+   "BasePrice": 143,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 12,
+   "KindName": "Body"
+  },
+  {
+   "id": "item.body.light.t1",
+   "file": "body_light_t1",
+   "sha256": "678f3b2293c0863c36d30249ff755644af1f40d89371d5866fa452299090a180",
+   "name": "Skórzana kurta",
+   "desc": "Lekka, cicha, pozwala biec.",
+   "Kind": 1,
+   "Rarity": 0,
+   "Modifiers": [
+    "Evasion|Flat|0.035",
+    "Armour|Flat|1"
+   ],
+   "Tags": [
+    "light"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "rogue",
+   "BasePrice": 42,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 3,
+   "KindName": "Body"
+  },
+  {
+   "id": "item.body.light.t2",
+   "file": "body_light_t2",
+   "sha256": "a31dcfb441908698c628de9ca642d46e79561169f0133eb60d85fc3d02c42511",
+   "name": "Utwardzana kurta",
+   "desc": "Skóra gotowana w wosku twarda jak drewno.",
+   "Kind": 1,
+   "Rarity": 0,
+   "Modifiers": [
+    "Evasion|Flat|0.056",
+    "Armour|Flat|2"
+   ],
+   "Tags": [
+    "light"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "rogue",
+   "BasePrice": 83,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 3,
+   "KindName": "Body"
+  },
+  {
+   "id": "item.body.light.t3",
+   "file": "body_light_t3",
+   "sha256": "72b537565d32c530f62b945cb334625e37acfd853c7c137ed59d3840cc546163",
+   "name": "Kurta z łusek bazyliszka",
+   "desc": "Ostrza ześlizgują się po niej jak po wodzie.",
+   "Kind": 1,
+   "Rarity": 0,
+   "Modifiers": [
+    "Evasion|Flat|0.077",
+    "Armour|Flat|2"
+   ],
+   "Tags": [
+    "light"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "rogue",
+   "BasePrice": 143,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 3,
+   "KindName": "Body"
+  },
+  {
+   "id": "item.body.medium.t1",
+   "file": "body_medium_t1",
+   "sha256": "07ac4c4395c6c4e91b732fc5db70dd8a3f2ba088ed331c9cc646d8d44bd20250",
+   "name": "Kolczuga",
+   "desc": "Splecione pierścienie od szyi po kolana.",
+   "Kind": 1,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|2",
+    "Evasion|Flat|0.02",
+    "MaxHealth|Flat|8"
+   ],
+   "Tags": [
+    "medium"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 42,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 7,
+   "KindName": "Body"
+  },
+  {
+   "id": "item.body.medium.t2",
+   "file": "body_medium_t2",
+   "sha256": "22ceda6da9a1ac6b2dd6082d410f9b9fb74f552973bdf5c212ee4008cd2832a9",
+   "name": "Zbroja łuskowa",
+   "desc": "Stalowe łuski na skórzanym kaftanie.",
+   "Kind": 1,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|4",
+    "Evasion|Flat|0.032",
+    "MaxHealth|Flat|13"
+   ],
+   "Tags": [
+    "medium"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 83,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 7,
+   "KindName": "Body"
+  },
+  {
+   "id": "item.body.medium.t3",
+   "file": "body_medium_t3",
+   "sha256": "9306f69b84601e5d4136abd6b7ba865e149bff4190a2bcf23aae8873c2eeeff9",
+   "name": "Karacena",
+   "desc": "Smocze łuski kute dla hetmanów.",
+   "Kind": 1,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|6",
+    "Evasion|Flat|0.044",
+    "MaxHealth|Flat|18"
+   ],
+   "Tags": [
+    "medium"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 143,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 7,
+   "KindName": "Body"
+  },
+  {
+   "id": "item.body.robe.t1",
+   "file": "body_robe_t1",
+   "sha256": "a17c434f39485bea36abd86c6bd282c2ce8d0dcec1f2f11b86a8c6123cc6d7c9",
+   "name": "Szata adepta",
+   "desc": "Prosta wełna z wyszytymi runami.",
+   "Kind": 1,
+   "Rarity": 0,
+   "Modifiers": [
+    "SpellDamage|PercentAdditive|0.06",
+    "MaxMana|Flat|15",
+    "FireResistance|Flat|0.03",
+    "WaterResistance|Flat|0.03"
+   ],
+   "Tags": [
+    "robe"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "mage",
+   "BasePrice": 42,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 2,
+   "KindName": "Body"
+  },
+  {
+   "id": "item.body.robe.t2",
+   "file": "body_robe_t2",
+   "sha256": "ed2216ee68b8db1aabe9ce5bf58f04fd5cdbcb2f06ebc4308d7b51796eb60b9f",
+   "name": "Szata czarnoksiężnika",
+   "desc": "Czerń, w której gubi się światło.",
+   "Kind": 1,
+   "Rarity": 0,
+   "Modifiers": [
+    "SpellDamage|PercentAdditive|0.096",
+    "MaxMana|Flat|24",
+    "FireResistance|Flat|0.048",
+    "WaterResistance|Flat|0.048"
+   ],
+   "Tags": [
+    "robe"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "mage",
+   "BasePrice": 83,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 2,
+   "KindName": "Body"
+  },
+  {
+   "id": "item.body.robe.t3",
+   "file": "body_robe_t3",
+   "sha256": "7dd0e841cfa282662c2bd3288ca58657cf5acc85735ed7e856f1015e09d8a31d",
+   "name": "Szata arcymaga",
+   "desc": "Tkana z nici, które pamiętają zaklęcia.",
+   "Kind": 1,
+   "Rarity": 0,
+   "Modifiers": [
+    "SpellDamage|PercentAdditive|0.132",
+    "MaxMana|Flat|33",
+    "FireResistance|Flat|0.066",
+    "WaterResistance|Flat|0.066"
+   ],
+   "Tags": [
+    "robe"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "mage",
+   "BasePrice": 143,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 2,
+   "KindName": "Body"
+  },
+  {
+   "id": "item.feet.heavy.t1",
+   "file": "feet_heavy_t1",
+   "sha256": "eb5de253d2c85fd96ba3dd527270ebfcb4d52b83af216bfed4f7697d4dc173ee",
+   "name": "Trzewiki płytowe",
+   "desc": "Stal aż po palce.",
+   "Kind": 3,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|2",
+    "MaxHealth|Flat|6"
+   ],
+   "Tags": [
+    "heavy"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "warrior",
+   "BasePrice": 32,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 4,
+   "KindName": "Feet"
+  },
+  {
+   "id": "item.feet.heavy.t2",
+   "file": "feet_heavy_t2",
+   "sha256": "1eab27330993fa3520b56f518e283e07bc7dea243a51a5756b90d872a3279079",
+   "name": "Nagolenice płytowe",
+   "desc": "Stal od kolana po kostkę.",
+   "Kind": 3,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|3",
+    "MaxHealth|Flat|10"
+   ],
+   "Tags": [
+    "heavy"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "warrior",
+   "BasePrice": 64,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 4,
+   "KindName": "Feet"
+  },
+  {
+   "id": "item.feet.heavy.t3",
+   "file": "feet_heavy_t3",
+   "sha256": "45da38acffebc4301c0750ff32463a219f7bb842d05a4b5b7f66dfc066e62bca",
+   "name": "Gotyckie sabatony",
+   "desc": "Kroki brzmią jak młot na kowadle.",
+   "Kind": 3,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|4",
+    "MaxHealth|Flat|13"
+   ],
+   "Tags": [
+    "heavy"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "warrior",
+   "BasePrice": 110,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 4,
+   "KindName": "Feet"
+  },
+  {
+   "id": "item.feet.light.t1",
+   "file": "feet_light_t1",
+   "sha256": "e1791a69748ff6cf6ea602eed0652cc7c5584a505ab7102b242acfed2025f7bb",
+   "name": "Skórzane buty",
+   "desc": "Miękka podeszwa, cichy krok.",
+   "Kind": 3,
+   "Rarity": 0,
+   "Modifiers": [
+    "MoveSpeed|PercentAdditive|0.03",
+    "Evasion|Flat|0.015"
+   ],
+   "Tags": [
+    "light"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "rogue",
+   "BasePrice": 32,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 1,
+   "KindName": "Feet"
+  },
+  {
+   "id": "item.feet.light.t2",
+   "file": "feet_light_t2",
+   "sha256": "d3987026ac6d8332bda4e45243baa96e31ff1057b1a3dd3bd42c06e9c241ea83",
+   "name": "Ćwiekowane buty",
+   "desc": "Twarde noski, pewne oparcie.",
+   "Kind": 3,
+   "Rarity": 0,
+   "Modifiers": [
+    "MoveSpeed|PercentAdditive|0.048",
+    "Evasion|Flat|0.024"
+   ],
+   "Tags": [
+    "light"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "rogue",
+   "BasePrice": 64,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 1,
+   "KindName": "Feet"
+  },
+  {
+   "id": "item.feet.light.t3",
+   "file": "feet_light_t3",
+   "sha256": "baa3f22b13cce88cc8ff7be2236db0a8559298a12e9ac6d9dddd915e09a50e29",
+   "name": "Buty z łusek bazyliszka",
+   "desc": "Krok, którego nikt nie słyszy.",
+   "Kind": 3,
+   "Rarity": 0,
+   "Modifiers": [
+    "MoveSpeed|PercentAdditive|0.066",
+    "Evasion|Flat|0.033"
+   ],
+   "Tags": [
+    "light"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "rogue",
+   "BasePrice": 110,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 1,
+   "KindName": "Feet"
+  },
+  {
+   "id": "item.feet.medium.t1",
+   "file": "feet_medium_t1",
+   "sha256": "db2b7663bc2d0ea087bc36b3b5bae45d227d6f2e8d4a44dab03ec2b6093fecc0",
+   "name": "Kolcze nogawice",
+   "desc": "Kolczuga od biodra po kostkę.",
+   "Kind": 3,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|1",
+    "MoveSpeed|PercentAdditive|0.015"
+   ],
+   "Tags": [
+    "medium"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 32,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 2.5,
+   "KindName": "Feet"
+  },
+  {
+   "id": "item.feet.medium.t2",
+   "file": "feet_medium_t2",
+   "sha256": "54b245a1f4b057833b8a80892b09b012ac07e2293d7719305f3f6b38c8192c9e",
+   "name": "Łuskowe buty",
+   "desc": "Łuski szeleszczą przy każdym kroku.",
+   "Kind": 3,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|2",
+    "MoveSpeed|PercentAdditive|0.024"
+   ],
+   "Tags": [
+    "medium"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 64,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 2.5,
+   "KindName": "Feet"
+  },
+  {
+   "id": "item.feet.medium.t3",
+   "file": "feet_medium_t3",
+   "sha256": "86e0a008c414dc98deaebe72ef42711c06f666913e324beb0659af7b32aa9918",
+   "name": "Karacenowe trzewiki",
+   "desc": "Stal, która nie spowalnia.",
+   "Kind": 3,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|2",
+    "MoveSpeed|PercentAdditive|0.033"
+   ],
+   "Tags": [
+    "medium"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 110,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 2.5,
+   "KindName": "Feet"
+  },
+  {
+   "id": "item.feet.robe.t1",
+   "file": "feet_robe_t1",
+   "sha256": "3111b18750bff30436181d5f88ee7775677868fa7f2455d93d776d388081f373",
+   "name": "Sandały pielgrzyma",
+   "desc": "Lekkie i zdarte.",
+   "Kind": 3,
+   "Rarity": 0,
+   "Modifiers": [
+    "MoveSpeed|PercentAdditive|0.03",
+    "MaxMana|Flat|6"
+   ],
+   "Tags": [
+    "robe"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "mage",
+   "BasePrice": 32,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.6,
+   "KindName": "Feet"
+  },
+  {
+   "id": "item.feet.robe.t2",
+   "file": "feet_robe_t2",
+   "sha256": "b11cb78f427cbb8424d6dc7f7d947619fc4b183d71d610617b7969ad856985e4",
+   "name": "Runiczne trzewiki",
+   "desc": "Każdy krok zostawia ślad mocy.",
+   "Kind": 3,
+   "Rarity": 0,
+   "Modifiers": [
+    "MoveSpeed|PercentAdditive|0.048",
+    "MaxMana|Flat|10"
+   ],
+   "Tags": [
+    "robe"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "mage",
+   "BasePrice": 64,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.6,
+   "KindName": "Feet"
+  },
+  {
+   "id": "item.feet.robe.t3",
+   "file": "feet_robe_t3",
+   "sha256": "dc0a8a0fcd43fb6afd5a07f2d83d057bd6e303ecf21bfb9ef8ba614c4524e956",
+   "name": "Trzewiki arcymaga",
+   "desc": "Stąpają tuż nad ziemią.",
+   "Kind": 3,
+   "Rarity": 0,
+   "Modifiers": [
+    "MoveSpeed|PercentAdditive|0.066",
+    "MaxMana|Flat|13"
+   ],
+   "Tags": [
+    "robe"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "mage",
+   "BasePrice": 110,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.6,
+   "KindName": "Feet"
+  },
+  {
+   "id": "item.hands.heavy.t1",
+   "file": "hands_heavy_t1",
+   "sha256": "1e0f8216d1ba2c6ecf23594693a20fb464483c0e436d119a30975b6db7a9aad4",
+   "name": "Stalowe rękawice",
+   "desc": "Każdy cios cięższy o pancerną pięść.",
+   "Kind": 2,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|2",
+    "PhysicalDamage|PercentAdditive|0.05"
+   ],
+   "Tags": [
+    "heavy"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "warrior",
+   "BasePrice": 32,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 3,
+   "KindName": "Hands"
+  },
+  {
+   "id": "item.hands.heavy.t2",
+   "file": "hands_heavy_t2",
+   "sha256": "54ef37f49fd93c1705e37ae8fdfef81cf43ca7c8106b061ea226a10223c9b039",
+   "name": "Płytowe rękawice",
+   "desc": "Palce w stali, a chwyt wciąż pewny.",
+   "Kind": 2,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|2",
+    "PhysicalDamage|PercentAdditive|0.08"
+   ],
+   "Tags": [
+    "heavy"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "warrior",
+   "BasePrice": 64,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 3,
+   "KindName": "Hands"
+  },
+  {
+   "id": "item.hands.heavy.t3",
+   "file": "hands_heavy_t3",
+   "sha256": "48133a589fc2c777d25ad10ad2427600448e05ff80fd3b728fe60acc6491e0ba",
+   "name": "Gotyckie rękawice",
+   "desc": "Szpiczaste mankiety, ostre jak zęby.",
+   "Kind": 2,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|3",
+    "PhysicalDamage|PercentAdditive|0.11"
+   ],
+   "Tags": [
+    "heavy"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "warrior",
+   "BasePrice": 110,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 3,
+   "KindName": "Hands"
+  },
+  {
+   "id": "item.hands.light.t1",
+   "file": "hands_light_t1",
+   "sha256": "1c3769c0c8144cbb00ee1b2ac4d043b604b863824fc0c239c7c0f6857c3f72c5",
+   "name": "Skórzane rękawice",
+   "desc": "Pewny chwyt.",
+   "Kind": 2,
+   "Rarity": 0,
+   "Modifiers": [
+    "Evasion|Flat|0.015",
+    "AttackSpeed|PercentAdditive|0.03"
+   ],
+   "Tags": [
+    "light"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "rogue",
+   "BasePrice": 32,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.5,
+   "KindName": "Hands"
+  },
+  {
+   "id": "item.hands.light.t2",
+   "file": "hands_light_t2",
+   "sha256": "428d15a6d464e78cba45e5a6c77256c7ebcead48daa3bcfdcc4863aeeb2cd5c7",
+   "name": "Ćwiekowane rękawice",
+   "desc": "Cios pięścią też coś znaczy.",
+   "Kind": 2,
+   "Rarity": 0,
+   "Modifiers": [
+    "Evasion|Flat|0.024",
+    "AttackSpeed|PercentAdditive|0.048"
+   ],
+   "Tags": [
+    "light"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "rogue",
+   "BasePrice": 64,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.5,
+   "KindName": "Hands"
+  },
+  {
+   "id": "item.hands.light.t3",
+   "file": "hands_light_t3",
+   "sha256": "e5d7eb10c72ad38c96ec865bc317a0786e352b177a8079cb93cae8bbf34a9dc8",
+   "name": "Rękawice z łusek bazyliszka",
+   "desc": "Palce szybsze niż myśl.",
+   "Kind": 2,
+   "Rarity": 0,
+   "Modifiers": [
+    "Evasion|Flat|0.033",
+    "AttackSpeed|PercentAdditive|0.066"
+   ],
+   "Tags": [
+    "light"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "rogue",
+   "BasePrice": 110,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.5,
+   "KindName": "Hands"
+  },
+  {
+   "id": "item.hands.medium.t1",
+   "file": "hands_medium_t1",
+   "sha256": "f6d523b3a7743318bfb6243dea1d918ee56359d3a07931e4cc2311cad1dc13dc",
+   "name": "Kolcze rękawice",
+   "desc": "Pierścienie aż po palce.",
+   "Kind": 2,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|1",
+    "PhysicalDamage|PercentAdditive|0.03"
+   ],
+   "Tags": [
+    "medium"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 32,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 1.5,
+   "KindName": "Hands"
+  },
+  {
+   "id": "item.hands.medium.t2",
+   "file": "hands_medium_t2",
+   "sha256": "5e62b1351486d2e2ccff6c9d7e595a2ef214dfa486c605637a23b4abd2e19ca0",
+   "name": "Łuskowe rękawice",
+   "desc": "Łuski zachodzą na siebie przy każdym zgięciu.",
+   "Kind": 2,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|2",
+    "PhysicalDamage|PercentAdditive|0.048"
+   ],
+   "Tags": [
+    "medium"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 64,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 1.5,
+   "KindName": "Hands"
+  },
+  {
+   "id": "item.hands.medium.t3",
+   "file": "hands_medium_t3",
+   "sha256": "dfd1bd43dffe7aa3e9d142a4dd1db4358a41e8119a42496b11a1f894c7dfa16d",
+   "name": "Karacenowe rękawice",
+   "desc": "Lekkie jak skóra, twarde jak stal.",
+   "Kind": 2,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|2",
+    "PhysicalDamage|PercentAdditive|0.066"
+   ],
+   "Tags": [
+    "medium"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 110,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 1.5,
+   "KindName": "Hands"
+  },
+  {
+   "id": "item.hands.robe.t1",
+   "file": "hands_robe_t1",
+   "sha256": "aedc4844abd98a9ced5895683149815840810c9452603a9e5852a72dcd7215b9",
+   "name": "Jedwabne rękawiczki",
+   "desc": "Nic nie przeszkadza w gestach zaklęć.",
+   "Kind": 2,
+   "Rarity": 0,
+   "Modifiers": [
+    "SpellDamage|PercentAdditive|0.03",
+    "ManaRegen|Flat|0.5"
+   ],
+   "Tags": [
+    "robe"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "mage",
+   "BasePrice": 32,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.3,
+   "KindName": "Hands"
+  },
+  {
+   "id": "item.hands.robe.t2",
+   "file": "hands_robe_t2",
+   "sha256": "5ea6cf7707e4ea6f00ac59d3aa13f5518f2845e7aa6fd2115aa7356f3d388657",
+   "name": "Runiczne rękawiczki",
+   "desc": "Runy na palcach świecą przy każdym czarze.",
+   "Kind": 2,
+   "Rarity": 0,
+   "Modifiers": [
+    "SpellDamage|PercentAdditive|0.048",
+    "ManaRegen|Flat|0.8"
+   ],
+   "Tags": [
+    "robe"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "mage",
+   "BasePrice": 64,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.3,
+   "KindName": "Hands"
+  },
+  {
+   "id": "item.hands.robe.t3",
+   "file": "hands_robe_t3",
+   "sha256": "7f1f62587bc098ee6731a693a0a0835df0e9de15f8c6ced5681aad8abdbad0da",
+   "name": "Rękawiczki arcymaga",
+   "desc": "Czar zaczyna się, zanim pomyślisz.",
+   "Kind": 2,
+   "Rarity": 0,
+   "Modifiers": [
+    "SpellDamage|PercentAdditive|0.066",
+    "ManaRegen|Flat|1.1"
+   ],
+   "Tags": [
+    "robe"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "mage",
+   "BasePrice": 110,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.3,
+   "KindName": "Hands"
+  },
+  {
+   "id": "item.head.heavy.t1",
+   "file": "head_heavy_t1",
+   "sha256": "cfc16015c1176535fc2fb42a2c2b5f3f8e58bded03dbd8fbca45bb6036070b69",
+   "name": "Hełm garnczkowy",
+   "desc": "Ciężki hełm z wąską szczeliną.",
+   "Kind": 0,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|2",
+    "DamageReduction|Flat|0.015"
+   ],
+   "Tags": [
+    "heavy"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "warrior",
+   "BasePrice": 32,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 4,
+   "KindName": "Head"
+  },
+  {
+   "id": "item.head.heavy.t2",
+   "file": "head_heavy_t2",
+   "sha256": "d54aac52246efe11975a3d22e20978fc3dfa0e1a2e9a6a41947d5f73aad7c012",
+   "name": "Przyłbica",
+   "desc": "Ruchoma zasłona i stal na całą twarz.",
+   "Kind": 0,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|3",
+    "DamageReduction|Flat|0.024"
+   ],
+   "Tags": [
+    "heavy"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "warrior",
+   "BasePrice": 64,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 4,
+   "KindName": "Head"
+  },
+  {
+   "id": "item.head.heavy.t3",
+   "file": "head_heavy_t3",
+   "sha256": "82b07adb9e8e35f54b2ec57238f20f085c7f2efaeed72a8873fb00ff40425d9a",
+   "name": "Armet z czarnej stali",
+   "desc": "Hełm, w którym nikt nie widzi twojej twarzy.",
+   "Kind": 0,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|4",
+    "DamageReduction|Flat|0.033"
+   ],
+   "Tags": [
+    "heavy"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "warrior",
+   "BasePrice": 110,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 4,
+   "KindName": "Head"
+  },
+  {
+   "id": "item.head.light.t1",
+   "file": "head_light_t1",
+   "sha256": "6a5d1688be991d9393d3ef7eb01c72bbbc4c117d061e9d528cae41ced9886f05",
+   "name": "Skórzany kaptur",
+   "desc": "Miękka skóra, nic nie zasłania oczu.",
+   "Kind": 0,
+   "Rarity": 0,
+   "Modifiers": [
+    "Evasion|Flat|0.02",
+    "Armour|Flat|0.5"
+   ],
+   "Tags": [
+    "light"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "rogue",
+   "BasePrice": 32,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.8,
+   "KindName": "Head"
+  },
+  {
+   "id": "item.head.light.t2",
+   "file": "head_light_t2",
+   "sha256": "688d3c958edb74979935feb5a8161903f2e1bb3e424ccba1359d1f0041b2e56c",
+   "name": "Ćwiekowany kaptur",
+   "desc": "Skóra nabijana stalowymi ćwiekami.",
+   "Kind": 0,
+   "Rarity": 0,
+   "Modifiers": [
+    "Evasion|Flat|0.032",
+    "Armour|Flat|0.8"
+   ],
+   "Tags": [
+    "light"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "rogue",
+   "BasePrice": 64,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.8,
+   "KindName": "Head"
+  },
+  {
+   "id": "item.head.light.t3",
+   "file": "head_light_t3",
+   "sha256": "1aa88732a46ee11ac449f8e2b1929492a27287e980effde438c7e3dcb2f499fb",
+   "name": "Kaptur z łusek bazyliszka",
+   "desc": "Łuski, które wciąż pamiętają spojrzenie.",
+   "Kind": 0,
+   "Rarity": 0,
+   "Modifiers": [
+    "Evasion|Flat|0.044",
+    "Armour|Flat|1.1"
+   ],
+   "Tags": [
+    "light"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "rogue",
+   "BasePrice": 110,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.8,
+   "KindName": "Head"
+  },
+  {
+   "id": "item.head.medium.t1",
+   "file": "head_medium_t1",
+   "sha256": "baa5aa444ab586b77a9c8a0edc06ed1ced6dc8b09b0e50cd3c52ad34e04383a5",
+   "name": "Kolczy czepiec",
+   "desc": "Pierścienie od czoła po kark.",
+   "Kind": 0,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|1",
+    "Evasion|Flat|0.01"
+   ],
+   "Tags": [
+    "medium"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 32,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 2,
+   "KindName": "Head"
+  },
+  {
+   "id": "item.head.medium.t2",
+   "file": "head_medium_t2",
+   "sha256": "ea33243aa273d3bbc99829f653e2536d461a1dbaef502f0909c9ba264f0323c6",
+   "name": "Szyszak",
+   "desc": "Stożkowy hełm z nakarczkiem z płytek.",
+   "Kind": 0,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|2",
+    "Evasion|Flat|0.016"
+   ],
+   "Tags": [
+    "medium"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 64,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 2,
+   "KindName": "Head"
+  },
+  {
+   "id": "item.head.medium.t3",
+   "file": "head_medium_t3",
+   "sha256": "fd3422ece8325bed59afce9fa782401144a65548d9204780b52a6d199faeb876",
+   "name": "Szyszak z pozłacanym nosalem",
+   "desc": "Hełm husarskiego rotmistrza.",
+   "Kind": 0,
+   "Rarity": 0,
+   "Modifiers": [
+    "Armour|Flat|2",
+    "Evasion|Flat|0.022"
+   ],
+   "Tags": [
+    "medium"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 110,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 2,
+   "KindName": "Head"
+  },
+  {
+   "id": "item.head.robe.t1",
+   "file": "head_robe_t1",
+   "sha256": "7be8f130f8f4a6e965f7f866ab351d0c2d28514c92298929dabc68f902038d7f",
+   "name": "Kaptur adepta",
+   "desc": "Skrywa twarz i myśli.",
+   "Kind": 0,
+   "Rarity": 0,
+   "Modifiers": [
+    "SpellDamage|PercentAdditive|0.04",
+    "MaxMana|Flat|8"
+   ],
+   "Tags": [
+    "robe"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "mage",
+   "BasePrice": 32,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.5,
+   "KindName": "Head"
+  },
+  {
+   "id": "item.head.robe.t2",
+   "file": "head_robe_t2",
+   "sha256": "d8d2177f68a95b30843a5922dcc7548073c9ed5ecea3c05625d290b3eda2d0ee",
+   "name": "Kapelusz wiedźmy",
+   "desc": "Szerokie rondo skrywa spojrzenie.",
+   "Kind": 0,
+   "Rarity": 0,
+   "Modifiers": [
+    "SpellDamage|PercentAdditive|0.064",
+    "MaxMana|Flat|13"
+   ],
+   "Tags": [
+    "robe"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "mage",
+   "BasePrice": 64,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.5,
+   "KindName": "Head"
+  },
+  {
+   "id": "item.head.robe.t3",
+   "file": "head_robe_t3",
+   "sha256": "fa31e5ac6763ca29bd0fd8ec20a0261c735036775adea12aa6d1297295060ef3",
+   "name": "Diadem arcymaga",
+   "desc": "Srebrna obręcz z kamieniem, który szepcze.",
+   "Kind": 0,
+   "Rarity": 0,
+   "Modifiers": [
+    "SpellDamage|PercentAdditive|0.088",
+    "MaxMana|Flat|18"
+   ],
+   "Tags": [
+    "robe"
+   ],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "mage",
+   "BasePrice": 110,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.5,
+   "KindName": "Head"
+  },
+  {
+   "id": "item.ring.gold",
+   "file": "ring_gold",
+   "sha256": "1b36e1ee2430a25b9d87f961eba9f5ae54d50f8ca1e3904d10ea484479d39802",
+   "name": "Złoty pierścień",
+   "desc": "Złoto przyciąga dusze jak lep muchy.",
+   "Kind": 5,
+   "Rarity": 0,
+   "Modifiers": [
+    "SoulGain|PercentAdditive|0.06"
+   ],
+   "Tags": [],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 100,
+   "MinWave": 18,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.2,
+   "KindName": "Ring"
+  },
+  {
+   "id": "item.ring.iron",
+   "file": "ring_iron",
+   "sha256": "75936f09585c2fd7467359e3b9496e989976f9c78b6bfcd32bbe0691c8be0bc4",
+   "name": "Żelazny pierścień",
+   "desc": "Ciężki, zimny.",
+   "Kind": 5,
+   "Rarity": 0,
+   "Modifiers": [
+    "PhysicalDamage|PercentAdditive|0.04"
+   ],
+   "Tags": [],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 35,
+   "MinWave": 1,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.2,
+   "KindName": "Ring"
+  },
+  {
+   "id": "item.ring.silver",
+   "file": "ring_silver",
+   "sha256": "69de7aa317caecd2bb6ea8b08df86c6dc23e5e028f043b10580e5cb7a397de57",
+   "name": "Srebrny pierścień",
+   "desc": "Chłodny, czysty, czujny.",
+   "Kind": 5,
+   "Rarity": 0,
+   "Modifiers": [
+    "MaxMana|Flat|12",
+    "Evasion|Flat|0.015"
+   ],
+   "Tags": [],
+   "Power": 0,
+   "PowerValue": 0,
+   "ClassId": "",
+   "BasePrice": 65,
+   "MinWave": 9,
+   "InShop": true,
+   "Weight": 1.0,
+   "Load": 0.2,
+   "KindName": "Ring"
+  },
+  {
+   "id": "item.unique.bald_mountain_band",
+   "file": "unique_bald_mountain_band",
+   "sha256": "d20ffbfc541ce187ffa25281632510cb888b60e511e2f7d271f21a7dc3022de5",
+   "name": "Obrączka z Łysej Góry",
+   "desc": "Zaręczyny z wiedźmą wiążą na wieczność.",
+   "Kind": 5,
+   "Rarity": 4,
+   "Modifiers": [
+    "MaxMana|Flat|25",
+    "SpellDamage|PercentAdditive|0.15",
+    "ManaOnKill|Flat|3"
+   ],
+   "Tags": [],
+   "Power": 6,
+   "PowerValue": 0.25,
+   "ClassId": "mage",
+   "BasePrice": 160,
+   "MinWave": 6,
+   "InShop": false,
+   "Weight": 1.0,
+   "Load": 0.2,
+   "KindName": "Ring"
+  },
+  {
+   "id": "item.unique.butcher_gloves",
+   "file": "unique_butcher_gloves",
+   "sha256": "e3c218f2788a8ba9c2a499a5a702092ca57b1123eb8f10fe5992db3ae4a3d1c0",
+   "name": "Rękawice rzeźnika",
+   "desc": "Rany po nich nie chcą się zamknąć.",
+   "Kind": 2,
+   "Rarity": 4,
+   "Modifiers": [
+    "BleedDamage|PercentAdditive|0.4",
+    "AttackSpeed|PercentAdditive|0.08",
+    "LifeOnKill|Flat|3"
+   ],
+   "Tags": [
+    "light"
+   ],
+   "Power": 2,
+   "PowerValue": 0.15,
+   "ClassId": "",
+   "BasePrice": 160,
+   "MinWave": 4,
+   "InShop": false,
+   "Weight": 1.0,
+   "Load": 1,
+   "KindName": "Hands"
+  },
+  {
+   "id": "item.unique.chernobog_robe",
+   "file": "unique_chernobog_robe",
+   "sha256": "bc670d1263004137a9928b7ac0783aea9922a4af1ebb777c4273a2b400163cd7",
+   "name": "Szata Czarnoboga",
+   "desc": "Czerń, która pożera trupy i oddaje je ogniem.",
+   "Kind": 1,
+   "Rarity": 4,
+   "Modifiers": [
+    "SpellDamage|PercentAdditive|0.25",
+    "MaxMana|Flat|40",
+    "FireResistance|Flat|0.1",
+    "AirResistance|Flat|0.1",
+    "ManaRegen|Flat|1.5"
+   ],
+   "Tags": [
+    "robe"
+   ],
+   "Power": 2,
+   "PowerValue": 0.2,
+   "ClassId": "mage",
+   "BasePrice": 160,
+   "MinWave": 8,
+   "InShop": false,
+   "Weight": 1.0,
+   "Load": 2,
+   "KindName": "Body"
+  },
+  {
+   "id": "item.unique.crown_of_thorns",
+   "file": "unique_crown_of_thorns",
+   "sha256": "975f57a23d8d750e797db6fe26806fa7cfdbe7f83af9583dc73549e175022f8b",
+   "name": "Korona cierni",
+   "desc": "Kto ją nosi, krwawi - i zabija szybciej.",
+   "Kind": 0,
+   "Rarity": 4,
+   "Modifiers": [
+    "GlobalDamage|PercentAdditive|0.15",
+    "ExecuteDamage|PercentAdditive|0.25",
+    "MaxHealth|PercentAdditive|-0.08",
+    "Armour|Flat|2"
+   ],
+   "Tags": [
+    "heavy"
+   ],
+   "Power": 7,
+   "PowerValue": 0.3,
+   "ClassId": "",
+   "BasePrice": 160,
+   "MinWave": 4,
+   "InShop": false,
+   "Weight": 1.0,
+   "Load": 3,
+   "KindName": "Head"
+  },
+  {
+   "id": "item.unique.damned_ring",
+   "file": "unique_damned_ring",
+   "sha256": "0ede7aba80f91379eeb1f26d9d64bdac410a7ed5b6518e4d9659d9aaa7a4c12f",
+   "name": "Pierścień przeklętego",
+   "desc": "Czary wracają szybciej. Ty słabniesz.",
+   "Kind": 5,
+   "Rarity": 4,
+   "Modifiers": [
+    "SkillCooldownReduction|PercentAdditive|0.15",
+    "MaxHealth|PercentAdditive|-0.1",
+    "SpellDamage|PercentAdditive|0.1"
+   ],
+   "Tags": [],
+   "Power": 7,
+   "PowerValue": 0.25,
+   "ClassId": "",
+   "BasePrice": 160,
+   "MinWave": 4,
+   "InShop": false,
+   "Weight": 1.0,
+   "Load": 0.2,
+   "KindName": "Ring"
+  },
+  {
+   "id": "item.unique.heart_of_hell",
+   "file": "unique_heart_of_hell",
+   "sha256": "02b15641a691664d5f7cd9c79204cb43f18d84bf7d3783a06479241f1ad2d4e7",
+   "name": "Serce piekła",
+   "desc": "Bije wolniej niż twoje. Ale bije.",
+   "Kind": 4,
+   "Rarity": 4,
+   "Modifiers": [
+    "GlobalDamage|PercentAdditive|0.2",
+    "DamageReduction|Flat|0.05",
+    "MaxHealth|PercentAdditive|0.1"
+   ],
+   "Tags": [],
+   "Power": 1,
+   "PowerValue": 0.2,
+   "ClassId": "",
+   "BasePrice": 160,
+   "MinWave": 8,
+   "InShop": false,
+   "Weight": 1.0,
+   "Load": 0.2,
+   "KindName": "Amulet"
+  },
+  {
+   "id": "item.unique.hellforged",
+   "file": "unique_hellforged",
+   "sha256": "0c08d798c07591ecea6a6afdf123ee9b5165f08b338e4d8c461cf38f33069450",
+   "name": "Zbroja z kuźni piekieł",
+   "desc": "Wciąż ciepła od ognia, w którym ją wykuto.",
+   "Kind": 1,
+   "Rarity": 4,
+   "Modifiers": [
+    "Armour|Flat|6",
+    "DamageReduction|Flat|0.08",
+    "FireResistance|Flat|0.15",
+    "MaxHealth|PercentAdditive|0.1"
+   ],
+   "Tags": [
+    "heavy"
+   ],
+   "Power": 3,
+   "PowerValue": 8,
+   "ClassId": "warrior",
+   "BasePrice": 160,
+   "MinWave": 6,
+   "InShop": false,
+   "Weight": 1.0,
+   "Load": 14,
+   "KindName": "Body"
+  },
+  {
+   "id": "item.unique.hetman_karacena",
+   "file": "unique_hetman_karacena",
+   "sha256": "67b8803e703ac1b621512b320ab751cf65c3775f4f355e1685908b8900851993",
+   "name": "Karacena hetmańska",
+   "desc": "Hetman przeżył w niej trzy oblężenia i jedną zdradę.",
+   "Kind": 1,
+   "Rarity": 4,
+   "Modifiers": [
+    "Armour|Flat|5",
+    "Evasion|Flat|0.05",
+    "MaxHealth|Flat|40",
+    "PhysicalResistance|Flat|0.08",
+    "StaminaRegen|PercentAdditive|0.15"
+   ],
+   "Tags": [
+    "medium"
+   ],
+   "Power": 1,
+   "PowerValue": 0.25,
+   "ClassId": "",
+   "BasePrice": 160,
+   "MinWave": 8,
+   "InShop": false,
+   "Weight": 1.0,
+   "Load": 7,
+   "KindName": "Body"
+  },
+  {
+   "id": "item.unique.iron_hooves",
+   "file": "unique_iron_hooves",
+   "sha256": "cf6ea442f9f09d7ba317a94d405d4112ec5a88afbee0d927f2d2a43c30c5d4c1",
+   "name": "Żelazne kopyta",
+   "desc": "Ślady jak po bestii, która chodzi na dwóch nogach.",
+   "Kind": 3,
+   "Rarity": 4,
+   "Modifiers": [
+    "Armour|Flat|4",
+    "Knockback|Flat|0.5",
+    "MaxHealth|Flat|25",
+    "EarthResistance|Flat|0.1"
+   ],
+   "Tags": [
+    "heavy"
+   ],
+   "Power": 4,
+   "PowerValue": 12,
+   "ClassId": "warrior",
+   "BasePrice": 160,
+   "MinWave": 5,
+   "InShop": false,
+   "Weight": 1.0,
+   "Load": 4,
+   "KindName": "Feet"
+  },
+  {
+   "id": "item.unique.mokosh_diadem",
+   "file": "unique_mokosh_diadem",
+   "sha256": "e29cd0a329ef19f1d2feff5ffe380f16e35e74f1ef677fbdfafba4be1298b589",
+   "name": "Diadem Mokoszy",
+   "desc": "Bogini wilgotnej ziemi patrzy twoimi oczami.",
+   "Kind": 0,
+   "Rarity": 4,
+   "Modifiers": [
+    "SpellDamage|PercentAdditive|0.2",
+    "MaxMana|Flat|30",
+    "SkillCooldownReduction|PercentAdditive|0.1",
+    "WaterResistance|Flat|0.1"
+   ],
+   "Tags": [
+    "robe"
+   ],
+   "Power": 6,
+   "PowerValue": 0.3,
+   "ClassId": "mage",
+   "BasePrice": 160,
+   "MinWave": 6,
+   "InShop": false,
+   "Weight": 1.0,
+   "Load": 0.5,
+   "KindName": "Head"
+  },
+  {
+   "id": "item.unique.nameless_hood",
+   "file": "unique_nameless_hood",
+   "sha256": "6855903f4b53e5996eb54f732d6f8b612db506a6054dbe470c537642918c98c0",
+   "name": "Kaptur Bezimiennego",
+   "desc": "Nikt nie pamięta twarzy tego, kto go nosił.",
+   "Kind": 0,
+   "Rarity": 4,
+   "Modifiers": [
+    "Evasion|Flat|0.08",
+    "MoveSpeed|PercentAdditive|0.06",
+    "AttackSpeed|PercentAdditive|0.08",
+    "Accuracy|Flat|0.05"
+   ],
+   "Tags": [
+    "light"
+   ],
+   "Power": 8,
+   "PowerValue": 0.02,
+   "ClassId": "rogue",
+   "BasePrice": 160,
+   "MinWave": 5,
+   "InShop": false,
+   "Weight": 1.0,
+   "Load": 0.8,
+   "KindName": "Head"
+  },
+  {
+   "id": "item.unique.seven_league_boots",
+   "file": "unique_seven_league_boots",
+   "sha256": "f07eb515c426c474aef630684c1726b78b5f34648a78fd2e510ede0b4d193179",
+   "name": "Buty siedmiomilowe",
+   "desc": "Jeden krok - i już cię tam nie ma.",
+   "Kind": 3,
+   "Rarity": 4,
+   "Modifiers": [
+    "MoveSpeed|PercentAdditive|0.15",
+    "Evasion|Flat|0.05",
+    "StaminaRegen|PercentAdditive|0.2"
+   ],
+   "Tags": [
+    "light"
+   ],
+   "Power": 8,
+   "PowerValue": 0.015,
+   "ClassId": "",
+   "BasePrice": 160,
+   "MinWave": 5,
+   "InShop": false,
+   "Weight": 1.0,
+   "Load": 1,
+   "KindName": "Feet"
+  },
+  {
+   "id": "item.unique.svarog_hands",
+   "file": "unique_svarog_hands",
+   "sha256": "ad09aa6994ec87dfa720269d431a9889e2bd27ea9cb1ee36b56eefb8be03e945",
+   "name": "Dłonie Swarożyca",
+   "desc": "Ogień kowala bogów nie parzy jego dzieci.",
+   "Kind": 2,
+   "Rarity": 4,
+   "Modifiers": [
+    "FireDamage|PercentAdditive|0.2",
+    "FirePenetration|Flat|0.1",
+    "SpellDamage|PercentAdditive|0.1",
+    "FireResistance|Flat|0.1"
+   ],
+   "Tags": [
+    "robe"
+   ],
+   "Power": 3,
+   "PowerValue": 6,
+   "ClassId": "mage",
+   "BasePrice": 160,
+   "MinWave": 5,
+   "InShop": false,
+   "Weight": 1.0,
+   "Load": 0.3,
+   "KindName": "Hands"
+  },
+  {
+   "id": "item.unique.veles_eye",
+   "file": "unique_veles_eye",
+   "sha256": "9e04a29fbe279bc7784977f310dadfb305bb2a60649ff021478d09ba82ec06b6",
+   "name": "Oko Welesa",
+   "desc": "Pan zaświatów liczy dusze, które przez ciebie przechodzą.",
+   "Kind": 4,
+   "Rarity": 4,
+   "Modifiers": [
+    "SoulGain|PercentAdditive|0.25",
+    "FireResistance|Flat|0.08",
+    "WaterResistance|Flat|0.08",
+    "AirResistance|Flat|0.08",
+    "EarthResistance|Flat|0.08"
+   ],
+   "Tags": [],
+   "Power": 8,
+   "PowerValue": 0.02,
+   "ClassId": "",
+   "BasePrice": 160,
+   "MinWave": 6,
+   "InShop": false,
+   "Weight": 1.0,
+   "Load": 0.2,
+   "KindName": "Amulet"
+  },
+  {
+   "id": "item.unique.werewolf_hide",
+   "file": "unique_werewolf_hide",
+   "sha256": "1f73474b1e89b259876ab453a2ce39cf25257c0409d7691b477e560e79083724",
+   "name": "Skóra wilkołaka",
+   "desc": "Pełnia przychodzi, kiedy leje się krew.",
+   "Kind": 1,
+   "Rarity": 4,
+   "Modifiers": [
+    "Evasion|Flat|0.08",
+    "AttackSpeed|PercentAdditive|0.1",
+    "LifeLeech|Flat|0.02",
+    "MoveSpeed|PercentAdditive|0.05"
+   ],
+   "Tags": [
+    "light"
+   ],
+   "Power": 7,
+   "PowerValue": 0.35,
+   "ClassId": "rogue",
+   "BasePrice": 160,
+   "MinWave": 7,
+   "InShop": false,
+   "Weight": 1.0,
+   "Load": 3,
+   "KindName": "Body"
+  },
+  {
+   "id": "item.unique.zawisza_helm",
+   "file": "unique_zawisza_helm",
+   "sha256": "a30a361ce6dc0e3db0c0f2c3ab324964733c0e8b04ef1ed680da6fdb43a07544",
+   "name": "Hełm Zawiszy",
+   "desc": "Polegać jak na nim - mówiono o rycerzu, który go nosił.",
+   "Kind": 0,
+   "Rarity": 4,
+   "Modifiers": [
+    "Armour|Flat|5",
+    "DamageReduction|Flat|0.06",
+    "MaxHealth|Flat|30",
+    "PhysicalResistance|Flat|0.1"
+   ],
+   "Tags": [
+    "heavy"
+   ],
+   "Power": 4,
+   "PowerValue": 15,
+   "ClassId": "warrior",
+   "BasePrice": 160,
+   "MinWave": 6,
+   "InShop": false,
+   "Weight": 1.0,
+   "Load": 4,
+   "KindName": "Head"
+  },
+  {
+   "id": "item.unique.zmij_ring",
+   "file": "unique_zmij_ring",
+   "sha256": "b34c9eb5382cee194add8252ef14f284db3bed104238cc016d07a0a71f005595",
+   "name": "Pierścień Żmija",
+   "desc": "Smok z trzema głowami zwinięty wokół palca.",
+   "Kind": 5,
+   "Rarity": 4,
+   "Modifiers": [
+    "FireDamage|Flat|6",
+    "LifeLeech|Flat|0.02",
+    "FireResistance|Flat|0.1"
+   ],
+   "Tags": [],
+   "Power": 3,
+   "PowerValue": 5,
+   "ClassId": "",
+   "BasePrice": 160,
+   "MinWave": 5,
+   "InShop": false,
+   "Weight": 1.0,
+   "Load": 0.2,
+   "KindName": "Ring"
+  }
+ ]
+}

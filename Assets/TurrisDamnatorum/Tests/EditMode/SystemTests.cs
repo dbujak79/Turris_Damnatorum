@@ -243,38 +243,13 @@ namespace Turris.Tests
         }
 
         [Test]
-        public void OffersItemBoonAndSpell()
-        {
-            var run = fx.NewRun("legacy_knight");
-            var opts = RewardGenerator.Generate(run, BuildCalculator.Compute(run, fx.Cfg), Pools(), fx.Cfg, new System.Random(1));
-            Assert.AreEqual(3, opts.Count);
-            Assert.AreEqual(RewardKind.Item, opts[0].kind);
-            Assert.AreEqual(RewardKind.Boon, opts[1].kind);
-            Assert.IsTrue(opts[2].kind == RewardKind.LearnSpell || opts[2].kind == RewardKind.UpgradeSpell, "Trzecia nagroda to umiejętność (nowa lub ulepszenie)");
-        }
-
-        [Test]
-        public void MageIsOfferedMeleeGear_NoClassFilter()
-        {
-            var seen = new HashSet<string>();
-            for (int seed = 0; seed < 300; seed++)
-            {
-                var run = fx.NewRun("legacy_mage");
-                var opts = RewardGenerator.Generate(run, BuildCalculator.Compute(run, fx.Cfg), Pools(), fx.Cfg, new System.Random(seed));
-                seen.Add(opts[0].item.definition.id);
-            }
-            Assert.Contains("weapon_axe", seen.ToList());
-            Assert.Contains("shield_heater", seen.ToList());
-            Assert.Contains("body_plate", seen.ToList());
-        }
-
-        [Test]
         public void SpellUpgrade_IncreasesPowerAndApplies()
         {
             var run = fx.NewRun("legacy_mage");
             var spell = run.knownSpells[0];
             float before = BuildCalculator.ComputeSpell(spell, BuildCalculator.Compute(run, fx.Cfg).stats, fx.Cfg.balance).power;
-            new RewardOption { kind = RewardKind.UpgradeSpell, spellToUpgrade = spell }.Apply(run);
+            run.souls = 100000;
+            Assert.IsTrue(SoulShop.TryUpgrade(spell, run, fx.Cfg.balance));
             float after = BuildCalculator.ComputeSpell(spell, BuildCalculator.Compute(run, fx.Cfg).stats, fx.Cfg.balance).power;
             Assert.AreEqual(1, spell.level);
             Assert.Greater(after, before);
@@ -432,8 +407,8 @@ namespace Turris.Tests
             var diff1 = fx.Cfg.difficulties[1];
             Assert.IsFalse(meta.IsDifficultyAvailable(diff1));
             meta.DebugAddAsh(100);
-            Assert.IsFalse(meta.CanPurchase(d1, out _), "Wymaga dotarcia na piętro 3");
-            meta.RecordReachedFloor(2);
+            Assert.IsFalse(meta.CanPurchase(d1, out _), "Wymaga dotarcia na piętro 15 (wieża 30 pięter)");
+            meta.RecordReachedFloor(14);
             Assert.IsTrue(meta.Purchase(d1));
             Assert.IsTrue(meta.IsDifficultyAvailable(diff1));
         }

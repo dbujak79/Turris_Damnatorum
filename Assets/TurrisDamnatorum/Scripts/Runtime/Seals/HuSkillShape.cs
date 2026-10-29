@@ -113,7 +113,7 @@ namespace Turris
 
         static readonly HashSet<string> UtilityKeys = new HashSet<string>(StringComparer.Ordinal)
         {
-            HuParams.Knockback, "area_scale", "cast_barrier", "cast_barrier_seconds", "cast_reduction", "cast_reduction_seconds",
+            HuParams.Knockback, "down_seconds", "area_scale", "cast_barrier", "cast_barrier_seconds", "cast_reduction", "cast_reduction_seconds",
             "implode_radius", "implode_pull", "impact_vortex_seconds", "impact_vortex_pull", "homing", "explosion_radius",
             "zone_seconds", "zone_radius", "trail_zone_seconds", "trail_zone_radius", "totem_seconds",
         };

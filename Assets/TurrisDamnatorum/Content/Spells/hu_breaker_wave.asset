@@ -24,7 +24,7 @@ MonoBehaviour:
   cancelAfter: 0.2
   staminaCost: 17
   requirements: []
-  requiredTags: 0
+  requiredTags: 512
   intelligenceScaling: 0
   attack:
     name: "Fala prze\u0142amania"

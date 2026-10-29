@@ -26,7 +26,7 @@ MonoBehaviour:
   requirements:
   - attribute: 4
     value: 12
-  requiredTags: 0
+  requiredTags: 512
   intelligenceScaling: 0
   attack:
     name: "Seria ci\u0119\u0107"

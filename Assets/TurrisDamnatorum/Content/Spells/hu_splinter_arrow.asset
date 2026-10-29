@@ -24,7 +24,7 @@ MonoBehaviour:
   cancelAfter: 0.2
   staminaCost: 12
   requirements: []
-  requiredTags: 0
+  requiredTags: 256
   intelligenceScaling: 0
   attack:
     name: "Strza\u0142a rozszczepu"

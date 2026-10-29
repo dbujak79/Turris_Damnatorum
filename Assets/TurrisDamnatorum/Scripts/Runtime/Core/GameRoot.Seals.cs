@@ -29,21 +29,31 @@ namespace Turris
             {
                 var gift = HuSealEconomy.RollGift(Run, rng);
                 if (gift.Count == 0) return;
-                Run.sealGifts.Add(gift);
-                CombatEvents.RaiseMessage("DAR BOSSA: trzy pieczęcie do wyboru na postoju", new Color(1f, 0.82f, 0.35f));
+                var giftRun = Run;
                 HellFx.Shockwave(e.transform.position, HellFxElement.Soul, new Color(1f, 0.82f, 0.35f), 2.2f);
+                // HU: dar bossa leży na ziemi; wybór jednej z trzech pieczęci – w sklepie.
+                LootPickup.Spawn(Player, e.transform.position, new Color(1f, 0.82f, 0.35f), "Dar bossa", () =>
+                {
+                    if (Run != giftRun) return;
+                    giftRun.sealGifts.Add(gift);
+                    CombatEvents.RaiseMessage("DAR BOSSA: trzy pieczęcie do wyboru w sklepie", new Color(1f, 0.82f, 0.35f));
+                }, true);
                 return;
             }
             var seal = HuSealEconomy.Roll(Run, e.IsElite ? SealSource.Elite : SealSource.Normal, rng);
             if (seal == null) return;
-            var gain = Run.AddSeal(seal, toPouch: true);
-            if (gain == SealGain.None) return;
             Color c = seal.lootOnly ? new Color(0.95f, 0.15f, 0.12f) : new Color(0.7f, 0.45f, 1f);
-            string what = gain == SealGain.RankUp ? $"poziom {Names.Roman(Run.SealRank(seal))}" : "do sakwy";
             CombatEvents.RaiseWorldText(e.AimPoint + Vector3.up, seal.lootOnly ? "PIECZĘĆ DEMONICZNA!" : "PIECZĘĆ", c);
-            CombatEvents.RaiseMessage($"Pieczęć: {seal.name} ({what})", c);
-            HellFx.Burst(e.transform.position, HellFxElement.Soul, 1.2f);
-            if (gain == SealGain.RankUp) Player.RefreshBuild();
+            var run = Run;
+            LootPickup.Spawn(Player, e.transform.position, c, seal.name, () =>
+            {
+                if (Run != run) return;
+                var gain = run.AddSeal(seal, toPouch: true);
+                if (gain == SealGain.None) return;
+                string what = gain == SealGain.RankUp ? $"poziom {Names.Roman(run.SealRank(seal))}" : "do sakwy";
+                CombatEvents.RaiseMessage($"Pieczęć: {seal.name} ({what})", c);
+                if (gain == SealGain.RankUp) Player.RefreshBuild();
+            });
         }
 
         public void BuySealOffer(SealOffer offer)

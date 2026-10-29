@@ -24,7 +24,7 @@ MonoBehaviour:
   cancelAfter: 0.2
   staminaCost: 22
   requirements: []
-  requiredTags: 0
+  requiredTags: 1024
   intelligenceScaling: 0
   attack:
     name: "Ci\u0119\u017Cki rzut"

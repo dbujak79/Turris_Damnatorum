@@ -16,6 +16,7 @@ MonoBehaviour:
   displayName: "Rozprysk arkan\xF3w"
   description: "Trzy pociski w wachlarzu \u2013 dobre na grupy."
   tags: 2
+  requiredTags: 4096
   kind: 0
   manaCost: 20
   castTime: 0.5

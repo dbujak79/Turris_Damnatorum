@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9713eabedc811e74eb31146a53f52ecf, type: 3}
+  m_Name: hu_perk_area
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.BoonDefinition
+  id: hu_perk_area
+  displayName: "Szeroki zasi\u0119g"
+  description: "+10% promienia atak\xF3w obszarowych na poziom (eksplozje, nove, strefy, wiry, szeroko\u015B\u0107 fal). Wi\u0119kszy promie\u0144, nie powierzchnia: +10% promienia to ok. +21% powierzchni. Nie zmienia zasi\u0119gu miecza ani k\u0105ta ci\u0119cia."
+  tags: 0
+  maxStacks: 4
+  modifiers: []
+  effects:
+  - type: 28
+    value: 10
+  extraHealthFlasks: 0
+  extraManaFlasks: 0

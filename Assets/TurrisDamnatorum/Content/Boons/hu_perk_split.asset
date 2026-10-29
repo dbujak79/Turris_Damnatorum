@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9713eabedc811e74eb31146a53f52ecf, type: 3}
+  m_Name: hu_perk_split
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.BoonDefinition
+  id: hu_perk_split
+  displayName: "Podzia\u0142 przy trafieniu"
+  description: "Pierwsze trafienie pocisku tworzy dwa s\u0142absze pociski potomne. To inna mechanika ni\u017C Rozszczepienie."
+  tags: 0
+  maxStacks: 1
+  modifiers: []
+  effects:
+  - type: 42
+    value: 1
+  extraHealthFlasks: 0
+  extraManaFlasks: 0

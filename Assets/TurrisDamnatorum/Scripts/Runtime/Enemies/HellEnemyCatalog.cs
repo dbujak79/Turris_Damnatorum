@@ -39,7 +39,7 @@ namespace Turris
                 e.lightningMultiplier = 1 - r.ResistAir; e.earthMultiplier = 1 - r.ResistEarth;
                 e.isBoss = r.Archetype == 3; e.isMinion = r.Id == "enemy.minion";
                 e.soulReward = Mathf.RoundToInt(r.SoulReward); e.spawnCost = r.SpawnCost; e.packSize = r.PackSize;
-                e.eliteHealthMultiplier = 7f; e.eliteDamageMultiplier = 1.6f;
+                e.eliteHealthMultiplier = 4.5f; e.eliteDamageMultiplier = 1.45f; // HU balans 2.0: elity HP ×4,5, obr. ×1,45 (było 7 / 1,6)
                 e.huCanBeElite = r.CanBeElite; e.huWakeRadius = r.WakeRadius / 24f; e.huHatchSeconds = r.HatchSeconds;
                 e.huSplitCount = r.SplitCount; e.huSummonCount = r.SummonCount;
                 e.archetype = new[] { "Szybki wręcz", "Strzelec", "Ciężki", "Boss", "Szarżujący", "Wybuchający", "Artyleria", "Przywoływacz", "Skrytobójca", "Tarczownik", "Wsparcie", "Posąg", "Zjawa", "Lęg" }[r.Archetype];

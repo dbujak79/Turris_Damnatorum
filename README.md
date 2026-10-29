@@ -1,15 +1,22 @@
 # Turris Damnatorum — prototyp
 
-Gra 3D dla jednego gracza, w której walka w stylu souls-like łączy się ze strukturą rogue-lite. Gracz wspina się na wieżę: sześć pięter, na końcu boss. Po śmierci traci wszystko, co zdobył w danym podejściu, ale zachowuje odblokowania i popiół.
+Gra 3D dla jednego gracza, w której walka w stylu souls-like łączy się ze strukturą rogue-lite. Gracz wspina się na wieżę: **30 pięter – wierny port 30 fal Hell Unleashed**, boss co trzecie piętro, na końcu Arcydiabeł. Po śmierci traci wszystko, co zdobył w danym podejściu, ale zachowuje odblokowania i popiół.
 
 - **Silnik:** Unity **6000.6.3f1**, jedyna wersja zainstalowana na tej maszynie. Kod nie używa API specyficznego dla 6.6, więc powinien działać także na Unity 6 LTS (6000.3), ale tej wersji nie sprawdzałem.
 - **Pakiety:** `com.unity.inputsystem` 1.20.0 i `com.unity.test-framework` 1.8.0, do tego moduły wbudowane. Nie ma zależności płatnych ani zewnętrznych.
-- **Grafika:** wbudowany pipeline renderowania.
+- **Grafika:** URP (`TurrisURP`), przestrzeń Linear.
   - **Bohaterowie** to modele 3D z gry *Hell Unleashed* tego samego autora: 15 postaci, ich bronie oraz animacje Mixamo. Szczegóły w sekcji [Bohaterowie](#bohaterowie-z-hell-unleashed).
   - Wrogowie korzystają z kompletu 34 modeli/definicji demonów Hell Unleashed, ich wariantów i klipów oraz z wcześniejszych proceduralnych przeciwników Turris.
-  - Areny są zbudowane w kodzie z tysięcy części.
+  - Pierwszy dziedziniec korzysta z [nowego zestawu gotyckiego anime](ArtSource/GothicAnimePoC/Arena/README.md):
+    30 modułów 3D, malowany kamień, nocne niebo, ostrołuki i zamek w tle.
+    Oryginalne areny i generator zachowano; przełącznik przywrócenia jest w menu **Turris → PoC → Arena gotycka**.
+    Pozostałe areny są zbudowane w kodzie z tysięcy części.
   - Efekty korzystają z natywnych systemów cząsteczek Unity oraz tekstur i warstw przeniesionych z Hell Unleashed.
 - **Stan prac i plan na kolejną sesję:** [`docs/PROGRESS.md`](docs/PROGRESS.md).
+- **Styl graficzny i szablony przyszłych promptów:** [specyfikacja gotyckiego anime](docs/STYL_GRAFICZNY_GOTYCKIE_ANIME.md).
+- **Koncepcje bohaterów:** [13 pozostałych klas w nowym stylu](ArtSource/GothicAnimePoC/Heroes/README.md) — osobne plansze, referencje i lokalna galeria.
+- **Modele anime:** [berserker i bazowy mag wdrożeni na istniejących rigach i animacjach](docs/WDROZENIE_BOHATEROW_ANIME.md), ze złożonym chwytem broni i możliwością przywrócenia oryginałów.
+  [Korekta wykończenia v2](ArtSource/GothicAnimePoC/StyleCorrections/README.md) zawiera rzeczywiste porównania Unity oraz przełącznik dawnych materiałów.
 - **Migracja Hell Unleashed:** [plan pozostałych elementów](docs/PLAN_MIGRACJI_HELL_UNLEASHED.md),
   [cząsteczki i audyt 29 przeniesionych skilli](docs/MIGRACJA_EFEKTOW_HU.md),
   [wykonanie P0/P1 — etapy 1–3](docs/RAPORT_MIGRACJI_P0_P1.md).
@@ -46,7 +53,10 @@ python tools/run_tests.py PlayMode window    # okno edytora – jedyny tryb, w k
 python tools/run_tests.py PlayMode window Turris.Tests.GamepadPlayTests   # filtr
 ```
 
+Ciężkie pomiary uruchamia się tylko na żądanie zmienną środowiskową: benchmark skilli i pieczęci `TURRIS_BENCH_DIR=<katalog>` (do 90 min), galerie zrzutów `TURRIS_SHOT_DIR=<katalog>`. Sama obecność katalogów w `TestResults/` ich już nie włącza (pełny PlayMode w oknie: ok. 9 min zamiast ponad 40).
+
 Wyniki i log trafiają do `TestResults/`. Zmienna środowiskowa `TURRIS_SHOT_DIR=<katalog>` włącza galerie zrzutów (pozy postaci, areny, efekty, gra), a `TURRIS_SOUND_DIR=<katalog>` przy testach EditMode zapisuje wszystkie dźwięki i utwory jako pliki WAV do odsłuchu.
+`TURRIS_TEST_RESULT_DIR=<katalog>` kieruje XML i logi do osobnego folderu, zachowując wyniki innych zadań.
 
 **Boty grające** (`Tests/PlayMode/Bots/`) rozgrywają pełne podejścia na scenie `Main` jako tester QA i gracz H&S/souls-like, po czym piszą raport z wnioskami: `TURRIS_BOT_DIR=<katalog> TURRIS_BOT_RUNS=20 python tools/run_tests.py PlayMode batch Turris.Tests.Bots.WarriorBotPlaytests`. Bez `TURRIS_BOT_DIR` testy są pomijane. Raport dla Wojownika: [docs/raporty_botow/RAPORT_WOJOWNIK.md](docs/raporty_botow/RAPORT_WOJOWNIK.md).
 
@@ -187,6 +197,21 @@ Postać ma **szybki atak, mocny atak i trzy sloty umiejętności**, każdy pod w
   - **technika** kosztuje wytrzymałość, a jej obrażenia to lekki atak aktualnej broni × mnożnik, więc rośnie razem z bronią (rozpłatanie, uderzenie tarczą, szarża, młynek, trzęsienie).
 - Każda umiejętność ma **odnowienie**, niektóre także **ładunki** (np. szarża od poziomu 3 ma dwa). Odnowienie należy do umiejętności, nie do slotu, liczy je zegar gry (pauza je zatrzymuje), a na nowym piętrze ładunki są pełne.
 - Część umiejętności wymaga wyposażenia – uderzenie tarczą działa tylko z tarczą. Wymagania atrybutów są miękkie (obniżona skuteczność), jak przy broni.
+- **Skille należą do broni, nie do klas** (wzór: Path of Exile 2). Każdy skill wymaga rodzaju broni, a bronie mają wymagania atrybutów, więc dowolna klasa użyje dowolnego skilla, jeśli trzyma pasującą broń. Rodzaje broni (`WeaponFamilies.cs`, jedna tabela dla wszystkich skilli):
+
+  | Rodzaj | Bronie | Przykładowe skille |
+  |---|---|---|
+  | ostrze | miecze 1h/2h, pałasz, szabla, sztylety | Cięcie wichru, Cięcie krzyżowe, Fala przełamania, Seria cięć |
+  | ciężka broń | topory, młoty, buławy, gwiazdy zaranne, korbacze, cepy | Trzęsienie, Tąpnięcie, Rzut toporem, Uderzenie gromu |
+  | ostrze **lub** ciężka broń | – | Rozpłatanie, Młynek, Upadek kata, Cięcie z wyskoku |
+  | sztylet | sztylety, szabla, sztylet do rzucania | Rzut nożami, Bomba siarkowa, Sidła, Krok cienia |
+  | łuk | łuki | Strzał przeszywający, Salwa, Deszcz strzał |
+  | fokus | różdżka, kostur, grymuar (także w drugiej ręce) | wszystkie czary |
+  | dowolna broń | – | Szarża, Odtrącenie, okrzyki, aury, skille klas |
+
+  Broń może należeć do kilku rodzajów (sztylet: ostrze i sztylet, kosa: ostrze i ciężka broń). Druga ręka też się liczy: miecz z grymuarem rzuca czary, a tarcza pozwala na Uderzenie tarczą.
+- **Obrażenia skilla zależą od siły broni**: mnożnik = DPS broni / DPS wzorca rodzaju, przez który broń spełnia wymaganie (ostrze i ciężka broń – miecz jednoręczny, sztylet – sztylet, łuk – łuk myśliwski, czar – podstawowa różdżka żywiołu fokusu), × poziom ulepszenia broni (+10% za poziom). Cięcie wichru na sztylecie bije ×0,7, na mieczu ×1, na mieczu dwuręcznym ×1,25. Startowe bronie klas mają ×1. Techniki Turris biją bronią same (lekki atak × mnożnik).
+- Skill startowy do wyboru musi pasować do broni zestawu (niepasujące są wyszarzone); na start puste sloty wypełniają najpierw skille, których broń zestawu pozwala użyć.
 - **Unik przerywa umiejętność** tak jak atak. Przerwana przed wyzwoleniem oddaje manę i ładunek (wytrzymałość przepada).
 
 Skąd się biorą umiejętności:
@@ -198,9 +223,9 @@ Skąd się biorą umiejętności:
 | Odblokowanie za popiół (menu „Odblokowania”) | **na stałe** – na start każdego podejścia klasy, dla której jest przeznaczone (albo każdej, jeśli ogólne), bez kosztu w budżecie przygotowania |
 | Nagroda między piętrami | **tymczasowo** – tylko w tym podejściu |
 
-**Start podejścia jest klasowy.** Dodatki w budżecie i stałe umiejętności są albo **ogólne** (np. Czujność, Przetrwanie, Kojące światło, pierścienie i amulety), albo **przypisane do klasy** (rycerz: topory, tarcze, techniki ciężkiej broni; mag: czary żywiołów, kostury, szaty; łotrzyk: sztylet, kosa, rękawice rzeźnika, techniki krwawienia). Rycerz nie zaczyna więc z kulą ognia. Przypisanie widać w menu „Odblokowania”, a w trakcie podejścia nagrody nie są ograniczone klasą. **Łotrzyk wybiera broń startową** – noże bliźniacze albo łuk – bez kosztu w budżecie.
+**Start podejścia.** Odblokowania skilli i broni są dostępne dla każdej klasy – o użyciu decydują broń i jej wymagania atrybutów (rycerz z różdżką albo grymuarem rzuci kulę ognia). Przypisanie do klasy dotyczy tylko pozostałych dodatków (szaty, rękawice, wzmocnienia). Przypisanie widać w menu „Odblokowania”, a w trakcie podejścia nagrody nie są ograniczone klasą. **Łotrzyk wybiera broń startową** – noże bliźniacze albo łuk – bez kosztu w budżecie.
 
-Nagrody proponują też umiejętności jeszcze nieodblokowane (gdy gracz dotarł na piętro wymagane do ich odblokowania) – można je wypróbować przed zakupem. Nie są proponowane umiejętności, których obecne wyposażenie nie pozwala użyć.
+Nagrody proponują też umiejętności jeszcze nieodblokowane (gdy gracz dotarł na piętro wymagane do ich odblokowania) – można je wypróbować przed zakupem. **Skill zdobyty później przychodzi na wyższym poziomie** (progi Hell Unleashed, `Run/SkillTiers.cs`): od piętra 7 poziom II, od piętra 16 poziom III (skille Turris z pięcioma poziomami: +2 / +4). Skille i bronie HU pojawiają się od piętra równego ich fali (np. Młynek od 16.), progi treści Turris i odblokowań są ×5 względem dawnej wieży 6-piętrowej. Nie są proponowane umiejętności, których obecne wyposażenie nie pozwala użyć.
 
 Sloty ustawia się na ekranie przygotowania (klasowe + odblokowane) i między piętrami w ekwipunku (cała kolekcja podejścia). Ponowne kliknięcie przypisanego przycisku zdejmuje umiejętność ze slotu. Ostatni układ zapisuje się w profilu i obowiązuje w kolejnych podejściach.
 
@@ -258,7 +283,7 @@ Reakcje (raz na trafienie, tyknięcia i obrażenia reakcji ich nie wywołują):
 
 **Nowe modele i bronie:** buława, młot, włócznia (najdłuższy zasięg, pchnięcia przebijają linię) i kosa (szeroki łuk, krwawienie, leczy przy trafieniu krwawiących). Technika **Ciężki rzut**: broń leci i wraca, raniąc w obie strony; do jej powrotu walczysz pięściami i nie blokujesz bronią.
 
-**Fale wrogów:** piętra I–IV mają po 3–4 fale – kolejna wchodzi po drugiej stronie areny chwilę po pokonaniu poprzedniej (HUD: „Fala X/Y”), piętro kończy się po ostatniej. Boss pozostaje pojedynkiem. **Szkieletowy łucznik** trzyma dystans, ucieka przed zwarciem i strzela z łuku (salwy, strzał w nogi spowalnia). Postacie z łukiem noszą kołczan. **Strzały specjalne** (techniki, wymagają łuku): Ognista strzała, Mroźna strzała, Salwa.
+**Wieża 30 pięter (fale Hell Unleashed, `Core/HellTower.cs`, dane `Resources/HellCatalog/waves.json` z `tools/art/import_hu_waves.py`):** piętro N = fala N HU. Zwykłe piętro to portale z czasem, budżetem, grupami i składem demonów fali; co trzecie piętro to pojedynek z bossem HU, a po nim kapliczka. Życie, obrażenia, prędkość i dusze demonów rosną osobnymi mnożnikami fali (życie zwykłych fal łagodzone od fali 10 do ×0,75 na fali 29, jak w HU). Korekta Turris: piętro II ma budżet 41 i mniej kultystów (raport botów). Mechanika fal po kolei (`extraWaves`) zostaje dla treści, która jej używa. **Szkieletowy łucznik** trzyma dystans, ucieka przed zwarciem i strzela z łuku (salwy, strzał w nogi spowalnia). Postacie z łukiem noszą kołczan. **Strzały specjalne** (techniki, wymagają łuku): Ognista strzała, Mroźna strzała, Salwa.
 
 **Warianty wrogów** (piętro losuje z szansą 40% zamiast zwykłego wroga): Płonący ghul, Lodowy strażnik, Kultysta burzy – z aurą i poświatą broni w kolorze żywiołu.
 
@@ -429,7 +454,7 @@ Klimat dark fantasy: stal, kość, kamień, żar, dzwony wieży i chór. Wszystk
 - **Waluty:**
   - *dusze* — waluta podejścia, przepada po śmierci, wydaje się je w kapliczce na ulepszenie broni i dodatkowy ładunek flaszki;
   - *popiół* — waluta trwała, przyznawana za ukończenie piętra i zapisywana od razu.
-- **Nagrody z pięter** przyznają rosnąco 3/6/10/15/30 popiołu, plus 40 za zwycięstwo, a całość jest mnożona przez trudność. Pierwsze ukończenie danego piętra na danej trudności daje jednorazowo +50%. Wielokrotne kończenie tylko pierwszego piętra daje więc najmniej.
+- **Nagrody z pięter** przyznają rosnąco 3 + numer piętra popiołu (finał 50), plus 40 za zwycięstwo, a całość jest mnożona przez trudność. Pierwsze ukończenie danego piętra na danej trudności daje jednorazowo +50%. Wielokrotne kończenie tylko pierwszego piętra daje więc najmniej.
 
 ## Zakres prototypu
 

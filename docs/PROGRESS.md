@@ -1,5 +1,318 @@
 # Turris Damnatorum — stan prac i plan
 
+### Naprawione kostki 14 bohaterów — 2026-10-29
+
+- **Wdrożone w grze**, po doprecyzowaniu, że celem jest także usunięcie wykrytych problemów:
+  [naprawa z porównaniami przed/po](NAPRAWA_KOSTEK_BOHATEROW.md). Poprzedni raport audytu zachowuje stan sprzed zmiany.
+- `AnatomicalFootPose` + flaga `CharacterVisualDefinition.anatomicalFeet`: zawias nogi w osiach danego rigu,
+  stałe długości kości, orientacja stopy względem bieżącego kolana/goleni i kontrola podeszwy z kalibracji BakeMesh.
+  BakeMesh jest wykonywany przy budowie modelu; w pętli nie ma kopiowania jego siatki.
+  Zgięcie buta wyznacza ruch goleni — pierwsza wersja przejmowała skok retargetu u Zabójcy, wykryty nowym testem i poprawiony.
+- Flaga zapisana przez Unity API do **14 aktywnych wyglądów**. Importery anime berserkera/maga i paladyna utrzymują ją
+  przy imporcie. Zachowano poziomy tor kroków, pracę tułowia, chwyt broni i pełne akcje. Paladyn utrzymuje poprzednie prowadzenie
+  nóg do przodu, z dodatkową kontrolą podparcia. Nie zmieniono globalnych mnożników yaw.
+- **Wojownik bez zmian:** 19/19 hashy jego plików i wspólnych zestawów animacji zgodnych, 480 porównawczych próbek pozy
+  bez różnicy. Modele/tekstury nie były generowane ponownie. Hell Unleashed nie był modyfikowany.
+- Pełny przebieg po naprawie: **6/6 zaliczone**, 15 wyglądów (14 poprawionych + wojownik kontrolny), 117 profili,
+  2106 przypadków ruchu i wszystkie 27 rzeczywistych zestawów startowych. Dane: `TestResults/hero-feet-repair/after`.
+  Regresja modeli, postawy maga, ataków i kostek: **21 zaliczonych / 0 błędów / 5 opcjonalnych galerii pominiętych**.
+  Dodatkowy przebieg zawiasów: **1/1**. Łącznie 28 udanych końcowych wykonań testów.
+- Nowy `RetargetFootRepairPlayTests.B_AktywneRigi_SkretICiaglosc` działa również w zwykłym PlayMode:
+  14 rigów, obie nogi, 30/60 kl./s, prawdziwe próbki wymachu i ciągłość obrotu; brak próbek powoduje błąd.
+  Zebranie 56 wyników, min. 29 próbek nogi, maks. skręt ~11°. Diagnostyczne porównanie A jest opt-in.
+- Domyślny bieg: P95 asymetrii wszystkich poprawionych wyglądów <2,4°; berserker ~35,7° → ~0,01°.
+  Niezależny BakeMesh: badane punkty regionu stóp wszystkich 14 <7 mm zapadania (berserker do ~4,3 mm, wcześniej do ~10,2 cm).
+  Ślizg to osobny wynik: np. paladyn P do ~3,7 cm, a część rigów nie ma stabilnych okien pomiarowych; nie deklarować idealnego
+  zablokowania każdej podeszwy. Poziomy tor kroków i prędkości klipów pozostały zachowane.
+- Obejrzano plansze wszystkich modeli i ujęcia z areny. Utrwalone obrazy, GIF-y, CSV i zbiorczy JSON:
+  `docs/qa/hero-feet-repair-2026-10-29`. Unity pozostawione w trybie edycji; brak commita/pusha.
+
+### Audyt anatomii 15 bohaterów — 2026-10-29
+
+- Po poleceniu „działaj” wykonano [audyt kostek i podparcia](RAPORT_WERYFIKACJI_ANATOMII_BOHATEROW.md),
+  zgodnie z wcześniejszym [planem](PLAN_WERYFIKACJI_ANATOMII_BOHATEROW.md). **Bez napraw modeli/animacji**,
+  bez zmian wojownika i bez zapisu do Hell Unleashed.
+- 15 aktywnych `ClassDefinition.Visual`, 27 natywnych zestawów + 90 dodatkowych profili;
+  2106 przypadków ruchu, 352 665 próbek czasu po rozgrzaniu, minimum trzy pełne cykle;
+  oba boki, przód/tył, szkielety i sekwencje 30/60 kl./s. Osobno 18 porównań aktywnych/starych rigów,
+  BakeMesh co klatkę dla 15 modeli i rzeczywisty `PlayerCombat` na wszystkich 27 zestawach
+  (36 690 próbek, po trzy lekkie uderzenia/strzały). Wybrane dowody zachowane w `docs/qa/hero-anatomy-2026-10-29`.
+- Berserker: usterka odtworzona z toporem i młotem, także na starym rigu z tym samym zestawem.
+  Asymetria wymachu P95 ~35,7° przy 60 kl./s, podobna przy 30. W aktywnym rigu `ApplyFootYaw`
+  zmniejsza skręt L, lecz wprowadza skręt P; następne warstwy go nie usuwają. Nie jest to dowód wady samej siatki.
+  Pomiar BakeMesh sygnalizuje osobno zapadanie badanych punktów butów do ~5,7/10,2 cm (L/P) na płaszczyźnie.
+- Pozostałe rigi wymagają przeglądu według tabeli raportu. Paladyn utrzymuje poprawę skrętu w biegu do przodu
+  (P95 asymetrii ~2,3°), ale ma osobne podejrzenie kontaktu podeszwy. Brak stabilnego okna podparcia
+  oraz geometria zasłonięta szatą są **brakiem danych**, nigdy wynikiem 0 ani automatycznym zaliczeniem.
+- Walidacja w otwartym głównym Unity: 6 różnych testów, **7 zakończonych wykonań / 0 błędów**
+  (3 główne + 1 źródła + 2 podparcie/akcje + powtórzenie serii berserkera). Wyniki w `TestResults/hero-anatomy`.
+  Testy sprawdzają zebranie danych, nie zdrowe kostki. Zachowane źródła: **8/8 hashy zgodnych**.
+- Narzędzia: `HeroAnatomyAuditPlayTests` + `HeroAnatomyLiveRunner` (menu **Turris → Audyt anatomii**,
+  opt-in), `review_hero_anatomy.py`, `summarize_hero_anatomy.py`. Obserwator kolejnych warstw w
+  `ClipAnimationDriver` istnieje tylko w edytorze, z domyślnie pustym callbackiem; nie zmienia pozy.
+- Pułapka MCP: domyślny klient może trafić do kopii bota; rejestr potrafią nadpisać Asset Import Workers.
+  Sprawdzać `dataPath` przed wywołaniami, port właściciela głównego GUI i kompilację. Tutaj główny GUI miał port 8108.
+  Stare połączenie klienta MCP zwolniono bez zamykania Unity i kopii botów. Helper `unity_karnel_mcp.py`
+  odmawia pracy przy niezgodnym projekcie.
+- Następne kroki po osobnym zleceniu: poprawa retargetu/referencji i korekty wymachu berserkera;
+  testy bez luki „brak próbek = 0”, następnie pozostałe rigi osobno. Nie zmieniać globalnych wzmocnień stóp.
+
+### Dusze bez premii, bot maga — 2026-10-29
+- Premia +10% dusz cofnięta (seria v24 z darmowym punktem cechy wypadła bardzo dobrze: gracz 11/20).
+- **Bot maga** (`Tests/PlayMode/Bots/MageBot.cs`, `MageBotPlaytests`, klasa `class_mage`):
+  - walka na dystans: trzyma 4,5–9 m od celu, strzela różdżką w pasie dystansu, w tłumie albo za blisko odchodzi bokiem i ku środkowi areny,
+    przyparty strzela z bliska; nova także na jednego wroga tuż obok;
+  - Przeciążenie przed mocnym czarem (grupa ≥3 w 6 m albo boss, mana > 40%), potem pierwszy czar w zasięgu; flaszka many przy < 20% many w spokojnej chwili;
+  - cechy: Inteligencja, co trzeci punkt Wytrzymałość (tester rotuje wszystkie); żywioły jak zestawy wojownika (tester po kolei, gracz epsilon-zachłannie);
+  - sklep i przedmioty pod moc czarów, własny żywioł, mechanikę pocisków różdżki i przebicie własnego żywiołu; uśpione perki pomija.
+  - **czary obszarowe wokół siebie** (nova, trzęsienie, młynek) – przy kilku wrogach w 10 m tylko na co najmniej dwóch w promieniu; na jednego wyłącznie
+    w ratunku (życie < 35% albo < 55% i cios zaraz dojdzie) albo gdy w pobliżu nie ma nikogo innego. Inaczej wabi: przestaje uciekać, a gdy przy nim stoi jeden,
+    a reszta dalej – mrugnięcie od środka grupy (nie pod ścianę); po 5 s bez skutku 3 s zwykłej walki. Telemetria: „czar obszarowy po zwabieniu / na grupę /
+    na jednego (ratunek)”, „wabienie bez skutku”, powód uniku „wabienie pod czar obszarowy”. Próba 2 × 3: piętra 27, 16, 30 (zwycięstwo) i 16, 14, 30.
+- Wspólne części przeniesione do `HeroBot`: `WantsSkill`, przełączanie aur (`OnFight`), wirtualne `Offense`, `PerkScore`, `GearScore`.
+- Próba (`mag-proba`, 2 × 3, przed zasadą wabienia): piętra 8–11, giną głównie od Wiedźmy wichru. Seria `mag-v1` (2 × 20, z zasadą wabienia):
+  - gracz 4/20 zwycięstw, średnio piętro 20,0, mediana 19; najlepszy ogień (12 podejść, śr. 23,5), reszta 13–17; zabójcy: Miotacz głazów 5, Taranowiec 2, Kowal Piekieł 2;
+  - tester 2/20, średnio 15,0, mediana 14; ziemia śr. 20,6, ogień 17,2, woda 11,4, powietrze 10,8;
+  - czary obszarowe na podejście (gracz): na jedynego wroga w 10 m 185, na grupę 43, po zwabieniu 3, w ratunku 3; wabienie bez skutku 12, mrugnięcia wabiące 5,5.
+  - Decyzja: „kilku przeciwników” = wszyscy żywi na arenie (zamiast promienia 10 m) – nova na jednego tylko, gdy na arenie jest jeden wróg albo w ratunku.
+- Porównanie żywiołów: `MageElementBotPlaytests` – specjalizacje `class_hu_mage_fire/water/air/earth` (skille klasy: Meteor, Wir głębin i Trzęsienie ziemi – nova, więc z zasadą wabienia –, Nawałnica).
+  `mag-v2` (wabienie liczone na całej arenie): gracz 3/20, średnio 14,8, mediana 13 (13 podejść wodą – ogień wypadł słabo w próbach); tester 0/20, 14,2.
+  Gracz na podejście: nova na grupę 22 (v1: 43), po zwabieniu 1,1, wabienie bez skutku 6 – wabienie rzadko się udaje i zabiera czas. `mag-zywioly-v1` (specjalizacje, 10 podejść, równolegle 4 kopie, 55 min): gracz/tester zwycięstwa – ogień 8/5, woda 8/4, ziemia 8/4, powietrze 6/3 (śr. piętro gracza 27,5 / 28,5 / 29,2 / 24,8). Specjalizacje są dużo silniejsze od bazowego maga (większe premie w klasie, np. +35% i dodatkowa statystyka), więc wynik `mag-v2` to głównie słabość `class_mage`, nie samego bota. **Mag powietrza – powalenie** (`mag-powietrze-v2`, 20 podejść): powalenie jest teraz ogólnym parametrem trafienia (`down_seconds` → `HitData.knockdown`, nakłada je `EnemyBrain` przy trafieniu; bossy odporne, potem 2 s odporności na ogłuszenie; strefy wtórne, ściany i aury go zerują). Nawałnica powala na 0,5 s, Nova powietrza na 0,6 s (`HuBalance`); nowa pieczęć wsparcia **Grzmot** (`seal.turris.thunder`, `TurrisSkills`): +0,7 s powalenia, 85% obrażeń, nie do aur, leczenia ani osłon. Wynik: gracz 15/20 (75%, śr. piętro 27,2; było 6/10 i 24,8), tester 6/20 (30%, bez zmian). Gracz przerywa picie rzadziej (73% zamiast 85%), nadal ginie głównie od Miotacza głazów.
+- **Równoległe serie botów** (`tools/run_bots_parallel.py`): kopie projektu w `C:/GIT/Gry/Turris_Damnatorum_kopie/kopiaN` (robocopy /MIR Assets, Packages,
+  ProjectSettings przed każdym uruchomieniem; Library kopiowany raz), zadania (filtry testów) rozdzielane na wolne kopie, wyniki do wspólnego `--out`
+  (Unity: `--out/_unity/*.xml|log`). Zestawy: `--preset mag-zywioly | mag-powietrze | mag | wojownik`; `--runs`, `--copies` (domyślnie 4), `--realtime`, `--sync-only`.
+  Pierwsze kopiowanie Library – przy zamkniętym projekcie głównym. Zasoby: ok. 7 GB dysku i 6–7 GB RAM na kopię. Telemetria powodów czarów obszarowych liczy na razie tylko skille ze slotów, nie skill klasy.
+
+### Reszta Hell Unleashed: wszystkie perki, łup na ziemi, dojrzewanie dusz, cechy za dusze, balans 2.0 — 2026-10-29
+- **Perki (46/46):** `DefaultContent.PerkContent` przenosi statystyki, konwersje i efekty trafienia; mechaniki to nowe `PassiveEffectType` (na końcu enuma).
+  - Uśpienie jak w HU (`Run/PerkMechanics.Active`): perk bez pasującego wyposażenia (tagi slotu, `RequiresAny`: `perk:` / `tag:`) nic nie daje (`RunState.AllModifiers/AllEffects`).
+  - Szeroki zasięg: promienie skilli Turris (`Radius`), skilli HU (`HuCast.area`) i wybuchów pocisków broni.
+  - Refleks: +4% uchylenia ponad limit Zręczności, razem do 50%.
+  - Tarcza: blok bierny 15% + 2% za poziom tarczy + perk; zatrzymuje cały bezpośredni cios (nie w gardzie), ładunek 1 / 0,92 / 0,85 s. Lekka tarcza: −15% kosztu bloku za poziom.
+  - Zwykły cios wręcz: Długie ostrze (+10% zasięgu), Ciężkie uderzenia (odrzut 0,5 m, boss ×0,25, elita ×0,5), Rozpęd (+4% tempa za warstwę, do 5, pudło albo 1,5 s – zero),
+    Rozżarzona stal (50% fizycznych → ogień), Głębokie rany (krwawienie, +1 warstwa, +25%). Pęknięcie pancerza – wszystkie ciosy wręcz, także technik.
+  - Przebicie odporności (5 żywiołów): odejmowane od odporności wroga, nie poniżej 0 (`HitData.penetration`, `EnemyBrain.ReceiveHit`).
+  - Pociski broni (`FireArrows`, `Projectile`): przebicie, rykoszet (7 m, bez spadku obrażeń), Rozszczepienie (łącznie 2/3/5/8, boczne 40%, od 8 pierścień), podział (2 × 40%, z wybuchem),
+    Niestabilne pociski (wybuch 30/45/60% w każdym trafieniu, min. 1,5 m), Pozostałość (strefa 2 s, tylko z Niestabilnymi albo bronią wybuchową).
+  - Odbicie: sparowany pocisk wroga wraca ×1,4 szybciej za 75% × poziom obrażeń. Przemiana w parę: ogień → mróz. Płonące / Mokre / Kamienne ostrze: podpalenie / chłód / zachwianie zwykłym atakiem.
+- **Dusze dojrzewają** (`GameRoot.Souls.cs`): 3 s od zabójstwa; bezpośredni cios, który zabrał życie, niszczy 10% każdej porcji (raz na 1 s; tyknięcia, unik, blok, parowanie – nie).
+  Koniec piętra dojrzewa wszystko. HUD: „(+N dojrzewa)”.
+- **Łup na ziemi** (`Combat/LootPickup.cs`): przedmioty, pieczęci i dar bossa leżą, bohater zbiera je w promieniu 1,6 m; koniec piętra zbiera resztę.
+- **Cechy:** zostaje darmowy punkt za piętro (decyzja użytkownika 2026-10-29) – kupowanie cech za dusze z HU wycofane; za dusze kupuje się resztę (broń, perki, przedmioty, skille, pieczęcie).
+- **Sklep:** 3 oferty skilli naraz (`SoulShop.PickOffers`). Po piętrze od razu postój ze sklepem.
+- **Darmowa nagroda usunięta** (decyzja użytkownika): bez ekranu nagrody, `RewardGenerator`, `RewardOption`, `RewardKind`, przerzucania nagród
+  (`rewardRerollSoulCost`, `rewardExplorationChance`, `learnNewSpellChance`) i `GameScreen.Reward`. Zostały `RewardPools` (pula sklepu) i `Describe`
+  (nowe `Describe.Upgrade`). Testy generatora nagród usunięte, pozostałe przepisane na sklep dusz.
+- **Balans HU 2.0 (26.10):** unik 18 → 21,6; elity HP ×4,5, obr. ×1,45, co 28–35 demonów od fali 2; odporności pełne do 40%, dalej połowa, limit 65%;
+  redukcja obrażeń (wszystkie źródła razem) pełna do 25%, dalej połowa, limit 45%; obrona fizyczna zdejmuje najwyżej 55%; bezpośredni cios – min. 15% surowych obrażeń;
+  kradzież życia + życie za zabójstwo – najwyżej 8% maks. życia na sekundę (nieśmiertelność ×0,5). Broń dwuręczna +18% była już w danych (Flamberg 61).
+- **Boty:** wybierają z 3 ofert skilli.
+- **Testy:** `HuPerkTests` (6); testy przebiegu oczekują postoju zamiast ekranu nagrody.
+  EditMode 225/228 (2 × „AnimeForward” z cudzej pracy). PlayMode pełny: 138 zaliczonych; po poprawkach (blok bierny ustępuje parowaniu i unikowi, `DebugNoPassiveBlock` w testach demonów,
+  pad: przyciski cech pionowo, test pieczęci zwalnia skill przed wstawieniem – oferty zależą od losowania) zostają znane niestabilne: `Techniques_Charge`, `Floor1Combat_FrameWorkFitsBudget`,
+  `EveryHuSkillAndForm` (Krok wichru, czasem jedna inna para przy ×3 czasu).
+- Assety: „Dodaj nową treść” utworzyła 23 perki `hu_perk_*` i uzupełniła efekty trafienia w 3 (`TurrisSetup.FillNewDefaults` obsługuje teraz wzmocnienia). Zrzut postoju: `TestResults/shots_hu/seal_shop.png`.
+- EditMode po usunięciu nagrody: 223/226 (2 × „AnimeForward”). PlayMode przebiegu (GameFlow, MainScene, Gamepad, SealFlow, Demon): 39/43, 3 pominięte,
+  1 niestabilny czasowo: `Impact_HitstopBothSides` – krew na ostrzu zasycha w 30 s, a test w oknie trwał ok. 2 s.
+- Seria `wojownik-v20` (wszystkie zmiany, bez darmowej nagrody): gracz 2/20 zwycięstw, średnio piętro 15,0 (v19: 5/20, 17,3); tester 0/20, 11,6 (v19: 2/20, 14,3).
+  Gracz kupował ok. 6–7 punktów cech na podejście (wcześniej ok. 15 darmowych). v22 (dusze +10%): gracz 1/20, 16,2; tester 0/20, 9,9.
+  Potem przywrócony darmowy punkt cechy, kupowanie cech wycofane.
+- Seria `wojownik-v24-darmowa-cecha` (bez darmowej nagrody, darmowy punkt cechy, dusze +10%): **gracz 11/20 zwycięstw**, średnio piętro 22,8, mediana 30;
+  tester 0/20, średnio 14,1, mediana 13 (zabójcy: Miotacz głazów 6, Królowa Topieli 5). W toku: `wojownik-v25-darmowa-cecha-czas-rzeczywisty` (2 × 5, normalny czas).
+- **Dusze +10%** (`BalanceConfig.soulRewardMultiplier` = 1,1). Serie w kolejce: `wojownik-v22-dusze110` (przyspieszona, 2 × 20) i
+  `wojownik-v23-dusze110-czas-rzeczywisty` (`TURRIS_BOT_REALTIME=1`, 2 × 5: bez stałego kroku 1/60 s, czas gry = czas zegara; limit testu 48 h).
+
+### Etap 6 Hell Unleashed (ekonomia bohatera) i reżyser ataków — 2026-10-28
+- **Dane:** `tools/art/import_hu_economy.py` kopiuje do `Resources/HellCatalog/` pliki `items.json` (71), `affixes.json` (131) i `upgrades.json` (46).
+- **`Run/HellEconomy.cs`:**
+  - przeliczenie statystyk HU na Turris: życie ×2, pancerz ×6, ułamki → %, dodane obrażenia płaskie → 5% obrażeń broni za punkt; statystyki bez odpowiednika są pomijane;
+  - rzadkość wg źródła (tabele HU, legendarne od piętra 5), jakość (elita 0–1, boss 1–2), affixy (przedrostek i przyrostek: magiczny 1+1, rzadki 2+2, legendarny 3+3;
+    grupy wykluczające, tiery od fal 1/8/16, nowsze tiery częściej);
+  - wartość = cena HU × rzadkość × jakość × 2,5.
+- **`ItemInstance`:** `rarity`, `huQuality`, `affixes` i `affixNames`, wliczane w premie. Zapis stanu podejścia je przechowuje.
+- **Poziomy broni:** +20% za poziom (było +10%), do 5 poziomów jak w HU (tarcze i grymuary 3), cena HU × 1,6^poziom × 2,5 × inflacja.
+  Kupowane w sklepie po każdym piętrze; kapliczka używa tej samej ceny.
+- **Treść** (`DefaultContent.HellEconomy.cs`, assety przez „Dodaj nową treść”):
+  - 71 przedmiotów `hu_item_*` w puli;
+  - 23 perki HU ze statystykami z odpowiednikiem jako wielopoziomowe wzmocnienia `hu_perk_*` (poziom = warstwa).
+  - Perki zmieniające mechanikę – przeniesione 2026-10-29 (wyżej).
+- **Sklep po piętrze** (`Run/FloorShop.cs`, `GameRoot.Economy.cs`, `GameUI.Economy.cs`):
+  - 3 bronie (zawsze kolejny poziom trzymanej);
+  - 4 perki aktywne dla wyposażenia;
+  - 6 przedmiotów: 3 w pancerzu klasy i 3 dowolne, co najmniej jeden magiczny i jeden rzadki, od piętra 5 także legendarny; bez unikatów.
+  - Treść innej klasy ma wagę ×0,35. Ceny ×2,5 × inflacja 15%/piętro.
+- **Łupy:** zwykły wróg 4%, elita 60%, boss 100%. 30% to broń, rzut na unikat daje unikat. Przedmiot trafia od razu do ekwipunku (pusty slot) albo do plecaka.
+- **Reżyser ataków** (`Enemies/AttackDirector.cs`, wierny port HU): limit demonów naraz w zamachu lub ciosie.
+  - Limity wręcz / dystans / specjalne: akty 1–3 to 3/1/1, 4/2/1 i 5/2/1, sługi obok bossa 2/1/1. Bossowie bez limitu.
+  - Demon bez miejsca krąży i ponawia próbę po 0,2–0,5 s. Miejsce zwalnia się w odzyskaniu, przy przerwaniu i przy śmierci.
+- **Boty:**
+  - korzystają z pieczęci (`HeroBot.Seals.cs`): dar bossa, sakwa i sklep;
+  - korzystają ze sklepu po piętrze (`HeroBot.Shop.cs`): poziom broni, perki, przedmioty poprawiające build.
+- **Testy:** `EconomyTests` (5), `AttackDirectorTests` (2). EditMode 218/221 (2 × „AnimeForward” z cudzej pracy). PlayMode przebiegu gry: 37/40, 3 pominięte.
+- „Dodaj nową treść” uzupełniła przy okazji krwawienie w atakach Bezimiennego Cienia (`enemy_hu_boss_shadowlord`), zgodnie z treścią domyślną.
+- **Niezmienione względem HU:** (uzupełnione 2026-10-29 – patrz wyżej).
+- Seria z pieczęciami bez etapu 6 (`wojownik-v18`): gracz średnio piętro 12,9, dwa razy do XXX (Arcydiabeł). Tester 8,2.
+- **Seria z etapem 6 i reżyserem ataków** (`wojownik-v19`, 2 × 20, 3 próby na piętro): **pierwsze zwycięstwa**.
+  - Gracz: 5/20 zwycięstw, średnio piętro 17,3, ok. 17 zakupów w sklepie na podejście (poziom broni, Szybkie ręce, Ostrze, Twarda skóra, Kat).
+  - Tester: 2/20 zwycięstw, średnio piętro 14,3.
+  - Do obserwacji: „uśpiony wróg blokuje koniec piętra” (13–17 razy na serię, gargulec) i „parowanie w oknie nie zadziałało” (17 u gracza).
+
+### Plan weryfikacji kostek i nóg pozostałych bohaterów — 2026-10-28
+
+- Na wyraźne polecenie użytkownika przygotowano **wyłącznie [plan weryfikacji](PLAN_WERYFIKACJI_ANATOMII_BOHATEROW.md)**.
+  Status: **nieuruchomiony; czeka na sygnał użytkownika**. Berserker pierwszy — użytkownik zgłasza u niego
+  podobne wykręcanie stopy jak wcześniej u paladyna. Pozostałe postacie wymagają dopiero oceny.
+- Zakres: 14 pozostałych aktywnych wyglądów, paladyn jako kontrola regresji; wojownik tylko do odczytu.
+  Plan obejmuje obie nogi, pełne cykle podparcia i wymachu, rzeczywiste zestawy broni, aktualne `lookOverride`,
+  siatkę buta oraz rozdzielenie klipu, retargetowania, korekt IK i wag modelu.
+- Z odczytu kodu: obecna kontrola skrętu obejmuje cztery starsze definicje z mieczem i ma wyjątek dla łucznika;
+  testy nowego berserkera nie rozstrzygają anatomicznej poprawności kostek. To luka pokrycia, nie nowy wynik audytu.
+- W tej pracy tylko dokumentacja i odczyt danych: **bez uruchamiania Unity/MCP, testów, renderów, instrumentacji,
+  zmiany modeli lub animacji i napraw**. Start weryfikacji dopiero po kolejnym poleceniu. Bez commita i pusha.
+
+### Mag — naturalniejsza postawa, bez wypchniętego tyłu — 2026-10-28
+
+- Poprawka tylko dla `visual_mage_anime`: `balancedMageStance`, warstwa `MageStancePose` po retargetowaniu/IK,
+  przed `BodyDynamics`. Ograniczenie nadmiernego pochylenia na trzech kręgach, łagodne podniesienie za niskich
+  bioder w spoczynku, zachowanie stóp przez IK i ich obrotów. W ruchu zostają naturalny przechył i praca barków;
+  korekta wygasa przy czarze, ataku, uniku i pozostałych akcjach. Źródłowe klipy i rig bez zmian.
+- [Obejrzane porównania i raport](../ArtSource/GothicAnimePoC/Mage/posture-v1/README.md): spoczynek **15,85° → 5,51°**,
+  wysokość miednicy nad środkiem kostek **0,683 → 0,758 m**, badana faza biegu **32,85° → 13,69°**.
+  Kość bioder w spoczynku była już blisko środka stóp; wrażenie „tyłu uciekającego do tyłu” wzmacniały niska miednica,
+  zgięty tułów i długa szata. Weryfikacja obejmuje bok/przód/tył i prawdziwy zrzut z gry.
+- **PlayMode w otwartym edytorze: 20 zaliczonych / 0 błędów / 5 pominiętych opcjonalnych galerii**:
+  nowy `MagePosturePlayTests` + regresja obu modeli i `HeroModelPlayTests`. Własna galeria postawy zapisana niezależnie
+  od pominiętych testów. Pozycje stóp w badanym spoczynku zgodne <6 mm, końcowe pozy czaru/ataku/uniku zgodne <2 mm.
+  XML: `TestResults/mage-posture/posture-live.xml`, `regression-live.xml`; tabela i PNG obok.
+- Po utracie połączenia MCP użytkownik włączył serwer; bieżący proces Unity miał aktywny most na **8102**, a martwy
+  nasłuch na 8099. Wykorzystano świeżą sesję zainstalowanego serwera przez `tools/unity_karnel_mcp.py`.
+  Wtyczka `runTests` miała błąd konstruktora `ExecutionSettings` (Test Framework 1.8), więc
+  `MagePostureLiveRunner` uruchamia testy z menu prawidłowym API i zapisuje wyniki, bez drugiej instancji Unity.
+- Osiem chronionych źródeł z korekty stylu nadal ma zgodne SHA256; materiały, model FBX, mapy i pozostałe postacie
+  nietknięte w tej poprawce. Wojownik i Hell Unleashed bez zmian; brak commita i pusha.
+
+### Boty: przedmioty, ponowne próby, wyzwania, powtórki; wolniejsze portale — 2026-10-28
+- **Boty:**
+  - zakładają przedmioty z plecaka (`HeroBot.Gear.cs`, ocena buildu: DPS, życie, obrona) i biorą przedmioty z nagród, gdy pomagają;
+  - po śmierci powtarzają piętro z zapisu stanu (do 3 prób, `BotPlaytestRunner.AttemptsPerFloor`).
+- **Zapis stanu podejścia** (`Run/RunSnapshot.cs`): klasa, cechy, ekwipunek, plecak, skille z poziomami, slotami i pieczęciami, wzmocnienia, sakwa, dusze, flaszki.
+  `GameRoot.StartRunFromSnapshot` uruchamia z niego grę. Test: `RunSnapshotTests`.
+- **Wyzwania botów:** piętro przegrane trzy razy zapisuje się w `persistentDataPath/Wyzwania`. Menu główne → „Wyzwania botów” startuje to piętro z buildem bota.
+  Przycisk niesprawdzony w uruchomionej grze.
+- **Powtórki:** `BotReplay.cs` zapisuje co 0,1 s bohatera, wrogów i pociski oraz zdarzenia walki. Szablon `tools/replay/powtorka_szablon.html` daje odtwarzacz
+  z widokiem z góry, zapisywany w `<katalog serii>/powtorki/` dla każdej ostatecznej porażki.
+- **Korekty wieży:**
+  - `HellTower.FewerEnemies` zdejmuje najsłabszych wrogów z piętra (budżet minus koszt najsłabszego demona); na piętrze VII 8 wrogów mniej, do decyzji;
+  - **`SpawnTempoScale` = 0,5**: tempo wychodzenia z portali o połowę wolniejsze, czas otwarcia ×2, ta sama liczba demonów;
+  - menu edytora: Turris → „Przebuduj wieżę (fale Hell Unleashed)”.
+- **Seria 16** (`docs/raporty_botow/wojownik-v16`): średnie piętro tester 7,7, gracz 9,1 (wcześniej 6,9), najdalej XIV. Piętro VII przestało być ścianą.
+  Nowe ściany: boss IX Królowa Topieli, piętro XI, u testera boss VI Pan Sfory.
+
+### Wieża 30 pięter (fale Hell Unleashed), poziomy skilli z postępu, szybszy PlayMode — 2026-10-28
+- **Wieża**: wierny port 30 fal HU (`Core/HellTower.cs`, dane `Resources/HellCatalog/waves.json` z nowego `tools/art/import_hu_waves.py`).
+  - Zwykłe piętra to portale: czas, budżet, grupy i skład demonów fali.
+  - Co trzecie piętro to boss HU z kapliczką po nim. Finał na piętrze XXX to Arcydiabeł.
+  - 10 aktów z nazwami. Piętro I zachowuje gotycki dziedziniec drugiego agenta.
+  - `FloorDefinition`: nowe pola `damageScale`, `speedScale`, `soulScale` jak w falach HU. Życie zwykłych fal łagodzone od fali 10 (×0,75 na 29).
+  - Korekta piętra II (budżet 41) zostaje.
+  - Asset przebudowuje wąska metoda `TurrisSetup.RebuildTowerBatch`, która nadpisuje tylko `tower_main`. `HellEncounters` usunięty, bo ręcznych pięter IV–V już nie ma.
+- **Popiół**: 3 + numer piętra, finał 50.
+- **Progi treści**:
+  - skille i bronie HU: `MinFloorFor = fala − 1`;
+  - progi treści Turris i `requiredBestFloor` odblokowań: ×5 (`LegacyFloorScale`), w kodzie i w assetach.
+- **Poziom startowy skilla** (`Run/SkillTiers.cs`, progi HU): skill z nagrody lub sklepu od piętra 7 przychodzi na poziomie II, od 16 na III.
+  Skille Turris dostają +2 / +4. Tytuł nagrody i oferta sklepu pokazują poziom.
+- **Jawne przypisanie każdego skilla do broni** (`WeaponFamilies`, test `EverySkill_HasExplicitWeaponAssignment`):
+  - czary do fokusu;
+  - aury, szarże, Odtrącenie, Tąpnięcie i okrzyki do dowolnej broni;
+  - skille klas: jedynym wymogiem jest klasa.
+- **Migracja HU**: wszystkie 61 skilli i 186 pieczęci były już przeniesione (etap 4). Poza pulą jest 15 skilli klas, celowo.
+- **PlayMode**: benchmark i galerie pieczęci włączały się samą obecnością `TestResults/hu-bench` i `TestResults/hu-seals`.
+  Teraz włącza je tylko zmienna środowiskowa. Pełny PlayMode w oknie trwa ok. 9 min zamiast ponad 40.
+- **Testy**:
+  - EditMode 208/211 + 2 nowe (`SkillTiersTests`). Nie przechodzą 2 testy „AnimeForward” z cudzej pracy.
+  - PlayMode po poprawkach: niestabilne `Floor1Combat_FrameWorkFitsBudget` (wydajność) i `Techniques_ChargeMovesAndHits` (czas)
+    oraz **nowy problem**: `EveryHuSkillAndForm` – Krok wichru nie zadaje obrażeń w poligonie, bo doskok skraca się do zera. Przyczyna nieznana.
+- Boty na 30 piętrach (`docs/raporty_botow/wojownik-v8`, 2 × 20): 0 zwycięstw. Tester dochodzi średnio do piętra 4,6, gracz do 5,0, najdalej VII.
+  Ścianą są fale 4–7. Bohater nie dogania krzywej demonów HU, bo brakuje progresji HU co falę: sklep z perkami, poziomy broni, przedmioty z affixami.
+- O 20% mniej demonów niż w HU (`HellTower.MonsterCountScale`, budżet portali ×0,8) i łagodzenie pięter IV–VI (życie ×0,85, obrażenia ×0,9).
+  Boty (`wojownik-v10`): gracz przechodzi piętro VI w 77% podejść (stara wieża ok. 68%), tester w 23%. Nową ścianą jest piętro VII (9/23 gracza).
+- Następne kroki: etap 6 planu migracji (przedmioty, affixy, rzadkości, sklep co piętro jak w HU) dla pięter VII+, Krok wichru w poligonie.
+
+### Balans skilli wojownika i ostrzeżenie przy dodatkach — 2026-10-28
+- `HuBalance`: Rozpłatanie 32/36/36 przy odnowieniu 5 s. Cięcie wichru 28/30/30, Fala przełamania −12% przy odnowieniu 8 s, Upadek kata przy 7 s,
+  Piekielna szarża przy 6,5 s, Trzęsienie przy 6 s, Młynek 23 na obrót przy 6 s. Egzekucja: mnożnik 1,2, premia +60%, odnowienie 9 s (`DefaultContent` i asset).
+  Cel to 24–28 obrażeń na sekundę odnowienia.
+- `LoadoutPlan.StartingHands` i `SkillsBlockedByExtras()`: ekran przygotowania ostrzega, gdy broń z dodatków wyłącza skill startowy.
+  Napis w GUI nie jest sprawdzony zrzutem; logikę sprawdza test.
+- Testy: EditMode 206/209 (2 × „AnimeForward” z cudzej pracy). Nowe testy: `WarriorSkills_DamagePerCooldown_InOneBand`,
+  `PrepScreen_WarnsWhenExtraWeaponBlocksStartingSkill`. Testy skilli w PlayMode przechodzą.
+- Seria botów (`docs/raporty_botow/wojownik-v7`): tester 37/50, gracz 34/50. Rozrzut skilli zmalał z 7–42 do 24–32 obr./s odnowienia.
+  Gracz kupuje 28 ofert zamiast 9, ale dalej trzyma Rozpłatanie i Cięcie wichru (4,2 skilla na podejście).
+- Następne kroki: przenoszenie części ulepszeń przy wymianie skilla, więcej ofert skilli ostrzy i ciężkiej broni, korekta Młynka i Egzekucji.
+
+### Skille należą do broni, nie do klas (wzór: Path of Exile 2) — 2026-10-28
+- `Stats/WeaponFamilies.cs`: rodzaje broni w `BuildTag` (Blade, HeavyWeapon, Dagger, Focus + istniejące Ranged, Shield).
+  - Rodzaje broni HU wynikają z tagów katalogu HU, a bronie Turris z tabeli. Broń może należeć do kilku rodzajów (sztylet, szabla, kosa).
+  - Tagi buildu liczą obie ręce: grymuar i sztylet do rzucania też się liczą.
+- Jedna tabela przypisań skill → rodzaj broni, generowana do assetów (`requiredTags`). Rodzaje broni w wymaganiu działają jako „którykolwiek”
+  (Rozpłatanie: ostrze lub ciężka broń), a pozostałe tagi jako „wszystkie” (`WeaponFamilies.Meets`). Czary wymagają fokusu.
+  Skille klas pod osobnym przyciskiem i Tąpnięcie działają z każdą bronią.
+- Obrażenia skilli HU i czarów są mnożone przez siłę broni. Liczy się DPS broni względem wzorca rodzaju (miecz, sztylet, łuk myśliwski, różdżka żywiołu)
+  i poziom ulepszenia broni (+10%/poziom). Ostrze na sztylecie daje ×0,69, miecz dwuręczny ×1,25, a startowe bronie klas ×1.
+  Techniki Turris biją bronią jak dotąd. Mnożnik jest zapisany w `SpellRuntime.weaponScale`.
+- Kupione odblokowania skilli i broni są dostępne dla każdej klasy (`UnlockDefinition.ClassFree`). Domyślny zestaw klasy i pozostałe dodatki zostają przy klasie.
+  Skill startowy do wyboru musi pasować do broni zestawu, a puste sloty na start wypełniają najpierw skille, których broń pozwala użyć.
+- Testy:
+  - nowe `WeaponFamiliesTests` (5), w tym zgodność assetów z tabelą;
+  - zaktualizowane testy rycerza rzucającego czar (dostaje różdżkę) oraz testy odblokowań klasowych;
+  - w PlayMode skill zakłada najpierw pasującą broń (`TestWeapons`).
+- Wyniki: EditMode 204/207 (2 × „AnimeForward” z cudzej pracy, 1 pominięty). PlayMode, testy skilli i przebiegu: 56/59.
+  `Techniques_ChargeMovesAndHits` nie przechodzi tylko w długim przebiegu (szarża bez trafienia), osobno przechodzi. To niestabilność czasowa.
+- Seria botów 2 × 50 (`docs/raporty_botow/wojownik-v6`): tester 45/50, gracz 39/50. Gracz zostaje przy skillach startowych i odrzuca 157 z 207 ofert,
+  więc cel „wiele skilli” wymaga balansu: osłabić skille startowe, wzmocnić pozostałe skille wojownika. Egzekucja ma 810 obrażeń na użycie, czyli odstaje.
+- Ryzyko UX: dodatek z bronią innego rodzaju na ekranie przygotowania wyłącza skill startowy, a ostrzeżenia brak.
+- Następne kroki: balans skilli (propozycja w `RAPORT_WOJOWNIK.md`, seria 5), ostrzeżenie na ekranie przygotowania, boty pozostałych klas.
+
+### Boty: oferty sklepu i zamiana skilli, seria 2 × 50 — 2026-10-28
+- Boty (`Tests/PlayMode/Bots/HeroBot.Skills.cs`):
+  - tester kupuje każdą ofertę sklepu dusz i co piętro rotuje najmniej sprawdzony skill do slotu;
+  - gracz kupuje oferty i nowe skille, gdy zapowiadają się lepiej niż najsłabszy w slocie, a sloty układa według obrażeń na sekundę odnowienia z pamięci serii.
+  - Skille ruchu (Szarża) mają ocenę co najmniej 90% mediany.
+- Telemetria: poziom skilla przy użyciu, pochodzenie użyć (startowy, odblokowanie, klasa, nagroda, sklep, przedmiot), zamiany slotów, oferty.
+  Nowa sekcja raportu „Kolekcja skilli”.
+- Wyniki (`docs/raporty_botow/wojownik-v5b`): tester 45/50, gracz 22/50. Różnych skilli na podejście: tester 6,1, gracz 5,2.
+- **Skille startowe są za mocne:** Rozpłatanie ma 41,8 obr./s odnowienia, Cięcie wichru 30,4, pozostałe skille wojownika 7–19,
+  z wyjątkiem Fali przełamania (34,9). Propozycja balansu jest w `RAPORT_WOJOWNIK.md`, seria 5 (czeka na decyzję).
+- **Luka w treści:** skille HU nie są przypisane do broni ani klasy (brak `requiredTags`, `classId` nie filtruje puli). Wojownik z mieczem rzuca Piekielną kulę.
+- Następne kroki: przypisanie skilli do rodzajów broni; balans skilli startowych i pozostałych skilli wojownika; seria gracza z Szarżą zablokowaną w slocie;
+  przenoszenie części ulepszeń przy wymianie skilla.
+
+### Korekta wykończenia maga i berserkera — 2026-10-28
+
+- Na polecenie użytkownika wdrożono [korektę v2](../ArtSource/GothicAnimePoC/StyleCorrections/README.md),
+  według zatwierdzonej planszy i referencji dziedzińca. Osobny shader `Turris/AnimeHeroPainterly`,
+  prywatne `mage_anime_painterly_v2.mat` / `berserker_anime_painterly_v2.mat` i menu przywrócenia dawnych materiałów.
+- Pigment korygowany przy renderowaniu z **oryginalnych map 4096²**: granat/fiolet maga, ograniczenie drobnych
+  namalowanych refleksów, matowa paleta naramiennika berserkera. Po obejrzeniu zbliżeń wycofano zbyt mocne
+  globalne wygładzanie. `AnimeHeroStyleMasks` dodaje techniczne RGBA8 do importowanych siatek:
+  ochrona detalu głowy, górne warstwy maga i stal przy prawym ramieniu berserkera. Maski podążają za animacją.
+  Dodatkowy strumień kolorów ok. 13,3 MiB; pozycje, UV, normalne, trójkąty, wagi i kości bez zmian.
+- **PlayMode gfx 6/6**: galeria A/B oraz pięć testów obu bohaterów (prawdziwy start, bieg, broń, seria,
+  czar grymuaru, geometria i chwyt). Po doprecyzowaniu próby światła powtórzona **galeria 1/1**:
+  kamera widzi wyłącznie ciało, więc różnica podłogi/broni nie zalicza testu. Średnia zmiana RGB 0–1
+  po dodaniu światła: mag 0,00424, berserker 0,00534. Cztery własne przebiegi shadera × dwa etapy
+  skompilowane dla D3D / StandaloneWindows64 bez błędów. Unity 6000.6.3f1, URP 17.6, Linear / D3D12.
+- Pary 1600×1200: kamera gry, przód/tył/głowa na arenie i przód/tył neutralny. Stabilizacja trzech renderów
+  w tym samym render target, kontrola stałego tła, brak różowych pikseli w ocenionych planszach; obrazy obejrzane.
+  Trwałe JPG w `ArtSource/GothicAnimePoC/StyleCorrections/unity-*-v2.jpg`;
+  pełne PNG, `regression-6-tests.xml/.log`, powtórna galeria i metryki w `TestResults/hero-style-v2`.
+- SHA256 **8/8 chronionych plików zgodne**: FBX, źródłowe tekstury, dawne materiały, shader demonów i klasa wojownika.
+  `Models/Heroes` bez różnic Git. Paladyn i Hell Unleashed nietknięte w tej korekcie. Brak nowych operacji Meshy,
+  wymiany animacji, forced setup, commita i pusha. Nie wykonywano benchmarku/builda gracza.
+- Skrypt testów obsługuje `TURRIS_TEST_RESULT_DIR`, aby osobne zadania nie nadpisywały sobie XML/logów.
+  Specyfikacja stylu 1.2 wskazuje planszę korekty jako wzorzec wykończenia, zachowując tożsamości klas.
+
 ### Rozpłatanie: powalenie i odnowienie 4 s — 2026-10-27
 
 - Gra miała powalenie (`StatusEffects.KnockDown`, `EnemyBrain.HuThrowDown`, dotąd tylko komponent HU „Odtrącenie”).
@@ -44,6 +357,16 @@
   `HuSkillCasterPlayTests.Face()` mierzy z wyłączoną pomocą (porównanie rzutów w stałym kierunku). EditMode 200/203:
   te same 2 „AnimeForward” co wcześniej + 1 pominięty WAV. Bez commita.
 
+### Propozycja korekty stylu postaci — 2026-10-27
+
+- Po porównaniu modeli z docelowym dziedzińcem przygotowano [planszę korekty maga i berserkera](../ArtSource/GothicAnimePoC/StyleCorrections/README.md).
+  Jedna ilustracja wbudowanym `image_gen`, dokładny prompt zachowany, wynik obejrzany.
+- Kierunek: czytelniejsze warstwy granatu/fioletu maga, większe malarskie płaszczyzny skóry i pancerza berserkera,
+  zgrupowane włosy/futro, kontrolowany detal i wspólne chłodne cienie. Konstrukcja i bogactwo strojów zachowane.
+- **Propozycja do oceny, bez wdrożenia w Unity**. Zalecane dalsze prace: osobne wersje tekstur i materiałów,
+  najpierw mag jako wzorzec, potem berserker, porównanie jednakowych kadrów w grze.
+  Bez zmiany modeli, rigów, animacji, dawnych koncepcji i ZIP; bez Meshy, testów Unity, commita i pusha.
+
 ### Gęstszy ogień ściany i fali ognia — 2026-10-27
 
 - Na prośbę użytkownika ok. **+30% ognia** w „Ścianie ognia” i jej formach (Fala ognia, Forteca ognia): płomienie co **0,73 m**
@@ -74,7 +397,318 @@
 - Następne kroki: pary botów dla pozostałych klas (podklasa `HeroBot` + test), ewentualne poprawki balansu z rekomendacji.
   Bez commita.
 
-### Ostatnia sesja — 2026-10-26: ciągłość serii i paleta gotyckiego paladyna
+### Berserker i mag anime — 2026-10-27: wdrożenie i zamknięty chwyt
+
+- Na polecenie użytkownika [oba modele wdrożone](WDROZENIE_BOHATEROW_ANIME.md):
+  `class_hu_berserker.lookOverride` → `visual_berserker_anime`, `class_mage.lookOverride` → `visual_mage_anime`.
+  Każdy na kopii swoich dotychczasowych **26 kości**, własnym poprawnym awatarze Humanoid,
+  ze starymi klipami i zestawami broni. Topór/młot berserkera, różdżka/kostur i grymuar maga zachowane.
+- Pełne **2 543 857 / 3 619 624 trójkąty**, bez redukcji. `rig_anime_berserker.py` obsługuje także `--mage`.
+  Ciągłe wagi anatomiczne, sztywne chwyty; dolna szata maga wiązana do bioder jako jedno okrycie,
+  bez rozrywania jej w poziome pasy przy ruchu nóg. Brak symulacji Cloth.
+- Palce zwinięte w siatce, kciuki domykane, gniazda wewnątrz chwytu. Opcja `anatomicalGripSlots`
+  dopasowuje środek i orientację dłoni do drzewca przy IK. Domyślnie wyłączona dla dawnych modeli,
+  włączona tylko dla obu nowych. Prywatne matowe materiały 4K, bez zmiany wspólnego shadera.
+- Stały wymóg zaciskania dłoni dla **wszystkich przyszłych modeli** zapisano w `AGENTS.md`,
+  specyfikacji stylu **1.1** i szablonie promptu. Broń pozostaje oddzielnym assetem.
+- Końcowe **PlayMode gfx: 19 zaliczonych / 0 błędów / 5 pominiętych opcjonalnych galerii**:
+  pięć nowych testów oraz regresja `HeroModelPlayTests`. Własne galerie nowych modeli zostały zapisane
+  niezależnie od tych pięciu pominiętych galerii. Wybrane **EditMode 35/35** (klasy, animacje, migracja/IK).
+  XML/logi i obejrzane zrzuty: `TestResults/berserker-anime`, `TestResults/mage-anime` (`review-final.jpg`).
+  P99 rozciągania próbkowanych krawędzi maga maks. **2,574×** względem ustabilizowanego idle;
+  pojedyncze drobne krawędzie w rzucaniu czaru osiągają większe współczynniki i pozostają do ręcznego dopracowania.
+- Import i testy wykonano w zamkniętym edytorze; po problemach IPC licencji/Burst w sandboxie uruchomiono
+  Unity poza nim. Nie uruchamiano `TurrisSetup.RunBatchForce`. Menu obu modeli pozwala przywrócić oryginały.
+- Oryginalne 13 FBX bohaterów, źródła Meshy i ZIP koncepcji zachowane; wojownik i Hell Unleashed bez zmian.
+  Brak dodatkowych operacji Meshy/kredytów, commita i pusha. LOD i benchmark builda gracza poza tym zakresem.
+
+### Berserker Meshy Ultra — 2026-10-27: źródło wygenerowane i sprawdzone
+
+- Po potwierdzonym doładowaniu saldo **1024**. Wykonano jedno wcześniej zatwierdzone zlecenie
+  **Meshy 7.1 Ultra, geometria 4K, kolor 4K/PBR, FBX, bez redukcji**. Zadanie
+  `01a17e6e-3dc0-7049-ba3e-d9c7e9d6ec49` **SUCCEEDED**, rzeczywisty koszt **35**, saldo **989**.
+- [Pełne źródło berserkera](../ArtSource/GothicAnimePoC/Heroes/Berserker/meshy-v1/README.md):
+  FBX 147 708 380 B, **1 270 871 wierzchołków / 2 543 857 trójkątów**. Jedna siatka/materiał/UV,
+  brak szkieletu, 0 niefinitywnych współrzędnych i 0 zdegenerowanych ścian w progu 1e−12.
+  Kolor/normalne 4096², metaliczność/szorstkość 2048². Zachowane oryginalne źródła i SHA256.
+- Dwa pliki Blender: sam model z mapami oraz studio. **16 rzeczywistych renderów obejrzanych**:
+  przód/tył/boki/¾, twarz, dłonie z dwóch stron, futro, pas, strój i buty.
+  Ponowne otwarcie obu plików potwierdziło odczyt i spakowanie **4/4 map**.
+- Wymaga dalszej obróbki: lokalny mostek między palcami, chwyt broni, dopasowanie istniejącego rigu,
+  materiał matowego anime i testy deformacji. Meshy pozostawiło pozę **A**, mimo żądania **T**.
+  PBR ze studia jest jaśniejsze i mniej malarskie od koncepcji. Nie oznaczono jako gotowego do gry.
+- Bez kolejnych płatnych operacji. W tej pracy nie zmieniano modeli/definicji Unity, wojownika ani Hell Unleashed;
+  berserker w grze nadal oryginalny. Archiwum koncepcji zachowane. Brak testów Unity, commita i pusha.
+
+### Archiwum koncepcji i zlecenie berserkera — 2026-10-27
+
+- Zachowano oryginalne PNG. Utworzono [dedykowany ZIP](../ArtSource/Archives/Turris_Damnatorum_concept_arty_bohaterow_2026-10-27_v1.zip):
+  13 nowych plansz + wcześniejsze koncepcje paladyna/maga, referencje, prompty, galeria i specyfikacja stylu.
+  41 plików, 44 038 750 B. Kontrola CRC i porównanie SHA256 wszystkich spakowanych plików zaliczone;
+  osobny plik `.zip.sha256`, odtwarzanie `tools/art/archive_hero_concepts.py` bez nadpisywania archiwum.
+- Użytkownik zatwierdził **berserkera Meshy 7.1 Ultra za 35 kredytów**, geometria 4K, kolor 4K/PBR,
+  FBX, bez redukcji. Przygotowano i obejrzano [pojedynczą referencję bez topora](../ArtSource/GothicAnimePoC/Heroes/Berserker/meshy-reference-apose-v1.png)
+  oraz manifest dokładnego żądania. Obraz wejściowy ma pozę A; wyjście zamówione w T.
+- Początkowo dwa odczyty Meshy pokazały **24 kredyty, brakowało 11**; zapisano przygotowane żądanie
+  i oczekiwano na doładowanie. Nie obniżono jakości. Zlecenie po doładowaniu wykonano — wynik w nowszym wpisie powyżej.
+- Bez zmian assetów gry, Hell Unleashed, testów Unity, commita i pusha.
+
+### Koncepcje pozostałych klas — 2026-10-27
+
+- Przygotowano [13 osobnych plansz bohaterów](../ArtSource/GothicAnimePoC/Heroes/README.md),
+  zgodnie ze specyfikacją gotyckiego anime. Pominięto istniejące koncepcje paladyna i bazowego maga.
+  Wojownik, berserker, rębajło, łotrzyk, łucznik, zabójca, łucznik arkanów, mag bitewny,
+  magowie ognia/wody/powietrza/ziemi i przywoływacz mają pełną sylwetkę, tył i detal głowy.
+- Najpierw odczytano 15 rzeczywistych definicji klas oraz ich visual/FBX; wykonano i obejrzano
+  13 neutralnych podglądów modeli. Zachowano tożsamość, płeć, wiek, charakterystyczne fryzury i wyposażenie.
+  Styl oparto na referencjach paladyna/maga oraz `STYL_GRAFICZNY_GOTYCKIE_ANIME.md`.
+- `ArtSource/GothicAnimePoC/Heroes/`: PNG, lokalna `galeria.html`, `classes.json`, dokładne prompty,
+  manifest wymiarów/SHA256 i skrypty odtwarzające referencje/katalog. Wszystkie 13 wyników obejrzane,
+  zweryfikowane jako PNG; drobne różnice konstrukcyjne między widokami wymagają ujednolicenia przed 3D.
+- Wbudowany imagegen; bez operacji Meshy i kredytów. Wyłącznie koncepcje: bez podmiany wojownika,
+  zmian assetów Unity, Hell Unleashed, testów gry, commita lub pusha. Następny etap po wyborze:
+  pojedyncza referencja A/T, osobne wyposażenie, modelowanie i wykorzystanie istniejącego rigu.
+
+### Specyfikacja stylu i przyszłych promptów — 2026-10-27
+
+- Utworzono [STYL_GRAFICZNY_GOTYCKIE_ANIME.md](STYL_GRAFICZNY_GOTYCKIE_ANIME.md): referencje i ich role,
+  zasady formy, detalu, matowych materiałów, palety i światła; wymagania dla bohaterów, potworów, areny,
+  wyposażenia i VFX. Rozdzielono docelową koncepcję od bieżących niedociągnięć PoC.
+- Stały blok stylu i pięć szablonów promptów: adaptacja postaci, arena, pojedynczy obiekt, tekstura, VFX.
+  Jawne niezmienniki tożsamości, przeciwdziałanie futurystycznemu połyskowi, czarnym cieniom i uproszczeniom,
+  osobny format referencji do Meshy, lista kryteriów oceny. Orientacyjne HEX oznaczone jako propozycje palety.
+- Dodano odnośnik w README. Wyłącznie dokumentacja; bez zmian assetów, generacji, testów gry i commita.
+
+### Chochliki anime — 2026-10-27: stare rigi, animacje i wdrożenie
+
+- Na polecenie użytkownika [nowe siatki ognia i wody podpięte pod istniejące szkielety](../ArtSource/GothicAnimePoC/FirstArenaEnemies/rigged/README.md).
+  Ogień: stare 24 kości + 3 segmenty ogona; woda: istniejące 26, ze skrzydłami i ogonem.
+  Pełne 949 966 / 1 271 242 trójkąty zachowane; 0 nieprzypisanych wierzchołków, maks. 4 wpływy.
+- `rig_anime_imps.py`: korekta pozy generatora, ciągłe regiony wag, wygładzanie po krawędziach, bez kwantyzacji
+  powodującej uskoki. `AnimeImpImport`: dziesięć kopii starych klipów, retarget pozycji względem bindposes,
+  zachowane czasy i granice trafienia. Prefaby Generic bez awatara blokującego część jawnych wiązań Transform.
+- Prywatny shader `AnimeCreatureMatte`, zachowane VFX ognia/wody. Podparcie ognia skorygowane o +7,8 cm.
+  `enemy_imp` i `enemy_imp_frost` mają nowe przypisania; ich balans i pozostałe definicje bez zmian.
+  Menu **Turris → PoC → Chochliki anime → Przywróć oryginalne modele** zapewnia powrót.
+- Końcowe **PlayMode 3/3** (`e2914e71f84f48439f1258483a3f5e08`): sterownik, ruch, atak, śmierć,
+  ogony/skrzydła, 45 próbek klipów/model, wagi, oświetlenie pierwszej areny i doczepienia VFX.
+  Regresja demonów: `bd1fcc8092724e028fab2c9cfc7b7799`, **succeeded**, 12 zakończonych, 0 błędów
+  (dwie galerie warunkowe bez żądania). Pełne **EditMode 199 zaliczonych / 1 pominięty eksport WAV**.
+  Szersze przebiegi poprzedzają końcową korektę materiału; końcowy stan sprawdzony wymienionymi 3 testami.
+- Poprawiony stary test kultysty: wyłączony automatyczny LateUpdate przy ręcznym Tick, bez osłabiania asercji.
+  `TestResults/anime-imps/`: raporty MCP, obejrzane galerie rzeczywistego BakeMesh i zrzuty z areny.
+  Geometria nie eksploduje; lokalne rozciąganie drobnych krawędzi pozostaje do ręcznego dopracowania w zbliżeniach.
+- To pełna geometria PoC; **bez pomiaru maksymalnej hordy w buildzie gracza**, LOD/siatka do licznych grup pozostają.
+  Stare modele i pełne źródła Meshy mają zgodne SHA256. Hell Unleashed i bohaterowie bez zmian.
+  Rigowanie bez kolejnych operacji Meshy/kredytów; bez commita i pusha.
+
+### Potwory pierwszej areny — 2026-10-27: ogień i woda z Meshy gotowe
+
+- Użytkownik zatwierdził **dwa modele za 70 kredytów**. Meshy 7.1 Ultra, geometria 4K, kolor 4K/PBR,
+  FBX, poza T, bez remeshu/redukcji. Oba zadania **SUCCEEDED**, rzeczywisty koszt 35 + 35,
+  saldo ponownie odczytane **94 → 24**. Bez dodatkowego rigowania lub płatnych poprawek.
+- [Ogień](../ArtSource/GothicAnimePoC/FirstArenaEnemies/fire-meshy-v1/README.md): zadanie
+  `01a17d06-fb7c-779f-9ebe-eb015c8d7357`, **474 951 wierzchołków / 949 966 trójkątów**.
+- [Woda/lód](../ArtSource/GothicAnimePoC/FirstArenaEnemies/water-meshy-v1/README.md): zadanie
+  `01a17d07-5187-7363-b08e-ee48623b9235`, **635 607 wierzchołków / 1 271 242 trójkąty**.
+- Oryginalne FBX zachowane, osobne pliki Blender z modelem/mapami i studiem, 14 PNG na model.
+  Kolor/normalne 4K, metaliczność/szorstkość 2K. Jedna siatka, materiał i UV na model; brak szkieletu.
+  Audyt: 0 niefinitywnych wierzchołków, 0 zdegenerowanych ścian w progu 1e−12. Ponowne otwarcie
+  obu czystych źródeł i studiów potwierdziło odczyt 4/4 spakowanych map. Hashe FBX/Blend/map zapisane.
+- Obejrzano sylwetki z pięciu kierunków oraz detale głów, stóp, dłoni i skrzydeł. Woda zachowuje
+  odstęp dłoni od skrzydeł, ogień jest bezskrzydły; ogony i pazury obecne. Statyczna ocena nie
+  potwierdza jeszcze deformacji ani zgodności z animacjami. PBR jest jaśniejszy i bardziej połyskliwy
+  niż koncepcje: podczas integracji dopracować matowy shader i paletę. Pełne źródła wymagają
+  siatki do gry, rigowania, testów ataków, ogonów/skrzydeł i wydajności grupy.
+- `preview_meshy_model.py --profile demon` oraz `inspect_imp_details.py` odtwarzają podglądy/audyt.
+  Wiatr i ziemia nadal tylko koncepcje, bez dodatkowych zleceń. Modele/definicje Unity oraz Hell Unleashed
+  bez zmian. Bez testów gry, commita i pusha; nie wdrażano jeszcze tych modeli.
+
+### Potwory pierwszej areny — 2026-10-27: koncepcje i wejścia do Meshy
+
+- Sprawdzono rzeczywistą kompozycję „I. Wrota Otchłani”: ognisty chochlik `enemy_imp`, warianty
+  `enemy_imp_frost`, `enemy_imp_storm`, `enemy_imp_earth`. Elita korzysta z bazowego ognia; nie jest osobnym gatunkiem.
+- Wykonano osiem podglądów źródłowych z Unity i [cztery osobne koncepcje gotyckiego anime](../ArtSource/GothicAnimePoC/FirstArenaEnemies/README.md).
+  Zachowany brak skrzydeł u ognia i skrzydła u pozostałych. Matowe malowane powierzchnie, palety żywiołów,
+  naturalne rogi, pazury, ogony i detal. Wszystkie grafiki obejrzane; prompty i mapowanie źródeł zapisane.
+- Wbudowany imagegen; **bez płatnej generacji Meshy**. Saldo odczytane: **94**. Przygotowane propozycje
+  Meshy 7.1 Ultra 4K/PBR/FBX bez remeshu: 35/model, cztery 140 (brakuje 46), dwa 70 (pozostaje 24).
+  Manifest `meshy-jobs-v1.pending.json` bez tasków. Następny krok: wybór zakresu i zatwierdzenie kosztu.
+- To referencje, nie wdrożone modele. Oryginalni przeciwnicy w Unity i Hell Unleashed bez zmian.
+  Bez ponawiania testów gry, commita i pusha.
+
+### Nowy model maga z Meshy — 2026-10-27
+
+- Użytkownik zlecił nowy model z Meshy i podkreślił zachowanie jakości, bez upraszczania.
+  Przygotowana [pojedyncza referencja w pozie T](../ArtSource/GothicAnimePoC/Mage/meshy-reference-tpose-v1.png)
+  na podstawie zaakceptowanej koncepcji, z zachowaniem warstw szaty, postrzępień, kapelusza, włosów, pasa i księgi.
+  Kostur będzie oddzielnym dotychczasowym assetem, aby nie został połączony z dłonią i ubraniem.
+- Odczytane saldo Meshy: **129 kredytów**. Przygotowane parametry Meshy 7.1 Ultra, geometria 4K,
+  tekstury 4K/PBR, FBX, T-pose, bez remeshu i zmiany stylu wejścia: **35 kredytów** (30 + 5 Ultra).
+  `meshy-job-v1.pending.json` oraz prompt referencji zapisane w `ArtSource/GothicAnimePoC/Mage/`.
+- Użytkownik zatwierdził Meshy 7.1 Ultra za 35 kredytów. Jedno zadanie
+  01a17c7e-1b4a-7543-95d9-ef055499ba4c zakończone **SUCCEEDED**, rzeczywisty koszt **35**, saldo **129 → 94**.
+- [Pełny model źródłowy i raport](../ArtSource/GothicAnimePoC/Mage/meshy-v1/README.md):
+  **3 619 624 trójkąty / 1 802 038 wierzchołków**, bez remeshu i lokalnej redukcji.
+  Oryginalny FBX 175,19 MiB, plik Blender z samą siatką/spakowanymi teksturami i osobna scena studyjna.
+  Kolor i normalne 4K; szorstkość/metaliczność 2K. Jeden materiał, UV, brak szkieletu i wag.
+- Obejrzano rzeczywiste rendery przodu, tyłu, boków, ¾ i zbliżenia głowy, księgi, dłoni z góry.
+  Zachowane warstwy i postrzępienia szaty, kapelusz, włosy, pas i księga; palce są rozdzielone.
+  Audyt: brak niefinitywnych współrzędnych i zdegenerowanych powierzchni w przyjętym progu.
+  Osobne otwarcie zapisanego pliku Blender potwierdziło spakowanie i odczyt **4/4 map**.
+- To pełne wysokopoligonowe źródło do dalszego rigowania i przygotowania wersji do gry, nie ukończona
+  siatka animowana. PBR w neutralnym studiu daje jaśniejszy wygląd niż koncepcja; shader/paleta Unity
+  i deformacje długiej szaty wymagają oceny przy integracji. Oryginalny FBX pozostaje zachowany.
+  tools/art/preview_meshy_model.py odtwarza audyt i podglądy bez redukcji geometrii.
+- Obecny mag w Unity i Hell Unleashed bez zmian. Bez ponownych testów Unity, commita i pusha.
+
+### Koncepcja maga — 2026-10-27: zachowanie obecnego charakteru
+
+- Na prośbę użytkownika przygotowana [koncepcja gotyckiego anime](../ArtSource/GothicAnimePoC/Mage/mage-gothic-anime-v1.png)
+  na bazie aktualnej klasy **„Mag” (`class_mage`, `mage_witch`)**. Użytkownik lubi istniejący model;
+  kierunek jest zachowawczy: ten sam kapelusz, jasne włosy, ciemna poszarpana szata, kaptur, rękawice,
+  księga przy pasie i kostur ognia. Zmiany dotyczą głównie malarskich płaszczyzn, włosów i matowego cieniowania.
+- Dwa widoki pełnej sylwetki i detal głowy na jednej planszy. Bazą były obejrzane rendery modelu Unity,
+  w tym neutralne podglądy albedo z oryginalnym wyposażeniem. Ilustracja paladyna użyta wyłącznie jako wzorzec stylu.
+  [Źródła i pełny prompt](../ArtSource/GothicAnimePoC/Mage/README.md) zachowane w projekcie.
+- Wbudowany `imagegen`; bez operacji Meshy/ElevenLabs. Model i materiały maga, jego animacje oraz przypisanie
+  klasy **bez zmian**, potwierdzone pustym diffem właściwych assetów. Podglądy korzystały z tymczasowych kopii
+  w scenie Preview, bez zapisu do sceny gry. Nie jest to wdrożenie nowego wyglądu; testów gry nie ponawiano.
+  Bez commita i pusha. Kolejny krok: ocena koncepcji przez użytkownika przed ewentualnymi zmianami w modelu.
+
+### Dłuższy naturalny krok — 2026-10-27: kolejne +30%
+
+- Na prośbę użytkownika przesunięcie zwiększone **54 → 70,2 cm na cios (+30%)**, łącznie **1,404 m**
+  po dwóch uderzeniach. Uniesienie buta **15 → 17 cm**; zmierzone maksimum **16,92 cm**.
+- Postęp kroku wynika teraz z rzeczywistego czasu zamachu i trafienia, zamiast stałego podziału 55/45.
+  Usunięte dodatkowe przyspieszenie nogi na granicy krótszej fazy aktywnej. Pomimo wydłużenia kroku,
+  największa zmiana stopy w próbie spadła z 10,25 do **9,20 cm/kl.** przy 60 kl./s.
+- Dostosowane dopuszczalne obniżenie miednicy do zasięgu nóg (maks. **7,5 cm**). Nowa kontrola pionowa
+  wykryła wcześniej 5,2 mm oderwania podpory; po korekcie odchylenie poziome i pionowe <0,01 mm w pomiarze.
+  Bez rozciągania kości; zachowane naprzemienne prowadzenie nóg, ruch buta i wcześniejsze ograniczenia przysiadu.
+- **PlayMode 5/5**: miecz, prawdziwy korbacz, pełna seria w `Main`, regresja przysiadu i ciągłość przejścia.
+  Galerie z boku i skosu obejrzane. Raport `TestResults/paladin-attack-steps/step-30-playmode-final.json`;
+  poprzednia wersja zachowana w `before-30-percent/`. Bez ponawiania EditMode ani buildu gracza.
+  Dotyczy paladyna; wojownik i Hell Unleashed bez zmian. Bez commita i pusha.
+
+### Pełniejszy krok — 2026-10-27: kolejne +50% i wyraźne przeniesienie nogi
+
+- Na prośbę użytkownika przesunięcie zwiększone o kolejne **50%: 36 → 54 cm na cios**, czyli **1,08 m**
+  przy dwóch uderzeniach. But podnoszony na **15 cm** zamiast 9 cm. Krok zaczyna się wcześniej w zamachu;
+  obrót buta pokazuje wybicie z palców, uniesienie noska i lądowanie przed płaskim podparciem.
+- Miednica uwzględnia anatomiczny zasięg obu nóg: gdy wymaga tego dłuższa podstawa, obniża się o brakującą
+  wysokość (maks. 6 cm), zamiast rozciągać goleń albo przesuwać stopę podporową. Zachowane wcześniejsze
+  ograniczenia przysiadu, kolejność prawa/lewa i czas uderzeń.
+- Miecz i korbacz: prowadzenie nogi **54 cm**, uniesienie **15 cm**, przesunięcie **1,080 m**;
+  odchylenie podpory <0,01 mm w próbie obu kroków. **PlayMode 5/5**, w tym pełna seria w `Main`,
+  regresja przysiadu i ciągłość drugiego zamachu. Bez ponawiania EditMode ani buildu gracza.
+- Obejrzane galerie z przodu/skosu oraz nowy profil boczny: `TestResults/paladin-attack-steps/*-side.png`.
+  Wariant 36 cm / 9 cm zachowany w `before-full-step/`; nowy wynik `full-step-playmode-final.json`.
+  Dotyczy prywatnego zestawu paladyna. Hell Unleashed i wojownik bez zmian; bez commita i pusha.
+
+### Korekta wykroku — 2026-10-27: większe przesunięcie i wyższy but
+
+- Na prośbę użytkownika przesunięcie kontrolera zwiększone **3×: 12 → 36 cm na cios**, czyli **72 cm**
+  po dwóch uderzeniach. Podniesienie buta zwiększone **2×: 4,5 → 9 cm**. Dopasowana długość wykroku;
+  noga prowadząca kończy teraz 36 cm przed podporową. Zachowana naprzemienna kolejność i dotychczasowe tempo rąk.
+- Pomiar miecza i prawdziwego korbacza: przesunięcie **0,720 m**, uniesienie **0,090 m**, odchylenie
+  podpory maks. **1,09 mm**. Bez powrotu głębokiego przysiadu ani przeskoku przy drugim zamachu.
+- Celowane **PlayMode 5/5**: dwa scenariusze wykroku, pełna seria w `Main`, regresja przysiadu i ciągłość
+  przejścia korbacza. Galerie obu broni i TSV w `TestResults/paladin-attack-steps/`; poprzedni krótki wariant
+  zachowany w `before-longer/`, nowy raport `longer-playmode-final.json`. Bez ponawiania EditMode ani buildu gracza.
+  Opcja nadal dotyczy tylko prywatnego zestawu paladyna. Bez zmian Hell Unleashed, wojownika, commita i pusha.
+
+### Ostatnia poprawka — 2026-10-27: naprzemienne wykroki w serii paladyna
+
+- Zgodnie z opisem użytkownika: pozycja wyjściowa z lewą nogą z przodu, pierwszy cios — mały wykrok prawej,
+  drugi cios z lewej na prawą — wykrok lewej. Prywatny zestaw jednoręczny paladyna ma teraz
+  `alternatingLightSteps`; pozostałe zestawy, wojownik i współdzielone pliki animacji bez zmian.
+- `AlternatingAttackSteps` dodaje niskie, zsynchronizowane z zamachem/trafieniem kroki po ewaluacji klipów.
+  Stopa podporowa trzyma punkt w świecie; kolana prowadzone w przód, stałe długości nóg i sztywny but.
+  Miednica podąża za skróconą podstawą podparcia, zachowując obrót, pochylenie i wysokość z klipu.
+  Krótki krok zastępuje ruch korzenia tego ciosu, zamiast się z nim sumować. Utrzymany wypracowany wykrok
+  podczas powrotu rąk do gardy; ruch/inne akcje wygaszają warstwę, większy zwrot i teleport zwalniają podparcie.
+  Powtarzanie tego samego cięcia nie powiększa rozkroku bez końca; pchnięcie serii korzysta z tej samej podstawy.
+- Próba przed zmianą odtworzyła problem: po pierwszym ciosie prawa stopa pozostawała **83,4 cm za lewą**,
+  a dwa ciosy przenosiły kontroler o **1,68 m**. Po poprawce, miecz i prawdziwy korbacz paladyna:
+  **prawa/lewa noga prowadzi kolejno o 12 cm**, podniesienie buta **4,5 cm**, łącznie **24 cm** przesunięcia sylwetki.
+  Błąd położenia podpory <0,01 mm w pomiarze obu wykroków; największa zmiana stopy **3,63 cm/kl.** przy 60 kl./s.
+  Osobno sprawdzone utrzymanie lewej nogi po powrocie do gardy i reset przy teleportacji.
+- Celowane **PlayMode 10/10** przez otwarty edytor/MCP: dwa nowe scenariusze kroków, seria jednoręczna/dwuręczna,
+  przejście korbacza, pełna seria w `Main`, oba zestawy biegu, sztywność butów i swobodny łańcuch.
+  W rzeczywistej grze potwierdzone naprzemienne prowadzenie nóg. Tempo drugiego ciosu nadal **1,00×**,
+  dłoń nie pozostaje nad barkiem; brak powrotu głębokiego przysiadu. Pełne **EditMode 199/0/1**
+  (pominięty warunkowy eksport WAV). Bez pełnego PlayMode i buildu gracza.
+- Galerie miecza/korbacza obejrzane. Raporty, osiem faz obu serii, TSV i pomiary:
+  `TestResults/paladin-attack-steps/`; porównanie `sword-before.png`, `sword-before.tsv`, `baseline.json`,
+  wyniki końcowe `playmode-final.json`, `editmode-final.json`. FBX i współdzielone klipy bez zmian;
+  w prywatnym zestawie assetu zmieniła się wyłącznie flaga. Hell Unleashed bez zmian, bez commita i pusha.
+  Kolejny krok: ocena wyczucia małych wykroków w walce z aktywnymi przeciwnikami.
+
+### Ostatnia poprawka — 2026-10-27: paladyn na tle koncepcji areny
+
+- Porównanie użytkownika pokazało istotną różnicę artystyczną mimo wcześniejszych zaliczonych prób matowości:
+  zbyt jasne płyty, czarne plamy w cieniu i słabo czytelne płaszczyzny pancerza. Atlas Meshy zawiera już
+  namalowane światła i cienie; kolejne mocne cieniowanie pogłębiało ten problem.
+- `AnimeMatte` odwzorowuje neutralne fragmenty atlasu na przygaszoną stal i osobno stare złoto,
+  zachowując rozpiętość namalowanych płaszczyzn, burgund i istniejące UV. Wypełnienie głównego cienia
+  jest teraz neutralne/chłodne, bez dodatkowego mnożnika 0,35. Ograniczona suma świateł chroni kolor
+  także przy kilku pochodniach. Łagodniejsze przejścia pasm, bez dodawania połysku lub odbić.
+- Zmieniono wyłącznie materiał nowego paladyna i jego shader. `PaladinAnimeImport.UpdateMaterial()` / menu
+  **Turris → PoC → Odśwież malowany materiał paladyna** pozwala odtworzyć ustawienia bez importu rigowania i klipów.
+  Oryginalny atlas i FBX zachowane bajtowo; wygląd wojownika, animacje i Hell Unleashed bez zmian.
+- Celowane **PlayMode 5/5** przez otwarty edytor/MCP: materiał, galeria paladyna na nowej arenie,
+  start gry z zachowaniem wojownika, sztywność butów/galeria animacji oraz regresja mgły.
+  **EditMode 3/3**: przypisanie wyłącznie paladyna, poprawność siatki/awataru i cztery przebiegi materiału.
+  Shader Direct3D12 bez komunikatów kompilatora. Bez pełnych zestawów ani buildu gracza.
+- Wzmocniona próba obrazu sprawdza zachowanie koloru płyty w cieniu oraz limit jasności przy świetle 8×;
+  nadal wykrywa połysk PBR kontrolą dodatnią. Kamera pomiarowa rozgrzewana przed odczytem pikseli.
+  Obrazy sprzed poprawki i po niej obejrzane: `TestResults/paladin-look/before/` i `current/`,
+  przód, tył, bok i normalna kamera gry; raporty `playmode-final.json` i `editmode-final.json`.
+- **Pozostała różnica względem koncepcji:** poszarpane detale atlasu generatora oraz niespójne stylistycznie
+  dotychczasowe bronie/tarcza. Korekta materiału nie jest przemalowaniem atlasu i nie oznacza osiągnięcia
+  docelowej jakości ilustracji. Kolejna praca artystyczna: oczyszczenie krawędzi i podziałów tekstury,
+  opracowanie detali płyt oraz dopasowanie oręża do tego samego języka graficznego.
+  Bez operacji Meshy/ElevenLabs i bez nowego commita.
+
+### Ostatnia sesja — 2026-10-26: nowy zestaw areny gotyckiego anime
+
+- Zlecony commit wcześniejszych prac wykonany: **`568e119`** na `codex/paladin-gothic-anime` — paladyn,
+  animacje, korbacz, materiały, źródła PoC i dokumentacja. Bez pusha. Poniższe zmiany areny są osobną pracą,
+  pozostawioną w drzewie roboczym.
+- [Nowy zestaw](../ArtSource/GothicAnimePoC/Arena/README.md) według [koncepcji użytkownika](../ArtSource/GothicAnimePoC/Arena/reference-courtyard.png):
+  **30 modułów 3D**, w tym 14 płyt z ukruszeniami i rozłupaniem, murowane przęsła, profile i klińce ostrołuków,
+  żłobione całe/złamane kolumny, powalone trzony, fałdowane sztandary z haftem, kute kosze pochodni,
+  sześć odłamków oraz zamek z arkadowym mostem na skale. Nowe siatki, prefabrykaty i materiały zapisane w
+  `Models/PoC/GothicArena`; źródło `.blend`, skrypt modelowania i raport geometrii w katalogach ArtSource/tools.
+- Malowane nocne niebo z księżycem i tekstura wapienia powstały przez wbudowany `imagegen`.
+  Prompty i pliki źródłowe są zapisane; gra korzysta wyłącznie z kopii w projekcie.
+  Niebo jest tłem, a architektura, posadzka, ozdoby i zamek — geometrią 3D. **Bez Meshy i ElevenLabs; 0 ich kredytów**.
+- `GothicStone`: paleta wierzchołków, mapowanie trójpłaszczyznowe detalu kamienia, matowe światło pasmowe,
+  chłodne cienie, obsługa świateł dodatkowych i dwustronnych sztandarów z wiatrem.
+  `GothicNightSky`: panorama z pojedynczym księżycem. Pochodnie korzystają z dotychczasowych efektów HU w Unity.
+  Poprawiono pomylenie widoczności z ilością mgły; oddzielny test obrazu wykrywa tę regresję.
+- Nowa definicja `arena_courtyard_gothic.asset` jest przypisana **tylko do pierwszego piętra**.
+  Oryginalne trzy definicje aren, ich meta i `ArenaBuilder.cs`: **7/7 plików identycznych bajtowo**
+  (`ArtSource/GothicAnimePoC/Arena/legacy-sha256.json`). Piętra III/V nadal korzystają ze starego dziedzińca.
+  Zachowane rozmiar areny, pozycje kolumn, płaska kolizja na y=0 i zasady walki/portali.
+- Przywrócenie: zatrzymać Play, **Turris → PoC → Arena gotycka → Przywróć poprzedni dziedziniec**.
+  Polecenie sprawdzone przez MCP: pierwsze piętro wróciło do `arena_courtyard`; następnie ponownie włączono nowy zestaw.
+  Przełącznik zachowuje nowe assety. Parametry oświetlenia i nieba dobierane są na zmianie areny.
+- Budowa: **33 renderery siatek, 144 910 trójkątów, 30 prostych kolizji**, bez MeshColliderów.
+  Moduły statyczne scalone przestrzennie; siatki instancji zwalniane przy zniszczeniu areny.
+  Oba nowe shadery sprawdzone na Direct3D12; kamień ma przebiegi Forward/ShadowCaster/DepthOnly/DepthNormals.
+- Pełne **EditMode: 199 zaliczonych, 0 błędów, 1 pominięty** (warunkowy eksport WAV).
+  **18 różnych scenariuszy PlayMode zaliczonych**: 17 w przebiegu regresji i ponowiony test galerii po poprawce
+  rozgrzewki renderowania do stałego RenderTexture. Obejmuje nową arenę, mgłę, kolizje, płomienie oraz regresje
+  paladyna, biegu i korbacza. Bez pełnego PlayMode ani buildu gracza.
+- Wyniki i obejrzane kadry: `TestResults/gothic-arena/*-final.json`, `01-gameplay.png`, `02-concept-angle.png`,
+  `03-architecture.png`, `04-floor-detail.png`, `05-torch-detail.png`. Zrzut rozgrzewający poprzedza właściwą galerię;
+  ustabilizowane płomienie są wstępnie symulowane, a kamera galerii nie reaguje na ruch myszy na pulpicie.
+- Hell Unleashed i wygląd wojownika bez zmian. Kolejna ocena artystyczna dotyczy zgodności kompozycji,
+  światła, skali ruin i materiałów z ilustracją; nie utożsamiać zielonych testów z identycznością ilustracji.
+
+### Poprzednia poprawka — 2026-10-26: ciągłość serii i paleta gotyckiego paladyna
 
 - Odtworzony nienaturalny przeskok pomiędzy pierwszym a drugim ciosem: poprzednia poza była zamrażana,
   przejście do odległej pozy trwało około 0,11 s, po czym krótki klip czekał w przygotowaniu. W nowych pomiarach

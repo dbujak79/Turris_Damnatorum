@@ -26,7 +26,7 @@ MonoBehaviour:
   requirements:
   - attribute: 5
     value: 10
-  requiredTags: 0
+  requiredTags: 4096
   intelligenceScaling: 2
   attack:
     name: Atak

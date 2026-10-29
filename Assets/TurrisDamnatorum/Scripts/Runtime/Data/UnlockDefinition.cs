@@ -22,7 +22,15 @@ namespace Turris
         public List<ClassDefinition> classes = new List<ClassDefinition>();
 
         public bool IsGeneral => classes == null || classes.Count == 0;
+
+        /// <summary>
+        /// Skille i bronie nie należą do klas (wzór: Path of Exile 2): skill wymaga rodzaju broni, broń – atrybutów.
+        /// Kupione odblokowania skilli i broni są więc dla każdej klasy. Lista <see cref="classes"/> ogranicza pozostałe dodatki
+        /// (pancerz, pierścienie, wzmocnienia) i domyślny zestaw startowy klasy (odblokowany od razu).
+        /// </summary>
+        public bool ClassFree => !unlockedByDefault && (kind == UnlockKind.Spell || (target is ItemDefinition i && (i.IsWeapon || i.IsShield || i.kind == ItemKind.OffHand)));
+
         /// <summary>Dostępne dla klasy – także dla specjalizacji klasy wskazanej na liście (i odwrotnie: dodatek specjalizacji tylko dla niej).</summary>
-        public bool AvailableFor(ClassDefinition c) => IsGeneral || c == null || classes.Contains(c) || (c.parent != null && classes.Contains(c.parent));
+        public bool AvailableFor(ClassDefinition c) => IsGeneral || ClassFree || c == null || classes.Contains(c) || (c.parent != null && classes.Contains(c.parent));
     }
 }

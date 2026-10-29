@@ -1,0 +1,143 @@
+{
+    "title": "Wojownik, piętro 7: VII. Zatopione Krużganki (Tester QA)",
+    "note": "Bot nie przeszedł piętra w 3 próbach (podejście 18); ostatni zabójca:  – .",
+    "created": "2026-10-28 15:19",
+    "classId": "class_knight",
+    "appearanceId": "",
+    "difficultyTier": 0,
+    "seed": 77606546,
+    "floorIndex": 6,
+    "floorsCleared": 6,
+    "souls": 85,
+    "ashEarned": 33,
+    "kills": 176,
+    "attributePoints": 0,
+    "toughness": 14,
+    "strength": 16,
+    "dexterity": 11,
+    "intelligence": 8,
+    "healthFlasks": 4,
+    "manaFlasks": 1,
+    "bonusHealthFlasks": 0,
+    "healthFraction": 0.96875,
+    "manaFraction": 1.0,
+    "equipment": [
+        {
+            "id": "hu_sword",
+            "level": 1,
+            "slot": 0
+        },
+        {
+            "id": "hu_shield",
+            "level": 0,
+            "slot": 1
+        },
+        {
+            "id": "body_chainmail",
+            "level": 0,
+            "slot": 3
+        }
+    ],
+    "inventory": [
+        {
+            "id": "hu_morningstar2h",
+            "level": 0,
+            "slot": -1
+        },
+        {
+            "id": "hu_sword_air",
+            "level": 2,
+            "slot": -1
+        }
+    ],
+    "skills": [
+        {
+            "id": "hu_wind_slash",
+            "level": 2,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_stomp",
+            "level": 0,
+            "permanent": true,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_leapslash",
+            "level": 0,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_repel",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 1,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_cross_cut",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 0,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "skill_charge",
+            "level": 1,
+            "permanent": false,
+            "fromItem": false,
+            "slot": 2,
+            "form": "",
+            "supports": []
+        },
+        {
+            "id": "hu_breaker_wave",
+            "level": 0,
+            "permanent": false,
+            "fromItem": false,
+            "slot": -1,
+            "form": "",
+            "supports": []
+        }
+    ],
+    "signature": {
+        "id": "hu_warcry",
+        "level": 0,
+        "permanent": true,
+        "fromItem": false,
+        "slot": -1,
+        "form": "",
+        "supports": []
+    },
+    "boons": [
+        {
+            "id": "boon_vigor",
+            "count": 1
+        },
+        {
+            "id": "boon_vampire",
+            "count": 1
+        }
+    ],
+    "sealRanks": [],
+    "sealPouch": [
+        "seal.demon.chernobog_eye",
+        "seal.undertow",
+        "seal.trigger.kill"
+    ]
+}
