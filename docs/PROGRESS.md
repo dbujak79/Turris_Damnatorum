@@ -1687,6 +1687,8 @@ wrogowie zostali proceduralni (migracja objęła tylko bohaterów), więc ich re
 
 ## 4. Pułapki techniczne już rozwiązane
 
+- **Git LFS (2026-10-31):** po scaleniu/commicie bez smudge LFS wszystkie `*.fbx`/`*.blend` zostały w katalogu roboczym jako 132-bajtowe wskaźniki – Unity loguje „Couldn't read file … None of the registered readers”, a w grze nie ma bohatera ani demonów (arena była widoczna). Naprawa: `git lfs pull` przy zamkniętym edytorze; kontrola: `git lfs ls-files` ma pokazywać `*`, nie `-`.
+
 - `InputAction.expectedControlType` ustawia się właściwością, bo `AddAction` nie ma takiego parametru w Input System 1.20.
 - `CharacterController.minMoveDistance = 0`, inaczej przy wysokim FPS postacie stoją w miejscu.
 - `FindFirstObjectByType` i `FindObjectsByType(SortMode)` są przestarzałe w 6.6; w projekcie używane są rejestry statyczne oraz `FindAnyObjectByType`/`FindObjectsByType(FindObjectsInactive)`.
