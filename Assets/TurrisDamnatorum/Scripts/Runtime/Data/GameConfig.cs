@@ -243,6 +243,8 @@ namespace Turris
     public class GameConfig : ScriptableObject
     {
         public BalanceConfig balance = new BalanceConfig();
+        [Tooltip("Parametry 30 cech klasowych (hipotezy startowe do strojenia).")]
+        public ClassFeatureTuning classFeatures = new ClassFeatureTuning();
         public List<ClassDefinition> classes = new List<ClassDefinition>();
         public List<DifficultyDefinition> difficulties = new List<DifficultyDefinition>();
         public TowerDefinition tower;

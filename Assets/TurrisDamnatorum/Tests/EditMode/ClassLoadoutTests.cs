@@ -145,7 +145,7 @@ namespace Turris.Tests
         }
 
         [Test]
-        public void EveryClass_HasSignature_OpeningSkill_AndAreaSkill()
+        public void EveryClass_HasFeature_OpeningSkill_AndNoOldSignature()
         {
             var meta = new MetaService(fx.Cfg, new MemoryProfileStorage());
             Assert.AreEqual(3, fx.Cfg.classes.Count(c => c.parent == null), "Trzy typy bohatera");
@@ -155,17 +155,14 @@ namespace Turris.Tests
                 var plan = meta.LastPlan();
                 meta.SelectClass(plan, c);
                 var run = RunFactory.Create(plan, fx.Cfg, 5);
-                Assert.IsNotNull(run.signatureSkill, c.id + ": skill klasy");
+                Assert.IsNotNull(run.ClassFeature, c.id + ": cecha klasowa");
+                Assert.AreEqual(ClassFeatureCatalog.For(c)[0].id, run.classFeatureId, c.id + ": domyślnie wariant A");
+                Assert.IsNull(run.signatureSkill, c.id + ": bez dawnej sygnatury obok cechy");
                 Assert.IsTrue(c.loadouts.Count > 0, c.id + ": zestaw broni na start");
                 var opening = plan.OpeningSkill;
                 Assert.IsNotNull(opening, c.id + ": skill startowy");
                 Assert.GreaterOrEqual(run.SlotOf(run.FindSpell(opening)), 0, c.id + ": skill startowy w slocie");
-                var all = run.knownSpells.Select(s => s.definition).Concat(new[] { run.signatureSkill.definition });
-                bool area = all.Any(d => d.kind == SpellKind.Nova || d.kind == SpellKind.Whirlwind || d.kind == SpellKind.Warcry || d.kind == SpellKind.Undying
-                    || d.kind == SpellKind.Summon || d.kind == SpellKind.Zone || d.kind == SpellKind.Meteor
-                    || (d.kind == SpellKind.Quake && d.attack.reach <= 0.01f)
-                    || (d.kind == SpellKind.Projectile && d.attack.projectileCount >= 8 && d.attack.spreadAngle >= 35f));
-                Assert.IsTrue(area, c.id + ": umiejętność obszarowa");
+
             }
         }
     }

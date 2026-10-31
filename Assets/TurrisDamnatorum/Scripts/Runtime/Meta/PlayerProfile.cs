@@ -9,7 +9,7 @@ namespace Turris
     [Serializable]
     public class ProfileData
     {
-        public const int CurrentVersion = 3;
+        public const int CurrentVersion = 4;
 
         public int version = CurrentVersion;
         public int ash;                                     // waluta trwałego rozwoju
@@ -44,7 +44,33 @@ namespace Turris
         /// <summary>Kodeks pieczęci: zespolenia i więzi obudzone kiedykolwiek (id). Niczego w podejściu nie wzmacnia.</summary>
         public List<string> discoveredSeals = new List<string>();
 
+        /// <summary>Ostatnia wybrana cecha klasowa – osobno dla każdej klasy (id klasy → id cechy). Nowe pole v4.</summary>
+        public List<KeyValue> classFeatures = new List<KeyValue>();
+        /// <summary>Ostatni drugi zestaw Arsenału (indeks; −1 = domyślny).</summary>
+        public int lastArsenalIndex = -1;
+
+        public string FeatureFor(string classId)
+        {
+            if (classId == null || classFeatures == null) return null;
+            foreach (var kv in classFeatures) if (kv != null && kv.key == classId) return kv.value;
+            return null;
+        }
+
+        public void SetFeature(string classId, string featureId)
+        {
+            if (classId == null) return;
+            if (classFeatures == null) classFeatures = new List<KeyValue>();
+            classFeatures.RemoveAll(kv => kv == null || kv.key == classId);
+            classFeatures.Add(new KeyValue { key = classId, value = featureId });
+        }
+
         public bool IsUnlocked(string id) => unlocked.Contains(id);
+    }
+
+    [Serializable]
+    public class KeyValue
+    {
+        public string key, value;
     }
 
     [Serializable]
@@ -145,6 +171,13 @@ namespace Turris
                 // v2 → v3: ustawienia głośności.
                 d.masterVolume = 0.8f; d.musicVolume = 0.7f; d.sfxVolume = 0.9f;
             }
+            if (fromVersion < 4)
+            {
+                // v3 → v4: cechy klasowe per klasa (brak wpisu → wariant A danej klasy przy pierwszym wyborze).
+                d.classFeatures = d.classFeatures ?? new List<KeyValue>();
+                d.lastArsenalIndex = -1;
+            }
+            d.classFeatures = d.classFeatures ?? new List<KeyValue>();
             d.unlocked = d.unlocked ?? new List<string>();
             d.clearedFloorKeys = d.clearedFloorKeys ?? new List<string>();
             d.version = ProfileData.CurrentVersion;

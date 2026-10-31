@@ -20,6 +20,8 @@ namespace Turris
         public float huScale = 1f;
         /// <summary>Mnożnik od siły broni, którą skill jest użyty (<see cref="WeaponFamilies.SkillScale"/>); 1 = miecz/różdżka wzorcowa.</summary>
         public float weaponScale = 1f;
+        /// <summary>Czar używalny tylko dzięki Arkanom oręża (broń wręcz jako fokus w oknie cechy) – UI pokazuje warunek.</summary>
+        public bool byArcana;
         public SpellDefinition Def => instance.definition;
     }
 
@@ -64,6 +66,9 @@ namespace Turris
         public ItemInstance offWeapon;
         /// <summary>Klinga zaklęć: moc czarów działa też na ciosy bronią (1 = brak).</summary>
         public float spellbladeFactor = 1f;
+
+        /// <summary>Arkana oręża: główny atrybut broni wręcz liczony za Inteligencję czarów (null – okno nieaktywne).</summary>
+        public AttributeType? arcanaAttribute;
 
         public bool CanBlock => guard != null;
         public bool CanParry => parry != null;
@@ -161,7 +166,7 @@ namespace Turris
 
             // Unik zależny od obciążenia.
             float capacity = Mathf.Max(1f, snap.stats[StatType.EquipLoad]);
-            snap.loadRatio = run.equipment.TotalWeight / capacity;
+            snap.loadRatio = (run.equipment.TotalWeight + run.ArsenalWeight) / capacity; // Arsenał: oba zestawy obciążają
             bool heavy = snap.loadRatio > b.heavyLoadThreshold;
             // Zręczność: dłuższy unik, uchylenie i szybsze ataki – z limitami („w granicach rozsądku”).
             float dex = snap.stats[StatType.Dexterity];
@@ -193,12 +198,33 @@ namespace Turris
             if (run.startingClass != null && run.startingClass.dodgeStyle == DodgeStyle.ShoulderCharge) snap.dodge.distance *= 0.805f;
 
             var tags = run.CurrentTags(snap);
+            // Arkana oręża (Mag bitewny A, tylko w oknie cechy): broń wręcz jest fokusem, jej główny atrybut zastępuje
+            // Inteligencję w wymaganiu i skalowaniu czarów; moc fokusu broni znormalizowana (×1) – bez drugiego mnożnika DPS broni.
+            StatSheet arcanaStats = null;
+            if (run.weaponArcanaActive && run.HasFeature("class_feature.battlemage.weapon_arcana") && main != null
+                && (WeaponFamilies.Of(main.definition) & (BuildTag.Blade | BuildTag.HeavyWeapon)) != 0 && (WeaponFamilies.Of(main.definition) & BuildTag.Ranged) == 0)
+            {
+                var attr = snap.weapon.dexterityScaling > snap.weapon.strengthScaling ? AttributeType.Dexterity : AttributeType.Strength;
+                snap.arcanaAttribute = attr;
+                arcanaStats = snap.stats.CloneWith(StatType.Intelligence, snap.stats[(StatType)(int)attr]);
+            }
+            bool realFocus = (tags & BuildTag.Focus) != 0;
             for (int i = 0; i < run.skillSlots.Length; i++)
             {
                 var s = run.skillSlots[i];
                 if (s == null) continue;
-                var rt = ComputeSpell(s, snap.stats, b, WeaponFamilies.SkillScale(s.definition, s.definition.requiredTags, main, off, cfg));
-                rt.equipmentMet = WeaponFamilies.Meets(s.definition.requiredTags, tags);
+                SpellRuntime rt;
+                if (arcanaStats != null && s.definition.IsSpell)
+                {
+                    rt = ComputeSpell(s, arcanaStats, b, realFocus ? WeaponFamilies.SkillScale(s.definition, s.definition.requiredTags, main, off, cfg) : 1f);
+                    rt.equipmentMet = WeaponFamilies.Meets(s.definition.requiredTags, tags | BuildTag.Focus);
+                    rt.byArcana = !WeaponFamilies.Meets(s.definition.requiredTags, tags);
+                }
+                else
+                {
+                    rt = ComputeSpell(s, snap.stats, b, WeaponFamilies.SkillScale(s.definition, s.definition.requiredTags, main, off, cfg));
+                    rt.equipmentMet = WeaponFamilies.Meets(s.definition.requiredTags, tags);
+                }
                 snap.skills[i] = rt;
             }
             if (run.signatureSkill != null)

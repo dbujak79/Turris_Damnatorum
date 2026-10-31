@@ -44,6 +44,12 @@ namespace Turris
         public List<Item> equipment = new List<Item>(), inventory = new List<Item>();
         public List<Skill> skills = new List<Skill>();
         public Skill signature;
+        /// <summary>Wybrana cecha klasowa (nowe zapisy zawsze jawnie). Brak pola w starym zapisie → wariant A klasy.</summary>
+        public string classFeatureId;
+        /// <summary>Dług arkanów – zobowiązanie przechodzi przez zapis (nie da się go skasować wczytaniem).</summary>
+        public float manaDebt;
+        /// <summary>Arsenał: drugi zestaw (slot 0 – główna ręka, 1 – druga).</summary>
+        public List<Item> arsenal = new List<Item>();
         public List<Stack> boons = new List<Stack>(), sealRanks = new List<Stack>();
         public List<string> sealPouch = new List<string>();
 
@@ -73,6 +79,9 @@ namespace Turris
             foreach (var it in run.inventory) s.inventory.Add(Item.Of(it));
             foreach (var sp in run.knownSpells.Where(x => x != null && !x.fromItem)) s.skills.Add(SkillOf(run, sp));
             if (run.signatureSkill != null) s.signature = SkillOf(run, run.signatureSkill);
+            s.classFeatureId = run.classFeatureId; s.manaDebt = run.manaDebt;
+            if (run.arsenalMain != null) s.arsenal.Add(Item.Of(run.arsenalMain, 0));
+            if (run.arsenalOff != null) s.arsenal.Add(Item.Of(run.arsenalOff, 1));
             foreach (var b in run.boons) s.boons.Add(new Stack { id = b.definition.id, count = b.stacks });
             foreach (var p in run.sealPouch) s.sealPouch.Add(p.id);
             foreach (var kv in run.SealRanks) s.sealRanks.Add(new Stack { id = kv.Key, count = kv.Value });
@@ -142,7 +151,26 @@ namespace Turris
                 Seals(inst, k);
             }
             foreach (var k in skills.Where(k => k.slot >= 0)) { var inst = run.FindSpell(Get<SpellDefinition>(k.id)); if (inst != null) run.AssignSlot(inst, k.slot); }
-            if (signature != null && Get<SpellDefinition>(signature.id) is SpellDefinition sig)
+            // Cecha klasowa: jawny wybór, a stary zapis bez pola – wariant A (Berserker z hu_undying → Czerwona linia).
+            var feature = ClassFeatureCatalog.Resolve(cls, classFeatureId, out var fw);
+            if (fw != null) Debug.LogWarning("Zapis podejścia: " + fw);
+            run.classFeatureId = feature?.id;
+            run.manaDebt = feature != null && feature.id == "class_feature.mage.arcane_debt" ? Mathf.Max(0f, manaDebt) : 0f;
+            if (feature != null && feature.id == "class_feature.warrior.arsenal")
+                foreach (var a in arsenal ?? new List<Item>())
+                {
+                    var def = Get<ItemDefinition>(a.id);
+                    if (def == null) continue;
+                    if (a.slot == 0) run.arsenalMain = a.Make(def); else run.arsenalOff = a.Make(def);
+                }
+            else foreach (var a in arsenal ?? new List<Item>()) { var def = Get<ItemDefinition>(a.id); if (def != null) run.inventory.Add(a.Make(def)); }
+            if (feature != null && signature != null)
+            {
+                // Dawna sygnatura nie przetrwa obok cechy: jej pieczęcie wracają do sakwy (przedmioty nie przepadają).
+                if (signature.form != null) { var f = HuCatalog.Seal(signature.form); if (f != null) run.sealPouch.Add(f); }
+                foreach (var id in signature.supports ?? new List<string>()) { var sp = HuCatalog.Seal(id); if (sp != null) run.sealPouch.Add(sp); }
+            }
+            else if (signature != null && Get<SpellDefinition>(signature.id) is SpellDefinition sig)
             {
                 run.signatureSkill = new SpellInstance(sig, signature.level) { permanent = true };
                 run.AttachSeals(run.signatureSkill);

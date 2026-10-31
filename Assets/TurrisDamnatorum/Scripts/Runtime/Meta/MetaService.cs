@@ -23,6 +23,27 @@ namespace Turris
         /// <summary>Wybrany skill startowy (jeden z <see cref="ClassDefinition.startingSkillChoices"/>).</summary>
         public SpellDefinition startingSkill;
 
+        /// <summary>Wybrana cecha klasowa (id; obce/nieznane → wariant A klasy). Bez kosztu w budżecie, jeden wariant na podejście.</summary>
+        public string classFeatureId;
+        /// <summary>Arsenał weterana: drugi zestaw (indeks w <see cref="ClassDefinition.loadouts"/>; −1 = inny niż pierwszy).</summary>
+        public int arsenalLoadoutIndex = -1;
+        /// <summary>Zwykłe skille, które wybrana cecha jawnie dokłada do wyboru startowego (wypełnia MetaService.FillSkills).</summary>
+        public readonly List<SpellDefinition> featureSkills = new List<SpellDefinition>();
+
+        /// <summary>Cecha klasowa planu (zawsze należąca do klasy; null – klasa spoza katalogu cech).</summary>
+        public ClassFeatureDefinition Feature => ClassFeatureCatalog.Resolve(classDef, classFeatureId, out _);
+
+        /// <summary>Drugi zestaw Arsenału (null – cecha inna albo klasa bez zestawów).</summary>
+        public StartingLoadout ArsenalLoadout
+        {
+            get
+            {
+                if (classDef == null || classDef.loadouts.Count == 0 || Feature == null || Feature.id != "class_feature.warrior.arsenal") return null;
+                int i = arsenalLoadoutIndex >= 0 && arsenalLoadoutIndex < classDef.loadouts.Count ? arsenalLoadoutIndex : (loadoutIndex == 0 && classDef.loadouts.Count > 1 ? 1 : 0);
+                return classDef.loadouts[i];
+            }
+        }
+
         /// <summary>Zestaw broni na start (null, gdy klasa ich nie definiuje).</summary>
         public StartingLoadout Loadout => classDef == null || classDef.loadouts.Count == 0 ? null
             : classDef.loadouts[Mathf.Clamp(loadoutIndex, 0, classDef.loadouts.Count - 1)];
@@ -93,7 +114,7 @@ namespace Turris
         /// <summary>Umiejętności dostępne na starcie: klasowe i odblokowane na stałe (bez powtórzeń).</summary>
         /// Najpierw te, których można użyć z bronią zestawu – one wypełniają puste sloty.
         public IEnumerable<SpellDefinition> StartingSkills =>
-            (classDef != null ? classDef.startingSpells : new List<SpellDefinition>()).Concat(new[] { OpeningSkill }).Concat(permanentSkills).Where(s => s != null).Distinct()
+            (classDef != null ? classDef.startingSpells : new List<SpellDefinition>()).Concat(new[] { OpeningSkill }).Concat(featureSkills).Concat(permanentSkills).Where(s => s != null).Distinct()
                 .OrderBy(s => WeaponFamilies.Usable(s, Weapon, OffHand) ? 0 : 1);
 
         /// <summary>Wkłada umiejętność do slotu (jeśli była w innym – zamiana miejscami).</summary>
@@ -185,6 +206,9 @@ namespace Turris
         public void SelectClass(LoadoutPlan plan, ClassDefinition c)
         {
             plan.classDef = c;
+            // Cecha klasowa: zapamiętana dla tej klasy (profil per klasa), inaczej wariant A – nigdy cecha poprzedniej klasy.
+            plan.classFeatureId = ClassFeatureCatalog.Resolve(c, Profile.FeatureFor(c != null ? c.id : null), out _)?.id;
+            plan.arsenalLoadoutIndex = -1;
             plan.extras.RemoveAll(u => !LoadoutOptionsFor(c).Contains(u));
             if (plan.startingWeapon != null && (c == null || !c.WeaponChoices.Contains(plan.startingWeapon))) plan.startingWeapon = null;
             plan.loadoutIndex = 0;
@@ -200,6 +224,22 @@ namespace Turris
             FillSkills(plan);
         }
 
+        /// <summary>Wybór cechy klasowej (tylko własnej klasy).</summary>
+        public bool SelectFeature(LoadoutPlan plan, string featureId)
+        {
+            if (plan.classDef == null || !ClassFeatureCatalog.Owns(plan.classDef, featureId)) return false;
+            plan.classFeatureId = featureId;
+            FillSkills(plan);
+            return true;
+        }
+
+        /// <summary>Drugi zestaw Arsenału (indeks zestawu startowego klasy).</summary>
+        public void SelectArsenalLoadout(LoadoutPlan plan, int index)
+        {
+            if (plan.classDef == null || plan.classDef.loadouts.Count == 0) return;
+            plan.arsenalLoadoutIndex = Mathf.Clamp(index, 0, plan.classDef.loadouts.Count - 1);
+        }
+
         /// <summary>Wybór skilla startowego (gdy broń żadnego nie daje).</summary>
         public void SelectStartingSkill(LoadoutPlan plan, SpellDefinition skill)
         {
@@ -213,6 +253,15 @@ namespace Turris
         {
             plan.permanentSkills.Clear();
             plan.permanentSkills.AddRange(PermanentSkillsFor(plan.classDef));
+            plan.featureSkills.Clear();
+            var feature = plan.Feature;
+            if (feature != null)
+                foreach (var id in feature.startingSkillIds)
+                {
+                    var s = cfg.baseSpellPool.FirstOrDefault(x => x != null && x.id == id);
+                    if (s != null) plan.featureSkills.Add(s);
+                    else Debug.LogWarning($"Cecha {feature.id}: brak skilla startowego {id}");
+                }
             var available = plan.StartingSkills.ToList();
             for (int i = 0; i < plan.skillSlots.Length; i++)
             {
@@ -260,6 +309,7 @@ namespace Turris
             if (plan.difficulty == null || !IsDifficultyAvailable(plan.difficulty)) { reason = "Niedostępna trudność"; return false; }
             if (plan.Cost > cfg.balance.loadoutBudget) { reason = $"Przekroczony budżet ({plan.Cost}/{cfg.balance.loadoutBudget})"; return false; }
             if (plan.extras.Any(e => !IsUnlocked(e))) { reason = "Wybrano zablokowany element"; return false; }
+            if (plan.classFeatureId != null && !ClassFeatureCatalog.Owns(plan.classDef, plan.classFeatureId)) { reason = "Cecha klasowa należy do innej klasy"; return false; }
             var foreign = plan.extras.FirstOrDefault(e => !e.AvailableFor(plan.classDef));
             if (foreign != null) { reason = $"{foreign.displayName}: niedostępne dla klasy {plan.classDef.displayName}"; return false; }
             return true;
@@ -327,6 +377,9 @@ namespace Turris
             Profile.lastWeaponId = plan.Weapon != null && plan.Weapon != plan.classDef.DefaultWeapon ? plan.Weapon.id : "";
             Profile.lastLoadoutIndex = plan.loadoutIndex;
             Profile.lastStartSkillId = plan.startingSkill != null ? plan.startingSkill.id : "";
+            var f = plan.Feature;
+            if (f != null) Profile.SetFeature(plan.classDef.id, f.id);
+            Profile.lastArsenalIndex = plan.arsenalLoadoutIndex;
             Save();
         }
 
@@ -380,6 +433,10 @@ namespace Turris
             {
                 plan.loadoutIndex = Mathf.Clamp(Profile.lastLoadoutIndex, 0, Mathf.Max(0, plan.classDef.loadouts.Count - 1));
                 plan.startingSkill = plan.classDef.startingSkillChoices.FirstOrDefault(s => s.id == Profile.lastStartSkillId);
+                string remembered = Profile.FeatureFor(plan.classDef.id);
+                plan.classFeatureId = ClassFeatureCatalog.Resolve(plan.classDef, remembered, out var fw)?.id;
+                if (fw != null) { Warning = fw; Debug.LogWarning(fw); }
+                plan.arsenalLoadoutIndex = Profile.lastArsenalIndex;
             }
             FillSkills(plan);
             return plan;
@@ -419,7 +476,17 @@ namespace Turris
                     else run.inventory.Add(off);
                 }
             }
-            if (plan.classDef.signatureSkill != null) { run.signatureSkill = new SpellInstance(plan.classDef.signatureSkill) { permanent = true }; run.AttachSeals(run.signatureSkill); }
+            // Cecha klasowa zastępuje dawną sygnaturę pod przyciskiem klasy – dokładnie jeden wariant, bez starej sygnatury obok.
+            var feature = plan.Feature;
+            run.classFeatureId = feature?.id;
+            if (feature == null && plan.classDef.signatureSkill != null) { run.signatureSkill = new SpellInstance(plan.classDef.signatureSkill) { permanent = true }; run.AttachSeals(run.signatureSkill); }
+            // Arsenał weterana: drugi zestaw startowy czeka poza rękami (te same zasady egzemplarzy co ekwipunek).
+            var second = plan.ArsenalLoadout;
+            if (second != null)
+            {
+                if (second.weapon != null) run.arsenalMain = new ItemInstance(second.weapon);
+                if (second.offHand != null && !(second.weapon != null && second.weapon.twoHanded)) run.arsenalOff = new ItemInstance(second.offHand);
+            }
             run.SyncGrantedSkills();
             foreach (var t in plan.classDef.startingTalents) if (t != null) run.AddBoon(t);
             foreach (var u in plan.extras)
@@ -436,6 +503,13 @@ namespace Turris
             // Kolekcja umiejętności: klasowe i odblokowane na stałe. Sloty – według planu, a puste uzupełniane automatycznie.
             // Umiejętności klasy i odblokowane wracają w każdym podejściu – obie są „stałe”.
             foreach (var s in plan.StartingSkills) run.LearnSpell(s, true);
+            // Skille startowe cechy – jawnie, także gdy plan nie przeszedł przez MetaService.FillSkills (boty, testy).
+            if (feature != null)
+                foreach (var id in feature.startingSkillIds)
+                {
+                    var fs = cfg.baseSpellPool.FirstOrDefault(x => x != null && x.id == id);
+                    if (fs != null && run.FindSpell(fs) == null) run.LearnSpell(fs, true);
+                }
             if (plan.skillSlots.Any(s => s != null))
             {
                 for (int i = 0; i < RunState.SkillSlotCount; i++) run.ClearSlot(i);

@@ -46,6 +46,26 @@ namespace Turris
         /// <summary>Przebicie odporności (perki HU): część żywiołu i fizyczna – w ułamku, odporność celu nie spada poniżej 0.</summary>
         public float penetration, physicalPenetration;
 
+        // ---- Pochodzenie (cechy klasowe, rozdz. 7.2): dziedziczone przez kopie, odpryski, przebicia i strefy (kopiowanie struktury).
+        /// <summary>Id ręcznej akcji gracza (atak, rzut, strzał), z której pochodzi trafienie; 0 = brak (wróg, reakcja z zewnątrz).</summary>
+        public int originId;
+        /// <summary>Zwykły atak bronią (cios albo podstawowy pocisk łuku/różdżki) – nie skill ze slotu.</summary>
+        public bool basicAttack;
+        /// <summary>Efekt potomny cechy klasowej (fala Łaski, Żar, pęknięcie, płyta, wyładowanie…): bez kradzieży życia,
+        /// bez leczenia za zabójstwo i bez wytwarzania zasobów cech.</summary>
+        public bool featureEffect;
+        /// <summary>Strzała odpowiedzi: pocisk niesie ładunek (dobór żywiołu przy kontakcie).</summary>
+        public bool answerCharge;
+        /// <summary>Strzała zaklęcia: id ładunku czaru (0 = brak); wyzwala się raz, na pierwszym trafieniu.</summary>
+        public int spellArrowToken;
+        /// <summary>Zderzenie frontów: budżet wyładowania przekazany z odrzutem (0 = brak).</summary>
+        public float frontsBudget;
+        /// <summary>Gwoździe łowcy: część trafienia odkładana jako grot (0 = brak).</summary>
+        public float nailShare;
+        /// <summary>Stanowisko strzeleckie: punkt wylotu pocisku inny niż postać (Sokole oko liczy od niego).</summary>
+        public Vector3 launchPoint;
+        public bool hasLaunchPoint;
+
         public float Total => physical + magic;
 
         /// <summary>Udział żywiołu w części magicznej (0–1).</summary>
@@ -113,6 +133,10 @@ namespace Turris
         public int freezeReduction;       // mniej warstw chłodu do zamrożenia
         public float conductionMult;      // mnożnik przewodzenia
         public bool conductionJump;       // przewodzenie przeskakuje na kolejnego wroga
+        /// <summary>Wielki pożar: rodzina podpalenia (źródło) – 0 = zwykłe, jedno podpalenie.</summary>
+        public int burnFamily;
+        /// <summary>Wielki pożar: najwyżej tyle niezależnych rodzin na celu (0 – cecha nieaktywna).</summary>
+        public int burnFamilies;
 
         public static StatusModifiers None => new StatusModifiers { bleedDamageMult = 1f, conductionMult = 1f };
     }

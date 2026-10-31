@@ -426,7 +426,8 @@ namespace Turris.Tests
             Assert.IsNull(run.FindSpell(fx.Get<SpellDefinition>("spell_bolt")), "Wojownik nie zaczyna z czarem maga");
             CollectionAssert.AreEquivalent(new[] { "hu_cleave", "skill_stomp" }, run.knownSpells.Select(s => s.definition.id).ToArray(),
                 "Skill startowy (Rozpłatanie) i Tąpnięcie");
-            Assert.AreEqual("hu_warcry", run.signatureSkill.definition.id, "Skill klasy pod osobnym przyciskiem");
+            Assert.AreEqual("class_feature.warrior.guard", run.classFeatureId, "Cecha klasowa pod osobnym przyciskiem");
+            Assert.IsNull(run.signatureSkill);
 
             meta.SelectClass(plan, fx.Get<ClassDefinition>("class_mage"));
             var mageRun = RunFactory.Create(plan, fx.Cfg, 2);

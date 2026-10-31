@@ -49,6 +49,22 @@ namespace Turris
         int pierceLeft;
         float speedValue;
 
+        /// <summary>Dane trafienia (kopia) – Oko ciszy przelicza je na budżet gracza.</summary>
+        public HitData Hit => hit;
+        public bool IsArrow => arrowModel != null;
+        public float Speed => speedValue;
+        /// <summary>Pocisk zatrzymany (Oko ciszy): znika ze świata bez wybuchu i bez trafienia – nie zostaje niewidzialne zagrożenie.</summary>
+        public void Capture()
+        {
+            Active.Remove(this);
+            if (fx != null) { FxLibrary.DetachProjectileVisual(fx); fx = null; }
+            life = 0f; hit.physical = 0f; hit.magic = 0f;
+            enabled = false;
+            Destroy(gameObject);
+        }
+        /// <summary>Wybuch/obszar przy trafieniu albo pełny wybuch – nie da się go przechwycić (to już nie zwykły pocisk).</summary>
+        public bool Capturable => !opts.fullExplosion && hit.explosionRadius <= 0f && enabled;
+
         /// <summary>Odczyt dla obserwatorów (boty testowe): prędkość, strona, właściciel i czy unik przed pociskiem chroni.</summary>
         public Vector3 Velocity => velocity;
         public Faction Side => faction;
@@ -205,7 +221,7 @@ namespace Turris
             IHitReceiver best = null; float bestD = float.MaxValue;
             for (int i = 0; i < n; i++)
             {
-                var c = Near[i].GetComponentInParent<IHitReceiver>();
+                var c = HitQuery.Receiver(Near[i]);
                 if (c == null || c.Faction == faction || c.IsDead || tracker.Contains(c)) continue;
                 float d = (c.AimPoint - transform.position).sqrMagnitude;
                 if (d < bestD) { bestD = d; best = c; }
@@ -295,7 +311,7 @@ namespace Turris
             int o = Physics.OverlapSphereNonAlloc(transform.position, radius, Overlaps, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < o; i++)
             {
-                var r = Overlaps[i].GetComponentInParent<IHitReceiver>();
+                var r = HitQuery.Receiver(Overlaps[i]);
                 if (r == null || r.Faction == faction || r.IsDead) continue;
                 if (!tracker.TryRegister(r)) continue; // przebity wcześniej – leci dalej
                 if (Strike(r)) continue;
@@ -314,12 +330,14 @@ namespace Turris
                 for (int i = 0; i < n; i++)
                 {
                     if (Hits[i].collider == null) continue;
-                    var receiver = Hits[i].collider.GetComponentInParent<IHitReceiver>();
+                    var receiver = HitQuery.Receiver(Hits[i].collider);
                     if (receiver != null && (receiver.Faction == faction || receiver.IsDead || tracker.Contains(receiver))) continue;
                     if (Hits[i].distance < best) { best = Hits[i].distance; bestIdx = i; }
                 }
                 if (bestIdx < 0) break;
-                var r = Hits[bestIdx].collider.GetComponentInParent<IHitReceiver>();
+                var r = HitQuery.Receiver(Hits[bestIdx].collider);
+                // Cień (alias) bez żywego właściciela – pocisk leci dalej, nie rozbija się na nim.
+                if (r == null && Hits[bestIdx].collider.GetComponentInParent<IHitAlias>() != null) { Hits[bestIdx] = default; continue; }
                 transform.position = start + step.normalized * best;
                 Hits[bestIdx] = default;
                 if (r != null && tracker.TryRegister(r) && Strike(r))

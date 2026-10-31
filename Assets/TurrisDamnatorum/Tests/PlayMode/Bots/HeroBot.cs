@@ -127,7 +127,7 @@ namespace Turris.Tests.Bots
         public void End()
         {
             if (Root != null && Root.Controller != null && ReferenceEquals(Root.Controller.Driver, this)) Root.Controller.Driver = null;
-            if (Rec != null) { RememberSkills(); Rec.Bot = null; }
+            if (Rec != null) { RememberSkills(); RecordFeature(); Rec.Bot = null; }
             Rec = null;
             MoveWorld = Vector3.zero;
             BlockHeld = SprintHeld = false;
@@ -354,7 +354,7 @@ namespace Turris.Tests.Bots
             if (TryRiposte()) return;
             if (TryTacticalDodge()) return;
             OnFight();
-            if (TryUseSkills()) return;
+            if (TryUseFeature() || TryUseSkills()) return;
             Offense();
             CheckStuck();
         }

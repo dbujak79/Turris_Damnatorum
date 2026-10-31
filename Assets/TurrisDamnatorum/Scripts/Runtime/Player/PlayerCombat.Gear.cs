@@ -51,7 +51,7 @@ namespace Turris
         /// <summary>Trafienie bohatera, które doszło: łańcuch błyskawic z ciosu bronią (zwykły atak).</summary>
         void GearOnLanded(IHitReceiver target, in HitData hit, in HitResult result)
         {
-            if (hit.isStatusTick || hit.isReaction || result.healthDamage <= 0f) return;
+            if (hit.isStatusTick || hit.isReaction || hit.featureEffect || result.healthDamage <= 0f) return;
             float chain = Power(PassiveEffectType.WeaponChainLightning);
             if (chain > 0f && !chaining && hit.weapon != WeaponModel.Auto)
             {
@@ -86,7 +86,7 @@ namespace Turris
         void GearOnKill(IHitReceiver target)
         {
             float harvest = Power(PassiveEffectType.SoulHarvest);
-            if (harvest > 0f && !IsDead) PassiveHeal(Health.Max * harvest);
+            if (harvest > 0f && !IsDead) PassiveHeal(Health.Max * harvest, HealSource.Kill);
             float corpse = Power(PassiveEffectType.CorpseExplosion);
             if (corpse > 0f && target is EnemyBrain enemy && enemy.Health != null)
             {

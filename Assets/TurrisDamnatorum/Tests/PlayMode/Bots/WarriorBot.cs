@@ -16,6 +16,7 @@ namespace Turris.Tests.Bots
         // Tester: 4 kombinacje (2 zestawy × 2 skille) po kolei; gracz: najpierw próbuje każdej, potem trzyma się najlepszej.
         public override void PreparePlan(LoadoutPlan plan, int runIndex, IReadOnlyList<BotRunRecord> history)
         {
+            ChooseFeature(plan, runIndex); // cecha klasowa: A i B na zmianę (albo wymuszona)
             var cls = plan.classDef;
             int loadouts = Mathf.Max(1, cls.loadouts.Count), skills = Mathf.Max(1, cls.startingSkillChoices.Count);
             int combos = loadouts * skills;

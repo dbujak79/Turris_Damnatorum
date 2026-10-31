@@ -18,12 +18,14 @@ namespace Turris.Tests
         SpellDefinition S(string id) => fx.Get<SpellDefinition>(id);
         BalanceConfig B => fx.Cfg.balance;
 
-        PlayerCombat Hero(string classId, int loadout = 0, SpellDefinition opening = null)
+        PlayerCombat Hero(string classId, int loadout = 0, SpellDefinition opening = null, bool legacySignature = false)
         {
             var plan = fx.Plan(classId);
             plan.loadoutIndex = loadout;
             plan.startingSkill = opening;
-            return fx.NewCombatant(RunFactory.Create(plan, fx.Cfg, 11));
+            var run = RunFactory.Create(plan, fx.Cfg, 11);
+            if (legacySignature) Fixture.Legacy(run);
+            return fx.NewCombatant(run);
         }
 
         [Test]
@@ -37,15 +39,21 @@ namespace Turris.Tests
             var pc = Hero("class_hu_paladin");
             Assert.AreEqual("hu_flail", pc.Run.equipment.Get(EquipSlot.MainHand).definition.id);
             Assert.AreEqual("hu_shield", pc.Run.equipment.Get(EquipSlot.OffHand).definition.id);
-            Assert.IsNotNull(pc.Skill(PlayerCombat.SignatureSlot), "Skill klasy pod osobnym przyciskiem");
+            Assert.IsInstanceOf<AbsolutionFeature>(pc.Feature, "Cecha klasowa (wariant A) pod przyciskiem klasy");
+            Assert.IsNull(pc.Run.signatureSkill, "Dawna sygnatura nie zostaje obok cechy");
             Assert.IsTrue(pc.Run.startingClass.classModifiers.Count > 0, "Mistrzostwo klasy");
         }
 
         [Test]
-        public void Signature_IsCastFromItsOwnButton_AndDoesNotUseASlot()
+        public void ClassButton_RunsFeature_WithoutSlot()
         {
-            var pc = Hero("class_knight");
-            Assert.IsFalse(pc.Run.skillSlots.Any(s => s != null && s.definition == S("hu_warcry")), "Okrzyk nie zajmuje slotu");
+            var feat = Hero("class_knight");
+            Assert.IsFalse(feat.Run.skillSlots.Any(s => s != null && s.definition == S("hu_warcry")), "Okrzyk nie zajmuje slotu");
+            feat.RequestSkill(PlayerCombat.SignatureSlot);
+            Assert.IsTrue(((GuardFeature)feat.Feature).Active, "Przycisk klasy uruchamia cechę");
+            Assert.AreNotEqual(ActionType.Cast, feat.Actions.Current, "Cecha nie jest zwykłym rzutem ze slotu");
+
+            var pc = Hero("class_knight", legacySignature: true);
             pc.RequestSkill(PlayerCombat.SignatureSlot);
             Assert.AreEqual(ActionType.Cast, pc.Actions.Current);
             Fixture.Advance(pc, 0.6f);
@@ -182,7 +190,7 @@ namespace Turris.Tests
             plain.ReceiveHit(Fixture.FrontHit(100, blockable: false, parryable: false, dodgeable: false));
             float full = hp0 - plain.Health.Current;
 
-            var pc = Hero("class_hu_berserker");
+            var pc = Hero("class_hu_berserker", legacySignature: true);
             pc.RequestSkill(PlayerCombat.SignatureSlot);
             Fixture.Advance(pc, 0.5f);
             Assert.Greater(pc.IronSkinTime, 0f);
@@ -199,7 +207,7 @@ namespace Turris.Tests
         [Test]
         public void Overload_EmpowersNextSlotSkill_ThenOverheats()
         {
-            var pc = Hero("class_mage");
+            var pc = Hero("class_mage", legacySignature: true);
             pc.RequestSkill(PlayerCombat.SignatureSlot);
             Fixture.Advance(pc, 0.8f);
             Assert.IsTrue(pc.OverloadReady);

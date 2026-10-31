@@ -64,6 +64,18 @@ namespace Turris.Tests
         }
 
         /// <summary>Symuluje upływ czasu w krokach 1/60 s.</summary>
+        /// <summary>
+        /// Zgodność wstecz: podejście z dawną sygnaturą pod przyciskiem klasy zamiast cechy klasowej (testy samych definicji
+        /// starych sygnatur, które zostają w danych dla migracji zapisów).
+        /// </summary>
+        public static RunState Legacy(RunState run)
+        {
+            run.classFeatureId = null;
+            run.signatureSkill = new SpellInstance(run.startingClass.signatureSkill) { permanent = true };
+            run.AttachSeals(run.signatureSkill);
+            return run;
+        }
+
         public static void Advance(PlayerCombat pc, float seconds)
         {
             const float dt = 1f / 60f;

@@ -164,6 +164,8 @@ namespace Turris
         public bool permanent;
         /// <summary>Umiejętność z założonego przedmiotu – znika, gdy przedmiot zostanie zdjęty.</summary>
         public bool fromItem;
+        /// <summary>Arsenał: slot, w którym był skill przedmiotu przed schowaniem zestawu (−1 = brak).</summary>
+        [NonSerialized] public int parkedSlot = -1;
         int chargesSpent;
         float rechargeTimer;
 

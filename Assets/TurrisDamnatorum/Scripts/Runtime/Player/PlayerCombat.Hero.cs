@@ -90,6 +90,7 @@ namespace Turris
             Run?.signatureSkill?.ResetCooldown();
             Servant.DismissAll();
             Ward = WardMax;
+            Feature?.FloorStart();
             RespawnAuras();
             UpdateTempModifiers();
         }
@@ -198,7 +199,10 @@ namespace Turris
                 var a = Auras[i];
                 if (a == null || a.Skill == null) continue;
                 float power = AuraPower(i);
-                if (a.IsHu) Run.tempModifiers.AddRange(a.HuModifiers());
+                // Sąd przysięgi: aura działa odwrócona na wrogu – premie znikają, rezerwacja zostaje.
+                bool judged = Feature != null && Feature.SuppressesAura(a);
+                if (judged) { }
+                else if (a.IsHu) Run.tempModifiers.AddRange(a.HuModifiers());
                 else foreach (var m in a.Skill.auraModifiers) Run.tempModifiers.Add(new StatModifier(m.stat, m.value * power, m.mode));
                 // Koszt aury: Pobożność rezerwuje manę (20% pierwsza, 30% druga – jak w HU); inne klasy po 20% wytrzymałości.
                 if (Trait == ClassTrait.Devotion) Run.tempModifiers.Add(new StatModifier(StatType.MaxMana, i == 0 ? -AuraManaReserveFirst : -AuraManaReserveSecond, ModifierMode.Percent));
@@ -231,9 +235,11 @@ namespace Turris
                 else if (ambushWindow > 0f) { m *= AmbushDodgeMultiplier; ambushWindow = 0f; CombatEvents.RaiseWorldText(target.AimPoint + Vector3.up * 0.5f, "Z ZASKOCZENIA", new Color(1f, 0.8f, 0.3f)); }
             }
             if (Trait == ClassTrait.Bloodlust && Health != null) m *= 1f + BloodlustMax * (1f - Health.Fraction);
+            Feature?.OutgoingAgainst(ref hit, target);
             if (Trait == ClassTrait.Hawkeye && hit.isProjectile)
             {
-                float d = Vector3.Distance(transform.position, target.transform.position);
+                // Stanowisko strzeleckie: odległość od punktu wylotu, nie od łucznika.
+                float d = Vector3.Distance(hit.hasLaunchPoint ? hit.launchPoint : transform.position, target.transform.position);
                 m *= 1f + HawkeyeMax * Mathf.Clamp01((d - HawkeyeNear) / (HawkeyeFar - HawkeyeNear));
             }
             hit.physical *= m; hit.magic *= m;
@@ -256,7 +262,7 @@ namespace Turris
             if (!landed || hit.isStatusTick) return;
             if (hit.weapon != WeaponModel.Auto && hit.fromMeleeWeapon) AddFury(FuryPerHitDealt);
             float leech = Build.stats[StatType.LifeLeech] / 100f;
-            if (leech > 0f && result.healthDamage > 0f) PassiveHeal(result.healthDamage * leech * LeechWeight(hit));
+            if (leech > 0f && result.healthDamage > 0f && !hit.featureEffect) PassiveHeal(result.healthDamage * leech * LeechWeight(hit), HealSource.Leech);
             if (Trait == ClassTrait.Spellblade && hit.fromMeleeWeapon && hit.weapon != WeaponModel.Auto) Mana.Restore(2f);
         }
 
@@ -272,17 +278,18 @@ namespace Turris
         /// Kradzież życia, życie za zabójstwo i podobne – razem najwyżej <see cref="BalanceConfig.passiveHealingPerSecond"/> maks. życia
         /// w ruchomej sekundzie; podczas Żelaznej skóry połowa. Skille leczące są poza tym limitem. Zwraca faktycznie przywrócone życie.
         /// </summary>
-        public float PassiveHeal(float amount)
+        public float PassiveHeal(float amount, HealSource source = HealSource.Leech)
         {
             if (amount <= 0f || IsDead) return 0f;
             while (passiveHeals.Count > 0 && clock - passiveHeals.Peek().time >= 1f) passiveHealSum -= passiveHeals.Dequeue().amount;
             if (IronSkinTime > 0f) amount *= 0.5f;
+            if (Feature != null) amount *= Feature.PassiveHealMultiplier; // Czerwona linia: jak dawna Żelazna skóra
             float give = Mathf.Min(amount, Health.Max * B.passiveHealingPerSecond - passiveHealSum);
             if (give <= 0f) return 0f;
             passiveHeals.Enqueue((clock, give));
             passiveHealSum += give;
-            Health.Restore(give);
-            return give;
+            // Limit źródła rozliczony – nadwyżka ponad pełne życie trafia do Łaski (Rozgrzeszenie) przez Overflow.
+            return HealFrom(give, source);
         }
 
         // ------------------------------------------------------------------ Przyjmowanie trafień
@@ -302,18 +309,20 @@ namespace Turris
         /// Redukcja obrażeń: klasa, okrzyk, szał, więź dusz – sumowane i przez miękki limit HU (pełna do 25%, dalej połowa, maks. 45%);
         /// potem minimum bezpośredniego ciosu, Żelazna skóra (−80%), furia Berserkera (do −20%) – obie poza limitem – i arkanowa osłona.
         /// </summary>
-        float HeroMitigate(float damage, bool statusTick, float minimum = 0f)
+        float HeroMitigate(float damage, bool statusTick, float minimum = 0f, bool skipWard = false)
         {
             damage *= 1f - CurrentDamageReduction;
             if (minimum > 0f && damage < minimum) damage = minimum;
-            if (IronSkinTime > 0f) damage *= 1f - IronSkinReduction;
+            if (IronSkinTime > 0f) damage *= 1f - IronSkinReduction; // dawna sygnatura (tylko zgodność wstecz)
+            // Cecha klasowa: dynamiczna Żelazna skóra Czerwonej linii – z życia sprzed rozstrzygnięcia tego trafienia.
+            if (Feature != null) damage *= Feature.IncomingMultiplier(statusTick);
             // Furia Berserkera: osobny mnożnik, poza miękkim limitem redukcji (20% przy pełnej furii to zawsze 20%).
             if (Trait == ClassTrait.Bloodlust) damage *= 1f - BerserkerFuryReduction * FuryFraction;
             // Szarża: osobny mnożnik w trakcie doskoku, też poza limitem.
             damage *= 1f - DashReduction;
             // Pancerz w ataku (broń dwuręczna): osobny mnożnik, poza limitem.
             if (HyperArmor) damage *= 1f - HyperArmorReduction;
-            if (Trait == ClassTrait.ArcaneWard && damage > 0f)
+            if (Trait == ClassTrait.ArcaneWard && damage > 0f && !skipWard)
             {
                 wardDelay = WardDelay;
                 float absorbed = Mathf.Min(Ward, damage);

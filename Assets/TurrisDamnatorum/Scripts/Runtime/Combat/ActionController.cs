@@ -203,6 +203,18 @@ namespace Turris
         public float Max { get; private set; }
         float delayTimer;
 
+        /// <summary>
+        /// Sufit dostępnej wartości (cechy klasowe, np. Czerwona linia): leczenie i ustawianie nie przekraczają go,
+        /// ale <see cref="Max"/> i <see cref="Fraction"/> nadal odnoszą się do normalnego maksimum. +∞ = brak.
+        /// </summary>
+        public float Ceiling { get; private set; } = float.PositiveInfinity;
+        /// <summary>Górna granica bieżącej wartości: min(maks., sufit).</summary>
+        public float Limit => Mathf.Min(Max, Ceiling);
+        /// <summary>Filtr przychodzącego odnowienia (np. spłata długu many): dostaje kwotę, zwraca część, która trafia do puli.</summary>
+        public System.Func<float, float> RestoreFilter;
+        /// <summary>Nadwyżka odnowienia ponad limit (po filtrze) – np. Łaska z nadleczenia. Wołane z ilością, która się nie zmieściła.</summary>
+        public System.Action<float> Overflow;
+
         public ResourcePool(float max) { Max = max; Current = max; }
 
         public float Fraction => Max <= 0 ? 0 : Current / Max;
@@ -211,10 +223,21 @@ namespace Turris
         {
             float f = Fraction;
             Max = Mathf.Max(0, max);
-            Current = keepFraction ? f * Max : Mathf.Min(Current, Max);
+            Current = keepFraction ? Mathf.Min(f * Max, Limit) : Mathf.Min(Current, Limit);
         }
 
-        public void SetCurrent(float v) => Current = Mathf.Clamp(v, 0, Max);
+        public void SetCurrent(float v) => Current = Mathf.Clamp(v, 0, Limit);
+
+        /// <summary>Ustawia sufit (bez wyzwalaczy trafienia); bieżąca wartość ponad sufitem spada do niego. Zwraca odciętą ilość.</summary>
+        public float SetCeiling(float ceiling)
+        {
+            Ceiling = ceiling;
+            float cut = Mathf.Max(0f, Current - Limit);
+            Current -= cut;
+            return cut;
+        }
+
+        public void ClearCeiling() => Ceiling = float.PositiveInfinity;
 
         public bool TrySpend(float amount, float regenDelay = 0f)
         {
@@ -230,7 +253,17 @@ namespace Turris
             delayTimer = Mathf.Max(delayTimer, regenDelay);
         }
 
-        public void Restore(float amount) => Current = Mathf.Min(Max, Current + amount);
+        /// <summary>Odnowienie: najpierw filtr (dług), potem do limitu; nadwyżka trafia do <see cref="Overflow"/>. Zwraca faktycznie dodane.</summary>
+        public float Restore(float amount)
+        {
+            if (amount <= 0f) return 0f;
+            if (RestoreFilter != null) amount = Mathf.Max(0f, RestoreFilter(amount));
+            float room = Mathf.Max(0f, Limit - Current);
+            float added = Mathf.Min(room, amount);
+            Current += added;
+            if (amount - added > 1e-5f) Overflow?.Invoke(amount - added);
+            return added;
+        }
 
         public void Tick(float dt, float regenPerSecond)
         {

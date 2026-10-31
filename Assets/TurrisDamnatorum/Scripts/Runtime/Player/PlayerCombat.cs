@@ -80,6 +80,8 @@ namespace Turris
         HellParticles gatherFx, barrierFx;
         int requestedSlot;
         bool castWasFree;
+        /// <summary>Co cecha pobrała za bieżący rzut (żeton, dług) – zwrot przy anulowaniu przed wyzwoleniem.</summary>
+        CastReceipt castReceipt;
         float skillActiveStart, skillHitTimer;
         int flurryIndex;
         Vector3 chargeDir, lastChargePos;
@@ -184,6 +186,7 @@ namespace Turris
             WeaponBuffTime = 0;
             weaponBuffElement = Element.None;
             weaponBuffStatuses = null;
+            FeatureInit();
             OnFloorStart();
         }
 
@@ -220,7 +223,8 @@ namespace Turris
         public void RestoreAll()
         {
             Health.SetCurrent(Health.Max);
-            Mana.SetCurrent(Mana.Max);
+            // Zobowiązanie przed odnowieniem: dług many spłaca odnowienie piętra (filtr puli), dopiero reszta zostaje maną.
+            Mana.Restore(Mana.Max + (Run != null ? Run.manaDebt : 0f));
             Stamina.SetCurrent(Stamina.Max);
         }
 
@@ -255,6 +259,11 @@ namespace Turris
         /// <summary>Użycie umiejętności ze slotu 0–2 (przyciski umiejętności 1/2/3).</summary>
         public void RequestSkill(int slot)
         {
+            if (IsDead) return;
+            // Przycisk klasy obsługuje wybrana cecha klasowa (zastępuje dawną sygnaturę).
+            if (slot == SignatureSlot && Feature != null) { Feature.Press(); return; }
+            // Druga faza cechy może przejąć przycisk slotu (np. wybór czaru do strzały) – bez zwykłego rzutu.
+            if (Feature != null && slot >= 0 && slot < RunState.SkillSlotCount && Feature.InterceptSkillRequest(slot)) return;
             requestedSlot = slot;
             Request(ActionType.Cast);
         }
@@ -271,6 +280,7 @@ namespace Turris
             {
                 case ActionType.LightAttack:
                 {
+                    if (Feature != null && Feature.InterceptAttack(ActionType.LightAttack)) return true;
                     var target = FindRiposteTarget();
                     if (target != null && Actions.CanStart(ActionType.Riposte))
                     {
@@ -280,9 +290,11 @@ namespace Turris
                     return StartAttack(ActionType.LightAttack, CurrentWeapon.light);
                 }
                 case ActionType.HeavyAttack:
+                    if (Feature != null && Feature.InterceptAttack(ActionType.HeavyAttack)) return true;
                     return StartAttack(ActionType.HeavyAttack, CurrentWeapon.heavy);
                 case ActionType.Parry:
                 {
+                    if (Feature != null && Feature.BlocksGuard) { CombatEvents.RaiseMessage("W tej formie nie da się parować", Color.gray); return true; }
                     var p = Build.parry;
                     if (p == null) { CombatEvents.RaiseMessage("Brak broni/tarczy zdolnej do parowania", Color.gray); return true; }
                     if (Stamina.Current <= 0 || !Actions.CanStart(ActionType.Parry)) return false;
@@ -298,6 +310,7 @@ namespace Turris
                     Vector3 dir = MoveIntent.sqrMagnitude > 0.01f ? MoveIntent.normalized : -transform.forward;
                     var interrupted = Actions.Current;
                     var interruptedPhase = Actions.Phase;
+                    Feature?.DodgeStarting(interrupted, interruptedPhase);
                     DodgeDirection = dir;
                     Actions.TryStart(ActionType.Dodge, d.invulnStart, d.invulnDuration, Mathf.Max(0.05f, d.totalDuration - d.invulnStart - d.invulnDuration), B.dodgeCancelAfter);
                     if (Build.effects[PassiveEffectType.DodgeShockCharge] > 0) ShockCharged = true;
@@ -315,6 +328,11 @@ namespace Turris
                     var skill = Skill(requestedSlot);
                     if (skill == null) { CombatEvents.RaiseMessage(requestedSlot == SignatureSlot ? "Ta klasa nie ma skilla klasy" : $"Slot {requestedSlot + 1} jest pusty", Color.gray); return true; }
                     var def = skill.Def;
+                    if (requestedSlot != SignatureSlot && Feature != null)
+                    {
+                        string blocked = Feature.BlockCast(skill, requestedSlot);
+                        if (blocked != null) { CombatEvents.RaiseMessage(blocked, new Color(0.6f, 0.6f, 0.9f)); return true; }
+                    }
                     if (def.IsAura) return ToggleAura(skill);
                     if (requestedSlot != SignatureSlot && OverheatTime > 0f) { CombatEvents.RaiseMessage("Sloty przegrzane", new Color(0.8f, 0.5f, 1f)); return true; }
                     if (!skill.equipmentMet) { CombatEvents.RaiseMessage($"{def.displayName}: {Names.Requirement(def.requiredTags)}", Color.gray); return true; }
@@ -324,14 +342,31 @@ namespace Turris
                         return true;
                     }
                     if (!def.IsSpell && WeaponThrown) { CombatEvents.RaiseMessage("Broń jeszcze w locie", Color.gray); return true; }
-                    if (!Actions.CanStart(ActionType.Cast)) return false;
+                    // Dwa takty: czar idzie osobnym torem – ciało zostaje wolne dla broni.
+                    bool lane = requestedSlot != SignatureSlot && Feature != null && Feature.RoutesCastToLane(skill, requestedSlot);
+                    if (!lane && !Actions.CanStart(ActionType.Cast)) return false;
                     if (!skill.instance.Ready) return false; // odnowienie – żądanie czeka w buforze
                     float lifeCost = HuLifeCost(skill);
                     if (lifeCost > 0f && Health.Current <= lifeCost) { CombatEvents.RaiseMessage("Za mało zdrowia", new Color(1f, 0.35f, 0.25f)); return true; }
                     bool free = lifeCost > 0f || (def.IsSpell && FreeCasts > 0 && def.kind != SpellKind.BloodPact);
-                    if (def.IsSpell && !free && Mana.Current + 0.01f < skill.manaCost) { CombatEvents.RaiseMessage("Za mało many", new Color(0.4f, 0.6f, 1f)); return true; }
-                    if (lifeCost <= 0f && Stamina.Current <= 0) return false;
+                    // Cecha może opłacić koszt (żeton gniewu) albo pokryć brak many długiem – walidacja jest twarda, bez częściowej opłaty.
+                    var receipt = default(CastReceipt);
+                    bool featurePaid = !free && requestedSlot != SignatureSlot && Feature != null && Feature.TryPay(skill, requestedSlot, out receipt);
+                    if (receipt.active && !featurePaid) return true; // cecha odrzuciła (komunikat podała)
+                    if (def.IsSpell && !free && !featurePaid && Mana.Current + 0.01f < skill.manaCost) { CombatEvents.RaiseMessage("Za mało many", new Color(0.4f, 0.6f, 1f)); FeatureTelemetry.Reject("brak many"); return true; }
+                    if (lifeCost <= 0f && !featurePaid && Stamina.Current <= 0) return false;
+                    if (lane)
+                    {
+                        skill.instance.TryUse();
+                        if (featurePaid) { } else if (lifeCost > 0f) Health.Drain(Mathf.Min(lifeCost, Health.Current - 1f));
+                        else if (free) FreeCasts--;
+                        else if (def.IsSpell) Mana.TrySpend(skill.manaCost);
+                        (Feature as TwoBeatsFeature)?.QueueLane(skill, ScaleStartup(def.castTime), receipt, free && lifeCost <= 0f, lifeCost > 0f);
+                        return true;
+                    }
+                    castReceipt = receipt;
                     currentSpell = skill;
+                    NewOrigin();
                     float castTime = ScaleStartup(def.castTime);
                     Actions.TryStart(ActionType.Cast, castTime, SkillActiveTime(def), ScaleRecovery(def.recovery), ScaleRecovery(def.cancelAfter));
                     skill.instance.TryUse();
@@ -346,10 +381,11 @@ namespace Turris
                         Health.Drain(Mathf.Min(lifeCost, Health.Current - 1f));
                         CombatEvents.RaiseWorldText(AimPoint + Vector3.up, "-" + lifeCost.ToString("0"), new Color(1f, 0.3f, 0.2f));
                     }
+                    else if (featurePaid) { } // cecha pobrała swoją opłatę (żeton/dług)
                     else if (free) FreeCasts--;
                     else if (def.IsSpell) Mana.TrySpend(skill.manaCost);
                     castWasFree = free && lifeCost <= 0f;
-                    if (lifeCost <= 0f) Stamina.Drain(skill.staminaCost, B.staminaRegenDelay);
+                    if (lifeCost <= 0f && !(featurePaid && receipt.token)) Stamina.Drain(skill.staminaCost, B.staminaRegenDelay);
                     return true;
                 }
                 case ActionType.Flask:
@@ -371,7 +407,8 @@ namespace Turris
             if (type == ActionType.LightAttack && Actions.Current == ActionType.LightAttack && Actions.ComboIndex + 1 >= CurrentWeapon.lightComboLength)
                 return false; // koniec serii – trzeba poczekać
             // Dwie bronie: lekkie ciosy na zmianę – prawa, lewa, prawa…
-            attackOffhand = type == ActionType.LightAttack && Build.offWeapon != null && Actions.Current == ActionType.LightAttack && Actions.ComboIndex % 2 == 0;
+            attackOffhand = type == ActionType.LightAttack && Build.offWeapon != null && Actions.Current == ActionType.LightAttack && Actions.ComboIndex % 2 == 0
+                            && (Feature == null || Feature.AllowsOffhandAlternation);
             if (attackOffhand) atk = Build.offWeapon.definition.weapon.light;
             else atk = ChooseMove(type, atk); // topór/młot: cios z biegu, po uniku
             currentAttack = atk;
@@ -381,10 +418,13 @@ namespace Turris
             swingOpen = type == ActionType.LightAttack || type == ActionType.HeavyAttack;
             swingLanded = false;
             float aspd = Mathf.Max(0.3f, Build.attackSpeed + MomentumBonus);
-            AttackWindup = ScaleStartup(atk.windup) / aspd;
-            AttackActive = ScaleStartup(atk.active) / aspd;
-            Actions.TryStart(type, AttackWindup, AttackActive, ScaleRecovery(atk.recovery) / aspd, ScaleRecovery(atk.cancelAfter) / aspd);
+            float timeScale = Feature != null ? Feature.AttackTimeScale(type, atk) : 1f;
+            AttackWindup = ScaleStartup(atk.windup) / aspd * timeScale;
+            AttackActive = ScaleStartup(atk.active) / aspd * timeScale;
+            Actions.TryStart(type, AttackWindup, AttackActive, ScaleRecovery(atk.recovery) / aspd * timeScale, ScaleRecovery(atk.cancelAfter) / aspd * timeScale);
             Stamina.Drain(atk.staminaCost, B.staminaRegenDelay);
+            NewOrigin();
+            Feature?.AttackStarted(type, atk, ActionOrigin);
             return true;
         }
 
@@ -455,10 +495,12 @@ namespace Turris
         {
             if (currentSpell != null)
             {
-                if (castWasFree) FreeCasts++;
+                if (castReceipt.active) Feature?.Refund(castReceipt);
+                else if (castWasFree) FreeCasts++;
                 else if (currentSpell.Def.IsSpell) Mana.Restore(currentSpell.manaCost);
                 currentSpell.instance.Refund();
             }
+            castReceipt = default;
             currentSpell = null;
             if (gatherFx != null) gatherFx.StopAndRelease();
             gatherFx = null;
@@ -491,10 +533,11 @@ namespace Turris
                     if (phase == ActionPhase.Active && currentAttack != null && currentAttack.delivery != AttackDelivery.Projectile) PlaySwing(currentAttack.heavy);
                     // Broń dystansowa (łuk): w fazie aktywnej wypuszcza strzały zamiast cięcia.
                     if (phase == ActionPhase.Active && currentAttack != null && currentAttack.delivery == AttackDelivery.Projectile) FireArrows(currentAttack);
+                    if (phase == ActionPhase.Active && currentAttack != null) Feature?.AttackActive(type, currentAttack, ActionOrigin);
                     if (phase == ActionPhase.Recovery) MoveShockwave();
                     break;
                 case ActionType.Cast:
-                    if (phase == ActionPhase.Active) { skillActiveStart = clock; FireSpell(currentSpell); }
+                    if (phase == ActionPhase.Active) { skillActiveStart = clock; FireSpell(currentSpell); castReceipt = default; Feature?.CastFired(currentSpell, ActionOrigin); }
                     if (IsHu(currentSpell))
                     {
                         if (phase == ActionPhase.Recovery || phase == ActionPhase.Finished) { SkillMotion = Vector3.zero; huDash?.EndNow(); huDash = null; }
@@ -984,6 +1027,9 @@ namespace Turris
                 if (hit.element == Element.Fire) hit.element = Element.Frost;
                 if (hit.element2 == Element.Fire) hit.element2 = Element.Frost;
             }
+            if (hit.originId == 0 && !hit.isStatusTick && !hit.isReaction) hit.originId = ActionOrigin;
+            // Cecha klasowa (rodziny podpaleń, Żar…) – przed premiami żywiołu i ogólnymi, które mnożą dodane składniki.
+            Feature?.Outgoing(ref hit);
             HeroOutgoing(ref hit);
             GearOutgoing(ref hit);
             if (hit.fromMeleeWeapon && fx[PassiveEffectType.SunderOnHit] > 0f) AddStatus(ref hit, StatusKind.Sunder);
@@ -1010,6 +1056,7 @@ namespace Turris
                 conductionMult = 1f + fx[PassiveEffectType.ConductionBonus] / 100f,
                 conductionJump = fx[PassiveEffectType.ConductionJump] > 0,
             };
+            Feature?.OutgoingLate(ref hit);
             if (ShockCharged && hit.fromMeleeWeapon)
             {
                 ShockCharged = false;
@@ -1101,15 +1148,19 @@ namespace Turris
             float stRegen = Build.stats[StatType.StaminaRegen];
             if (cur == ActionType.Block && Build.guard != null) stRegen *= Build.guard.staminaRegenMultiplier;
             if (Sprinting) { stRegen = 0; Stamina.Drain(B.sprintStaminaPerSecond * dt, 0.3f); }
+            if (Feature != null && Feature.SuppressStaminaRegen) stRegen = 0f; // Walka w gardzie: atak, blok i unik na jednej puli
+            Feature?.Tick(dt);
             Stamina.Tick(dt, staminaRegenAllowed ? stRegen : 0f);
+            healSource = HealSource.Regen;
             Health.Tick(dt, Build.stats[StatType.HealthRegen]);
+            healSource = HealSource.Other;
             Mana.Tick(dt, Build.stats[StatType.ManaRegen]);
 
             for (int i = restores.Count - 1; i >= 0; i--)
             {
                 var r = restores[i];
                 float step = Mathf.Min(dt, r.remaining);
-                if (r.mana) Mana.Restore(r.perSecond * step); else Health.Restore(r.perSecond * step);
+                if (r.mana) Mana.Restore(r.perSecond * step); else HealFrom(r.perSecond * step, HealSource.Flask);
                 r.remaining -= dt;
                 if (r.remaining <= 0) restores.RemoveAt(i); else restores[i] = r;
             }
@@ -1119,7 +1170,9 @@ namespace Turris
 
         public void SetBlockHeld(bool held)
         {
+            BlockHeld = held;
             if (IsDead) return;
+            if (held && Feature != null && Feature.BlocksGuard) return;
             // W czasie rzutu blok bronią jest niemożliwy (tarcza – tak).
             if (held && Build.CanBlock && !(WeaponThrown && !Build.guardIsShield))
             {
@@ -1135,6 +1188,8 @@ namespace Turris
             Vector3 origin = transform.position + Vector3.up * 1.3f + transform.forward * 0.7f;
             Vector3 aim = LockTarget != null ? (LockTarget.AimPoint - origin) : transform.forward;
             if (LockTarget == null) aim.y = 0f;
+            IHitReceiver homing = LockTarget;
+            Feature?.ShotOrigin(ref origin, ref aim, ref homing);
             var fx = Build.effects;
             // Rozszczepienie (perk HU): łącznie 2/3/5/8 pocisków – wachlarz co 15°, od 8 pierścień; boczne za 40%.
             int volley = fx[PassiveEffectType.ProjectileVolley] > 0f ? PerkMechanics.VolleyCount(fx[PassiveEffectType.ProjectileVolley]) : 0;
@@ -1160,16 +1215,18 @@ namespace Turris
                 else angle = count == 1 ? 0 : Mathf.Lerp(-atk.spreadAngle, atk.spreadAngle, i / (float)(count - 1));
                 Vector3 dir = Quaternion.Euler(0, angle, 0) * aim.normalized;
                 var hit = HitData.FromAttack(atk, Build.WeaponDamage(atk) * share, origin, this);
-                hit.weapon = HeldWeaponModel;
+                hit.weapon = HeldWeaponModel; hit.basicAttack = true;
                 if (hit.explosionRadius > 0f) hit.explosionRadius *= AreaFactor;
                 ApplyWeaponBuff(ref hit);
                 BasicAttackPerks(ref hit, false, null);
+                Feature?.BasicShot(ref hit, i, count);
                 PrepareOutgoing(ref hit);
                 // Łuk – strzały; różdżka (pocisk magiczny) – świecący pocisk w barwie żywiołu.
                 bool arrow = atk.damageType == DamageType.Physical;
                 Color col = WeaponBuffTime > 0 ? WeaponBuffColor : arrow ? new Color(1f, 0.95f, 0.85f) : Names.ElementColor(atk.element);
+                if (Feature != null && Feature.CaptureOwnShot(hit, dir, atk.projectileSpeed * ProjectileSpeedMult, col)) continue;
                 Projectile.Spawn(origin, dir, atk.projectileSpeed * ProjectileSpeedMult, hit, Faction.Player, this, col,
-                    arrow ? 0.12f : 0.18f, 3f, i == 0 ? LockTarget : null, i == 0 && LockTarget != null ? (arrow ? 60f : 90f) : 0f, arrow, opts);
+                    arrow ? 0.12f : 0.18f, 3f, i == 0 ? homing : null, i == 0 && homing != null ? (arrow ? 60f : 90f) : 0f, arrow, opts);
             }
         }
 
@@ -1227,9 +1284,10 @@ namespace Turris
             Vector3 to = transform.position + Vector3.up * 1.0f + transform.forward * reach;
             HitQuery.Capsule(from, to, atk.radius, Faction.Player, tracker, target =>
             {
+                if (Feature != null && Feature.OverrideSweepHit(target, atk)) return;
                 float dmg = attackOffhand ? Build.OffWeaponDamage(atk) : Build.WeaponDamage(atk);
                 var hit = HitData.FromAttack(atk, dmg, transform.position, this);
-                hit.fromMeleeWeapon = true;
+                hit.fromMeleeWeapon = true; hit.basicAttack = true;
                 hit.weapon = HeldWeaponModel;
                 ApplyWeaponBuff(ref hit);
                 BasicAttackPerks(ref hit, true, target);
@@ -1242,6 +1300,7 @@ namespace Turris
         public void OnHitResolved(IHitReceiver target, in HitData hit, in HitResult result)
         {
             HeroOnHitResolved(target, hit, result);
+            Feature?.HitResolved(target, hit, result);
             if (hit.fromMeleeWeapon && hit.weapon != WeaponModel.Auto && !swingLanded && swingOpen
                 && (result.outcome == HitOutcome.Hit || result.outcome == HitOutcome.GuardBroken || result.outcome == HitOutcome.Blocked))
             {
@@ -1265,10 +1324,10 @@ namespace Turris
             if (target.IsDead)
             {
                 float h = Build.effects[PassiveEffectType.HealOnKill];
-                if (h > 0) PassiveHeal(h);
+                if (h > 0 && !hit.featureEffect) PassiveHeal(h, HealSource.Kill); // efekt cechy nie leczy za zabójstwo
                 float mk = Build.effects[PassiveEffectType.ManaOnKill];
                 if (mk > 0) Mana.Restore(mk);
-                GearOnKill(target);
+                if (!hit.featureEffect) GearOnKill(target); // efekt cechy: bez żniwa i wybuchu zwłok (brak pętli zasobów)
                 if (!hit.huTriggered) HuTrigger("kill", target.Transform.position);
             }
         }
@@ -1291,7 +1350,7 @@ namespace Turris
                 invulnerable = (cur == ActionType.Dodge && Actions.Phase == ActionPhase.Active) || cur == ActionType.Riposte || HeroInvulnerable,
                 parryActive = cur == ActionType.Parry && Actions.Phase == ActionPhase.Active,
                 parry = Build.parry,
-                guarding = cur == ActionType.Block,
+                guarding = cur == ActionType.Block || GuardingDuringAttack,
                 guard = Build.guard,
                 stamina = Stamina.Current,
                 physicalResist = Build.PhysicalReduction(B),
@@ -1301,6 +1360,10 @@ namespace Turris
         }
 
         float shieldReadyAt;
+
+        /// <summary>Walka w gardzie: trzymany blok osłania z przodu w trakcie własnego zwykłego ataku (nie czaru ze slotu).</summary>
+        bool GuardingDuringAttack => Feature != null && Feature.GuardsDuringAttack && BlockHeld && Build != null && Build.guard != null
+                                     && (Actions.Current == ActionType.LightAttack || Actions.Current == ActionType.HeavyAttack);
 
         /// <summary>Bezpośredni cios zabrał życie (nie tyknięcie) – dojrzewające dusze tracą część (HU).</summary>
         public event System.Action<float> HealthHit;
@@ -1383,6 +1446,8 @@ namespace Turris
             bool hyperArmor = HyperArmor;
             // Redukcja obrażeń klasy/okrzyku/szału, arkanowa osłona i nieśmiertelność.
             if (r.healthDamage > 0) r.healthDamage = HeroMitigate(r.healthDamage, false, r.outcome == HitOutcome.Hit ? minimumDamage : 0f);
+            // Płaszcz many (cecha): po redukcjach i rodzimej osłonie, przed barierą.
+            if (r.healthDamage > 0 && Feature != null) r.healthDamage = Feature.AbsorbIncoming(r.healthDamage, false);
 
             // Osłona pochłania obrażenia przed utratą życia; w pełni pochłonięty cios nie wywołuje drgnięcia.
             bool absorbedAll = false;
@@ -1421,12 +1486,13 @@ namespace Turris
                     break;
                 }
                 case HitOutcome.GuardBroken:
+                    Feature?.ForcedInterrupt();
                     Actions.Force(ActionType.GuardBroken, B.guardBreakStun);
                     CombatEvents.RaiseMessage("GARDA PRZEŁAMANA!", new Color(1f, 0.4f, 0.2f));
                     break;
                 case HitOutcome.Hit:
                     // Szał i pancerz w ataku (broń dwuręczna): ciosy nie wybijają z rytmu.
-                    if (!absorbedAll && !Raging && !hyperArmor && r.healthDamage > 0.01f) Actions.Force(ActionType.Flinch, B.flinchDuration);
+                    if (!absorbedAll && !Raging && !hyperArmor && r.healthDamage > 0.01f) { Feature?.ForcedInterrupt(); Actions.Force(ActionType.Flinch, B.flinchDuration); }
                     break;
             }
 
@@ -1439,6 +1505,7 @@ namespace Turris
                 if (froze)
                 {
                     bool frozen = Status.Frozen;
+                    Feature?.ForcedInterrupt();
                     Actions.Force(ActionType.Flinch, frozen ? Status.FrozenRemaining : Status.StunRemaining);
                     CombatEvents.RaiseMessage(frozen ? "ZAMROŻENIE!" : "OGŁUSZENIE!", Names.StatusColor(frozen ? StatusKind.Frozen : StatusKind.Stun));
                     Sfx.Play(frozen ? SoundId.Freeze : SoundId.Quake, AimPoint);
@@ -1461,6 +1528,7 @@ namespace Turris
         void TakeStatusDamage(float dmg)
         {
             dmg = HeroMitigate(dmg, true);
+            if (dmg > 0 && Feature != null) dmg = Feature.AbsorbIncoming(dmg, true);
             if (BarrierAmount > 0)
             {
                 float absorbed = Mathf.Min(BarrierAmount, dmg);
@@ -1484,6 +1552,7 @@ namespace Turris
             if (Immortal) { Health.SetCurrent(Health.Max); return; }
             Actions.Force(ActionType.Dead, 0f);
             statusFx.Clear();
+            Feature?.Death();
             HuClear();
             CombatEvents.RaiseMessage("POLEGŁEŚ", new Color(0.8f, 0.1f, 0.1f));
             Died?.Invoke();

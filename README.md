@@ -82,7 +82,7 @@ W trybie `-batchmode` Unity nie wywołuje `OnGUI`, więc testy obsługi menu pad
 | Parowanie | Lewy Ctrl lub boczny przycisk myszy („wstecz”) | LT |
 | Unik (przerywa atak i umiejętność) | Spacja | B |
 | Umiejętność 1 / 2 / 3 | Q / E / R | A / X / Y |
-| Skill klasy (aura: włącz/wyłącz) | G | Select (View) |
+| Cecha klasowa (druga faza: ponownie; wybór czaru: przycisk slotu) | G | Select (View) |
 | Flaszka życia / many | 1 / 2 | D-pad ↑ / D-pad ↓ |
 | Namierzanie | Tab lub środkowy przycisk myszy | R3 |
 | Zmiana celu | Z / C lub szybki ruch myszą | D-pad ← / → lub ruch prawej gałki |
@@ -122,14 +122,14 @@ Bohaterowie, ich modele, rig, animacje, bronie startowe i startowe skille pochod
 
 - własny model;
 - zestawy broni na start;
-- **skill klasy** pod osobnym przyciskiem (G / Select);
-- **cechę**;
+- **cechę klasową** pod osobnym przyciskiem (G / Select) – jedną z dwóch wybieranych w przygotowaniu (patrz niżej);
+- **mechanikę klasy** (stała właściwość, np. Furia, Arkanowa osłona);
 - **styl uniku**;
 - **skill startowy**: z broni (grymuar, sztylet do rzucania) albo jeden z dwóch do wyboru.
 
 Typy bohatera zastąpiły dawnego Rycerza, Maga i Łotrzyka i mają te same id, więc profil i odblokowania nadal działają.
 
-| Typ | Specjalizacja | Cecha | Unik | Skill klasy | Broń na start |
+| Typ | Specjalizacja | Mechanika klasy | Unik | Dawna sygnatura (tylko dane/migracja) | Broń na start |
 |---|---|---|---|---|---|
 | **Wojownik** | – | Furia | szarża barkiem | Okrzyk bojowy | miecz + tarcza / miecz dwuręczny |
 | | Paladyn | Pobożność (2 aury) | szarża barkiem | Boski osąd | korbacz + tarcza / miecz + tarcza |
@@ -144,7 +144,13 @@ Typy bohatera zastąpiły dawnego Rycerza, Maga i Łotrzyka i mają te same id, 
 | | Zabójca | Zasadzka | przewrót w cień | Znak śmierci | sztylet + nóż / dwa sztylety |
 | | Łucznik arkanów | Klinga zaklęć | odskok widma | Strzała żywiołów | łuk |
 
-**Cechy klas:**
+**Cechy klasowe (wybór A/B na podejście):** każda z 15 klas ma dwa warianty – razem 30 – zmieniające konkretną regułę walki
+(np. Czerwona linia Berserkera: życie ograniczone do 35% normalnego maksimum i Żelazna skóra 0,8 × (1 − PŻ/maks.)).
+Wybór jest bez kosztu, obowiązuje całe podejście, zapamiętywany osobno dla każdej klasy i zapisywany w snapshotach.
+Pełny opis, architektura, decyzje i stan: [docs/RAPORT_CECHY_KLASOWE.md](docs/RAPORT_CECHY_KLASOWE.md); karty i parametry:
+`Scripts/Runtime/ClassFeatures/ClassFeatureCatalog.cs`, `ClassFeatureTuning.cs` (`GameConfig.classFeatures`).
+
+**Mechaniki klas:**
 
 - **Furia:** ciosy i trafienia ładują pasek; pełny daje szał na 6 s (+35% szybkości ataku, +15% redukcji obrażeń, bez drgnięć).
 - **Żądza krwi:** jak Furia, a im mniej życia, tym mocniejsze ciosy (do +60%).

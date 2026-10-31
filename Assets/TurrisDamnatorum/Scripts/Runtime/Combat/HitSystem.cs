@@ -19,6 +19,15 @@ namespace Turris
         void OnHitResolved(IHitReceiver target, in HitData hit, in HitResult result);
     }
 
+    /// <summary>
+    /// Zastępczy punkt odbierania trafień (Przygwożdżony cień): kolizja należy do innego obiektu, ale trafienie liczy się
+    /// u właściciela – w jednym ataku ciało i cień to ta sama tożsamość celu (jedna porcja obrażeń).
+    /// </summary>
+    public interface IHitAlias
+    {
+        IHitReceiver AliasOf { get; }
+    }
+
     /// <summary>Cel, który po przełamaniu postawy może przyjąć ripostę.</summary>
     public interface IRiposteTarget
     {
@@ -34,6 +43,8 @@ namespace Turris
         public bool TryRegister(IHitReceiver r) => hit.Add(r);
         public bool Contains(IHitReceiver r) => hit.Contains(r);
         public int Count => hit.Count;
+        /// <summary>Kopia listy trafionych (Taniec bez przerwy: przeniesiony cios nie odświeża celów).</summary>
+        public void CopyFrom(HitTracker other) { hit.Clear(); if (other != null) foreach (var r in other.hit) hit.Add(r); }
     }
 
     public static class HitQuery
@@ -63,7 +74,7 @@ namespace Turris
             found.Clear();
             for (int i = 0; i < n; i++)
             {
-                var r = Buffer[i].GetComponentInParent<IHitReceiver>();
+                var r = Receiver(Buffer[i]);
                 if (r == null || r.Faction == attacker || r.IsDead) continue;
                 if (found.Contains(r)) continue;
                 found.Add(r);
@@ -75,6 +86,15 @@ namespace Turris
                     if (tracker.TryRegister(found[i])) onHit(found[i]);
             }
             finally { depth--; found.Clear(); }
+        }
+
+        /// <summary>Odbiorca trafienia kolizji; cień (alias) zamienia się na właściciela.</summary>
+        public static IHitReceiver Receiver(Collider c)
+        {
+            if (c == null) return null;
+            var r = c.GetComponentInParent<IHitReceiver>();
+            if (r is IHitAlias a) { var owner = a.AliasOf; return owner != null && !owner.IsDead ? owner : null; }
+            return r;
         }
 
         /// <summary>Rozstrzyga trafienie i powiadamia obie strony. Zwraca wynik.</summary>

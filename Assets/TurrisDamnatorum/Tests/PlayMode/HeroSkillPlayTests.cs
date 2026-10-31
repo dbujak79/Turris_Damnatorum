@@ -23,7 +23,11 @@ namespace Turris.Tests
             cleanup.Clear();
         }
 
-        PlayerCombat Hero(string classId, int loadout = 0, string opening = null)
+        /// <summary>
+        /// Bohater testu skilli. Te testy sprawdzają definicje dawnych sygnatur (zostają w danych dla migracji zapisów), więc
+        /// domyślnie przycisk klasy obsługuje dawna sygnatura zamiast cechy klasowej (cechy – ClassFeaturePlayTests).
+        /// </summary>
+        PlayerCombat Hero(string classId, int loadout = 0, string opening = null, bool legacySignature = true)
         {
             var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             floor.transform.position = new Vector3(0, -0.5f, 0);
@@ -41,7 +45,14 @@ namespace Turris.Tests
             var plan = new LoadoutPlan { classDef = bundle.Get<ClassDefinition>(classId), difficulty = bundle.config.difficulties[0], loadoutIndex = loadout };
             if (opening != null) plan.startingSkill = bundle.Get<SpellDefinition>(opening);
             var pc = p.GetComponent<PlayerCombat>();
-            pc.Init(RunFactory.Create(plan, bundle.config, 7), bundle.config);
+            var run = RunFactory.Create(plan, bundle.config, 7);
+            if (legacySignature && run.startingClass.signatureSkill != null)
+            {
+                run.classFeatureId = null;
+                run.signatureSkill = new SpellInstance(run.startingClass.signatureSkill) { permanent = true };
+                run.AttachSeals(run.signatureSkill);
+            }
+            pc.Init(run, bundle.config);
             p.GetComponent<PlayerVisuals>().Refresh();
             return pc;
         }

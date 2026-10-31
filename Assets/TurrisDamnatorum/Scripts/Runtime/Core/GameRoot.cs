@@ -230,7 +230,7 @@ namespace Turris
         {
             var run = snapshot?.Restore(config);
             if (run == null || run.floorIndex < 0 || run.floorIndex >= config.tower.floors.Count) return false;
-            Plan = new LoadoutPlan { classDef = run.startingClass, difficulty = run.difficulty };
+            Plan = new LoadoutPlan { classDef = run.startingClass, difficulty = run.difficulty, classFeatureId = run.classFeatureId };
             trialFloor = null;
             rng = new System.Random(run.seed ^ System.Environment.TickCount);
             Run = run;

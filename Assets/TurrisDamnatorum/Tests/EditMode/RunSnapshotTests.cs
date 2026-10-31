@@ -37,7 +37,8 @@ namespace Turris.Tests
             Assert.AreEqual(run.equipment.Get(EquipSlot.MainHand).definition, back.equipment.Get(EquipSlot.MainHand).definition);
             Assert.IsTrue(back.inventory.Any(i => i.definition == ring && i.level == 1));
             Assert.AreEqual(run.boons.Count, back.boons.Count);
-            Assert.AreEqual(run.signatureSkill.definition, back.signatureSkill.definition);
+            Assert.AreEqual(run.classFeatureId, back.classFeatureId, "cecha klasowa w zapisie");
+            Assert.IsNull(back.signatureSkill);
         }
     }
 }

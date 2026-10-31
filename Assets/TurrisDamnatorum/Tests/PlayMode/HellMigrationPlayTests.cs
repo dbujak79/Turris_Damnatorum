@@ -254,12 +254,12 @@ namespace Turris.Tests
                 input.SetGameplayEnabled(true); yield return null;
                 InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.G)); yield return null; yield return null;
                 Assert.AreEqual(PlayerCombat.SignatureSlot, requested, cls.id + ": klawiatura");
-                Assert.AreEqual(ActionType.Cast, player.Actions.Current, cls.id + ": rzut klawiaturą");
+                Assert.AreEqual(1, player.FeatureTelemetry.presses, cls.id + ": cecha klasowa z klawiatury");
                 InputSystem.QueueStateEvent(keyboard, new KeyboardState()); yield return null;
                 player.Actions.Reset(); player.OnFloorStart(); player.RestoreAll(); requested = -1;
                 InputSystem.QueueStateEvent(pad, new GamepadState().WithButton(GamepadButton.Select)); yield return null; yield return null;
                 Assert.AreEqual(PlayerCombat.SignatureSlot, requested, cls.id + ": pad");
-                Assert.AreEqual(ActionType.Cast, player.Actions.Current, cls.id + ": rzut padem");
+                Assert.AreEqual(2, player.FeatureTelemetry.presses, cls.id + ": cecha klasowa z pada");
                 InputSystem.QueueStateEvent(pad, new GamepadState()); yield return null;
                 Object.Destroy(player.gameObject); yield return null;
             }

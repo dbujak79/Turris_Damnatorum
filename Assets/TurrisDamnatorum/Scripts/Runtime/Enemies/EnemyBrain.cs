@@ -67,7 +67,7 @@ namespace Turris
 
         // Skalowanie
         float damageMult = 1f, aggressionMult = 1f;
-        float DamageMult => damageMult * (hellFrenzy > 0 ? 1.4f : 1f);
+        float DamageMult => damageMult * (hellFrenzy > 0 ? 1.4f : 1f) * FeatureDamageMult; // Sąd przysięgi (Męstwo): ×; 1 bez cechy
         bool bossExtra;
         BalanceConfig rules;
 
@@ -113,7 +113,7 @@ namespace Turris
         public bool IsTelegraphing => CurrentState == State.Attacking && attackPhase == ActionPhase.Startup;
 
         float floorSpeedMult = 1f;
-        float SpeedMult => PhaseIndex > 0 && PhaseIndex - 1 < Def.phases.Count ? Def.phases[PhaseIndex - 1].speedMultiplier : 1f;
+        float SpeedMult => (PhaseIndex > 0 && PhaseIndex - 1 < Def.phases.Count ? Def.phases[PhaseIndex - 1].speedMultiplier : 1f) * FeatureSpeedMult;
         float GlobalMoveMult => rules != null ? rules.enemyMoveSpeedMultiplier : 1f;
         float AttackSpeedMult => Mathf.Min(HellMaxTempo(), SpeedMult * (rules != null ? rules.enemyAttackSpeedMultiplier : 1f)
             * (hellFrenzy > 0 ? 1.4f : 1f) * (HellEnraged ? Def.huEnrageTempo : 1f));
@@ -228,7 +228,7 @@ namespace Turris
             if (IsDead) return;
 
             Vector3 move = Vector3.zero;
-            float dist = FlatDistance(player.transform.position);
+            float dist = FlatDistance(TargetPos);
             if (player.IsDead && CurrentState == State.Moving) { ApplyMove(Vector3.zero, dt); return; }
 
             switch (CurrentState)
@@ -278,6 +278,7 @@ namespace Turris
 
             if (displacementTime > 0) { move += displacement; displacementTime -= dt; }
             ApplyMove(move, dt);
+            FeatureTick(dt);
             UpdateVisuals();
         }
 
@@ -304,6 +305,7 @@ namespace Turris
             }
             if (displacementTime > 0) { move += displacement; displacementTime -= dt; }
             ApplyMove(move, dt);
+            FeatureTick(dt);
             UpdateVisuals();
         }
 
@@ -354,8 +356,9 @@ namespace Turris
                 }
             }
 
-            Vector3 to = player.transform.position - transform.position; to.y = 0;
+            Vector3 to = TargetPos - transform.position; to.y = 0;
             Vector3 dir = to.sqrMagnitude > 0.001f ? to.normalized : transform.forward;
+            dir = EarthWall.Steer(transform.position, dir, TargetPos); // ściana Bastionu: obejście najbliższym końcem
             float speed = Def.moveSpeed * SpeedMult * floorSpeedMult * GlobalMoveMult * Status.MoveMultiplier(rules) * (hellFrenzy > 0 ? 1.4f : 1f);
 
             if (HellSummonerSpent) return dist > 1.2f ? dir * speed : Vector3.zero;
@@ -462,6 +465,7 @@ namespace Turris
             lungeSpeed = a.lunge / Mathf.Max(0.05f, (a.windup + a.active));
             CurrentState = State.Attacking;
             ClearMarker();
+            FeatureAttackStarted(current);
             BeginSpecial(current);
             if (a.delivery == AttackDelivery.AreaAroundSelf)
             {
@@ -519,13 +523,14 @@ namespace Turris
         }
 
         /// <summary>Wypad zatrzymuje się tuż przed graczem, by nie przepychać go.</summary>
-        float LungeGate() => FlatDistance(player.transform.position) > 1.2f * Def.scale ? 1f : 0f;
+        float LungeGate() => FlatDistance(TargetPos) > 1.2f * Def.scale ? 1f : 0f;
 
         void OnAttackActive()
         {
             var a = current.attack;
             float dmg = a.baseDamage * DamageMult;
             steamMiss = false;
+            AttackActive?.Invoke(this, current);
             if (SpecialStrike(a, dmg)) return;
             steamMiss = SteamCloud.Covers(transform.position) && Random.value < rules.steamMissChance;
             if (steamMiss) { CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.6f, "PUDŁO", new Color(0.85f, 0.9f, 0.95f)); return; }
@@ -537,7 +542,7 @@ namespace Turris
                 case AttackDelivery.Projectile:
                 {
                     Vector3 origin = transform.position + Vector3.up * 1.3f * Def.scale + transform.forward * (0.8f * Def.scale);
-                    Vector3 aim = player.AimPoint - origin;
+                    Vector3 aim = TargetAim - origin;
                     Sfx.Play(weaponModel == WeaponModel.Bow ? SoundId.BowRelease : Sfx.ForElement(a.element, SoundId.ArcaneBolt), origin);
                     int count = Mathf.Max(1, a.projectileCount);
                     for (int i = 0; i < count; i++)
@@ -588,6 +593,7 @@ namespace Turris
 
         void FinishAttack()
         {
+            FeatureAttackEnded();
             InterruptHell();
             var finished = current;
             int f = finished.followUp;
@@ -632,7 +638,7 @@ namespace Turris
 
         void FacePlayer(float degPerSec, float dt)
         {
-            Vector3 to = player.transform.position - transform.position; to.y = 0;
+            Vector3 to = TargetPos - transform.position; to.y = 0;
             if (to.sqrMagnitude < 0.001f) return;
             degPerSec *= TurnMultiplier(to);
             transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(to), degPerSec * dt);
@@ -693,7 +699,8 @@ namespace Turris
             guarding = CurrentState == State.Guarding || (Def.huArchetype == 9 && CurrentState == State.Moving && Stamina.Current > 0),
             guard = Def.guard,
             stamina = Stamina.Current,
-            physicalResist = hellStoneTime > 0 || (Def.huArchetype == 11 && CurrentState == State.Dormant) ? 0.9f : Def.physicalResist,
+            physicalResist = (hellStoneTime > 0 || (Def.huArchetype == 11 && CurrentState == State.Dormant) ? 0.9f : Def.physicalResist)
+                             - FeatureArmourCut, // Sąd przysięgi (Niezłomność): granica −0,25 pilnowana przy nakładaniu
             magicResist = Def.magicResist,
             dead = IsDead,
         };
@@ -725,14 +732,16 @@ namespace Turris
             if (hit.element != Element.None && hit.magic > 0)
             {
                 float pen = hit.penetration;
-                float Mult(Element e) { float x = Def.ElementMultiplier(e); return x < 1f && pen > 0f ? Mathf.Min(1f, x + pen) : x; } // przebicie: odporność nie spada poniżej 0
+                float cut = FeatureResistCut; // Sąd przysięgi (Czystość): odporności żywiołów niżej
+                float Mult(Element e) { float x = Def.ElementMultiplier(e) + cut; return x < 1f && pen > 0f ? Mathf.Min(1f, x + pen) : x; } // przebicie: odporność nie spada poniżej 0
                 float m = hit.Weighted(Mult);
                 hit.ScaleMagicByElement(Mult);
                 if (m > 1.01f && !IsDead) CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.4f, "SŁABOŚĆ", Names.ElementColor(hit.element));
             }
             // Egzekucja: premia przeciw osłabionym (poniżej 30% życia) lub z przełamaną postawą.
-            if (hit.executeBonus > 0 && (Health.Fraction < 0.3f || CurrentState == State.PoiseBroken))
+            if (hit.executeBonus > 0 && ExecuteQualified)
             {
+                if (!RealExecuteThreshold) RaiseArteryExecute(); // premia tylko dzięki znacznikowi tętnicy
                 hit.physical *= 1f + hit.executeBonus; hit.magic *= 1f + hit.executeBonus;
                 CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.4f, "EGZEKUCJA", new Color(1f, 0.3f, 0.2f));
             }
@@ -783,6 +792,7 @@ namespace Turris
                 away.Normalize();
                 if (hit.knockback > 0f) Pull(transform.position + away * (hit.knockback + 1f), hit.knockback, 0.2f);
                 else Pull(hit.sourcePosition, -hit.knockback, 0.25f);
+                if (hit.knockback > 0f) FeatureKnockback(hit);
             }
 
             switch (r.outcome)
@@ -819,6 +829,7 @@ namespace Turris
 
         void Interrupt(State s, float time)
         {
+            if (CurrentState == State.Attacking) FeatureAttackEnded();
             InterruptHell();
             ClearMarker();
             if (CurrentState == State.Attacking) EndSpecialActive();

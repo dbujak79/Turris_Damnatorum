@@ -32,6 +32,7 @@ namespace Turris.Tests.Bots
         // Tester: żywioły po kolei; gracz: najpierw każdy, potem najlepszy (epsilon-zachłannie, jak wojownik).
         public override void PreparePlan(LoadoutPlan plan, int runIndex, IReadOnlyList<BotRunRecord> history)
         {
+            ChooseFeature(plan, runIndex); // cecha klasowa: A i B na zmianę (albo wymuszona)
             var cls = plan.classDef;
             int combos = Mathf.Max(1, cls.loadouts.Count);
             int pick;

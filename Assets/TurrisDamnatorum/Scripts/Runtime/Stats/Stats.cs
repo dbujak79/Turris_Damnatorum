@@ -16,6 +16,15 @@ namespace Turris
         }
 
         public float Get(StatType s) => values[(int)s];
+
+        /// <summary>Kopia z podmienioną jedną statystyką (Arkana oręża: atrybut broni w miejscu Inteligencji czarów).</summary>
+        public StatSheet CloneWith(StatType s, float v)
+        {
+            var c = new StatSheet();
+            System.Array.Copy(values, c.values, values.Length);
+            c.values[(int)s] = v;
+            return c;
+        }
     }
 
     public class EffectTotals

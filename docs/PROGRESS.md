@@ -1,5 +1,17 @@
 # Turris Damnatorum — stan prac i plan
 
+### Wdrożenie 30 cech klasowych — 2026-10-31
+
+- Według [promptu](PROMPT_WDROZENIE_30_CECH_KLASOWYCH.md) – pełny raport, tabela stanu 30 wariantów, decyzje i luki: [RAPORT_CECHY_KLASOWE.md](RAPORT_CECHY_KLASOWE.md).
+- **Wszystkie 30 wariantów ma prawdziwą mechanikę** (kontrolery w `Scripts/Runtime/ClassFeatures/`), wybór A/B w przygotowaniu (karty, mysz/pad, podsumowanie), okienko cechy w HUD, pasek rezerwacji Czerwonej linii, dług many w HUD, zestaw II Arsenału w ekwipunku.
+- Przycisk klasy (G / View) obsługuje cechę; **dawna sygnatura nie powstaje obok niej** (definicje zostają dla migracji). Profil v4 pamięta cechę per klasa; snapshot zapisuje cechę, dług i zestaw II; stary zapis → wariant A (Berserker z `hu_undying` → Czerwona linia), pieczęcie sygnatury wracają do sakwy.
+- Rdzeń walki: sufit życia, filtr spłaty i nadwyżka leczenia w `ResourcePool`; pochodzenie trafień (`originId`, `featureEffect`…); alias trafienia (cień); rodziny podpaleń i znacznik Szronu w `StatusEffects`; po stronie wroga wabik, wspólny predykat egzekucji, odwrócone aury, zderzenia przy odrzucie, ściana z obchodzeniem; chimera w `Servant`.
+- Decyzja do wiadomości: **własny płomień Żywego pieca nie zdejmuje Arkanowej osłony** (inaczej osłona pochłaniała cały koszt i wariant był martwy); paliwo ograniczają odporność na ogień i bariera.
+- Testy: EditMode **275/278** (2 znane „AnimeForward”, 1 pominięty), nowe `ClassFeatureTests` 25; PlayMode `ClassFeaturePlayTests` **22/22**; galeria `ClassFeatureGalleryTests` (zrzuty obejrzane); scenariusze botów `ClassFeatureBotScenarios` (`TURRIS_FEATURE_BOTS`) – 24/30 wariantów użytych przez boty w 45 s, potem poluzowano warunki pozostałych.
+- Pełny PlayMode w trybie `gfx`: **167 zaliczonych, 1 niezaliczony, 55 pominiętych** (galerie/pomiary na żądanie) – jedyny błąd `Floor1Combat_FrameWorkFitsBudget` czeka na `WaitForEndOfFrame`, który nie działa w trybie wsadowym (znana pułapka). W trybie `-nographics` przebieg kończy się awarią URP w niezwiązanym teście renderującym (`AnimeHeroStylePlayTests`).
+- Zrzuty interfejsu w trybie `window` (`ClassFeatureUiShots`) obejrzane: karty A/B, podsumowanie, HUD cechy, rezerwacja Czerwonej linii, dług many, zestaw II Arsenału; poprawiono opis klasy (bez dawnej sygnatury) i położenie napisu długu.
+- Zostaje: warstwa animacji dla Tańca bez przerwy i Dwóch taktów, dźwięki cech, serie botów po wznowieniu (strojenie `ClassFeatureTuning`), build gracza.
+
 ### Hell Unleashed 7.1 i 7.2: przedmioty, ekonomia, żywioły, reakcje — 2026-10-31
 
 - Pełna lista i stan: [plan migracji, rozdz. 7.1–7.2](PLAN_MIGRACJI_HELL_UNLEASHED.md#71-przedmioty-bronie-affixy-perki-ekonomia).

@@ -44,6 +44,7 @@ namespace Turris.Tests.Bots
             Defense(sb, series);
             Dodges(sb, series);
             Loadouts(sb, series);
+            Features(sb, series);
             Skills(sb, series);
             SkillCollection(sb, series);
             ActionsAndEconomy(sb, series);
@@ -299,6 +300,29 @@ namespace Turris.Tests.Bots
             foreach (var s in series)
                 foreach (var g in s.runs.GroupBy(r => (r.loadout, r.startSkill)).OrderByDescending(g => g.Average(r => r.floorReached)))
                     sb.AppendLine($"| {s.personaName} | {g.Key.loadout} | {g.Key.startSkill} | {g.Count()} | {g.Count(r => r.Victory)} | {F((float)g.Average(r => r.floorReached))} | {F((float)g.Average(r => r.kills))} |");
+            sb.AppendLine();
+        }
+
+        /// <summary>Cechy klasowe: wynik mechaniki (zasoby i zdarzenia z telemetrii cechy) osobno od jakości polityki (naciśnięcia, odmowy).</summary>
+        static void Features(StringBuilder sb, IList<BotSeries> series)
+        {
+            var runs = series.SelectMany(s => s.runs.Select(r => (s.personaName, r))).Where(x => !string.IsNullOrEmpty(x.r.featureId)).ToList();
+            if (runs.Count == 0) return;
+            sb.AppendLine("## Cechy klasowe");
+            sb.AppendLine();
+            sb.AppendLine("| Osobowość | Cecha | Podejścia | Śr. piętro | Naciśnięcia | Użycia | Odmowy (przyczyna) | Mechanika (suma) |");
+            sb.AppendLine("|---|---|---|---|---|---|---|---|");
+            foreach (var g in runs.GroupBy(x => (x.personaName, x.r.featureId)))
+            {
+                var all = g.Select(x => x.r).ToList();
+                var rej = new Tally(); var mech = new Tally();
+                foreach (var r in all) { for (int i = 0; i < r.featureRejections.k.Count; i++) rej.Add(r.featureRejections.k[i], r.featureRejections.v[i]); for (int i = 0; i < r.featureStats.k.Count; i++) mech.Add(r.featureStats.k[i], r.featureStats.v[i]); }
+                string rs = string.Join(", ", Enumerable.Range(0, rej.k.Count).Select(i => $"{rej.k[i]} ×{rej.v[i]:0}"));
+                string ms = string.Join(", ", Enumerable.Range(0, mech.k.Count).Select(i => $"{mech.k[i]}: {mech.v[i]:0}"));
+                sb.AppendLine($"| {g.Key.personaName} | {ClassFeatureCatalog.Get(g.Key.featureId)?.name ?? g.Key.featureId} | {all.Count} | {F((float)all.Average(r => r.floorReached))} | {all.Sum(r => r.featurePresses)} | {all.Sum(r => r.featureUses)} | {rs} | {ms} |");
+            }
+            sb.AppendLine();
+            sb.AppendLine("Brak użyć przy wielu naciśnięciach to sygnał słabej polityki bota albo braku warunku (odmowy z przyczyną), nie dowód słabości cechy.");
             sb.AppendLine();
         }
 

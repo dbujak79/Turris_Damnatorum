@@ -671,10 +671,11 @@ namespace Turris
                 }, GUILayout.Height(36));
                 GUILayout.Space(8);
                 GUILayout.Label($"<b>{c.displayName}</b>" + (string.IsNullOrEmpty(c.tagline) ? "" : $" – {c.tagline}"), label);
-                GUILayout.Label(c.description, small);
-                if (c.trait != ClassTrait.None) GUILayout.Label($"<color=#e8c070>Cecha: {Names.Trait(c.trait)}</color> <size=14>– {Names.TraitHelp(c.trait)}</size>", small);
+                GUILayout.Label(ClassDescription(c), small);
+                if (c.trait != ClassTrait.None) GUILayout.Label($"<color=#e8c070>Mechanika klasy: {Names.Trait(c.trait)}</color> <size=14>– {Names.TraitHelp(c.trait)}</size>", small);
                 GUILayout.Label($"Unik: {Names.Dodge(c.dodgeStyle)}", small);
-                if (c.signatureSkill != null) GUILayout.Label($"<color=#ffcc66>Skill klasy {K("Signature")}: {c.signatureSkill.displayName}</color> <size=14>– {c.signatureSkill.description}</size>", small);
+                if (ClassFeatureCatalog.For(c).Count > 0) DrawFeatureCards(plan);
+                else if (c.signatureSkill != null) GUILayout.Label($"<color=#ffcc66>Skill klasy {K("Signature")}: {c.signatureSkill.displayName}</color> <size=14>– {c.signatureSkill.description}</size>", small);
                 GUILayout.Label($"Siła {c.strength} · Zręczność {c.dexterity} · Inteligencja {c.intelligence} · Wytrzymałość {c.toughness}\n<size=14>Po każdym piętrze: +1 do wybranej cechy.</size>", small);
                 if (c.classModifiers.Count > 0)
                     GUILayout.Label("<size=14>Mistrzostwo: " + string.Join(", ", c.classModifiers.Select(m => $"{Names.Stat(m.stat)} {(m.value >= 0 ? "+" : "")}{m.value:0.#}{(m.mode == ModifierMode.Percent ? "%" : "")}")) + "</size>", small);
@@ -779,6 +780,7 @@ namespace Turris
                 if (!root.TryStartRun(plan, out var reason)) status = reason; else status = null;
             });
             if (status != null) GUI.Label(new Rect(300, H - 95, W - 720, 40), status, label);
+            else GUI.Label(new Rect(300, H - 112, W - 720, 70), LoadoutSummary(plan), rich);
         }
 
         static string KindShort(UnlockKind k) => k == UnlockKind.StartingItem ? "przedmiot" : k == UnlockKind.Spell ? "umiejętność" : "talent";
@@ -823,6 +825,7 @@ namespace Turris
             const float w = 300, h = 66;
             // Trzy sloty i – jeśli klasa go ma – skill klasy pod osobnym przyciskiem.
             int count = RunState.SkillSlotCount + (pc.Skill(PlayerCombat.SignatureSlot) != null ? 1 : 0);
+            if (pc.Feature != null) DrawFeatureSlot(pc, new Rect(x + RunState.SkillSlotCount * (w + 10), y, w, h));
             for (int i = 0; i < count; i++)
             {
                 var r = new Rect(x + i * (w + 10), y, w, h);
@@ -849,7 +852,11 @@ namespace Turris
                     string cost = sk.Def.IsAura ? (pc.Auras.Exists(a => a != null && a.Skill == sk.Def) ? "<color=#ffdd77>aktywna</color>" : "wyłączona")
                         : sk.Def.IsSpell ? $"{sk.manaCost:0} many" : $"{sk.staminaCost:0} wytrz.";
                     string charges = inst.MaxCharges > 1 ? $" · ładunki {inst.Charges}/{inst.MaxCharges}" : "";
-                    string state = !sk.equipmentMet ? $"<color=#ff9966>{Names.Requirement(sk.Def.requiredTags)}</color>"
+                    string state = sk.byArcana ? "<color=#aabbff>Arkana oręża</color> · " + (inst.Ready ? "<color=#99dd99>gotowa</color>" : $"{inst.RechargeRemaining:0.0}s")
+                        : !sk.equipmentMet && pc.Feature is ArcaneDebtFeature ? $"<color=#ff9966>{Names.Requirement(sk.Def.requiredTags)}</color>"
+                        : !sk.equipmentMet && pc.Feature is WeaponArcanaFeature ? $"<color=#aabbff>tylko w Arkanach oręża</color>"
+                        : !sk.equipmentMet && pc.Feature is SpellArrowFeature && sk.Def.IsSpell ? $"<color=#aabbff>przez Strzałę zaklęcia</color>"
+                        : !sk.equipmentMet ? $"<color=#ff9966>{Names.Requirement(sk.Def.requiredTags)}</color>"
                         : inst.Ready ? "<color=#99dd99>gotowa</color>" : $"{inst.RechargeRemaining:0.0}s";
                     sub = $"<size=15>{cost} · {state}{charges}</size>";
                 }
@@ -872,6 +879,7 @@ namespace Turris
             // Paski zasobów
             float x = 40, y = 36;
             Bar(new Rect(x, y, 16 + pc.Health.Max * 0.9f, 22), pc.Health.Fraction, new Color(0.75f, 0.12f, 0.12f), $"{pc.Health.Current:0}/{pc.Health.Max:0}");
+            DrawHealthReservation(pc, new Rect(x, y, 16 + pc.Health.Max * 0.9f, 22));
             Bar(new Rect(x, y + 28, 16 + pc.Mana.Max * 1.6f, 16), pc.Mana.Fraction, new Color(0.2f, 0.35f, 0.85f), $"{pc.Mana.Current:0}/{pc.Mana.Max:0}");
             Bar(new Rect(x, y + 50, 16 + pc.Stamina.Max * 2.5f, 16), pc.Stamina.Fraction, new Color(0.2f, 0.65f, 0.25f), null);
             if (pc.BarrierAmount > 0)
@@ -888,7 +896,7 @@ namespace Turris
             if (cls != null && (cls.trait == ClassTrait.Fury || cls.trait == ClassTrait.Bloodlust))
                 buffs.Add(pc.Raging ? $"<color=#ff4422>SZAŁ ({pc.RageTime:0}s)</color>" : $"<color=#dd7755>Furia {pc.Fury:0}%</color>");
             if (pc.WardMax > 0) buffs.Add($"<color=#aa99ff>Osłona arkanów {pc.Ward:0}/{pc.WardMax:0}</color>");
-            if (pc.IronSkinTime > 0) buffs.Add($"<color=#ff3322>Żelazna skóra −80% ({pc.IronSkinTime:0.0}s)</color>");
+            if (pc.IronSkinTime > 0) buffs.Add($"<color=#ff3322>Żelazna skóra −{PlayerCombat.IronSkinReduction * 100f:0}% ({pc.IronSkinTime:0.0}s)</color>");
             if (pc.OverloadReady) buffs.Add("<color=#cc88ff>Przeciążenie gotowe</color>");
             if (pc.OverheatTime > 0) buffs.Add($"<color=#aa66cc>Sloty przegrzane ({pc.OverheatTime:0.0}s)</color>");
             foreach (var a in pc.Auras) if (a != null && a.Skill != null) buffs.Add($"<color=#{ColorUtility.ToHtmlStringRGB(a.Skill.color)}>{a.Skill.displayName}</color>");
@@ -1002,7 +1010,7 @@ namespace Turris
                     (UsingPad ? "Lewa gałka ruch · Prawa gałka kamera\n" : "WASD ruch · Mysz kamera\n") +
                     $"{K("Sprint")} bieg · {K("Light")} szybki atak / riposta · {K("Heavy")} mocny atak\n" +
                     $"{K("Block")} blok · {K("Parry")} parowanie · {K("Dodge")} unik (przerywa atak)\n" +
-                    $"{K("Skill1")} {K("Skill2")} {K("Skill3")} umiejętności 1–3 · {K("Signature")} skill klasy\n" +
+                    $"{K("Skill1")} {K("Skill2")} {K("Skill3")} umiejętności 1–3 · {K("Signature")} cecha klasowa\n" +
                     $"{K("FlaskHealth")} flaszka życia · {K("FlaskMana")} flaszka many\n" +
                     $"{K("LockOn")} namierzanie · {K("SwitchLeft")} / {K("SwitchRight")} zmiana celu\n" +
                     (UsingPad ? "(Start) pauza" : "[Esc] pauza");
@@ -1321,6 +1329,7 @@ namespace Turris
                 if (it != null && canSell && run.CanSell(it))
                     Btn($"Sprzedaj ({RunState.SellPrice(it)} dusz)", button, () => { run.SellItem(it); pc.RefreshBuild(); });
             }
+            DrawArsenal(run, pc);
             GUILayout.Space(10);
             GUILayout.Label("Umiejętności – 3 sloty", header);
             for (int i = 0; i < RunState.SkillSlotCount; i++)
@@ -1360,6 +1369,7 @@ namespace Turris
                 }
                 else Btn($"Załóż → {Names.Slot(it.definition.DefaultSlot)}", button, () => { run.EquipFromInventory(it, it.definition.DefaultSlot); pc.RefreshBuild(); });
                 if (canSell) Btn($"Sprzedaj ({RunState.SellPrice(it)})", button, () => { run.SellItem(it); pc.RefreshBuild(); });
+                ArsenalInventoryButton(run, pc, it);
                 GUILayout.EndHorizontal();
                 GUILayout.Space(10);
             }

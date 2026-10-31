@@ -43,6 +43,12 @@ namespace Turris
         int sunder; float sunderTime;
         float soakedTime, slowTime;
         float tickTimer, pending;
+        // Wielki pożar (cecha Maga ognia B): dodatkowe rodziny podpalenia z innych źródeł niż podstawowe.
+        struct BurnFamily { public int key; public float dps, remaining; }
+        readonly List<BurnFamily> extraBurns = new List<BurnFamily>();
+        int baseBurnFamily;
+        // Niezmienny szron (cecha Maga wody A): wirtualny warunek chłodu dla reakcji – osobny znacznik, nie pole zwykłego chłodu.
+        float frostMarkTime, frostMarkReadyAt, frostMarkInterval = 1f, frostMarkMudBonus;
         enum Reaction { ThermalShock, SoakedAir, Conduction, Shatter, EmberBurst, Mud, Steam }
         readonly float[] reactionReadyAt = new float[7];
         float clock, rootUntil = float.NegativeInfinity, webTime;
@@ -86,7 +92,28 @@ namespace Turris
         void Reacted(Reaction kind, BalanceConfig b) => reactionReadyAt[(int)kind] = clock + b.reactionCooldown;
 
         public int BleedStacks => bleeds.Count;
-        public bool Burning => burnTime > 0;
+        public bool Burning => burnTime > 0 || extraBurns.Count > 0;
+        /// <summary>Liczba niezależnych rodzin podpalenia (Wielki pożar); 1 – zwykłe podpalenie, 0 – nie płonie.</summary>
+        public int BurnFamilyCount => (burnTime > 0 ? 1 : 0) + extraBurns.Count;
+        /// <summary>Łączne obrażenia/s wszystkich rodzin podpalenia.</summary>
+        public float BurnDpsTotal { get { float s = burnTime > 0 ? burnDps : 0f; foreach (var f in extraBurns) s += f.dps; return s; } }
+        /// <summary>Znacznik Szronu (Niezmienny szron) – warunek reakcji, bez spowolnienia i kontroli.</summary>
+        public bool FrostMarked => frostMarkTime > 0;
+        public float FrostMarkRemaining => frostMarkTime;
+        /// <summary>Liczba reakcji rozliczonych dzięki znacznikowi Szronu (telemetria).</summary>
+        public int FrostMarkReactions { get; private set; }
+
+        /// <summary>Nakłada znacznik Szronu: reakcje traktują cel jak wychłodzony, bez zużywania chłodu, najwyżej co <paramref name="interval"/> s.</summary>
+        public void MarkFrost(float seconds, float interval, float mudBonus)
+        {
+            frostMarkTime = Mathf.Max(frostMarkTime, seconds);
+            frostMarkInterval = Mathf.Max(0.1f, interval);
+            frostMarkMudBonus = Mathf.Max(0f, mudBonus);
+        }
+        /// <summary>Usuwa tylko znacznik Szronu – prawdziwe statusy zostają.</summary>
+        public void ClearFrostMark() => frostMarkTime = 0f;
+        bool FrostMarkReady => FrostMarked && clock >= frostMarkReadyAt;
+        void FrostMarkUsed() { frostMarkReadyAt = clock + frostMarkInterval; FrostMarkReactions++; }
         public int ChillStacks => chillTime > 0 ? chill : 0;
         public bool Frozen => frozenTime > 0;
         public float FrozenRemaining => frozenTime;
@@ -124,10 +151,13 @@ namespace Turris
             if ((ChillStacks > 0 || Frozen || Soaked) && hit.bonusVsChilled > 0) m *= 1f + hit.bonusVsChilled;
             hit.physical *= m * (SunderAsResistance ? 1f : 1f + SunderStacks * b.sunderPerStack);
             hit.magic *= m;
-            if (hit.Has(Element.Fire) && hit.magic > 0 && ChillStacks > 0 && CanReact(hit, Reaction.ThermalShock))
+            if (hit.Has(Element.Fire) && hit.magic > 0 && (ChillStacks > 0 || FrostMarked) && CanReact(hit, Reaction.ThermalShock)
+                && (!FrostMarked || FrostMarkReady))
             {
                 hit.magic *= 1f + b.thermalShockBonus * hit.ShareOf(Element.Fire);
-                chill = 0; chillTime = 0;
+                // Szron: reakcja nie zużywa chłodu (ani prawdziwego, ani wirtualnego) – limit to osobny odstęp znacznika.
+                if (FrostMarked) FrostMarkUsed();
+                else { chill = 0; chillTime = 0; }
                 Reacted(Reaction.ThermalShock, b);
                 return "SZOK TERMICZNY";
             }
@@ -189,20 +219,29 @@ namespace Turris
                         reaction = "WYBUCH ŻARU";
                     }
                 }
-                else if ((ChillStacks > 0 || Soaked) && !Frozen && CanReact(hit, Reaction.Mud))
+                else if ((ChillStacks > 0 || Soaked) && !Frozen && CanReact(hit, Reaction.Mud) && (!FrostMarked || FrostMarkReady))
                 {
-                    // Błoto: ziemia w wychłodzony albo przemoczony cel ogłusza.
+                    // Błoto: ziemia w wychłodzony albo przemoczony cel ogłusza (zwykłe zasady kontroli i odporności).
                     Reacted(Reaction.Mud, b);
-                    chill = 0; chillTime = 0; soakedTime = 0;
+                    if (FrostMarked) FrostMarkUsed(); // Szron: chłód zostaje
+                    else { chill = 0; chillTime = 0; soakedTime = 0; }
                     if (Stun(b)) froze = true;
                     reaction = "BŁOTO";
+                }
+                else if (FrostMarked && !Frozen && FrostMarkReady && CanReact(hit, Reaction.Mud))
+                {
+                    // Sam Szron (bez prawdziwego chłodu): błoto bez ogłuszenia – premia do obrażeń ziemi, AI nie staje.
+                    Reacted(Reaction.Mud, b);
+                    FrostMarkUsed();
+                    instant += landedMagic * hit.ShareOf(Element.Earth) * frostMarkMudBonus;
+                    reaction = "BŁOTO (SZRON)";
                 }
             }
             if (AreaReactions && hit.Has(Element.Frost) && hit.magic > 0 && Burning && reaction == null && CanReact(hit, Reaction.Steam))
             {
                 // Para: woda gasi ogień; przed efektami trafienia, jak w HU.
                 Reacted(Reaction.Steam, b);
-                burnTime = 0f; burnDps = 0f;
+                burnTime = 0f; burnDps = 0f; extraBurns.Clear(); baseBurnFamily = 0;
                 LastSteam = true;
                 reaction = "PARA";
             }
@@ -246,8 +285,7 @@ namespace Turris
                     if (source <= 0) return false;
                     float duration = b.burnDuration + mods.burnDurationBonus;
                     float dps = source * b.burnShare / Mathf.Max(0.1f, b.burnDuration); // dłuższe = więcej łącznie
-                    burnDps = Burning ? Mathf.Max(burnDps, dps) : dps;
-                    burnTime = Mathf.Max(burnTime, duration);
+                    ApplyBurn(dps, duration, mods.burnFamily, mods.burnFamilies);
                     return false;
                 }
                 case StatusKind.Chill:
@@ -292,6 +330,49 @@ namespace Turris
             return false;
         }
 
+        /// <summary>
+        /// Podpalenie: zwykle jedna rodzina (silniejsze wygrywa, czas – dłuższy). Wielki pożar (<paramref name="families"/> &gt; 1):
+        /// inne źródło (<paramref name="family"/>) zakłada osobną rodzinę do limitu; to samo źródło odświeża własną rodzinę tą samą regułą.
+        /// </summary>
+        void ApplyBurn(float dps, float duration, int family, int families)
+        {
+            bool baseBurning = burnTime > 0;
+            if (families <= 1 || family == 0 || !baseBurning || baseBurnFamily == family || baseBurnFamily == 0)
+            {
+                burnDps = baseBurning ? Mathf.Max(burnDps, dps) : dps;
+                burnTime = Mathf.Max(burnTime, duration);
+                if (!baseBurning || baseBurnFamily == 0) baseBurnFamily = family;
+                return;
+            }
+            for (int i = 0; i < extraBurns.Count; i++)
+            {
+                if (extraBurns[i].key != family) continue;
+                var f = extraBurns[i];
+                f.dps = Mathf.Max(f.dps, dps); f.remaining = Mathf.Max(f.remaining, duration);
+                extraBurns[i] = f;
+                return;
+            }
+            var nf = new BurnFamily { key = family, dps = dps, remaining = duration };
+            if (extraBurns.Count < families - 1) { extraBurns.Add(nf); return; }
+            int weakest = 0;
+            for (int i = 1; i < extraBurns.Count; i++) if (extraBurns[i].dps < extraBurns[weakest].dps) weakest = i;
+            if (dps >= extraBurns[weakest].dps) extraBurns[weakest] = nf;
+        }
+
+        /// <summary>
+        /// Koniec Wielkiego pożaru: zostaje jedno, najsilniejsze podpalenie – z jego pozostałym czasem i obrażeniami,
+        /// bez przedłużenia i bez dopisywania budżetu pozostałych rodzin.
+        /// </summary>
+        public void CollapseBurnFamilies()
+        {
+            if (extraBurns.Count == 0) { baseBurnFamily = 0; return; }
+            float bestDps = burnTime > 0 ? burnDps : 0f, bestTime = burnTime;
+            foreach (var f in extraBurns) if (f.dps > bestDps) { bestDps = f.dps; bestTime = f.remaining; }
+            burnDps = bestDps; burnTime = bestTime;
+            extraBurns.Clear();
+            baseBurnFamily = 0;
+        }
+
         /// <summary>Powalenie (Odtrącenie HU): ogłuszenie na podany czas, z odpornością na kontrolę; bez progu zachwiania.</summary>
         public bool KnockDown(float seconds, BalanceConfig b)
         {
@@ -330,7 +411,15 @@ namespace Turris
                 st.remaining -= dt;
                 if (st.remaining <= 0) bleeds.RemoveAt(i); else bleeds[i] = st;
             }
-            if (burnTime > 0) { pending += burnDps * Mathf.Min(dt, burnTime); burnTime -= dt; }
+            if (burnTime > 0) { pending += burnDps * Mathf.Min(dt, burnTime); burnTime -= dt; if (burnTime <= 0) baseBurnFamily = 0; }
+            for (int i = extraBurns.Count - 1; i >= 0; i--)
+            {
+                var f = extraBurns[i];
+                pending += f.dps * Mathf.Min(dt, f.remaining);
+                f.remaining -= dt;
+                if (f.remaining <= 0) extraBurns.RemoveAt(i); else extraBurns[i] = f;
+            }
+            if (frostMarkTime > 0) frostMarkTime -= dt;
             if (chillTime > 0) { chillTime -= dt; if (chillTime <= 0) chill = 0; }
             if (frozenTime > 0) frozenTime -= dt;
             if (freezeImmunity > 0) freezeImmunity -= dt;
@@ -365,6 +454,7 @@ namespace Turris
             burnTime = 0; chill = 0; chillTime = 0; frozenTime = 0; freezeImmunity = 0; shockTime = 0; pending = 0;
             stagger = 0; staggerTime = 0; stunTime = 0; stunImmunity = 0; sunder = 0; sunderTime = 0;
             soakedTime = 0; slowTime = 0;
+            extraBurns.Clear(); baseBurnFamily = 0; frostMarkTime = 0; frostMarkReadyAt = 0; FrostMarkReactions = 0;
             System.Array.Clear(reactionReadyAt, 0, reactionReadyAt.Length);
             ExternalSlow = 0;
             clock = webTime = 0; rootUntil = float.NegativeInfinity;
@@ -376,7 +466,8 @@ namespace Turris
             var l = new List<(StatusKind, string)>();
             if (Frozen) l.Add((StatusKind.Frozen, "ZAMROŻONY"));
             if (bleeds.Count > 0) l.Add((StatusKind.Bleed, bleeds.Count > 1 ? $"krwawienie ×{bleeds.Count}" : "krwawienie"));
-            if (Burning) l.Add((StatusKind.Burn, "płonie"));
+            if (Burning) l.Add((StatusKind.Burn, BurnFamilyCount > 1 ? $"płonie ×{BurnFamilyCount}" : "płonie"));
+            if (FrostMarked) l.Add((StatusKind.Chill, "szron"));
             if (ChillStacks > 0) l.Add((StatusKind.Chill, ChillStacks > 1 ? $"chłód ×{ChillStacks}" : "chłód"));
             if (Shocked) l.Add((StatusKind.Shock, "porażony"));
             if (Stunned) l.Add((StatusKind.Stun, "OGŁUSZONY"));
