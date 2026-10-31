@@ -75,7 +75,7 @@ namespace Turris
         {
             float yaw = character.eulerAngles.y;
             Vector3 target = Vector3.zero;
-            if (hasPrevMotion && dt > 1e-4f && action != AnimAction.Dodge && action != AnimAction.Death)
+            if (hasPrevMotion && dt > 1e-4f && !AnimResolve.IsDodge(action) && action != AnimAction.Death)
             {
                 Vector3 acc = (localVel - prevLocalVel) / dt;
                 float yawRate = Mathf.DeltaAngle(prevYaw, yaw) / dt;
@@ -219,6 +219,7 @@ namespace Turris
                     else target = Pose.Lerp(parryActive, ready, Mathf.SmoothStep(0, 1, s.phaseProgress));
                     break;
                 case AnimAction.Dodge:
+                case AnimAction.ChargeForward: case AnimAction.ChargeBack: case AnimAction.ChargeLeft: case AnimAction.ChargeRight:
                 {
                     exact = true;
                     float rollDur = Mathf.Max(0.2f, s.rollDuration > 0f ? s.rollDuration : s.actionDuration * 0.62f);

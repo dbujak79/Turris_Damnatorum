@@ -57,7 +57,7 @@ namespace Turris.Tests
         }
 
         /// <summary>
-        /// Pełny zamach (GreatSwingPose): po rąbnięciu ostrze topora jest przy ziemi przed postacią, a biodra niżej (przysiad);
+        /// Pełny zamach: po rąbnięciu (klip autorski) ostrze topora jest przy ziemi przed postacią, a biodra niżej (przysiad);
         /// po cięciu topór jest po drugiej stronie ciała. Zwykłe cięcie (miecz dwuręczny) zostaje bez dociągnięcia.
         /// </summary>
         [UnityTest]
@@ -81,22 +81,31 @@ namespace Turris.Tests
                 for (int i = 0; i < 20; i++) yield return null;
             }
             for (int i = 0; i < 40; i++) yield return null;
-            // Postawa topora: broń pionowo ostrzem w górę, z prawej strony.
+            // Postawa topora (uwaga użytkownika 2026-10-31: „ręce z toporem jakby w tułowiu, a powinny być przed nim; topór
+            // nienaturalnie uniesiony i przylepiony”, potem wzór z Elden Ring): niska garda – trzonek prawie poziomo przed
+            // pasem, głowica po prawej, dłonie na wysokości bioder i przed tułowiem.
             var socket = Util.FindDeep(go.transform, "WeaponSocket");
-            Debug.Log($"DETAIL postawa: udział {swing.GuardWeight:F2}, pion {Vector3.Dot(socket.up, Vector3.up):F2}, bok {go.transform.InverseTransformPoint(socket.position).x:F2} m");
+            Vector3 grip = go.transform.InverseTransformPoint(socket.position), aim = go.transform.InverseTransformDirection(socket.up);
+            Debug.Log($"DETAIL postawa: udział {swing.GuardWeight:F2}, trzonek w górę {aim.y:F2}, w przód {aim.z:F2}, w prawo {aim.x:F2}, chwyt przód {grip.z:F2} m, wys. {grip.y:F2} m, bok {grip.x:F2} m");
             Assert.Greater(swing.GuardWeight, 0.9f, "postawa topora w spoczynku");
-            Assert.Greater(Vector3.Dot(socket.up, Vector3.up), 0.8f, "topór pionowo, ostrzem w górę");
-            Assert.Greater(go.transform.InverseTransformPoint(socket.position).x, 0.15f, "z prawej strony");
+            Assert.Less(Mathf.Abs(aim.y), 0.3f, "trzonek prawie poziomo");
+            Assert.Greater(aim.x, 0.8f, "głowica po prawej");
+            Assert.That(grip.y, Is.InRange(0.85f, 1.1f), "dłonie na wysokości bioder");
+            Assert.Greater(grip.z, 0.25f, "chwyt przed tułowiem");
 
             yield return Hold(AttackAnim.Overhead, ActionPhase.Recovery, 0.15f);
             float plain = Lowest();
             Assert.Less(swing.Current.z, 0.01f, "zwykły cios bez dociągnięcia");
 
+            var hipsBone = v.Model.GetComponentInChildren<Animator>().GetBoneTransform(HumanBodyBones.Hips);
+            float hipsPlain = hipsBone.position.y;
             yield return Hold(AttackAnim.Chop, ActionPhase.Recovery, 0.15f);
-            Debug.Log($"DETAIL rąbnięcie: najniżej {Lowest():F2} m (bez dociągnięcia {plain:F2}), przysiad {swing.Current.z:F2} m, skłon {swing.Current.x:F0}°");
+            // Rąbnięcie to klip autorski (ArtSource/AnimationRepair/heavy-chop): przysiad i skłon są w nagraniu, nie w GreatSwingPose.
+            float squat = hipsPlain - hipsBone.position.y;
+            Debug.Log($"DETAIL rąbnięcie: najniżej {Lowest():F2} m (bez dociągnięcia {plain:F2}), biodra niżej o {squat:F2} m");
             Assert.Less(Lowest(), 0.2f, "ostrze przy ziemi");
             Assert.Greater(Lowest(), -0.05f, "ostrze nie wchodzi w podłogę");
-            Assert.Greater(swing.Current.z, 0.15f, "przysiad");
+            Assert.Greater(squat, 0.12f, "przysiad");
 
             yield return Hold(AttackAnim.Cleave, ActionPhase.Recovery, 0.15f);
             float left = Side();

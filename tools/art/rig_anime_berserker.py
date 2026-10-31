@@ -152,10 +152,11 @@ for side,sign in [('Left',1),('Right',-1)]:
     put(side+'Arm',mask*(1-elbow))
     put(side+'ForeArm',mask*elbow*(1-wrist))
     put(side+'Hand',mask*wrist)
-    # Buty skórzane zachowują bryłę; przejście jest powyżej cholewki.
+    # Cholewka buta idzie za podudziem, zgięcie w kostce (kość stopy 0,12 m). Dawniej przejście było powyżej cholewki
+    # (0,24–0,34 m) – przy ugiętym kolanie i płaskiej stopie noga łamała się w połowie łydki (uwaga użytkownika 2026-10-31).
     pelvis=smooth(.86,.98,z)
     knee=smooth(.46,.59,z)
-    ankle=smooth(.24,.34,z)
+    ankle=smooth(.12,.20,z)
     leg=body*side_mask*(1-smooth(.98,1.04,z))
     # Wiszące części z przodu/tyłu podążają za biodrem i udem, nie za kostką.
     cloth=smooth(.12,.19,np.abs(y))*smooth(.31,.44,z)*(1-smooth(.84,.94,z))
@@ -244,6 +245,34 @@ for bone in arm.pose.bones:
 modifier=model.modifiers.new('Szkielet berserkera','ARMATURE')
 modifier.object=arm
 
+# Ręce w ludzkich proporcjach (uwaga użytkownika 2026-10-31: „ma mieć ręce proporcjonalne jak człowiek, a nie jakieś krótkie”):
+# siatka Meshy miała rozpiętość ramion 1,43 m przy wzroście 1,80 m. W pozie T wierzchołki ręki przesuwane wzdłuż osi X
+# (ramię ×1,10, przedramię ×1,40, dłoń ×1,20, z wagą przypięcia do kości ręki), kości łokcia, nadgarstka i gniazda – tak samo.
+# Wynik: rozpiętość ~1,64 m (najpierw ramię ×1,22 – „część z bicepsem i tricepsem zbyt mocno wydłużona”). Tylko berserker (mag ma szatę i inne proporcje).
+if not MAGE:
+    A0,E0,W0=.25,.474,.636; S1,S2,S3=1.10,1.40,1.20
+    def arm_x(a):
+        if a<=A0: return a
+        if a<=E0: return A0+(a-A0)*S1
+        fe=A0+(E0-A0)*S1
+        if a<=W0: return fe+(a-E0)*S2
+        return fe+(W0-E0)*S2+(a-W0)*S3
+    chain={1:[names.index('mixamorig:Left'+b) for b in ('Arm','ForeArm','Hand')],-1:[names.index('mixamorig:Right'+b) for b in ('Arm','ForeArm','Hand')]}
+    for vertex in model.data.vertices:
+        x=vertex.co.x; sgn=1 if x>0 else -1; a=abs(x)
+        if a<=A0-.02: continue
+        w=float(weights[vertex.index,chain[sgn]].sum())
+        if w>1e-4: vertex.co.x=sgn*(a+(arm_x(a)-a)*w)
+    active(arm)
+    bpy.ops.object.mode_set(mode='EDIT')
+    for side,sgn in [('Left',1),('Right',-1)]:
+        for name in ['mixamorig:'+side+'Arm','mixamorig:'+side+'ForeArm','mixamorig:'+side+'Hand','HandSlot.'+side[0]]:
+            if name not in arm.data.edit_bones: continue
+            b=arm.data.edit_bones[name]
+            h,t=b.head.copy(),b.tail.copy(); h.x=sgn*arm_x(abs(h.x)); t.x=sgn*arm_x(abs(t.x)); b.head=h; b.tail=t
+    bpy.ops.object.mode_set(mode='OBJECT')
+    active(model)
+
 # Palce i kciuk obejmują drzewce. Kości starego modelu nie mają osobnych paliczków,
 # więc stały chwyt przygotowujemy w siatce, w układzie każdej dłoni.
 grips={}
@@ -292,6 +321,30 @@ for side,sign in [('Left',1),('Right',-1)]:
     slot.tail=slot.head+Vector((0,-.035,0))
     bpy.ops.object.mode_set(mode='OBJECT')
     grips[side].update(changed_vertices=changed,thumb_vertices=thumb_changed,grip_center=[sign*(knuckle_x+.006),center_y,knuckle_z-radius],radius=radius)
+# Kciuk był w ~84% przypięty do przedramienia (podział wag po osi X), więc przy obrocie dłoni do chwytu zostawał
+# z przedramieniem i sterczał, a pętla zginania palców wyżej go pomijała. Przypinamy go do dłoni i podginamy o 40°
+# pod pięść (oś równoległa do trzonka u nasady kciuka) – dłoń zaciska się na trzonku.
+if not MAGE:
+    for side,s in (('Right',-1),('Left',1)):
+        hg=model.vertex_groups['mixamorig:'+side+'Hand']
+        for v in model.data.vertices:
+            ax=v.co.x*s
+            if ax<0.70 or v.co.z>1.375: continue
+            t=float(smooth(0.705,0.745,ax)*(1-smooth(1.36,1.375,v.co.z)))
+            old={g.group:g.weight for g in v.groups}; h=old.get(hg.index,0.0); nh=max(h,t)
+            if nh-h<1e-4: continue
+            rest=sum(w for k,w in old.items() if k!=hg.index)
+            for k,w in old.items():
+                if k!=hg.index and rest>0: model.vertex_groups[k].add([v.index],w*(1-nh)/rest,'REPLACE')
+            hg.add([v.index],nh,'REPLACE')
+        base=np.array([0.75*s,0.0,1.355]); d=np.array([0.04*s,0,-0.05]); d/=np.linalg.norm(d)
+        for v in model.data.vertices:
+            ax=v.co.x*s
+            if ax<0.735 or v.co.z>1.365 or v.co.z<1.28 or v.co.y>0.04: continue
+            r=np.array(v.co)-base; f=float(smooth(0.0,0.03,float(r@d)))
+            if f<=0: continue
+            a=math.radians(40)*f*s; c,sn=math.cos(a),math.sin(a)
+            v.co.x=base[0]+c*r[0]-sn*r[2]; v.co.z=base[2]+sn*r[0]+c*r[2]
 (OUT/'hand-coordinates.json').write_text(json.dumps(grips,indent=2),encoding='utf-8')
 for action in list(bpy.data.actions):bpy.data.actions.remove(action)
 for image in bpy.data.images:

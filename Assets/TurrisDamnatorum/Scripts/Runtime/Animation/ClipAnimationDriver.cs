@@ -558,6 +558,7 @@ namespace Turris
             {
                 case AnimAction.Attack: return from == AnimAction.Attack ? 0.11f : 0.08f;
                 case AnimAction.Dodge:
+                case AnimAction.ChargeForward: case AnimAction.ChargeBack: case AnimAction.ChargeLeft: case AnimAction.ChargeRight:
                 case AnimAction.Backstep: return 0.07f;
                 case AnimAction.Parry:
                 case AnimAction.Flinch: return 0.06f;
@@ -590,7 +591,8 @@ namespace Turris
             lastAdvance = 0f;
             UpdateLocomotion(worldVelocity, dt, s.action == AnimAction.Block || s.action == AnimAction.Drink);
 
-            var clip = s.action == AnimAction.None ? null : FindClip(s.action, s.attack);
+            // Trafienie i śmierć: wariant klipu z kierunku i siły ciosu (stan akcji zostaje Flinch / Death).
+            var clip = s.action == AnimAction.None ? null : FindClip(AnimResolve.ReactionClip(character, s), s.attack);
             float norm = clip != null ? NormalizedTime(clip, s, clip.clip.length) : 0f;
             // Ten sam klip od nowa (np. dwa jednakowe ciosy z rzędu) – też przenikanie, nie skok na początek klipu.
             bool restart = clip != null && clip == currentAction && !clip.loop && norm < lastNorm - 0.25f;
@@ -686,11 +688,17 @@ namespace Turris
                 float running = 0f;
                 for (int i = Run; i < Run + 4 && i < LocoSlots; i++) running += loco.GetInputWeight(i);
                 float moving = 1f - loco.GetInputWeight(Idle) - loco.GetInputWeight(LocoSlots);
-                GreatSwing.Apply(s, dt, 1f - bodyAction, moving > 0.01f ? Mathf.Clamp01(running / moving) : 0f, 1f - moving);
+                // Klip autorski (ActionClip.authoredSwing) niesie pełny zamach sam – bez profilu ciosu GreatSwingPose.
+                var swing = s;
+                bool authored = swing.action == AnimAction.Attack && currentAction != null && currentAction.authoredSwing;
+                if (authored) swing.attack = AttackAnim.Auto;
+                GreatSwing.FloorGuard = authored;
+                GreatSwing.Apply(swing, dt, 1f - bodyAction, moving > 0.01f ? Mathf.Clamp01(running / moving) : 0f, 1f - moving);
             }
 #if UNITY_EDITOR
             TracePose("07a-great-swing");
 #endif
+            ChargeTremble(s, dt);
             AlignArmoredRunFeet();
 #if UNITY_EDITOR
             TracePose("08-armored-feet");
@@ -719,7 +727,11 @@ namespace Turris
         ActionClip FindClip(AnimAction action, AttackAnim attack)
         {
             var c = set != null ? set.Find(action, attack) : null;
-            return c ?? def.Find(action, attack);
+            c = c ?? def.Find(action, attack);
+            // Szarża barkiem bez własnego klipu w zestawie – zwykły unik.
+            if (c == null && AnimResolve.IsCharge(action)) return FindClip(AnimAction.Dodge, attack);
+            if (c == null && AnimResolve.ReactionBase(action) != action) return FindClip(AnimResolve.ReactionBase(action), attack);
+            return c;
         }
 
         void SwapAction(ActionClip clip, AnimAction action, float norm,float preparationDuration)
@@ -765,7 +777,7 @@ namespace Turris
         }
 
         static bool IsUrgent(AnimAction a) =>
-            a == AnimAction.Flinch || a == AnimAction.Dodge || a == AnimAction.Backstep || a == AnimAction.Parry || a == AnimAction.Death || a == AnimAction.GuardBroken;
+            a == AnimAction.Flinch || AnimResolve.IsDodge(a) || a == AnimAction.Backstep || a == AnimAction.Parry || a == AnimAction.Death || a == AnimAction.GuardBroken;
 
         /// <summary>Średnia prędkość dłoni w przejściu (m/s) – granica dla szybkiego, ale ludzkiego ruchu ręki.</summary>
         public const float MaxBlendHandSpeed = 7f, UrgentBlendHandSpeed = 8f;
@@ -1034,7 +1046,44 @@ namespace Turris
         }
 
         /// <summary>Dwukościowe IK: kolano w płaszczyźnie z bieżącej pozy; planted – udział obrotu stopy na świecie (reszta lokalnie).</summary>
-        internal static void Reach(Transform upper, Transform lower, Transform foot, Vector3 target, Vector3 dir, float planted)
+        // ------------------------------------------------------------------ Ładowanie ciężkiego ciosu
+
+        /// <summary>Drżenie przy ładowaniu (stopnie): od początku do pełnego naładowania; częstotliwość (Hz).</summary>
+        public const float TrembleMin = 1.0f, TrembleMax = 3.2f, TrembleHz = 13f;
+        float trembleW, trembleT;
+
+        /// <summary>
+        /// Zamach stoi w ładowaniu (CharacterAnimState.charge &gt; 0): napięte ciało lekko drży – tułów, głowa i ramiona,
+        /// amplituda rośnie z ładowaniem. Po puszczeniu przycisku drżenie znika od razu (cios rusza z czystej pozy).
+        /// Lewą dłoń na trzonku ustawia potem HellEquipmentPose, więc chwyt zostaje.
+        /// </summary>
+        void ChargeTremble(in CharacterAnimState s, float dt)
+        {
+            bool charging = s.action == AnimAction.Attack && s.charge > 0f;
+            trembleW = charging ? Mathf.MoveTowards(trembleW, 1f, dt / 0.12f) : 0f;
+            if (trembleW <= 0f || dt <= 0f) return;
+            trembleT += dt;
+            float amp = Mathf.Lerp(TrembleMin, TrembleMax, Mathf.Clamp01(s.charge)) * trembleW;
+            float N(float seed) => (Mathf.PerlinNoise(trembleT * TrembleHz, seed) - 0.5f) * 2f;
+            Vector3 right = character.right, fwd = character.forward, up = character.up;
+            void Shake(HumanBodyBones b, float k, float seed)
+            {
+                var t = animator.GetBoneTransform(b);
+                if (t == null) return;
+                t.rotation = Quaternion.AngleAxis(amp * k * N(seed), right) * Quaternion.AngleAxis(amp * k * N(seed + 3.1f), fwd)
+                           * Quaternion.AngleAxis(amp * k * 0.5f * N(seed + 6.7f), up) * t.rotation;
+            }
+            Shake(HumanBodyBones.Spine, 0.4f, 0.2f);
+            Shake(HumanBodyBones.Chest, 0.4f, 1.3f);
+            Shake(HumanBodyBones.Head, 0.8f, 2.9f);
+            Shake(HumanBodyBones.RightUpperArm, 1.0f, 4.4f);
+            Shake(HumanBodyBones.LeftUpperArm, 1.0f, 5.6f);
+        }
+
+        /// <param name="kneeHint">opcjonalny kierunek kolana (świat) dla prawie prostej nogi: bieżąca poza nie mówi wtedy,
+        /// w którą stronę zgiąć kolano, i płaszczyznę wyznaczałoby samo przesunięcie stopy (kolano uciekało do środka i do tyłu).
+        /// Bez wskazówki – dotychczasowa płaszczyzna z bieżącej pozy.</param>
+        internal static void Reach(Transform upper, Transform lower, Transform foot, Vector3 target, Vector3 dir, float planted, Vector3 kneeHint = default)
         {
             Vector3 hip = upper.position, knee = lower.position, ankle = foot.position;
             float a = Vector3.Distance(hip, knee), b = Vector3.Distance(knee, ankle);
@@ -1043,6 +1092,17 @@ namespace Turris
             float d = Mathf.Clamp(toTarget.magnitude, Mathf.Abs(a - b) + 1e-3f, (a + b) * 0.999f);
             Quaternion footWorld = foot.rotation, footLocal = foot.localRotation;
             Vector3 hint = knee - hip;
+            if (kneeHint.sqrMagnitude > 1e-8f)
+            {
+                // Kolano względem bieżącej linii biodro–kostka: przy wyraźnym zgięciu zostaje jego kierunek,
+                // przy prostej nodze płynnie przejmuje wskazówkę (kolano nad palcami).
+                Vector3 line = ankle - hip;
+                Vector3 bend = line.sqrMagnitude > 1e-8f ? Vector3.ProjectOnPlane(knee - hip, line.normalized) : Vector3.zero;
+                float lim = a * 0.12f, w = Mathf.Clamp01(bend.magnitude / lim);
+                Vector3 pole = Vector3.Slerp(kneeHint.normalized, bend.sqrMagnitude > 1e-10f ? bend.normalized : kneeHint.normalized, w);
+                pole = Vector3.ProjectOnPlane(pole, toTarget.normalized);
+                if (pole.sqrMagnitude > 1e-8f) hint = pole;
+            }
             Vector3 normal = Vector3.Cross(toTarget, hint);
             if (normal.sqrMagnitude < 1e-8f) normal = Vector3.Cross(toTarget, dir.sqrMagnitude > 0f ? dir : Vector3.forward);
             if (normal.sqrMagnitude < 1e-8f) return;

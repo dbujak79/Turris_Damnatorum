@@ -129,6 +129,31 @@ namespace Turris.EditorTools
             return key+" anime: Humanoid, istniejące klipy i zestawy broni, malarska korekta materiału; wojownik bez zmian.";
         }
 
+        /// <summary>Po zmianie proporcji siatki (np. dłuższe ręce) odświeża tylko szkielet awatara;
+        /// Humanoid inaczej dalej ustawia kości według starych długości zapisanych w .meta.</summary>
+        [MenuItem("Turris/PoC/Berserker anime/Odśwież szkielet awatara")]
+        public static void RefreshSkeletonMenu() { Debug.Log(RefreshSkeleton(ModelPath)); }
+
+        public static void RefreshSkeletonBatch()
+        {
+            try { Debug.Log("BERSERKER_SKELETON_OK " + RefreshSkeleton(ModelPath)); }
+            catch (Exception error) { Debug.LogException(error); EditorApplication.Exit(1); }
+        }
+
+        static string RefreshSkeleton(string modelPath)
+        {
+            AssetDatabase.ImportAsset(modelPath, ImportAssetOptions.ForceSynchronousImport);
+            var importer = (ModelImporter)AssetImporter.GetAtPath(modelPath);
+            ConfigureHumanoid(importer, modelPath);
+            importer.SaveAndReimport();
+            var animator = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath).GetComponentInChildren<Animator>();
+            if (animator == null || animator.avatar == null || !animator.avatar.isValid)
+                throw new InvalidOperationException("Awatar niepoprawny po odświeżeniu szkieletu.");
+            var fore = importer.humanDescription.skeleton.First(b => b.name == "mixamorig:RightForeArm");
+            var hand = importer.humanDescription.skeleton.First(b => b.name == "mixamorig:RightHand");
+            return $"ramię {fore.position.magnitude:F3} m, przedramię {hand.position.magnitude:F3} m";
+        }
+
         [Serializable] class Report { public string model,visual,mage,warrior; public int vertices; public bool humanoid; }
 
         static void ConfigureHumanoid(ModelImporter importer,string ModelPath)

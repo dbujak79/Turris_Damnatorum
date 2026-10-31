@@ -52,7 +52,7 @@ namespace Turris
         readonly Transform[] spine;
         readonly float[] share;
         readonly Transform upperL, lowerL, footL, upperR, lowerR, footR;
-        readonly Transform armR, foreR, handR;
+        readonly Transform armR, foreR, handR, clavL, clavR;
         /// <summary>Połowa szerokości barków (m) – rozstaw stóp w postawie topora.</summary>
         readonly float halfShoulders;
         readonly Transform head;
@@ -72,13 +72,31 @@ namespace Turris
         /// (rozstaw <see cref="HellEquipmentPose.HeavyGripSpan"/>), broń pionowo ostrzem w górę (jak ciężki topór souls-like), lekkie ugięcie kolan. Miecz dwuręczny trzyma broń po swojemu (klip).
         /// </summary>
         public bool Guard { get; set; }
-        /// <summary>Chwyt postawy: prawa dłoń (przestrzeń postaci, m), kierunek trzonka ku ostrzu, przysiad (m).</summary>
-        public static Vector3 GuardHand = new Vector3(0.42f, 1.14f, 0.2f), GuardAim = new Vector3(0.42f, 0.9f, -0.06f);
+        /// <summary>Chwyt postawy: prawa dłoń (przestrzeń postaci, m), kierunek trzonka ku ostrzu.</summary>
+        /// Wzorzec użytkownika (2026-10-31, zrzut z Elden Ring): topór oburącz nisko – trzonek poziomo przed pasem, ramiona opuszczone,
+        /// dłonie przy biodrach, głowica z prawej, ostrzem w dół. Ręce berserkera wydłużone do ludzkich proporcji (ramię + przedramię ≈ 0,50 m):
+        /// trzonek na wysokości bioder ~0,3 m przed postacią (przód brzucha ≈ 0,24 m). Jak na wzorcu prawa dłoń trzyma wyżej
+        /// na trzonku (broń przesunięta w dłoni o <see cref="GuardSlide"/>), lewa przy końcu – rozstaw
+        /// <see cref="HellEquipmentPose.GuardGripSpan"/>, obie dłonie przy biodrach, nie przy środku pasa.
+        /// Dawniej topór prawie pionowo przy ciele i dłonie, które nie sięgały trzonka przed tułowiem („ręce w tułowiu”).
+        public static Vector3 GuardHand = new Vector3(0.30f, 0.95f, 0.32f), GuardAim = new Vector3(0.97f, -0.03f, 0.14f);
+        /// <summary>Przesunięcie broni w prawej dłoni w gardzie (m, ku końcowi trzonka): dłoń ~0,68 m od końca zamiast 0,34 m.</summary>
+        public const float GuardSlide = 0.32f;
+        /// <summary>Udział niskiej gardy (0–1) dla chwytu: przesunięcie broni, rozstaw dłoni, obrót broni wokół trzonka.</summary>
+        public float GuardGrip { get; private set; }
+        /// <summary>Obrót broni wokół trzonka w dłoni (°) – ostrze w dół bez wykręcania nadgarstka.</summary>
+        public float GuardSpin { get; private set; }
+        Quaternion restR = Quaternion.identity;
+        /// <summary>Kierunek ostrza (od trzonka ku krawędzi) w postawie – w dół, lekko w przód (przestrzeń postaci).</summary>
+        public static Vector3 GuardBlade = new Vector3(0f, -0.9f, 0.4f);
+        /// <summary>Wysunięcie barków (obrót obojczyków wokół pionu, °) w postawie – więcej zasięgu dla dłoni przed tułowiem.</summary>
+        public const float GuardShoulderForward = 6f;
         /// <summary>Bieg: broń niesiona przy prawym boku, skośnie, ostrzem w dół i do tyłu (zamiast sterczeć w bok jak miecz).</summary>
         public static Vector3 CarryHand = new Vector3(0.32f, 1.0f, 0.12f), CarryAim = new Vector3(0.38f, -0.3f, -0.87f);
         public const float GuardDrop = 0.04f, GuardSmooth = 0.12f;
         /// <summary>Wyprostowanie pleców i uniesienie głowy w spoczynku (°, ujemne – do tyłu / w górę): klip garbi się i patrzy w ziemię.</summary>
-        public const float GuardLean = -16f, GuardHeadLift = -16f;
+        /// Dawne −16° wyginało postać do tyłu; −4° tylko łagodzi pochylenie klipu (zostaje ~3–4° w przód). Głowa lekko uniesiona.
+        public const float GuardLean = -4f, GuardHeadLift = -10f;
         float guardW, guardV, carry, carryV;
         /// <summary>Udział postawy topora (0–1) – dla testów.</summary>
         public float GuardWeight => guardW;
@@ -109,6 +127,8 @@ namespace Turris
             head = animator.GetBoneTransform(HumanBodyBones.Neck) ?? animator.GetBoneTransform(HumanBodyBones.Head);
             halfShoulders = armL != null && armR != null ? Mathf.Clamp(0.5f * Vector3.Distance(armL.position, armR.position), 0.12f, 0.3f) : 0.2f;
             handR = animator.GetBoneTransform(HumanBodyBones.RightHand);
+            clavL = animator.GetBoneTransform(HumanBodyBones.LeftShoulder); clavR = animator.GetBoneTransform(HumanBodyBones.RightShoulder);
+            if (foreR != null && handR != null) restR = HellEquipmentPose.BindRelative(animator, foreR, handR);
             if (guard && footL != null && footR != null) CalibrateSoles(animator);
         }
 
@@ -222,9 +242,15 @@ namespace Turris
             float raise = Mathf.Min(Raise(upperL, footL, targetL), Raise(upperR, footR, targetR));
             raise = Mathf.Clamp(raise, 0f, MaxStanceRaise);
             if (raise > 0.001f) hips.position += up * raise;
-            ClipAnimationDriver.Reach(upperL, lowerL, footL, targetL, character.forward, 1f);
-            ClipAnimationDriver.Reach(upperR, lowerR, footR, targetR, character.forward, 1f);
+            ClipAnimationDriver.Reach(upperL, lowerL, footL, targetL, character.forward, 1f, KneeHint(-1f));
+            ClipAnimationDriver.Reach(upperR, lowerR, footR, targetR, character.forward, 1f, KneeHint(1f));
         }
+
+        /// <summary>Kąt (°), o który kolano w postawie odchyla się od przodu na zewnątrz – nad palcami lekko rozstawionych stóp.</summary>
+        public const float KneeOut = 8f;
+
+        /// <summary>Kierunek kolana dla IK nogi (side: −1 lewa, +1 prawa): przód postaci, lekko na zewnątrz.</summary>
+        Vector3 KneeHint(float side) => Quaternion.AngleAxis(KneeOut * side, character.up) * character.forward;
 
         /// <summary>Kostka w postawie: x, z w przestrzeni postaci, wysokość z klipu; w – udział postawy.</summary>
         Vector3 Stance(Transform foot, float x, float z, float w)
@@ -260,8 +286,8 @@ namespace Turris
             if (soleL == null || soleR == null) return;
             float bl = Bottom(footL, soleL), br = Bottom(footR, soleR), floor = Mathf.Min(bl, br);
             float sl = Mathf.Min(bl - floor, MaxLevel) * w, sr = Mathf.Min(br - floor, MaxLevel) * w;
-            if (sl > 0.001f) ClipAnimationDriver.Reach(upperL, lowerL, footL, footL.position - character.up * sl, character.forward, 1f);
-            if (sr > 0.001f) ClipAnimationDriver.Reach(upperR, lowerR, footR, footR.position - character.up * sr, character.forward, 1f);
+            if (sl > 0.001f) ClipAnimationDriver.Reach(upperL, lowerL, footL, footL.position - character.up * sl, character.forward, 1f, KneeHint(-1f));
+            if (sr > 0.001f) ClipAnimationDriver.Reach(upperR, lowerR, footR, footR.position - character.up * sr, character.forward, 1f, KneeHint(1f));
         }
 
         public static bool For(AttackAnim a, out Profile p)
@@ -301,6 +327,25 @@ namespace Turris
         /// <param name="still">udział stania w miejscu (0–1) – stopy płasko, kolana nad stopami.</param>
         public void Apply(in CharacterAnimState s, float dt, float rest = 0f, float running = 0f, float still = 0f)
         {
+            GuardGrip = 0f; GuardSpin = 0f;
+            ApplyPose(s, dt, rest, running, still);
+            // Ciosy bez profilu (np. klipy autorskie – ActionClip.authoredSwing): broń nie wchodzi w podłogę.
+            // Klip układany na szkielecie Mixamo, a postacie mają różne proporcje – dłoń idzie w górę o tyle, ile broń jest pod podłogą.
+            if (FloorGuard && s.action == AnimAction.Attack && reachW <= 0.002f) KeepWeaponAboveFloor();
+        }
+
+        /// <summary>Ustawiane przez sterownik: bieżący cios to klip autorski – pilnuj, by broń nie weszła w podłogę.</summary>
+        public bool FloorGuard { get; set; }
+
+        void KeepWeaponAboveFloor()
+        {
+            if (Weapon == null || armR == null || foreR == null || handR == null || character == null) return;
+            float under = character.position.y + GroundClearance - LowestWeaponPoint();
+            if (under > 0f) HellEquipmentPose.Solve(armR, foreR, handR, handR.position + character.up * under, character.right - character.up, 1f);
+        }
+
+        void ApplyPose(in CharacterAnimState s, float dt, float rest, float running, float still)
+        {
             if (character == null || hips == null || dt <= 0f) return;
             float tp = 0f, ty = 0f, tr = 0f, td = 0f, tw = 0f;
             if (s.action == AnimAction.Attack && For(s.attack, out var p))
@@ -330,8 +375,8 @@ namespace Turris
                 // Stopy z klipu zostają, biodra schodzą niżej – kolana uginają się (przysiad).
                 Vector3 ankleL = footL.position, ankleR = footR.position;
                 hips.position -= up * drop;
-                ClipAnimationDriver.Reach(upperL, lowerL, footL, ankleL, fwd, 1f);
-                ClipAnimationDriver.Reach(upperR, lowerR, footR, ankleR, fwd, 1f);
+                ClipAnimationDriver.Reach(upperL, lowerL, footL, ankleL, fwd, 1f, KneeHint(-1f));
+                ClipAnimationDriver.Reach(upperR, lowerR, footR, ankleR, fwd, 1f, KneeHint(1f));
             }
             float plant = guardW * Mathf.Clamp01(still);
             if (plant > 0.002f)
@@ -349,19 +394,39 @@ namespace Turris
                 var q = Quaternion.AngleAxis(yw * k, up) * Quaternion.AngleAxis(pt * k, right) * Quaternion.AngleAxis(roll * k, fwd);
                 spine[i].rotation = q * spine[i].rotation;
             }
+            if (plant > 0.002f) Upright(plant);
             if (head != null && guardW > 0.002f) head.rotation = Quaternion.AngleAxis(GuardHeadLift * guardW * Mathf.Clamp01(still), right) * head.rotation;
             if (guardW > 0.002f && armR != null && foreR != null && handR != null)
             {
+                float sf = GuardShoulderForward * guardW * (1f - carry);
+                if (clavL != null) clavL.rotation = Quaternion.AngleAxis(sf, up) * clavL.rotation;      // lewy bark w przód
+                if (clavR != null) clavR.rotation = Quaternion.AngleAxis(-sf * 0.6f, up) * clavR.rotation; // prawy lekko w przód
                 Vector3 local = Vector3.Lerp(GuardHand, CarryHand, carry);
                 Vector3 dir = Vector3.Slerp(GuardAim.normalized, CarryAim.normalized, carry);
                 Vector3 target = Vector3.Lerp(handR.position, character.TransformPoint(local), guardW);
-                HellEquipmentPose.Solve(armR, foreR, handR, target, right - up, 1f);
+                // łokieć w dół i lekko do tyłu (ręka opuszczona wzdłuż boku), w biegu – w bok jak dawniej
+                Vector3 pole = Vector3.Slerp(right - up, character.TransformDirection(new Vector3(0.35f, -0.75f, -0.55f)), 1f - carry);
+                HellEquipmentPose.Solve(armR, foreR, handR, target, pole, 1f);
                 if (Weapon != null)
                 {
                     Vector3 axis = Weapon.up;
                     handR.rotation = Quaternion.FromToRotation(axis, Vector3.Slerp(axis, character.TransformDirection(dir), guardW)) * handR.rotation;
+                    // Ostrze w dół (oś ostrza w gnieździe: −X): dawniej obrotem dłoni wokół trzonka – nadgarstek skręcał się o ~120°
+                    // i siatka dłoni zapadała się w płaski kształt („dłonie źle zaciśnięte”). Teraz dłoń bierze ułożenie najbliższe
+                    // naturalnemu, a wokół trzonka obraca się broń (GuardSpin, stosuje CharacterVisual). W biegu – ułożenie z niesienia.
+                    float bw = guardW * (1f - carry);
+                    GuardGrip = bw;
+                    GuardSpin = 0f;
+                    if (bw > 0.002f)
+                    {
+                        HellEquipmentPose.NaturalWrist(foreR, handR, restR, Weapon.up, bw);
+                        Vector3 shaft = Weapon.up, blade = Vector3.ProjectOnPlane(-Weapon.right, shaft), want = Vector3.ProjectOnPlane(character.TransformDirection(GuardBlade), shaft);
+                        if (blade.sqrMagnitude > 1e-6f && want.sqrMagnitude > 1e-6f)
+                            GuardSpin = Vector3.SignedAngle(blade, want, shaft) * bw;
+                    }
                 }
             }
+            else { GuardGrip = 0f; GuardSpin = 0f; }
             if (reachW > 0.002f && armR != null && foreR != null && handR != null)
             {
                 // Lewa dłoń wraca na trzonek w HellEquipmentPose (IK do gniazda broni).
@@ -375,6 +440,30 @@ namespace Turris
                 // (Solve zachowuje obrót dłoni, więc kierunek broni zostaje).
                 float under = character.position.y + GroundClearance - LowestWeaponPoint();
                 if (under > 0f) HellEquipmentPose.Solve(armR, foreR, handR, handR.position + up * under, right - up, 1f);
+            }
+        }
+
+        /// <summary>
+        /// Postawa topora w staniu: klip spoczynku po retargecie przechyla tułów w bok (u berserkera ~11°, prawy bark niżej).
+        /// Kręgosłup prostuje się o zmierzony przechył (szyja nad biodrami w płaszczyźnie czołowej), rozłożony na kręgi;
+        /// skłon w przód/tył zostaje (GuardLean). w – udział postawy w staniu.
+        /// </summary>
+        void Upright(float w)
+        {
+            if (head == null) return;
+            Vector3 up = character.up, fwd = character.forward, right = character.right;
+            // dwa przejścia: kręgi obracają się wokół różnych punktów, drugie dociąga szyję nad biodra
+            for (int pass = 0; pass < 2; pass++)
+            {
+                Vector3 s = head.position - hips.position;
+                float side = Mathf.Atan2(Vector3.Dot(s, right), Vector3.Dot(s, up)) * Mathf.Rad2Deg;   // + = szyja na prawo od bioder
+                if (Mathf.Abs(side) < 0.5f) return;
+                for (int i = 0; i < spine.Length; i++)
+                {
+                    if (spine[i] == null) continue;
+                    // obrót wokół osi przód–tył: dodatni kąt wokół +fwd przechyla górę w lewo (−right)
+                    spine[i].rotation = Quaternion.AngleAxis(side * share[i] * w, fwd) * spine[i].rotation;
+                }
             }
         }
 

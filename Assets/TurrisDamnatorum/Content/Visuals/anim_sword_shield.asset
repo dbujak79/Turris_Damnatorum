@@ -26,12 +26,18 @@ MonoBehaviour:
   runRight: {fileID: -203655887218126122, guid: f3403dbab92e22943ba1754791e9597a, type: 3}
   walkSpeed: 1.4
   runSpeed: 3.87
+  greatWeaponIdle: {fileID: 0}
+  alternatingLightSteps: 0
   actions:
   - action: 1
     attack: 1
     clip: {fileID: -203655887218126122, guid: c157431a43a1e7c4c81486923fe3d412, type: 3}
     windupEnd: 0.35555556
     activeEnd: 0.5555556
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 0
     loop: 0
     rootForward:
@@ -481,11 +487,16 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    authoredSwing: 0
   - action: 1
     attack: 2
     clip: {fileID: -203655887218126122, guid: 0a602fdd29286d14dbcd6021296accc7, type: 3}
     windupEnd: 0.3902439
     activeEnd: 0.5365854
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 0
     loop: 0
     rootForward:
@@ -935,11 +946,16 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    authoredSwing: 0
   - action: 1
     attack: 4
     clip: {fileID: -203655887218126122, guid: 5350e74f274c994458f9cb79f8874ade, type: 3}
     windupEnd: 0.125
     activeEnd: 0.35
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 0
     loop: 0
     rootForward:
@@ -1389,11 +1405,16 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    authoredSwing: 0
   - action: 1
     attack: 3
     clip: {fileID: -203655887218126122, guid: 6b9ea4fc02ca0a14eb7db39430c40e33, type: 3}
     windupEnd: 0.3529412
     activeEnd: 0.42647058
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 0
     loop: 0
     rootForward:
@@ -1843,11 +1864,16 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    authoredSwing: 0
   - action: 1
     attack: 5
     clip: {fileID: -203655887218126122, guid: 6b9ea4fc02ca0a14eb7db39430c40e33, type: 3}
     windupEnd: 0.3529412
     activeEnd: 0.42647058
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 0
     loop: 0
     rootForward:
@@ -2297,11 +2323,16 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    authoredSwing: 0
   - action: 1
     attack: 9
     clip: {fileID: -203655887218126122, guid: b3ebd6fb8368f51439a118378357dbf5, type: 3}
     windupEnd: 0.3846154
     activeEnd: 0.5641026
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 0
     loop: 0
     rootForward:
@@ -2751,11 +2782,16 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    authoredSwing: 0
   - action: 1
     attack: 6
     clip: {fileID: -203655887218126122, guid: 1600c794a5f1ba14daf9e98fae74de4d, type: 3}
     windupEnd: 0.29473683
     activeEnd: 0.4105263
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 0
     loop: 0
     rootForward:
@@ -3205,11 +3241,16 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    authoredSwing: 0
   - action: 2
     attack: 0
     clip: {fileID: -203655887218126122, guid: 7073eb60342fd034198510a06c971b86, type: 3}
     windupEnd: 0.35
     activeEnd: 0.55
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 1
     loop: 1
     rootForward:
@@ -3218,11 +3259,16 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    authoredSwing: 0
   - action: 3
     attack: 0
     clip: {fileID: -203655887218126122, guid: 33a46b551494155439372b5a0b06e329, type: 3}
     windupEnd: 0.2
     activeEnd: 0.45
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 0
     loop: 0
     rootForward:
@@ -3231,11 +3277,16 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    authoredSwing: 0
   - action: 6
     attack: 0
     clip: {fileID: -203655887218126122, guid: 613bf3cf3466c2b48a6353bda7b89902, type: 3}
     windupEnd: 0.35
     activeEnd: 0.55
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 0
     loop: 0
     rootForward:
@@ -3244,11 +3295,16 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    authoredSwing: 0
   - action: 8
     attack: 0
     clip: {fileID: -203655887218126122, guid: 43db80e21dad21243867e267a79c812c, type: 3}
     windupEnd: 0.35
     activeEnd: 0.55
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 0
     loop: 0
     rootForward:
@@ -3257,11 +3313,16 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    authoredSwing: 0
   - action: 11
     attack: 0
     clip: {fileID: -203655887218126122, guid: 3b1ee6dd1f058434db86aa55e2e78d42, type: 3}
     windupEnd: 0.35
     activeEnd: 0.55
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 0
     loop: 0
     rootForward:
@@ -3270,11 +3331,16 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    authoredSwing: 0
   - action: 4
     attack: 0
     clip: {fileID: -203655887218126122, guid: 8b9a7a66fc20b3b43a0c4e515dcebb1c, type: 3}
     windupEnd: 0.35
     activeEnd: 0.55
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 0
     loop: 0
     rootForward:
@@ -3283,6 +3349,79 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    authoredSwing: 0
+  - action: 13
+    attack: 0
+    clip: {fileID: -203655887218126122, guid: 998b4cf27c2f4d748012fe4b7b0fa5e3, type: 3}
+    windupEnd: 0.35
+    activeEnd: 0.55
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
+    upperBodyOnly: 0
+    loop: 0
+    rootForward:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    authoredSwing: 0
+  - action: 14
+    attack: 0
+    clip: {fileID: -203655887218126122, guid: 8b6f660854d84e38a11eca6eaee450d6, type: 3}
+    windupEnd: 0.35
+    activeEnd: 0.55
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
+    upperBodyOnly: 0
+    loop: 0
+    rootForward:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    authoredSwing: 0
+  - action: 15
+    attack: 0
+    clip: {fileID: -203655887218126122, guid: 8c2c247d38f34d2da3d36de9875f28d3, type: 3}
+    windupEnd: 0.35
+    activeEnd: 0.55
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
+    upperBodyOnly: 0
+    loop: 0
+    rootForward:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    authoredSwing: 0
+  - action: 16
+    attack: 0
+    clip: {fileID: -203655887218126122, guid: 3d08f19bf04646efa423ae0b39ecc95f, type: 3}
+    windupEnd: 0.35
+    activeEnd: 0.55
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
+    upperBodyOnly: 0
+    loop: 0
+    rootForward:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    authoredSwing: 0
   gripSpan: 0.2
   hasShieldGrip: 1
   shieldGripPosition: {x: -0.145, y: -0.026, z: 0.008}

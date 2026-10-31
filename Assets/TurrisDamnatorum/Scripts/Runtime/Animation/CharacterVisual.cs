@@ -24,6 +24,7 @@ namespace Turris
         readonly TintSet gearTint = new TintSet();
         Transform weaponSocket, shieldSocket, shieldGrip, leftHand, leftElbow, rightHand, rightElbow;
         GameObject weaponObj, shieldObj;
+        Vector3 weaponRestPos; Quaternion weaponRestRot = Quaternion.identity;
         WeaponModel modelWeapon;
         CharacterVisualDefinition modelDef;
         HellBodySurface bodySurface;
@@ -173,6 +174,7 @@ namespace Turris
             if (shieldObj != null) Util.DestroyNow(shieldObj);
             modelWeapon = look.weapon;
             weaponObj = GearObject(weaponSocket, look.weaponItem, () => GearBuilder.Weapon(null, look.weapon == WeaponModel.Claws ? WeaponModel.None : look.weapon, look.weaponColor), out weaponLength);
+            if (weaponObj != null) { weaponRestPos = weaponObj.transform.localPosition; weaponRestRot = weaponObj.transform.localRotation; }
             var off = look.offhandItem;
             var shieldAt = shieldGrip != null ? shieldGrip : shieldSocket;
             if (off != null && off.model != null) shieldObj = GearObject(off.kind == ItemKind.Shield ? shieldAt : shieldSocket, off, null, out _);
@@ -353,8 +355,84 @@ namespace Turris
                 bodySurface.Set(shadow ? 1 : 0, status != null && status.ChillStacks > 0 ? 0.8f : 0, status != null && status.Burning ? 1 : 0, enemy != null && enemy.IsElite ? 1 : 0);
             }
             Driver.Tick(state, velocity, dt);
-            if (Model != null) { PostPose(state, dt); equipmentPose?.Apply(state, weaponSocket, dt); CarryShield(); }
+            if (Model != null) { PostPose(state, dt); GuardGrip(); equipmentPose?.Apply(state, weaponSocket, dt); CarryShield(); DropWeaponOnDeath(state, dt); }
             UpdateChains(dt);
+        }
+
+        /// <summary>
+        /// Niska garda topora: broń przesuwa się w prawej dłoni ku końcowi trzonka (prawa dłoń wyżej, lewa przy końcu)
+        /// i obraca wokół trzonka ostrzem w dół – dłonie zostają w naturalnym chwycie (GreatSwingPose.GuardGrip/GuardSpin).
+        /// </summary>
+        void GuardGrip()
+        {
+            var swing = (Driver as ClipAnimationDriver)?.GreatSwing;
+            float g = swing != null ? swing.GuardGrip : 0f;
+            if (equipmentPose != null) equipmentPose.GuardGrip = g;
+            if (weaponObj == null || weaponDropped || weaponObj.transform.parent != weaponSocket) return;
+            float spin = swing != null ? swing.GuardSpin : 0f;
+            weaponObj.transform.localPosition = weaponRestPos + Vector3.down * (GreatSwingPose.GuardSlide * g);
+            weaponObj.transform.localRotation = Quaternion.AngleAxis(spin, Vector3.up) * weaponRestRot;
+        }
+
+        // ------------------------------------------------------------------ Broń wypada przy śmierci
+
+        /// <summary>Czas spadania broni na ziemię (s) i najpóźniejsza chwila wypuszczenia od początku śmierci.</summary>
+        public const float WeaponDropFall = 0.28f, WeaponDropLatest = 1.8f;
+        bool weaponDropped;
+        float dropT;
+        Transform dropParent;
+        Vector3 dropLocalPos, dropFromPos, dropToPos;
+        Quaternion dropLocalRot, dropFromRot, dropToRot;
+        /// <summary>Broń leży na ziemi po śmierci (dla testów).</summary>
+        public bool WeaponDropped => weaponDropped;
+
+        /// <summary>
+        /// Śmierć: broń wypada z dłoni, gdy dotyka podłogi albo dłoń jest nisko (najpóźniej po WeaponDropLatest s), i w krótkim
+        /// spadku kładzie się płasko na ziemi (głowica płasko, trzonek poziomo) – bez wchodzenia w podłogę. Bez fizyki.
+        /// Korbacze (łańcuch) zostają w dłoni. Po wyjściu ze śmierci (wskrzeszenie) broń wraca do gniazda.
+        /// </summary>
+        void DropWeaponOnDeath(in CharacterAnimState s, float dt)
+        {
+            if (s.action != AnimAction.Death)
+            {
+                if (weaponDropped && weaponObj != null && dropParent != null)
+                {
+                    weaponObj.transform.SetParent(dropParent, false);
+                    weaponObj.transform.localPosition = dropLocalPos; weaponObj.transform.localRotation = dropLocalRot;
+                }
+                weaponDropped = false;
+                return;
+            }
+            if (weaponObj == null || weaponSocket == null || mainChain != null) return;
+            float floor = transform.position.y;
+            if (!weaponDropped)
+            {
+                bool touches = LowestPoint(weaponObj) < floor + 0.03f || weaponSocket.position.y - floor < 0.45f;
+                if (!(s.actionTime >= 0.4f && touches) && s.actionTime < WeaponDropLatest) return;
+                var t = weaponObj.transform;
+                dropParent = t.parent; dropLocalPos = t.localPosition; dropLocalRot = t.localRotation;
+                dropFromPos = t.position; dropFromRot = t.rotation;
+                // płasko: trzonek (oś +Y gniazda) poziomo, płaszczyzna głowicy (oś Z gniazda) pionowo w górę
+                Vector3 shaft = Vector3.ProjectOnPlane(weaponSocket.up, Vector3.up);
+                if (shaft.sqrMagnitude < 1e-4f) shaft = transform.forward;
+                var socketRot = Quaternion.LookRotation(weaponSocket.forward, weaponSocket.up);
+                dropToRot = Quaternion.LookRotation(Vector3.up, shaft.normalized) * Quaternion.Inverse(socketRot) * dropFromRot;
+                t.SetParent(transform, true);
+                t.rotation = dropToRot;
+                dropToPos = dropFromPos + Vector3.up * (floor + 0.005f - LowestPoint(weaponObj));
+                t.SetPositionAndRotation(dropFromPos, dropFromRot);
+                weaponDropped = true; dropT = 0f;
+            }
+            dropT = Mathf.Min(WeaponDropFall, dropT + dt);
+            float u = dropT / WeaponDropFall, k = u * u;          // spadanie z przyspieszeniem
+            weaponObj.transform.SetPositionAndRotation(Vector3.Lerp(dropFromPos, dropToPos, k), Quaternion.Slerp(dropFromRot, dropToRot, Mathf.Sqrt(u)));
+        }
+
+        static float LowestPoint(GameObject go)
+        {
+            float y = float.MaxValue;
+            foreach (var r in go.GetComponentsInChildren<Renderer>()) if (r.enabled) y = Mathf.Min(y, r.bounds.min.y);
+            return y;
         }
 
         void UpdateChains(float dt)

@@ -334,23 +334,23 @@ ModelImporter:
     - name: mixamorig:LeftArm
       parentName: mixamorig:LeftShoulder
       position: {x: -0.00000023143366, y: 0.20597287, z: -0.0000003441237}
-      rotation: {x: 0.04774573, y: -0.2812359, z: -0.009112107, w: 0.95840687}
+      rotation: {x: 0.047745716, y: -0.2812359, z: -0.009112106, w: 0.95840687}
       scale: {x: 1.0000001, y: 1.0000001, z: 1.0000001}
     - name: mixamorig:LeftForeArm
       parentName: mixamorig:LeftArm
-      position: {x: 0.00000042591256, y: 0.22365259, z: 0.00000014706518}
-      rotation: {x: 0.000000032044976, y: -0.44130877, z: 0.000000028489174, w: 0.8973553}
+      position: {x: 0.00000037083942, y: 0.24601778, z: 0.00000014590064}
+      rotation: {x: 0.000000034180133, y: -0.4413087, z: 0.000000025434437, w: 0.8973554}
       scale: {x: 1, y: 1, z: 1}
     - name: mixamorig:LeftHand
       parentName: mixamorig:LeftForeArm
-      position: {x: -0.000000111191085, y: 0.16284104, z: 0.00000014397573}
-      rotation: {x: 0.0000000320637, y: 0.48059604, z: 0.000000026142144, w: 0.8769421}
+      position: {x: -0.00000011147448, y: 0.22781187, z: 0.00000013794751}
+      rotation: {x: 0.000000024355561, y: 0.48059607, z: 0.000000019857453, w: 0.8769421}
       scale: {x: 1, y: 1, z: 1}
     - name: HandSlot.L
       parentName: mixamorig:LeftHand
-      position: {x: -0.013367029, y: 0.061000004, z: -0.0028731707}
-      rotation: {x: 0.2994438, y: -0.036632665, z: 0.64057285, w: 0.7061572}
-      scale: {x: 1, y: 0.9999999, z: 0.99999994}
+      position: {x: -0.013366969, y: 0.07319989, z: -0.0028731702}
+      rotation: {x: 0.29944372, y: -0.03663273, z: 0.6405727, w: 0.70615727}
+      scale: {x: 1, y: 1, z: 0.99999994}
     - name: mixamorig:RightShoulder
       parentName: mixamorig:Spine2
       position: {x: 0.044999976, y: 0.11500013, z: -0.000000029686205}
@@ -359,23 +359,23 @@ ModelImporter:
     - name: mixamorig:RightArm
       parentName: mixamorig:RightShoulder
       position: {x: 0.00000020186417, y: 0.20597288, z: -0.00000019243453}
-      rotation: {x: 0.047481295, y: 0.30712414, z: 0.010403838, w: 0.9504273}
-      scale: {x: 1, y: 1.0000001, z: 1.0000002}
+      rotation: {x: 0.0474813, y: 0.30712414, z: 0.010403809, w: 0.95042735}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000002}
     - name: mixamorig:RightForeArm
       parentName: mixamorig:RightArm
-      position: {x: 0.00000009339561, y: 0.22365251, z: -0.00000016003091}
-      rotation: {x: -0.000000013934066, y: 0.3909042, z: -0.0000003335329, w: 0.9204314}
-      scale: {x: 1, y: 1, z: 1}
+      position: {x: 0.00000013857525, y: 0.24601772, z: -0.00000015511222}
+      rotation: {x: -0.0000000126036355, y: 0.39090425, z: -0.0000003066394, w: 0.9204314}
+      scale: {x: 1, y: 1, z: 1.0000001}
     - name: mixamorig:RightHand
       parentName: mixamorig:RightForeArm
-      position: {x: -0.00000007554653, y: 0.16284083, z: -0.00000021980475}
-      rotation: {x: 0.00000004834035, y: -0.47479883, z: -0.00000004361471, w: 0.8800944}
-      scale: {x: 0.9999999, y: 0.9999999, z: 0.99999994}
+      position: {x: -0.00000007635381, y: 0.22781166, z: -0.00000022031944}
+      rotation: {x: 0.000000039025338, y: -0.47479883, z: -0.00000003521032, w: 0.8800944}
+      scale: {x: 0.9999999, y: 1, z: 1}
     - name: HandSlot.R
       parentName: mixamorig:RightHand
-      position: {x: 0.01318932, y: 0.061000068, z: -0.0041883686}
-      rotation: {x: 0.2713414, y: 0.036632422, z: -0.65297306, w: 0.70615727}
-      scale: {x: 1, y: 1.0000001, z: 1}
+      position: {x: 0.013189323, y: 0.07319996, z: -0.0041883676}
+      rotation: {x: 0.27134147, y: 0.036632326, z: -0.6529731, w: 0.7061572}
+      scale: {x: 1.0000001, y: 1, z: 1}
     - name: mixamorig:LeftUpLeg
       parentName: mixamorig:Hips
       position: {x: -0.11499999, y: 0.00000029630957, z: 0.0000000046169415}

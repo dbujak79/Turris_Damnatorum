@@ -1125,8 +1125,9 @@ namespace Turris
             }
 
             // Chłód spowalnia także akcje (zamach, unik); zamrożenie trwa jako wymuszone drgnięcie.
-            // Ładowany ciężki cios stoi z bronią nad głową, póki przycisk trzymany.
-            if (!ChargeHolding(dt)) Actions.Tick(Status.Incapacitated ? dt : dt * Status.ActionSpeedMultiplier(B));
+            // Ładowany ciężki cios stoi z toporem cofniętym w tył i w dół, póki przycisk trzymany.
+            chargingNow = ChargeHolding(dt);
+            if (!chargingNow) Actions.Tick(Status.Incapacitated ? dt : dt * Status.ActionSpeedMultiplier(B));
 
             // Aktywna faza ataku bronią: przeciągnij hitbox (każdy cel najwyżej raz na zamach).
             if ((Actions.Current == ActionType.LightAttack || Actions.Current == ActionType.HeavyAttack) && Actions.Phase == ActionPhase.Active)
@@ -1590,11 +1591,12 @@ namespace Turris
                 case ActionType.HeavyAttack:
                     s.action = AnimAction.Attack;
                     s.attack = AnimResolve.ForAttack(currentAttack ?? Build.weapon.heavy, a.ComboIndex, weaponModel);
+                    s.charge = chargingNow ? Mathf.Max(0.05f, ChargeTime / ChargeMax) : 0f;
                     break;
                 case ActionType.Riposte: s.action = AnimAction.Attack; s.attack = AttackAnim.Thrust; break;
                 case ActionType.Block: s.action = AnimAction.Block; break;
                 case ActionType.Parry: s.action = AnimAction.Parry; break;
-                case ActionType.Dodge: s.action = AnimAction.Dodge; break;
+                case ActionType.Dodge: s.action = DodgeKind == DodgeStyle.ShoulderCharge ? AnimResolve.ChargeFor(transform, DodgeDirection) : AnimAction.Dodge; break;
                 case ActionType.Cast:
                 {
                     var def = currentSpell?.Def;

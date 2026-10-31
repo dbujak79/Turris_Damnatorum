@@ -59,7 +59,7 @@ namespace Turris
             if (character == null || dt <= 0f) return;
             Simulate(s, worldVelocity, dt);
             bool lying = s.action == AnimAction.Death;
-            float leanK = lying || s.action == AnimAction.Dodge ? 0f : 1f;
+            float leanK = lying || AnimResolve.IsDodge(s.action) ? 0f : 1f;
 
             float pitch = Mathf.Clamp(react.z * 26f + lean.z * 7f * leanK, -MaxPitch, MaxPitch);
             float yaw = Mathf.Clamp(-react.x * 18f, -MaxYaw, MaxYaw);
@@ -100,7 +100,7 @@ namespace Turris
             float yaw = character.eulerAngles.y;
             Vector3 target = Vector3.zero;
             bool calm = s.action == AnimAction.None || s.action == AnimAction.Block || s.action == AnimAction.Cast || s.action == AnimAction.Drink;
-            if (hasPrev && s.action != AnimAction.Dodge && s.action != AnimAction.Death)
+            if (hasPrev && !AnimResolve.IsDodge(s.action) && s.action != AnimAction.Death)
             {
                 Vector3 acc = (localVel - prevLocalVel) / dt;
                 float yawRate = Mathf.DeltaAngle(prevYaw, yaw) / dt;

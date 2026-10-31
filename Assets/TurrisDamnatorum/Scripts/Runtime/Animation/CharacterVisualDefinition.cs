@@ -31,6 +31,9 @@ namespace Turris
         [Tooltip("Ciosy: wysunięcie ciała do przodu w nagraniu (czas znormalizowany → RootT.z w jednostkach awatara). " +
                  "Bohater idzie o tyle naprzód, ile ciało w klipie – stopa podporowa stoi, zamiast jechać do tyłu. Wypełnia HeroAssetImport.")]
         public AnimationCurve rootForward;
+        [Tooltip("Klip z pełnym, ręcznie naprawionym zamachem i dociągnięciem (Blender): GreatSwingPose nie dokłada do niego " +
+                 "profilu ciosu (skrętu, skłonu, przysiadu ani IK prawej dłoni). Postawa i chwyt lewej dłoni zostają.")]
+        public bool authoredSwing;
     }
 
     /// <summary>

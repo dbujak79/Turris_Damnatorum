@@ -10,7 +10,7 @@ namespace Turris
     /// <list type="bullet">
     /// <item>lekkie – szerokie poziome cięcia na przemian (z prawej, z lewej);</item>
     /// <item>ciężkie – rąbnięcia z góry na przemian: z wykrokiem, potem zza pleców (seria ciężkich);</item>
-    /// <item>przytrzymany ciężki – ładowanie z bronią uniesioną nad głową, mocniejszy cios i fala uderzeniowa;</item>
+    /// <item>przytrzymany ciężki – ładowanie z toporem cofniętym w tył i w dół (ciało drży), potem pełny łuk górą, mocniejszy cios i fala uderzeniowa;</item>
     /// <item>z biegu: lekki – niskie cięcie z rozpędu, ciężki – skok z rąbnięciem i falą;</item>
     /// <item>tuż po uniku (przewrót, odskok) – szybkie rąbnięcie z góry.</item>
     /// </list>
@@ -21,7 +21,7 @@ namespace Turris
         public const float RunAttackWindow = 0.2f;
         /// <summary>Cios w trakcie końcówki uniku albo tyle sekund po nim – atak po uniku.</summary>
         public const float DodgeAttackWindow = 0.35f;
-        /// <summary>Ładowanie: zatrzymanie zamachu w tym punkcie (broń nad głową), najdłużej ChargeMax s; od ChargeMin – cios naładowany.</summary>
+        /// <summary>Ładowanie: zatrzymanie zamachu w tym punkcie (topór cofnięty w tył i w dół), najdłużej ChargeMax s; od ChargeMin – cios naładowany.</summary>
         public const float ChargeHoldAt = 0.8f, ChargeMax = 0.8f, ChargeMin = 0.25f;
         /// <summary>Pełne naładowanie: +60% obrażeń i +50% obrażeń postawy.</summary>
         public const float ChargeDamageBonus = 0.6f, ChargePoiseBonus = 0.5f;
@@ -45,6 +45,8 @@ namespace Turris
 
         float lastSprintTime = -10f;
         bool sprinting, chargeReleased;
+        /// <summary>W tej klatce zamach stoi w ładowaniu (dla animacji – drżenie ciała).</summary>
+        bool chargingNow;
         float moveDamage = 1f, movePoise = 1f;
         readonly HitTracker shockTracker = new HitTracker();
 
@@ -86,7 +88,7 @@ namespace Turris
         }
 
         /// <summary>
-        /// Ładowanie ciężkiego ciosu: póki przycisk trzymany, zamach stoi w punkcie ChargeHoldAt (broń nad głową).
+        /// Ładowanie ciężkiego ciosu: póki przycisk trzymany, zamach stoi w punkcie ChargeHoldAt (topór cofnięty w tył i w dół).
         /// Zwraca true, gdy w tej klatce akcja ma stać (pomija tyknięcie akcji).
         /// </summary>
         bool ChargeHolding(float dt)

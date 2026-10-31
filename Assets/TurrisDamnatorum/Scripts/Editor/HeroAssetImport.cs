@@ -204,7 +204,7 @@ namespace Turris.EditorTools
             return result;
         }
 
-        static ActionClip Act(AnimAction action, AnimationClip clip, bool upper = false, bool loop = false, float windupEnd = 0.35f, float activeEnd = 0.55f) => new ActionClip
+        internal static ActionClip Act(AnimAction action, AnimationClip clip, bool upper = false, bool loop = false, float windupEnd = 0.35f, float activeEnd = 0.55f) => new ActionClip
         {
             action = action, clip = clip, upperBodyOnly = upper, loop = loop, windupEnd = windupEnd, activeEnd = activeEnd,
         };
@@ -265,6 +265,7 @@ namespace Turris.EditorTools
                 Act(AnimAction.Death, Clip(ss + "death.fbx")),
                 Act(AnimAction.Dodge, Roll()),
             };
+            set.actions.AddRange(ShoulderCharges("shield"));
             return SaveSet("anim_sword_shield", set);
         }
 
@@ -287,8 +288,9 @@ namespace Turris.EditorTools
             set.actions = new List<ActionClip>
             {
                 Blow(AttackAnim.SlashRight, InPlace(gs + "slash.fbx"), 0, 14, 23, 38),
-                // „slash (3)” i „slash (5)” cofają wykroczną nogę na koniec; „slash (4)” – cięcie z lewej z krokiem, który zostaje.
-                Blow(AttackAnim.SlashLeft, InPlace(gs + "slash (4).fbx"), 0, 25, 32, 54),
+                // „slash (4)” to cięcie z obrotem całego ciała o 360°; „slash (3)” naprawiony w Blenderze
+                // (ArtSource/AnimationRepair/greatsword-light-slashes): cięcie z lewej, przekrok w przód zamiast cofnięcia nogi.
+                Blow(AttackAnim.SlashLeft, InPlace(gs + "slash (3).fbx"), 0, 26, 32, 55),
                 Blow(AttackAnim.Thrust, InPlace(gs + "attack.fbx"), 0, 15, 20, 36),
                 Blow(AttackAnim.Overhead, InPlace(gs + "high spin attack.fbx"), 0, 30, 37, 56),
                 Blow(AttackAnim.Slam, InPlace(gs + "high spin attack.fbx"), 0, 30, 37, 56),
@@ -296,11 +298,12 @@ namespace Turris.EditorTools
                 Act(AnimAction.Block, Loop(gs + "blocking (2).fbx"), upper: true, loop: true),
                 Act(AnimAction.Parry, InPlace(gs + "blocking.fbx"), windupEnd: 0.2f, activeEnd: 0.45f),
                 Act(AnimAction.Cast, InPlace(gs + "casting.fbx")),
-                Act(AnimAction.Flinch, InPlace(gs + "impact.fbx")),
                 Act(AnimAction.Death, Clip(Mixamo + "Great Sword Pack/two handed sword death.fbx")),
                 Act(AnimAction.Dodge, Roll()),
             };
+            set.actions.AddRange(Reactions());
             set.actions.AddRange(GreatWeaponMoves());
+            set.actions.AddRange(ShoulderCharges("twohand"));
             set.greatWeaponIdle = GreatWeaponIdle();
             return SaveSet("anim_greatsword", set);
         }
@@ -311,22 +314,78 @@ namespace Turris.EditorTools
         /// i szerokie cięcia lekkie (te same nagrania co miecz – pełny łuk dokłada GreatSwingPose).
         /// Klatki ciosu z prędkości dłoni (GreatWeaponMovesetTests.ClipHandSpeed_WhenRequested).
         /// </summary>
+        internal const string GreatAxeChopPath = Mixamo + "Composed/great axe chop.fbx";
+
+        /// <summary>
+        /// Trafienie według kierunku i siły ciosu (AnimResolve.ReactionClip), wszystkie z postawy stojącej (dawne „great sword impact”
+        /// zaczynało się w przysiadzie): przód lekki/ciężki – odrzut głowy, tył lekki/ciężki – pchnięcie / zgięcie w pół;
+        /// śmierć od ciosu z tyłu – upadek do przodu.
+        /// </summary>
+        internal static List<ActionClip> Reactions()
+        {
+            string gs = Mixamo + "Great Sword Pack/", ss = Mixamo + "Pro Sword and Shield Pack/";
+            return new List<ActionClip>
+            {
+                Act(AnimAction.Flinch, InPlace(ss + "sword and shield impact (3).fbx", 0, 21)),
+                // ciężkie: poziomy ruch ciała zostaje w pozie (zachwianie i powrót – nagrania kończą się w miejscu startu);
+                // w imporcie „w miejscu” odrzut znikał (środek ciężkości wracał nad stopy)
+                Act(AnimAction.FlinchHeavy, Clip(gs + "great sword impact (3).fbx", 0, 24)),
+                Act(AnimAction.FlinchBack, InPlace(ss + "sword and shield impact (2).fbx", 0, 20)),
+                Act(AnimAction.FlinchBackHeavy, Clip(gs + "great sword impact (2).fbx", 0, 21)),
+                Act(AnimAction.DeathForward, Clip(gs + "two handed sword death (2).fbx")),
+            };
+        }
+
+        /// <summary>
+        /// Ciężki z biegu (wyskok i rąbnięcie w ziemię) i lekki z biegu (poziome cięcie
+        /// nisko przez przód) – bez obrotów ciała (ArtSource/AnimationRepair/heavy-chop). Klipy autorskie, bez profilu GreatSwingPose.
+        /// </summary>
+        internal static List<ActionClip> FollowAndRunningMoves()
+        {
+            string c = Mixamo + "Composed/great axe ";
+            var moves = new List<ActionClip>
+            {
+                Blow(AttackAnim.LeapChop, InPlace(c + "leap chop.fbx"), 0, 24, 29, 68),
+                Blow(AttackAnim.RunningSweep, InPlace(c + "running sweep.fbx", 0, 44), 0, 19, 27, 44),
+            };
+            foreach (var m in moves) { m.strikeShare = 1f; m.authoredSwing = true; }
+            return moves;
+        }
+
+        /// <summary>Unik „szarża barkiem” (ArtSource/AnimationRepair/shoulder-charge): przód, tył, lewo, prawo; arms – „twohand” albo „shield”.</summary>
+        internal static List<ActionClip> ShoulderCharges(string arms)
+        {
+            string c = Mixamo + "Composed/shoulder charge ";
+            return new List<ActionClip>
+            {
+                new ActionClip { action = AnimAction.ChargeForward, clip = InPlace(c + "forward (" + arms + ").fbx", 0, 24) },
+                new ActionClip { action = AnimAction.ChargeBack, clip = InPlace(c + "back (" + arms + ").fbx", 0, 24) },
+                new ActionClip { action = AnimAction.ChargeLeft, clip = InPlace(c + "left (" + arms + ").fbx", 0, 24) },
+                new ActionClip { action = AnimAction.ChargeRight, clip = InPlace(c + "right (" + arms + ").fbx", 0, 24) },
+            };
+        }
+
         internal static List<ActionClip> GreatWeaponMoves()
         {
             string gs = Mixamo + "Great Sword Pack/great sword ";
             string down = Mixamo + "Loose/Standing Melee Attack Downward.fbx";
             var moves = new List<ActionClip>
             {
-                Blow(AttackAnim.Chop, InPlace(down), 0, 24, 29, 68),
+                // Naprawiony w Blenderze (ArtSource/AnimationRepair/heavy-chop): cofnięcie w tył i w dół (ładowanie), łuk górą, ostrze w ziemi.
+                Blow(AttackAnim.Chop, InPlace(GreatAxeChopPath), 0, 24, 29, 68),
+                // Ciężki 2 – oryginał z obrotem (decyzja użytkownika: „atk_heavy2 był dobry”), pełny łuk dokłada GreatSwingPose.
                 Blow(AttackAnim.ChopFollow, InPlace(gs + "high spin attack.fbx"), 0, 30, 37, 56),
-                Blow(AttackAnim.RunningSweep, InPlace(gs + "slash (2).fbx", 0, 44), 0, 19, 27, 44),
+                // RunningSweep, LeapChop – naprawione w Blenderze (FollowAndRunningMoves).
                 Blow(AttackAnim.DodgeChop, InPlace(down), 0, 24, 29, 68),
                 Blow(AttackAnim.Cleave, InPlace(gs + "slash.fbx"), 0, 14, 23, 38),
-                Blow(AttackAnim.CleaveBack, InPlace(gs + "slash (4).fbx"), 0, 25, 32, 54),
+                Blow(AttackAnim.CleaveBack, InPlace(gs + "slash (3).fbx"), 0, 26, 32, 55),
             };
             // Całe przejście ostrza w fazie aktywnej (w tempie nagrania lub szybciej) – wspólny profil grał je wolniej
             // niż nagranie, a resztę cięcia ściskał w pośpieszny powrót: cios wyglądał na urwany w połowie.
+            moves.AddRange(FollowAndRunningMoves());
             foreach (var m in moves) m.strikeShare = 1f;
+            // Klipy naprawione w Blenderze (ArtSource/AnimationRepair) mają pełny zamach i dociągnięcie – bez profilu GreatSwingPose.
+            foreach (var m in moves) if (m.attack == AttackAnim.Cleave || m.attack == AttackAnim.CleaveBack || m.attack == AttackAnim.Chop) m.authoredSwing = true;
             return moves;
         }
 

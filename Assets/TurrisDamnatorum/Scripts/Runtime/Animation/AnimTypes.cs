@@ -5,7 +5,13 @@ namespace Turris
     /// <summary>Czynność, którą animacja ma pokazać. Niezależna od tego, kto ją wykonuje (gracz / AI).</summary>
     public enum AnimAction { None, Attack, Block, Parry, Dodge, Backstep, Cast, Drink, Flinch, GuardBroken, Kneel, Death,
         /// <summary>Uczepienie (czerw z Hell Unleashed wgryziony w bohatera) – klip w pętli.</summary>
-        Latched }
+        Latched,
+        /// <summary>Unik „szarża barkiem” (DodgeStyle.ShoulderCharge) według kierunku względem postaci:
+        /// przód i boki – prowadzi bark, w tył – odskok z wypchnięciem broni/tarczy. Bez własnego klipu – zwykły unik.</summary>
+        ChargeForward, ChargeBack, ChargeLeft, ChargeRight,
+        /// <summary>Warianty klipów reakcji (tylko wybór klipu – stan postaci dalej Flinch / Death): ciężki cios, cios z tyłu,
+        /// upadek do przodu po ciosie z tyłu. Bez własnego klipu – zwykłe drgnięcie / śmierć.</summary>
+        FlinchHeavy, FlinchBack, FlinchBackHeavy, DeathForward }
 
     /// <summary>Styl ruchu ataku. Auto = wyliczany z parametrów ataku i broni.</summary>
     /// Special i Latch – własne klipy demonów z Hell Unleashed (wielki ruch ataku specjalnego, skok czerwia).
@@ -47,6 +53,7 @@ namespace Turris
         public float spinAngle;         // obrót całego ciała wokół osi pionowej (młynek), stopnie
         public Vector3 hitDirection;    // świat: kierunek ostatniego ciosu (od napastnika do postaci) – w tę stronę postać pada
         public float hitWeight;         // ciężar ostatniego ciosu 0..1+ (odrzut ciała przy upadku)
+        public float charge;            // ładowanie ciężkiego ciosu (przycisk trzymany, zamach stoi): 0..1 postępu; 0 – nie ładuje
     }
 
     public interface ICharacterAnimSource
@@ -81,6 +88,41 @@ namespace Turris
                 case AttackAnim.LeapChop: return AttackAnim.Leap;
                 default: return a;
             }
+        }
+
+        /// <summary>Wariant szarży barkiem (osobny klip uniku).</summary>
+        public static bool IsCharge(AnimAction a) => a == AnimAction.ChargeForward || a == AnimAction.ChargeBack || a == AnimAction.ChargeLeft || a == AnimAction.ChargeRight;
+
+        /// <summary>Klip reakcji według kierunku i siły ostatniego ciosu (hitDirection – od napastnika do postaci, hitWeight 0,35/0,7):
+        /// z tyłu – pchnięcie do przodu (śmierć: upadek do przodu), ciężki cios (≥ 0,55) – mocniejszy wariant.</summary>
+        public static AnimAction ReactionClip(Transform character, in CharacterAnimState s)
+        {
+            if (s.action != AnimAction.Flinch && s.action != AnimAction.Death) return s.action;
+            bool back = false;
+            if (character != null && s.hitDirection.sqrMagnitude > 1e-4f)
+                back = Vector3.Dot(character.InverseTransformDirection(s.hitDirection).normalized, Vector3.forward) > 0.35f;
+            if (s.action == AnimAction.Death) return back ? AnimAction.DeathForward : AnimAction.Death;
+            bool heavy = s.hitWeight >= 0.55f;
+            return back ? (heavy ? AnimAction.FlinchBackHeavy : AnimAction.FlinchBack) : (heavy ? AnimAction.FlinchHeavy : AnimAction.Flinch);
+        }
+
+        /// <summary>Wariant klipu reakcji → akcja bazowa (gdy zestaw nie ma wariantu).</summary>
+        public static AnimAction ReactionBase(AnimAction a) =>
+            a == AnimAction.FlinchHeavy || a == AnimAction.FlinchBack || a == AnimAction.FlinchBackHeavy ? AnimAction.Flinch :
+            a == AnimAction.DeathForward ? AnimAction.Death : a;
+
+        /// <summary>Unik w dowolnej postaci (przewrót albo szarża barkiem).</summary>
+        public static bool IsDodge(AnimAction a) => a == AnimAction.Dodge || IsCharge(a);
+
+        /// <summary>Szarża barkiem w kierunku uniku (świat) względem przodu postaci: ±50° – przód, ponad ±130° – tył, reszta – bok.</summary>
+        public static AnimAction ChargeFor(Transform character, Vector3 dodgeDirection)
+        {
+            Vector3 l = character.InverseTransformDirection(dodgeDirection); l.y = 0f;
+            if (l.sqrMagnitude < 1e-4f) return AnimAction.ChargeBack;
+            float a = Mathf.Atan2(l.x, l.z) * Mathf.Rad2Deg;
+            if (Mathf.Abs(a) <= 50f) return AnimAction.ChargeForward;
+            if (Mathf.Abs(a) >= 130f) return AnimAction.ChargeBack;
+            return a > 0f ? AnimAction.ChargeRight : AnimAction.ChargeLeft;
         }
 
         /// <summary>Ciężka broń dwuręczna z własnym zestawem ruchów (rąbnięcia, ładowanie, ataki z biegu i po uniku).</summary>
