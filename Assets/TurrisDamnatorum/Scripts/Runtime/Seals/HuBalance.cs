@@ -77,11 +77,10 @@ namespace Turris
             // a jego skill klasy Nawałnica jako jedyny skill klasy żywiołu nie kontroluje (Trzęsienie zachwiewa, Wir ciągnie,
             // Meteor odrzuca). Powietrze = odrzut i powalenie: burza powala na 0,5 s (odporność 2 s → ok. co 2,5 s),
             // Nova powietrza po odrzucie powala na 0,6 s – mag ma chwilę oddechu, strzelcy przerywają rzut.
-            // Powalenie kosztuje obrażenia (jak pieczęć Grzmot): oba skille −10%.
+            // Powalenie kosztuje obrażenia (jak pieczęć Grzmot): Nawałnica −10%. Nova powietrza po cięciu −10% (seria
+            // mag-powietrze-v3) spadła z 15/20 do 10/20 zwycięstw gracza, porażki przy bossach końcowych – Nova zostaje bez cięcia.
             new Patch { skill = "skill.sub.tempest", level = 0, values = new[] { "down_seconds=0.5", "damage.air=14.4" }, reason = "seria mag-zywioly-v1: mag powietrza bez kontroli" },
-            new Patch { skill = "skill.nova.air", level = 1, values = new[] { "down_seconds=0.6", "damage.air=21.6" }, reason = "seria mag-zywioly-v1: mag powietrza bez kontroli" },
-            new Patch { skill = "skill.nova.air", level = 2, values = new[] { "down_seconds=0.6", "damage.air=26.4" }, reason = "seria mag-zywioly-v1: mag powietrza bez kontroli" },
-            new Patch { skill = "skill.nova.air", level = 3, values = new[] { "down_seconds=0.6", "damage.air=31.1" }, reason = "seria mag-zywioly-v1: mag powietrza bez kontroli" },
+            new Patch { skill = "skill.nova.air", level = 0, values = new[] { "down_seconds=0.6" }, reason = "seria mag-zywioly-v1: mag powietrza bez kontroli" },
         };
 
         /// <summary>Korekta pieczęci: nowa lista operacji i opis (zastępują dane HU w całości); nazwa – tylko gdy podana.</summary>

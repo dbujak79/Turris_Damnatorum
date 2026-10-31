@@ -13,7 +13,7 @@ namespace Turris
     /// Efekty trwające na postaci. Zamrożenie powstaje z trzeciej warstwy chłodu, ogłuszenie – z trzeciej warstwy zachwiania.
     /// Pęknięcie pancerza zwiększa obrażenia fizyczne.
     /// </summary>
-    public enum StatusKind { Bleed, Burn, Chill, Shock, Frozen, Stagger, Stun, Sunder }
+    public enum StatusKind { Bleed, Burn, Chill, Shock, Frozen, Stagger, Stun, Sunder, Soaked, Slow }
 
     public enum ArenaStyle { Auto, Courtyard, Crypt, Summit }
 
@@ -149,6 +149,11 @@ namespace Turris
         StaggerOnHit,         // zwykłe ataki bronią zachwiewają
         ConvertFireToFrost,   // X części ognia staje się mrozem (wszystkie trafienia)
         ConvertPhysicalToFire,// X części obrażeń fizycznych zwykłego ciosu wręcz staje się ogniem
+        SoulGain,             // +X% dusz za zabójstwo (HU SoulGain)
+        ManaOnKill,           // +X many za zabójstwo (HU ManaOnKill)
+        ProjectileSpeed,      // +X% prędkości pocisków broni i skilli (HU ProjectileSpeed)
+        Accuracy,             // X punktów procentowych zdejmuje z uniku wrogów (HU Accuracy)
+        SoakedOnHit,          // zwykłe ataki bronią przemaczają (HU Mokre ostrze: Soaked)
     }
 
     public enum HitOutcome { Ignored, Hit, Dodged, Parried, Blocked, GuardBroken }
@@ -178,5 +183,6 @@ namespace Turris
         HeavyWeapon = 1 << 10, // ciężka broń: topory, młoty, buławy, gwiazdy zaranne, korbacze, cepy
         Dagger = 1 << 11,      // sztylety (też ostrza) i szabla
         Focus = 1 << 12,       // fokus magiczny: różdżka, kostur, grymuar
+        TwoHanded = 1 << 13,   // dwuręczna broń do walki wręcz; wymóg „TwoHanded | Shield” = broń dwuręczna albo tarcza (Szarża)
     }
 }

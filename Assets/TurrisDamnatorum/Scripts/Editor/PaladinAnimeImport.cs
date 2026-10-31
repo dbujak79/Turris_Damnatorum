@@ -47,12 +47,7 @@ namespace Turris.EditorTools
             material.shader = shader;
             material.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath));
             material.SetColor("_BaseColor", Color.white);
-            material.SetColor("_SteelTint", new Color(0.84f,0.82f,0.78f));
-            material.SetColor("_TrimTint", new Color(1f,0.90f,0.72f));
-            material.SetColor("_ShadowTint", new Color(0.58f,0.53f,0.46f));
-            material.SetFloat("_AmbientStrength",0.28f);
-            material.SetFloat("_KeyLightLimit",0.95f);
-            material.SetFloat("_BandSoftness",0.10f);
+            ConfigureMaterial(material);
             material.shaderKeywords = Array.Empty<string>();
             EditorUtility.SetDirty(material);
             AssetDatabase.SaveAssetIfDirty(material);
@@ -98,6 +93,7 @@ namespace Turris.EditorTools
             visual.footLength = 1f;
             visual.rigidBootToes = true;
             visual.sagittalRunFeet = true;
+            visual.anatomicalFeet = true;
             visual.oneHandSet = StandingComboSet(template.oneHandSet);
             visual.attachGear = true;
             visual.rightSlot = "HandSlot.R";
@@ -111,6 +107,27 @@ namespace Turris.EditorTools
             EditorUtility.SetDirty(paladin);
             AssetDatabase.SaveAssetIfDirty(paladin);
             return "Paladyn używa modelu anime; własny Humanoid, obecne animacje i sprzęt. Wojownik bez zmian.";
+        }
+
+        /// <summary>Aktualizacja samego wyglądu bez ponownego importowania rigowania i klipów.</summary>
+        [MenuItem("Turris/PoC/Odśwież malowany materiał paladyna")]
+        public static void UpdateMaterial()
+        {
+            var material=AssetDatabase.LoadAssetAtPath<Material>(Folder+"/paladin_anime.mat");
+            if(material==null) throw new InvalidOperationException("Brak materiału paladyna anime.");
+            ConfigureMaterial(material);
+            EditorUtility.SetDirty(material); AssetDatabase.SaveAssetIfDirty(material);
+        }
+
+        static void ConfigureMaterial(Material material)
+        {
+            material.SetColor("_SteelTint",new Color(.65f,.63f,.59f));
+            material.SetColor("_TrimTint",new Color(.74f,.64f,.46f));
+            material.SetColor("_ShadowTint",new Color(.60f,.63f,.68f));
+            material.SetFloat("_AmbientStrength",.30f);
+            material.SetFloat("_KeyLightLimit",.95f);
+            material.SetFloat("_TotalLightLimit",1.1f);
+            material.SetFloat("_BandSoftness",.16f);
         }
 
         static WeaponAnimSet StandingComboSet(WeaponAnimSet source)
@@ -138,6 +155,7 @@ namespace Turris.EditorTools
             }
             EditorUtility.CopySerialized(source, set);
             set.name = "anim_paladin_anime_onehand";
+            set.alternatingLightSteps = true;
             var cut = set.actions.First(a => a.action == AnimAction.Attack && a.attack == AttackAnim.SlashLeft);
             cut.clip = clip;
             cut.windupEnd = (22f-18f)/(24f-18f);

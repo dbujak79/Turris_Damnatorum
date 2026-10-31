@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.UnlockDefinition
   id: unlock_charge
   displayName: "Szar\u017Ca"
-  description: "Zryw naprz\xF3d, trafia ka\u017Cdego na drodze. Bez niewra\u017Cliwo\u015Bci \u2013 to atak, nie unik."
+  description: "Gwa\u0142towny bieg na wroga zako\u0144czony uderzeniem: 40% szansy na powalenie (og\u0142uszenie). W trakcie szar\u017Cy 50% mniej obra\u017Ce\u0144. Wymaga broni dwur\u0119cznej albo tarczy \u2013 z tarcz\u0105 szar\u017C\u0119 ko\u0144czy uderzenie tarcz\u0105, kt\u00F3re powala zawsze."
   tags: 0
   kind: 1
-  target: {fileID: 11400000, guid: 59efb178af614df47aeafbdf226ce09c, type: 2}
+  target: {fileID: 11400000, guid: 2f81c4ffcc484d7b9bd5dc377c384e6c, type: 2}
   ashCost: 15
   loadoutCost: 0
   unlockedByDefault: 0

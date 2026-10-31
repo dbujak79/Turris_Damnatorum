@@ -14,11 +14,13 @@ namespace Turris.Tests
             var off = run.equipment.Get(EquipSlot.OffHand)?.definition;
             if (WeaponFamilies.Usable(def, main, off)) return;
             var need = def.requiredTags;
+            // Szarża: broń dwuręczna albo tarcza – wystarczy młot dwuręczny.
+            if ((need & BuildTag.TwoHanded) != 0) { Put(run, item("hu_warhammer"), EquipSlot.MainHand); return; }
             if ((need & BuildTag.Shield) != 0) Put(run, item("hu_shield"), EquipSlot.OffHand);
             var families = need & WeaponFamilies.All;
             if (families == BuildTag.None || WeaponFamilies.Usable(def, run.equipment.Get(EquipSlot.MainHand)?.definition, run.equipment.Get(EquipSlot.OffHand)?.definition)) return;
             string id = (families & BuildTag.Blade) != 0 ? "hu_sword"
-                : (families & BuildTag.HeavyWeapon) != 0 ? "hu_morningstar"
+                : (families & BuildTag.HeavyWeapon) != 0 ? "hu_warhammer" // broń ciężka to tylko dwuręczna
                 : (families & BuildTag.Dagger) != 0 ? "hu_dagger"
                 : (families & BuildTag.Ranged) != 0 ? "hu_bow"
                 : "hu_wand_fire";

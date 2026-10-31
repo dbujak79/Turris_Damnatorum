@@ -253,6 +253,26 @@ namespace Turris.Tests
             Assert.AreEqual(distance, d.magnitude, distance * 0.15f, $"doskok {d.magnitude:0.0} m zamiast {distance:0.0} m: {log}");
         }
 
+        /// <summary>Szarża paladyna (korbacz i tarcza): w trakcie biegu 50% mniej obrażeń, na końcu uderzenie tarczą, które zawsze powala.</summary>
+        [UnityTest]
+        public IEnumerator Charge_HalvesDamageWhileRunning_AndShieldBashKnocksDown()
+        {
+            yield return StartRange("class_hu_paladin");
+            var def = root.config.baseSpellPool.First(d => d.id == TurrisSkills.ChargeTarget);
+            Assert.IsTrue(root.Player.HasShield, "paladyn startuje z tarczą");
+            root.Range.PlaceTargets(SkillRange.TargetSet.Heavy); // chochliki z gromady giną od uderzenia – martwego się nie powala
+            yield return null;
+            Equip(def);
+            Face();
+            float t = 0f;
+            while (root.Player.Actions.Current != ActionType.Cast && t < 1.5f) { root.Player.RequestSkill(0); t += Time.deltaTime; yield return null; }
+            float best = 0f; t = 0f;
+            while (root.Player.Actions.Current == ActionType.Cast && t < 3f) { best = Mathf.Max(best, root.Player.DashReduction); t += Time.deltaTime; yield return null; }
+            Assert.AreEqual(0.5f, best, 1e-4f, "redukcja w trakcie szarży");
+            Assert.AreEqual(0f, root.Player.DashReduction, "po szarży bez redukcji");
+            Assert.IsTrue(root.Enemies.Any(e => e != null && !e.IsDead && e.Status.Stunned), "uderzenie tarczą powala");
+        }
+
         [UnityTest]
         public IEnumerator DodgeTrigger_CastsTheSkill()
         {

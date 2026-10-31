@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28f0098896e7e6f49878bfb5044a1797, type: 3}
+  m_Name: gothic_arena_set
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.GothicArenaSet
+  modules:
+  - {fileID: 7750041295643412039, guid: 507722cf626321241b62e6e7d122ff13, type: 3}
+  - {fileID: 7384361704269524814, guid: 48d90602417094344a38ab6167a5f9e9, type: 3}
+  - {fileID: 5159119506052840765, guid: c5e0370b58bc8a74ab21b1863ed1d76e, type: 3}
+  - {fileID: 5738929517554298950, guid: 696e85131648f6440b909af28281d3e4, type: 3}
+  - {fileID: 2289526387792812698, guid: f2f9bbedc2fb6244e974e084698f1838, type: 3}
+  - {fileID: 1905317154204679268, guid: 727e7fa8ae69d814b8a15b9aa1046850, type: 3}
+  - {fileID: 4092321644077838757, guid: f9d49f4ffe42d3f43bc3fb38ef800dcc, type: 3}
+  - {fileID: 8088925528152361710, guid: 5bf774a49b95b2d4c93af7752609388e, type: 3}
+  - {fileID: 722986939391512936, guid: fe05a0e587370cf4385666c0f0645dc7, type: 3}
+  - {fileID: 8120866964678876611, guid: 602cafc2cae47c547a9e5ca94baff5aa, type: 3}
+  - {fileID: 5567914288671212009, guid: a60e2df951630974b9a6b7814e4407b3, type: 3}
+  - {fileID: 8544852715835437761, guid: 37c4dd3056c05014ca050781d7a96a7c, type: 3}
+  - {fileID: 3074919313287879398, guid: bbcc6e946d048154e833156bc9612e82, type: 3}
+  - {fileID: 2677098613986746238, guid: fd0a2f23e6c3fce438df525800700fec, type: 3}
+  - {fileID: 4501884905193173087, guid: bd0f1992b5f43b44485548a5a2f98711, type: 3}
+  - {fileID: 415694067740519514, guid: 6d5666bd0d2bacb49976aa2af9f9b88e, type: 3}
+  - {fileID: 4449105879194009189, guid: eb46adc1978593e498d56a8a073c8ddd, type: 3}
+  - {fileID: 6066083214257915067, guid: bdc42a02daad80a4a967ee4e159f352f, type: 3}
+  - {fileID: 2493505986871589986, guid: 38ab15d935f634241aeee118e7ae75bb, type: 3}
+  - {fileID: 173538426280717442, guid: 8995143670bb9c14485524d8b8608de1, type: 3}
+  - {fileID: 3511395719747695448, guid: 73b5cb8726e15f145b48b729accdcff7, type: 3}
+  - {fileID: 3128681021331263529, guid: d0eeb841abb0b8742b43d1009039c750, type: 3}
+  - {fileID: 6200645108549275335, guid: 400f77b716c3ded48bf35d1d8fb58269, type: 3}
+  - {fileID: 748491368647659782, guid: 121a270e83958f04ba8e97bb9c29c0fc, type: 3}
+  - {fileID: 3771771358354208105, guid: 4b8bdaf40d4c895448d3336db1adb671, type: 3}
+  - {fileID: 1560756535774396969, guid: 5e17c4c1ec46c334581cc53676b310af, type: 3}
+  - {fileID: 1540342369462835207, guid: e2a09549ae1b1d046ae96fb38e1148b0, type: 3}
+  - {fileID: 5626936348617920349, guid: bb3b42da61a727a45910dbbbf0b2368d, type: 3}
+  - {fileID: 5216255933193600907, guid: da1f8e68c7a6f63488660b4105191e99, type: 3}
+  - {fileID: 8300822827534566948, guid: 571af40f900bc6d48a8e909a722a61ac, type: 3}
+  stone: {fileID: 2100000, guid: 581a62d5774266d47b5f014cda38460b, type: 2}
+  cloth: {fileID: 2100000, guid: 7284dc8d37617994abdc0bda52d915ba, type: 2}
+  backdrop: {fileID: 2100000, guid: afc5e5316af33d046af8882dca0ced57, type: 2}
+  ground: {fileID: 2100000, guid: e0f0f27088ef49e4e9f29ff9fe3a6ba1, type: 2}
+  sky: {fileID: 2100000, guid: b43982c243bf0cf4694388e06c4401e9, type: 2}
+  originalArena: {fileID: 11400000, guid: c7bf7d6667ed7b647ad18dcb3b588dec, type: 2}

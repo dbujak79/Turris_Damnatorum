@@ -19,14 +19,17 @@ namespace Turris
         {
             public string id; public int level; public int slot = -1;
             public int rarity, quality; public List<StatModifier> affixes = new List<StatModifier>(); public List<string> affixNames = new List<string>();
+            public List<PassiveEffect> affixEffects = new List<PassiveEffect>();
             public static Item Of(ItemInstance it, int slot = -1) => new Item
             {
                 id = it.definition.id, level = it.level, slot = slot, rarity = (int)it.rarity, quality = it.huQuality,
                 affixes = new List<StatModifier>(it.affixes), affixNames = new List<string>(it.affixNames),
+                affixEffects = new List<PassiveEffect>(it.affixEffects),
             };
             public ItemInstance Make(ItemDefinition def) => new ItemInstance(def, level)
             {
                 rarity = (ItemRarity)rarity, huQuality = quality, affixes = new List<StatModifier>(affixes), affixNames = new List<string>(affixNames),
+                affixEffects = affixEffects != null ? new List<PassiveEffect>(affixEffects) : new List<PassiveEffect>(),
             };
         }
         [Serializable] public class Skill { public string id; public int level; public bool permanent, fromItem; public int slot = -1; public string form; public List<string> supports = new List<string>(); }

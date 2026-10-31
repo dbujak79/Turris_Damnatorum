@@ -109,6 +109,7 @@ namespace Turris
                 intent = cameraRig.FlatForward * m.y + cameraRig.FlatRight * m.x;
                 if (intent.sqrMagnitude > 1f) intent.Normalize();
                 combat.SetBlockHeld(input.BlockHeld);
+                combat.HeavyHeld = input.HeavyHeld;
 
                 if (LockTarget != null && switchCooldown <= 0 && Mathf.Abs(input.LookDelta.x) > flickThreshold)
                 {
@@ -177,12 +178,14 @@ namespace Turris
                 case ActionType.LightAttack:
                 case ActionType.HeavyAttack:
                 {
-                    var atk = cur == ActionType.LightAttack ? combat.Build.weapon.light : combat.Build.weapon.heavy;
+                    var atk = combat.CurrentAttack ?? (cur == ActionType.LightAttack ? combat.Build.weapon.light : combat.Build.weapon.heavy);
                     float t = combat.AttackWindup + combat.AttackActive; // już ze Zręcznością i tempem
                     // Bohater z modelem: krok naprzód dokładnie taki, jak w nagraniu ciosu (stopa podporowa stoi w miejscu).
                     var clips = ClipDriver;
                     if (clips != null && clips.StepsFromClips) horizontal = dt > 0f ? transform.forward * (clips.ConsumeAdvance() / dt) : Vector3.zero;
                     else if (actions.Elapsed < t && t > 0) horizontal = transform.forward * (atk.lunge / t);
+                    // Cios z biegu (topór, młot): rozpęd wygasa do końca fazy aktywnej.
+                    if (combat.AttackCarry > 0f && actions.Elapsed < t && t > 0) horizontal += transform.forward * (combat.AttackCarry * (1f - actions.Elapsed / t));
                     steered = false;
                     // Z namierzaniem postać śledzi cel przez cały zamach; bez niego – jak dotąd przez 60% zamachu.
                     if (actions.Elapsed < combat.AttackWindup * (LockTarget != null ? 1f : 0.6f))

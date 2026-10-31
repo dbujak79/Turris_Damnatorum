@@ -60,10 +60,10 @@ MonoBehaviour:
       - kind: 0
         stacks: 1
         chance: 0.5
-      - kind: 2
+      - kind: 8
         stacks: 1
         chance: 0.5
-      - kind: 2
+      - kind: 9
         stacks: 1
         chance: 0.5
       animation: 0
@@ -100,10 +100,10 @@ MonoBehaviour:
       - kind: 0
         stacks: 1
         chance: 1
-      - kind: 2
+      - kind: 8
         stacks: 1
         chance: 1
-      - kind: 2
+      - kind: 9
         stacks: 1
         chance: 1
       animation: 0

@@ -60,10 +60,10 @@ MonoBehaviour:
       bonusVsBleeding: 0
       executeBonus: 0
       statuses:
-      - kind: 2
+      - kind: 8
         stacks: 1
         chance: 0.5
-      - kind: 2
+      - kind: 9
         stacks: 1
         chance: 0.5
       animation: 7
@@ -97,10 +97,10 @@ MonoBehaviour:
       bonusVsBleeding: 0
       executeBonus: 0
       statuses:
-      - kind: 2
+      - kind: 8
         stacks: 1
         chance: 1
-      - kind: 2
+      - kind: 9
         stacks: 1
         chance: 1
       animation: 7

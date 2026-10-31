@@ -9,17 +9,25 @@ namespace Turris
         readonly WeaponModel weapon;
         readonly bool wand;
         readonly bool twoHanded;
+        readonly bool anatomicalGrip;
+        readonly Vector3 leftGripPosition;
+        readonly Quaternion leftGripRotation, rightGripRotation;
         readonly float span;
         readonly Transform nock;
         readonly Vector3 nockRest;
         float gripWeight, guardWeight;
+        /// <summary>Odstęp dłoni na trzonku topora i młota (m, od gniazda prawej dłoni do lewej).</summary>
+        public const float HeavyGripSpan = 0.34f;
         public float GripError { get; private set; }
         public float BowDraw { get; private set; }
-        public HellEquipmentPose(Animator animator, Transform root, RigLook look, WeaponAnimSet set, GameObject gear)
+        public HellEquipmentPose(Animator animator, Transform root, RigLook look, WeaponAnimSet set, GameObject gear,
+            bool anatomicalGrip = false, Transform leftSocket = null)
         {
             this.root = root; weapon = look.weapon; wand = look.weaponItem != null && look.weaponItem.id.Contains("wand");
             twoHanded = AnimResolve.GripFor(weapon) == GripStyle.TwoHand || (weapon == WeaponModel.Staff && look.weaponItem != null && look.weaponItem.twoHanded);
             span = set != null ? set.gripSpan : 0.2f;
+            // Topór i młot trzyma się szeroko (dłonie rozsunięte na długim trzonku), nie pięścią przy pięści jak rękojeść miecza.
+            if (AnimResolve.IsHeavyTwoHand(weapon)) span = Mathf.Max(span, HeavyGripSpan);
             if (animator.isHuman)
             {
                 upperL = animator.GetBoneTransform(HumanBodyBones.LeftUpperArm); lowerL = animator.GetBoneTransform(HumanBodyBones.LeftLowerArm); handL = animator.GetBoneTransform(HumanBodyBones.LeftHand);
@@ -27,28 +35,45 @@ namespace Turris
             }
             if (weapon == WeaponModel.Bow && gear != null) nock = Util.FindDeep(gear.transform, "nock");
             if (nock != null) nockRest = nock.localPosition;
+            this.anatomicalGrip = anatomicalGrip && handL != null && handR != null && leftSocket != null && gear != null;
+            if (this.anatomicalGrip)
+            {
+                leftGripPosition = handL.InverseTransformPoint(leftSocket.position);
+                leftGripRotation = Quaternion.Inverse(handL.rotation) * leftSocket.rotation;
+                rightGripRotation = Quaternion.Inverse(handR.rotation) * gear.transform.parent.rotation;
+            }
         }
         public void Apply(in CharacterAnimState state, Transform socket, float dt)
         {
             if (handL == null || handR == null || socket == null) return;
             bool free = state.action == AnimAction.Death || state.action == AnimAction.Dodge || state.action == AnimAction.Flinch || state.action == AnimAction.Cast || state.action == AnimAction.Drink;
             gripWeight = Mathf.MoveTowards(gripWeight, twoHanded && !free ? 1f : 0f, dt * 10);
+            if (anatomicalGrip && !free)
+            {
+                var direction = socket.rotation;
+                handR.rotation = direction * Quaternion.Inverse(rightGripRotation);
+                socket.rotation = direction;
+            }
             if (gripWeight > 0)
             {
                 var target = socket.position - socket.up * span;
+                if (anatomicalGrip) handL.rotation = Quaternion.Slerp(handL.rotation,
+                    socket.rotation * Quaternion.Inverse(leftGripRotation), gripWeight);
                 // Retarget klipu na krótsze ramiona może zostawić drugi chwyt poza zasięgiem.
                 // Cofamy wtedy także dłoń prowadzącą: broń pozostaje między obiema dłońmi, kości nie są rozciągane.
                 for (int i = 0; i < 2; i++)
                 {
                     float reach = Vector3.Distance(upperL.position, lowerL.position) + Vector3.Distance(lowerL.position, handL.position) - 0.005f;
-                    var delta = target - upperL.position;
+                    var wristTarget = anatomicalGrip ? target - handL.TransformVector(leftGripPosition) : target;
+                    var delta = wristTarget - upperL.position;
                     if (delta.magnitude <= reach) break;
                     var correction = -delta.normalized * (delta.magnitude - reach + 0.008f);
                     Solve(upperR, lowerR, handR, handR.position + correction, root.right - root.up, gripWeight);
                     target = socket.position - socket.up * span;
                 }
-                Solve(upperL, lowerL, handL, target, root.TransformDirection(new Vector3(-0.9f, -0.8f, -0.2f)), gripWeight);
-                GripError = Vector3.Distance(handL.position, target);
+                Solve(upperL, lowerL, handL, anatomicalGrip ? target - handL.TransformVector(leftGripPosition) : target,
+                    root.TransformDirection(new Vector3(-0.9f, -0.8f, -0.2f)), gripWeight);
+                GripError = Vector3.Distance(anatomicalGrip ? handL.TransformPoint(leftGripPosition) : handL.position, target);
             }
             guardWeight = Mathf.MoveTowards(guardWeight, state.hasShield && (state.action == AnimAction.Block || state.action == AnimAction.Parry) ? 1 : 0, dt * 12);
             if (guardWeight > 0) Solve(upperL, lowerL, handL, root.TransformPoint(new Vector3(-0.28f, 1.15f, 0.42f)), -root.right - root.up, guardWeight * 0.8f);
@@ -57,7 +82,9 @@ namespace Turris
                 var target = root.TransformPoint(wand ? new Vector3(0.35f, 1.02f, 0.35f) : new Vector3(0.32f, 0.94f, 0.23f));
                 Solve(upperR, lowerR, handR, target, root.right - root.up, 0.8f);
                 var blade = root.TransformDirection(wand ? new Vector3(0.1f, 0.65f, 0.75f) : new Vector3(0.25f, -0.35f, 0.9f)).normalized;
-                socket.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(root.up, blade).normalized, blade);
+                var desired = Quaternion.LookRotation(Vector3.ProjectOnPlane(root.up, blade).normalized, blade);
+                if (anatomicalGrip) handR.rotation = desired * Quaternion.Inverse(rightGripRotation);
+                socket.rotation = desired;
             }
             if (nock != null)
             {

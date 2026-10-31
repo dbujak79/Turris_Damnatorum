@@ -25,7 +25,7 @@ namespace Turris
         [Serializable] class AffixCatalog { public AffixRow[] affixes; }
         [Serializable] class UpgradeCatalog { public UpgradeRow[] upgrades; }
 
-        [Serializable] public class ItemRow { public string id, file, name, desc, ClassId, KindName; public int Kind, Rarity, MinWave = 1; public string[] Modifiers = new string[0], Tags = new string[0]; public float BasePrice = 40, Weight = 1, Load; public bool InShop = true; }
+        [Serializable] public class ItemRow { public string id, file, name, desc, ClassId, KindName; public int Kind, Rarity, MinWave = 1, Power; public string[] Modifiers = new string[0], Tags = new string[0]; public float BasePrice = 40, Weight = 1, Load, PowerValue; public bool InShop = true; }
         [Serializable] public class AffixRow { public string id, name, Group; public int Kind, Tier = 1, MinWave = 1; public float Weight = 1; public string[] Categories = new string[0], RequiredTags = new string[0], Ranges = new string[0]; }
         [Serializable] public class UpgradeRow { public string id, name, desc, ClassId, Conversion; public int Scope, MaxLevel = 5, RequiredSlot; public float BasePrice = 20, PriceGrowth = 1.5f, Weight = 1; public string[] Modifiers = new string[0], RequiredTags = new string[0], RequiresAny = new string[0], OnHitEffects = new string[0]; }
 
@@ -37,7 +37,7 @@ namespace Turris
 
         // ------------------------------------------------------------------ Statystyki HU → Turris
 
-        static float Num(string s) => float.Parse(s, CultureInfo.InvariantCulture);
+        public static float Num(string s) => float.Parse(s, CultureInfo.InvariantCulture);
 
         /// <summary>
         /// Jedna wartość HU („Stat|Op|v”) jako modyfikator Turris; null – statystyka bez odpowiednika (penetracja, unik, blok bierny,
@@ -88,8 +88,61 @@ namespace Turris
             return p.Length < 3 ? null : Map(p[0], p[1], Num(p[2].Split(',')[0]));
         }
 
-        /// <summary>Statystyka HU ma odpowiednik w Turris (affixy i perki bez niego są pomijane).</summary>
-        public static bool Supported(string stat) => Map(stat, "Flat", 1f).HasValue;
+        /// <summary>
+        /// Statystyka HU bez odpowiednika w statystykach Turris → efekt pasywny (te same jednostki co perki HU:
+        /// ułamki → %, liczby sztuk bez zmian, życie ×2). Salwa i udział wybuchu to tabele poziomów perka – tylko perki.
+        /// </summary>
+        public static PassiveEffect? MapEffect(string stat, float v)
+        {
+            PassiveEffect E(PassiveEffectType t, float x) => new PassiveEffect(t, x);
+            switch (stat)
+            {
+                case "AreaSize": return E(PassiveEffectType.AreaSize, v * 100f);
+                case "Evasion": return E(PassiveEffectType.Evasion, v * 100f);
+                case "PassiveBlockChance": return E(PassiveEffectType.PassiveBlockChance, v * 100f);
+                case "BlockCostReduction": return E(PassiveEffectType.BlockCostReduction, v * 100f);
+                case "Knockback": return E(PassiveEffectType.MeleeKnockback, v);
+                case "MeleeRange": return E(PassiveEffectType.MeleeRange, v * 100f);
+                case "MomentumAttackSpeed": return E(PassiveEffectType.MomentumAttackSpeed, v * 100f);
+                case "PhysicalPenetration": return E(PassiveEffectType.PenetrationPhysical, v * 100f);
+                case "FirePenetration": return E(PassiveEffectType.PenetrationFire, v * 100f);
+                case "WaterPenetration": return E(PassiveEffectType.PenetrationFrost, v * 100f);
+                case "AirPenetration": return E(PassiveEffectType.PenetrationLightning, v * 100f);
+                case "EarthPenetration": return E(PassiveEffectType.PenetrationEarth, v * 100f);
+                case "ProjectilePierce": return E(PassiveEffectType.ProjectilePierce, v);
+                case "ProjectileRicochet": return E(PassiveEffectType.ProjectileRicochet, v);
+                case "ProjectileSplit": return E(PassiveEffectType.ProjectileSplit, v);
+                case "ProjectileResidue": return E(PassiveEffectType.ProjectileResidue, v);
+                case "ProjectileSpeed": return E(PassiveEffectType.ProjectileSpeed, v * 100f);
+                case "ParryReflect": return E(PassiveEffectType.ParryReflect, v);
+                case "BleedMaxStacks": return E(PassiveEffectType.BleedMaxStacksBonus, v);
+                case "LifeOnKill": return E(PassiveEffectType.HealOnKill, v * 2f);
+                case "ManaOnKill": return E(PassiveEffectType.ManaOnKill, v);
+                case "SoulGain": return E(PassiveEffectType.SoulGain, v * 100f);
+                case "Accuracy": return E(PassiveEffectType.Accuracy, v * 100f);
+                default: return null;
+            }
+        }
+
+        /// <summary>Moc unikatu HU (<c>ItemPower</c> 1–8) jako efekt pasywny; null = brak mocy.</summary>
+        public static PassiveEffect? PowerEffect(int power, float value)
+        {
+            switch (power)
+            {
+                case 1: return new PassiveEffect(PassiveEffectType.CheatDeath, value);
+                case 2: return new PassiveEffect(PassiveEffectType.CorpseExplosion, value);
+                case 3: return new PassiveEffect(PassiveEffectType.EmberAura, value * PlayerCombat.HuDamageScale);
+                case 4: return new PassiveEffect(PassiveEffectType.Thorns, value * PlayerCombat.HuDamageScale);
+                case 5: return new PassiveEffect(PassiveEffectType.WeaponChainLightning, value);
+                case 6: return new PassiveEffect(PassiveEffectType.FrostWard, value);
+                case 7: return new PassiveEffect(PassiveEffectType.LowHealthDamage, value);
+                case 8: return new PassiveEffect(PassiveEffectType.SoulHarvest, value);
+                default: return null;
+            }
+        }
+
+        /// <summary>Statystyka HU ma odpowiednik w Turris – statystykę albo efekt pasywny (affixy bez niego są pomijane).</summary>
+        public static bool Supported(string stat) => Map(stat, "Flat", 1f).HasValue || MapEffect(stat, 1f).HasValue;
 
         // ------------------------------------------------------------------ Rzadkość
 
@@ -176,14 +229,18 @@ namespace Turris
 
         public static ItemRow ItemRowOf(ItemDefinition d) => d == null ? null : Items.FirstOrDefault(r => r.id == d.huSourceId);
 
+        /// <summary>Unikat HU: przedmiot z rzadkością 4 w items.json albo unikatowa broń (id z „.unique.”, katalog broni).</summary>
+        public static bool IsUnique(ItemDefinition d) =>
+            d != null && (ItemRowOf(d)?.Rarity == 4 || (d.huSourceId != null && d.huSourceId.Contains(".unique.")));
+
         /// <summary>
         /// Losuje affixy (HU <c>LootTable</c>): przedrostki, potem przyrostki; grupa raz na przedmiot, waga grupy = najwyższa waga
         /// jej odblokowanych tierów, tier z wagą równą numerowi (nowsze częściej), wartość = min + (max−min)·q, legendarny – lepsze q.
-        /// Pomijane affixy ze statystyką bez odpowiednika w Turris.
+        /// Statystyki bez odpowiednika w statystykach Turris idą jako efekty pasywne (<see cref="MapEffect"/>).
         /// </summary>
         public static void RollAffixes(ItemInstance item, int wave, System.Random rng)
         {
-            item.affixes.Clear(); item.affixNames.Clear();
+            item.affixes.Clear(); item.affixEffects.Clear(); item.affixNames.Clear();
             int per = AffixesPerKind(item.rarity);
             if (per == 0) return;
             string cat = Category(item.definition);
@@ -210,6 +267,7 @@ namespace Turris
                         v = Mathf.Abs(max) >= 2f && !p[1].StartsWith("Percent") ? Mathf.Round(v) : Mathf.Round(v * 1000f) / 1000f;
                         var m = Map(p[0], p[1], v);
                         if (m.HasValue) item.affixes.Add(m.Value);
+                        else if (MapEffect(p[0], v) is PassiveEffect fx) item.affixEffects.Add(fx);
                     }
                     item.affixNames.Add(tier.name);
                 }
@@ -226,9 +284,9 @@ namespace Turris
         public static ItemInstance Roll(ItemDefinition def, LootSource source, int wave, System.Random rng, ItemRarity? rarity = null)
         {
             var it = new ItemInstance(def);
-            var row = ItemRowOf(def);
-            it.rarity = row != null && row.Rarity == 4 ? ItemRarity.Unique : rarity ?? RollRarity(source, wave, rng);
-            if (it.rarity == ItemRarity.Unique && (row == null || row.Rarity != 4)) it.rarity = wave < LegendaryMinWave ? ItemRarity.Rare : ItemRarity.Legendary;
+            bool unique = IsUnique(def);
+            it.rarity = unique ? ItemRarity.Unique : rarity ?? RollRarity(source, wave, rng);
+            if (it.rarity == ItemRarity.Unique && !unique) it.rarity = wave < LegendaryMinWave ? ItemRarity.Rare : ItemRarity.Legendary;
             it.huQuality = source == LootSource.Elite ? rng.Next(0, 2) : source == LootSource.Boss ? rng.Next(1, 3) : 0;
             RollAffixes(it, wave, rng);
             return it;
@@ -239,7 +297,8 @@ namespace Turris
         {
             var row = ItemRowOf(it.definition);
             float basePrice = row != null ? row.BasePrice : WeaponBasePrice(it.definition);
-            return Mathf.RoundToInt(basePrice * RarityPrice(it.rarity) * (1f + 0.25f * it.huQuality) * PriceScale);
+            float level = it.definition.IsWeapon ? 1f + 0.5f * it.level : 1f; // HU: broń × (1 + 0,5 · (poziom − 1))
+            return Mathf.RoundToInt(basePrice * RarityPrice(it.rarity) * (1f + 0.25f * it.huQuality) * level * PriceScale);
         }
 
         // ------------------------------------------------------------------ Broń: poziomy
@@ -257,14 +316,20 @@ namespace Turris
         /// <summary>Cena kolejnego poziomu broni (HU: BasePrice × 1,6^poziom) w duszach przed inflacją.</summary>
         public static int WeaponLevelPrice(ItemInstance w)
         {
+            if (w.definition != null && w.definition.IsShield) return Mathf.RoundToInt(ShieldBasePrice * Mathf.Pow(ShieldPriceGrowth, w.level + 1) * PriceScale);
             var row = w.definition != null && !string.IsNullOrEmpty(w.definition.huSourceId) ? HellWeaponCatalog.Find(w.definition.huSourceId) : null;
             float growth = row != null && row.PriceGrowth > 0f ? row.PriceGrowth : 1.6f;
             return Mathf.RoundToInt(WeaponBasePrice(w.definition) * Mathf.Pow(growth, w.level + 1) * PriceScale);
         }
 
         /// <summary>Ostatni poziom tej broni w Turris (MaxLevel HU − 1; tarcze i grymuary w HU mają 3 poziomy).</summary>
+        /// <summary>Tarcza HU (<c>weapon.shield</c>): 3 poziomy, cena 28 × 1,7^poziom; poziom rośnie z ponownego zakupu w sklepie.</summary>
+        public const int ShieldMaxLevel = 2;
+        public const float ShieldBasePrice = 28f, ShieldPriceGrowth = 1.7f;
+
         public static int MaxLevelOf(ItemDefinition d)
         {
+            if (d != null && d.IsShield) return ShieldMaxLevel;
             var row = d != null && !string.IsNullOrEmpty(d.huSourceId) ? HellWeaponCatalog.Find(d.huSourceId) : null;
             return row != null ? Mathf.Clamp(row.MaxLevel - 1, 0, MaxWeaponLevel) : MaxWeaponLevel;
         }

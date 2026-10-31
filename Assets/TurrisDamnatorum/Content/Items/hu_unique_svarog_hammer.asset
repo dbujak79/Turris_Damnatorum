@@ -35,6 +35,8 @@ MonoBehaviour:
     mode: 0
     value: 18
   effects:
+  - type: 32
+    value: 1
   - type: 21
     value: 30
   weapon:
@@ -64,6 +66,8 @@ MonoBehaviour:
       explosionRadius: 0
       element: 1
       elementShare: 0.3846154
+      element2: 0
+      element2Share: 0
       bonusVsFrozen: 0.5
       bonusVsBleeding: 0
       executeBonus: 0
@@ -104,6 +108,8 @@ MonoBehaviour:
       explosionRadius: 0
       element: 1
       elementShare: 0.3846154
+      element2: 0
+      element2Share: 0
       bonusVsFrozen: 0.5
       bonusVsBleeding: 0
       executeBonus: 0

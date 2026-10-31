@@ -83,6 +83,7 @@ namespace Turris.Tests.Bots
         public Tally windupSum = new Tally();        // „wróg: atak” → suma czasu zamachu (s)
         public Tally windupN = new Tally();
         public Tally reactionMargin = new Tally();
+        public Tally lowHpTime = new Tally();        // niskie życie z flaszką: stan bota → sekundy
         public Tally dodgeReasons = new Tally();     // powód naciśnięcia uniku (i odmowy gry)   // telegraf|zapas czasu po reakcji bota
         public Tally messages = new Tally();         // komunikaty gry (np. „Za mało many”)
         public Tally attributes = new Tally();

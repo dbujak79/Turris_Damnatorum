@@ -21,6 +21,9 @@ namespace Turris
         GameObject visual;
 
         public float Radius => radius;
+        public Faction Faction => faction;
+        /// <summary>Sekundy do zgaśnięcia strefy.</summary>
+        public float Remaining => life;
 
         /// <summary>Parametry strefy tworzonej po czymś innym (np. po wybuchu meteoru).</summary>
         public struct Settings { public float radius, duration, interval; public HitData hit; }
@@ -31,7 +34,7 @@ namespace Turris
             go.transform.position = center;
             var z = go.AddComponent<DamageZone>();
             if (owner is EnemyBrain enemy) enemy.TrackOwnedEffect(z);
-            z.hit = hit; z.faction = faction; z.owner = owner;
+            z.hit = hit; z.hit.isGroundHazard = true; z.faction = faction; z.owner = owner;
             z.radius = radius; z.interval = Mathf.Max(0.1f, interval); z.life = duration;
             z.visual = FxLibrary.ElementGround(center, radius, hit.element, color, duration, hit.visualElement);
             Sfx.Play(Sfx.ForElement(hit.element, SoundId.Chains), center, 0.8f, 0.8f);

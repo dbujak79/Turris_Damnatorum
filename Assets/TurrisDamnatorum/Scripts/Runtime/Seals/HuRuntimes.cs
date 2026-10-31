@@ -488,6 +488,9 @@ namespace Turris
         public float Seconds => seconds;
         public float LeapHeight => cast.P.GetF("leap_height");
         public float Progress => Mathf.Clamp01(t / seconds);
+        public bool Running => !ended;
+        /// <summary>Redukcja obrażeń bohatera w trakcie doskoku (0–1).</summary>
+        public float Reduction => Mathf.Clamp01(cast.P.GetF("dash_reduction"));
         /// <summary>Prędkość na tę klatkę: nigdy dalej niż do końca dystansu (przy niskim klatkażu ruch nie przelatuje celu).</summary>
         public Vector3 MotionFor(float dt)
         {
@@ -520,6 +523,11 @@ namespace Turris
         {
             ended = true;
             cast.caster.SetPassThroughEnemies(false);
+            if (impactOnEnd && cast.P.On("shield_bash_down") && cast.caster.HasShield)
+            {
+                CombatEvents.RaiseWorldText(cast.caster.AimPoint + Vector3.up * 0.6f, "UDERZENIE TARCZĄ", cast.color);
+                Sfx.Play(SoundId.Quake, cast.caster.transform.position, 0.7f, 1.3f);
+            }
             if (impactOnEnd) cast.Impact(cast.caster.transform.position);
         }
         public void Stop() { ended = true; if (cast.caster != null) cast.caster.SetPassThroughEnemies(false); }

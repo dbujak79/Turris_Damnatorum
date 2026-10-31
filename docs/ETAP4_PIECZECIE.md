@@ -28,7 +28,7 @@ Stan: 2026-10-23, gałąź `feature/urp-vfx-migration`. Źródło HU tylko do od
   błyskawice; premia „przeciw przemoczonym” → „przeciw wychłodzonym”.
 - **Bezpieczniki z HU:** mnożniki wsparć sumują się (limit +200%, podłoga −80%), poziomy pieczęci najwyżej +32%,
   kopie jednego rzutu razem ≤ 1,5× i ≤ 24 zdarzenia, wyzwalacz raz na 1,5 s i za połowę kosztu, odnowienie ≥ 40%
-  bazowego, najwyżej 40 stref skilli naraz, Nieśmiertelność nie przyjmuje wyzwalaczy ani przyspieszeń.
+  bazowego, najwyżej 40 stref skilli naraz, Żelazna skóra (dawniej Nieśmiertelność) nie przyjmuje wyzwalaczy ani przyspieszeń.
 
 ## Korekty Turris (z audytu balansu)
 

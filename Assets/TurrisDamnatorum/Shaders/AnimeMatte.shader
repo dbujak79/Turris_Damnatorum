@@ -5,12 +5,13 @@ Shader "Turris/AnimeMatte"
     {
         [MainTexture] _BaseMap("Kolor", 2D) = "white" {}
         [MainColor] _BaseColor("Odcień", Color) = (1,1,1,1)
-        _SteelTint("Przygaszona stal", Color) = (0.84,0.82,0.78,1)
-        _TrimTint("Stare złoto obrzeży", Color) = (1,0.9,0.72,1)
-        _ShadowTint("Odcień cienia", Color) = (0.55,0.58,0.68,1)
+        _SteelTint("Najjaśniejsza stal", Color) = (0.65,0.63,0.59,1)
+        _TrimTint("Stare złoto obrzeży", Color) = (0.74,0.64,0.46,1)
+        _ShadowTint("Wypełnienie cienia", Color) = (0.60,0.63,0.68,1)
         _BandSoftness("Miękkość pasm", Range(0.01,0.3)) = 0.08
         _AmbientStrength("Światło otoczenia", Range(0,1)) = 0.65
         _KeyLightLimit("Maksymalna jasność światła głównego", Range(0.5,2)) = 0.95
+        _TotalLightLimit("Limit sumy świateł", Range(0.5,2)) = 1.1
         [HDR] _EmissionColor("Emisja trafienia", Color) = (0,0,0,0)
     }
     SubShader
@@ -31,6 +32,7 @@ Shader "Turris/AnimeMatte"
             half _BandSoftness;
             half _AmbientStrength;
             half _KeyLightLimit;
+            half _TotalLightLimit;
         CBUFFER_END
         // PropertyBlock statusów HU; moknięcie zmienia barwę, nigdy połysk pancerza.
         float4 _HellSurface;
@@ -87,7 +89,9 @@ Shader "Turris/AnimeMatte"
         half3 Diffuse(Light light, half3 normal, bool main)
         {
             half band = Band(dot(normal, light.direction)) * light.shadowAttenuation;
-            half3 shade = main ? lerp(_ShadowTint.rgb * 0.35h, 1.0h, band) : band;
+            // Kolor wypełnienia jest dolnym pasmem, bez dodatkowego mnożenia go przez 0,35.
+            // Cień opisuje płytę również od przodu, zamiast zamieniać ją w czarną plamę.
+            half3 shade = main ? lerp(_ShadowTint.rgb, 1.0h, band) : band;
             // Mocne światło areny nie wypala namalowanych płyt do bieli. Zachowujemy odcień światła i kontrast pasm.
             half peak = max(light.color.r,max(light.color.g,light.color.b));
             half3 energy = light.color*(main ? min(1.0h,_KeyLightLimit/max(0.001h,peak)) : 1.0h);
@@ -124,17 +128,28 @@ Shader "Turris/AnimeMatte"
                 lighting += Diffuse(GetAdditionalLight(lightIndex, input.positionWS, mask), inputData.normalWS, false);
             LIGHT_LOOP_END
         #endif
+            half lightPeak = max(lighting.r,max(lighting.g,lighting.b));
+            lighting *= min(1.0h,_TotalLightLimit/max(0.001h,lightPeak));
             half3 pigment = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).rgb;
-            // Zachowujemy namalowane podziały i UV. Korekta dotyczy osobno neutralnych płyt i beżowych okuć,
-            // więc burgund tkaniny oraz ciemne podbicie nie dostają jednolitego żółtego filtra.
+            // Mapa generatora zawiera wypieczone białe światła. Odwzorowujemy ich zakres na paletę
+            // pigmentu, zamiast mnożyć biel przez kolejny reflektor. UV i rysunek krawędzi pozostają.
             half3 gammaPigment = TurrisGammaOf(pigment);
             half hi = max(gammaPigment.r,max(gammaPigment.g,gammaPigment.b));
             half lo = min(gammaPigment.r,min(gammaPigment.g,gammaPigment.b));
             half steel = (1-smoothstep(0.06h,0.20h,hi-lo))*smoothstep(0.22h,0.48h,lo);
             half trim = smoothstep(0.045h,0.13h,gammaPigment.r-gammaPigment.b)
                 * (1-smoothstep(0.07h,0.18h,gammaPigment.r-gammaPigment.g))*smoothstep(0.3h,0.55h,gammaPigment.g);
-            pigment *= lerp(1.0h,_SteelTint.rgb,steel);
-            pigment *= lerp(1.0h,_TrimTint.rgb,trim);
+            steel *= 1-trim;
+            half value = dot(gammaPigment,half3(0.2126h,0.7152h,0.0722h));
+            // Zachowana rozpiętość malowanych płaszczyzn, bez spłaszczenia ich do jednolitej kości słoniowej.
+            half plateTone = pow(saturate(value/0.95h),1.65h);
+            // Właściwości Color materiału są już liniowe; konwertujemy tylko surowe stałe gamma.
+            pigment = lerp(pigment,_SteelTint.rgb*plateTone,steel);
+            half trimTone = pow(saturate(value/0.82h),1.5h);
+            pigment = lerp(pigment,_TrimTint.rgb*trimTone,trim);
+            // Dyskretne rozdzielenie granatowego podbicia od czarnych szczelin; bez rozjaśniania burgundu.
+            half undercoat = smoothstep(0.025h,0.11h,gammaPigment.b-gammaPigment.r)*(1-steel);
+            pigment = lerp(pigment,max(pigment,TurrisColor(half3(0.12h,0.14h,0.18h))),undercoat*0.6h);
             half3 albedo = pigment * _BaseColor.rgb;
             albedo *= lerp(1, 0.18, _HellSurface.x) * lerp(1, 0.72, _HellSurface.y);
             half3 color = albedo * lighting + _EmissionColor.rgb;

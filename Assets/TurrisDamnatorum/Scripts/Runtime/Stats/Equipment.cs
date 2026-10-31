@@ -16,6 +16,8 @@ namespace Turris
         public ItemRarity rarity;
         public int huQuality;
         public List<StatModifier> affixes = new List<StatModifier>();
+        /// <summary>Affixy ze statystyką HU bez odpowiednika w statystykach Turris (uchylenie, dusze, przebicie…).</summary>
+        public List<PassiveEffect> affixEffects = new List<PassiveEffect>();
         public List<string> affixNames = new List<string>();
 
         public ItemInstance(ItemDefinition def, int level = 0)
@@ -36,6 +38,17 @@ namespace Turris
             {
                 foreach (var m in definition.modifiers) yield return m.Scaled(QualityFactor);
                 foreach (var m in affixes) yield return m.Scaled(HuQualityFactor);
+            }
+        }
+
+        /// <summary>Efekty pasywne: z definicji (moce unikatów, statystyki HU bez odpowiednika) i z affixów, ×jakość HU.</summary>
+        public IEnumerable<PassiveEffect> Effects
+        {
+            get
+            {
+                float q = HuQualityFactor;
+                foreach (var e in definition.effects) yield return q == 1f || !PassiveEffects.ScalesWithQuality(e.type) ? e : new PassiveEffect(e.type, e.value * q);
+                foreach (var e in affixEffects) yield return q == 1f || !PassiveEffects.ScalesWithQuality(e.type) ? e : new PassiveEffect(e.type, e.value * q);
             }
         }
 
@@ -133,7 +146,7 @@ namespace Turris
         public IEnumerable<PassiveEffect> AllEffects()
         {
             foreach (var i in slots.Values)
-                foreach (var e in i.definition.effects)
+                foreach (var e in i.Effects)
                     yield return e;
         }
     }

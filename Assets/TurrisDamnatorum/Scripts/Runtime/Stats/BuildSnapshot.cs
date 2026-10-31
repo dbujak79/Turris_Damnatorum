@@ -45,12 +45,16 @@ namespace Turris
         public float loadRatio;
         /// <summary>Szansa (0–1), że bezpośrednie trafienie wroga chybi (Zręczność).</summary>
         public float evasionChance;
+        /// <summary>Celność (ułamek): Zręczność ponad próg i przedmioty – odejmowana od uniku demona (HU Accuracy).</summary>
+        public float accuracy;
         /// <summary>Szansa (0–1) bloku biernego z tarczą (HU: 15% + 2% za poziom tarczy + perki); 0 bez tarczy.</summary>
         public float passiveBlockChance;
         /// <summary>Poziom tarczy (0 = I) – odnowienie ładunku bloku biernego.</summary>
         public int shieldLevel;
         /// <summary>Mnożnik szybkości ataków bronią (Zręczność, kara za niespełnione wymagania broni).</summary>
         public float attackSpeed = 1f;
+        /// <summary>Dwuręczna broń do walki wręcz w ręce głównej: +10% szybkości ataku i pancerz w ataku (PlayerCombat.HyperArmor).</summary>
+        public bool twoHandedMelee;
 
         /// <summary>Umiejętności w slotach 1–3 (null = pusty slot).</summary>
         public readonly SpellRuntime[] skills = new SpellRuntime[RunState.SkillSlotCount];
@@ -95,6 +99,9 @@ namespace Turris
 
     public static class BuildCalculator
     {
+        /// <summary>Broń dwuręczna do walki wręcz bije o 10% szybciej (30.10).</summary>
+        public const float TwoHandedAttackSpeed = 1.1f;
+
         public static BuildSnapshot Compute(RunState run, GameConfig cfg)
         {
             var b = cfg.balance;
@@ -162,18 +169,21 @@ namespace Turris
             snap.evasionChance = Mathf.Clamp((dex - b.evasionFromDexterity) * b.evasionPerDexterity, 0f, b.maxEvasion) / 100f;
             // Refleks (perk HU) dokłada się ponad limit Zręczności; razem najwyżej 50% (HU EvasionCap).
             snap.evasionChance = Mathf.Min(0.5f, snap.evasionChance + snap.effects[PassiveEffectType.Evasion] / 100f);
+            snap.accuracy = (Mathf.Max(0f, dex - b.evasionFromDexterity) * b.accuracyPerDexterity + snap.effects[PassiveEffectType.Accuracy]) / 100f;
             snap.attackSpeed = (1f + Mathf.Min(b.maxAttackSpeedBonus, dexOver * b.attackSpeedPerDexterity) + snap.stats[StatType.AttackSpeed] / 100f)
                                * (snap.weaponEffectiveness < 1f ? b.unmetRequirementAttackSpeed : 1f);
             // Druga broń jednoręczna w lewej ręce: ciosy na zmianę; cecha Dwie klingi – szybciej.
             if (off != null && off.definition.IsWeapon) snap.offWeapon = off;
             var cls = run.startingClass;
             if (cls != null && cls.trait == ClassTrait.TwinBlades && snap.offWeapon != null) snap.attackSpeed *= 1.2f;
+            snap.twoHandedMelee = (WeaponFamilies.Of(snap.mainHand.definition) & BuildTag.TwoHanded) != 0;
+            if (snap.twoHandedMelee) snap.attackSpeed *= TwoHandedAttackSpeed;
             if (cls != null && cls.trait == ClassTrait.Spellblade) snap.spellbladeFactor = 1f + snap.stats[StatType.SpellPower] / 100f;
             float dodgeBonus = Mathf.Min(b.maxDodgeDistanceBonus, dexOver * b.dodgeDistancePerDexterity);
             snap.dodge = new DodgeParams
             {
                 staminaCost = b.dodgeStaminaCost * (heavy ? b.heavyDodgeCostMult : 1f),
-                distance = b.dodgeDistance * (heavy ? b.heavyDodgeDistanceMult : 1f) * (1f + dodgeBonus),
+                distance = b.dodgeDistance * (heavy ? b.heavyDodgeDistanceMult : 1f) * (snap.guardIsShield ? b.shieldDodgeDistanceMult : 1f) * (1f + dodgeBonus),
                 invulnStart = b.dodgeInvulnStart,
                 invulnDuration = b.dodgeInvulnDuration * (heavy ? b.heavyDodgeInvulnMult : 1f),
                 totalDuration = b.dodgeTotalDuration,
@@ -201,6 +211,20 @@ namespace Turris
         }
 
         /// <summary>Rodzaje umiejętności z Hell Unleashed – zawsze z własnymi obrażeniami.</summary>
+        /// <summary>
+        /// Koszt skilla HU jak w HU (<c>SkillCaster</c>): z parametrów jego poziomu, przed pieczęciami – czar: <c>mana</c> albo 8 + 2 × odnowienie,
+        /// technika: <c>stamina</c> albo 10 + odnowienie. Bez zniżki za poziom z Turris.
+        /// </summary>
+        static void HuSkillCost(SpellDefinition def, int level, ref float mana, ref float stamina)
+        {
+            var hu = HuCatalog.ForTarget(def.id);
+            if (hu == null || hu.levels.Length == 0) return;
+            var p = hu.At(level + 1);
+            double cd = p.Get("cooldown", def.cooldown);
+            if (def.IsSpell) mana = (float)p.Get("mana", 8.0 + 2.0 * cd);
+            else stamina = (float)p.Get("stamina", 10.0 + cd);
+        }
+
         public static bool IsHeroKind(SpellKind k) => k == SpellKind.Aura || k == SpellKind.Summon || k == SpellKind.Wave
                                                       || k == SpellKind.Dash || k == SpellKind.Overload || k == SpellKind.Undying;
 
@@ -229,13 +253,16 @@ namespace Turris
                     ? (1f + stats[StatType.Intelligence] * def.intelligenceScaling / 100f) * (1f + stats[StatType.SpellPower] / 100f)
                     : 1f + stats[StatType.PhysicalDamage] / 100f;
                 scale *= weaponScale;
+                float mana = def.IsSpell ? def.manaCost * def.CostFactor(s.level) : 0f;
+                float stamina = def.staminaCost * (def.IsSpell ? 1f : def.CostFactor(s.level));
+                HuSkillCost(def, s.level, ref mana, ref stamina);
                 return new SpellRuntime
                 {
                     instance = s,
                     weaponScale = weaponScale,
                     huScale = scale * unmet,
-                    manaCost = def.IsSpell ? def.manaCost * def.CostFactor(s.level) : 0f,
-                    staminaCost = def.staminaCost * (def.IsSpell ? 1f : def.CostFactor(s.level)),
+                    manaCost = mana,
+                    staminaCost = stamina,
                     power = def.attack.baseDamage * scale * (1f + def.powerPerLevel * s.level) * unmet,
                     requirementsMet = met,
                 };

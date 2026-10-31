@@ -15,7 +15,40 @@ namespace Turris.Tests.Bots
             var s = b.stats;
             float dps = b.WeaponDamage(b.weapon.light) * b.attackSpeed;
             return dps + 0.25f * s[StatType.MaxHealth] + 0.4f * (s[StatType.PhysicalDefense] + s[StatType.MagicDefense])
-                   + 0.3f * s[StatType.SpellPower] + 0.2f * s[StatType.MaxStamina];
+                   + 0.3f * s[StatType.SpellPower] + 0.2f * s[StatType.MaxStamina] + EffectScore(b);
+        }
+
+        /// <summary>
+        /// Wartość efektów pasywnych z przedmiotów HU (uchylenie, blok bierny, moce unikatów, dusze, życie i mana za zabójstwo, przebicie, obszar) –
+        /// bez niej bot uznałby lekką zbroję z uchyleniem albo unikat z mocą za bezużyteczne i je sprzedał.
+        /// </summary>
+        protected static float EffectScore(BuildSnapshot b)
+        {
+            var fx = b.effects;
+            float powers = 0f;
+            foreach (var t in new[] { PassiveEffectType.CheatDeath, PassiveEffectType.CorpseExplosion, PassiveEffectType.EmberAura, PassiveEffectType.Thorns,
+                                      PassiveEffectType.WeaponChainLightning, PassiveEffectType.FrostWard, PassiveEffectType.LowHealthDamage, PassiveEffectType.SoulHarvest })
+                if (fx[t] > 0f) powers += 10f;
+            float pen = fx[PassiveEffectType.PenetrationPhysical] + fx[PassiveEffectType.PenetrationFire] + fx[PassiveEffectType.PenetrationFrost]
+                        + fx[PassiveEffectType.PenetrationLightning] + fx[PassiveEffectType.PenetrationEarth];
+            return 1.5f * b.evasionChance * 100f + 1f * b.passiveBlockChance * 100f + powers + 0.5f * pen
+                   + 0.3f * fx[PassiveEffectType.AreaSize] + 0.2f * fx[PassiveEffectType.SoulGain]
+                   + 1f * fx[PassiveEffectType.HealOnKill] + 0.5f * fx[PassiveEffectType.ManaOnKill];
+        }
+
+        /// <summary>
+        /// Sprzedaż (HU, 35% wartości): po przymierzeniu wszystkiego w plecaku zostaje to, czego bot nie użyje – przedmioty gorsze od założonych
+        /// i bezużyteczne dla niego (bronie i druga ręka, których nie zmienia). Dusze idą na sklep; plecak nie zapełnia się, więc łup nie przepada.
+        /// </summary>
+        protected void SellUnused()
+        {
+            var run = Root.Run;
+            foreach (var item in run.inventory.ToList())
+            {
+                if (!run.SellItem(item)) continue;
+                string why = IsGearCandidate(item.definition) ? "gorszy od założonego" : "bezużyteczny";
+                Rec.R.purchases.Add($"sprzedany ({why}): {item.definition.displayName}");
+            }
         }
 
         static bool IsGearCandidate(ItemDefinition d) => d != null && !d.IsWeapon && d.kind != ItemKind.OffHand;

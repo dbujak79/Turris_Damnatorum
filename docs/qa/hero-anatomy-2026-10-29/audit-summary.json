@@ -1,0 +1,864 @@
+{
+  "classes": 15,
+  "nativeProfiles": 27,
+  "additionalProfiles": 90,
+  "profiles": 117,
+  "cases": 2106,
+  "motionFrames": 352665,
+  "nativeActionFrames": 36690,
+  "sourceComparisons": 18,
+  "testExecutions": 7,
+  "testFailures": 0,
+  "protectedSources": {
+    "Assets\\TurrisDamnatorum\\Models\\PoC\\MageAnime\\mage_anime.fbx": true,
+    "Assets\\TurrisDamnatorum\\Models\\PoC\\BerserkerAnime\\berserker_anime.fbx": true,
+    "Assets\\TurrisDamnatorum\\Models\\PoC\\MageAnime\\mage_anime_base_color.png": true,
+    "Assets\\TurrisDamnatorum\\Models\\PoC\\BerserkerAnime\\berserker_anime_base_color.png": true,
+    "Assets\\TurrisDamnatorum\\Models\\PoC\\MageAnime\\mage_anime.mat": true,
+    "Assets\\TurrisDamnatorum\\Models\\PoC\\BerserkerAnime\\berserker_anime.mat": true,
+    "Assets\\TurrisDamnatorum\\Content\\Classes\\class_knight.asset": true,
+    "Assets\\TurrisDamnatorum\\Shaders\\AnimeCreatureMatte.shader": true
+  },
+  "findings": [
+    {
+      "classId": "class_hu_arcane_archer",
+      "visual": "visual_hero_rogue_arcane_archer",
+      "nativeProfiles": 1,
+      "additionalProfiles": 6,
+      "status": "podejrzenie",
+      "asymmetry": {
+        "n": 8,
+        "p95": 128.41925910245618,
+        "max": 131.41131078256018
+      },
+      "bakedContact": {
+        "L": {
+          "frames": 143,
+          "penetration_m": {
+            "n": 143,
+            "p95": 0.0,
+            "max": 0
+          },
+          "low_ankle_hover_m": {
+            "n": 31,
+            "p95": 0.039823175,
+            "max": 0.05209354
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 0,
+          "worst_phase": 0.200201,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        },
+        "R": {
+          "frames": 143,
+          "penetration_m": {
+            "n": 143,
+            "p95": 0.047813884,
+            "max": 0.05315246
+          },
+          "low_ankle_hover_m": {
+            "n": 36,
+            "p95": 0.0,
+            "max": 0
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 35,
+          "worst_phase": 0.6463544,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        }
+      }
+    },
+    {
+      "classId": "class_hu_archer",
+      "visual": "visual_hero_rogue_archer",
+      "nativeProfiles": 1,
+      "additionalProfiles": 6,
+      "status": "podejrzenie",
+      "asymmetry": {
+        "n": 8,
+        "p95": 113.06120137718906,
+        "max": 116.32519312864429
+      },
+      "bakedContact": {
+        "L": {
+          "frames": 143,
+          "penetration_m": {
+            "n": 143,
+            "p95": 0.0,
+            "max": 0
+          },
+          "low_ankle_hover_m": {
+            "n": 31,
+            "p95": 0.03511001,
+            "max": 0.03599304
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 0,
+          "worst_phase": 0.1771241,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        },
+        "R": {
+          "frames": 143,
+          "penetration_m": {
+            "n": 143,
+            "p95": 0.042948263,
+            "max": 0.04787887
+          },
+          "low_ankle_hover_m": {
+            "n": 38,
+            "p95": 0.0,
+            "max": 0
+          },
+          "contact_point_slip_m": {
+            "n": 8,
+            "p95": 0.030494564811009303,
+            "max": 0.030494564811009307
+          },
+          "penetration_over_2cm": 33,
+          "worst_phase": 0.6463544,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        }
+      }
+    },
+    {
+      "classId": "class_hu_assassin",
+      "visual": "visual_hero_rogue_assassin",
+      "nativeProfiles": 2,
+      "additionalProfiles": 6,
+      "status": "podejrzenie",
+      "asymmetry": {
+        "n": 11,
+        "p95": 149.8663638576181,
+        "max": 176.12833273639552
+      },
+      "bakedContact": {
+        "L": {
+          "frames": 132,
+          "penetration_m": {
+            "n": 132,
+            "p95": 0.0430391055,
+            "max": 0.04559153
+          },
+          "low_ankle_hover_m": {
+            "n": 29,
+            "p95": 0.014644217600000016,
+            "max": 0.02926574
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 25,
+          "worst_phase": 0.2274064,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        },
+        "R": {
+          "frames": 132,
+          "penetration_m": {
+            "n": 132,
+            "p95": 0.028180619000000004,
+            "max": 0.03197696
+          },
+          "low_ankle_hover_m": {
+            "n": 38,
+            "p95": 0.008029324849999995,
+            "max": 0.01371255
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 20,
+          "worst_phase": 0.5812566,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        }
+      }
+    },
+    {
+      "classId": "class_hu_battlemage",
+      "visual": "visual_hero_mage_battle",
+      "nativeProfiles": 4,
+      "additionalProfiles": 6,
+      "status": "podejrzenie",
+      "asymmetry": {
+        "n": 12,
+        "p95": 27.595759540673345,
+        "max": 46.418323101513494
+      },
+      "bakedContact": {
+        "L": {
+          "frames": 132,
+          "penetration_m": {
+            "n": 132,
+            "p95": 0.0547803125,
+            "max": 0.05644814
+          },
+          "low_ankle_hover_m": {
+            "n": 33,
+            "p95": 0.00882934359999999,
+            "max": 0.02085538
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 31,
+          "worst_phase": 0.2274064,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        },
+        "R": {
+          "frames": 132,
+          "penetration_m": {
+            "n": 132,
+            "p95": 0.07340851200000001,
+            "max": 0.0774176
+          },
+          "low_ankle_hover_m": {
+            "n": 39,
+            "p95": 0.0,
+            "max": 0
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 45,
+          "worst_phase": 0.5746229,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        }
+      }
+    },
+    {
+      "classId": "class_hu_berserker",
+      "visual": "visual_berserker_anime",
+      "nativeProfiles": 2,
+      "additionalProfiles": 6,
+      "status": "błąd odtworzony",
+      "asymmetry": {
+        "n": 9,
+        "p95": 35.66159114285259,
+        "max": 35.75295763831741
+      },
+      "bakedContact": {
+        "L": {
+          "frames": 104,
+          "penetration_m": {
+            "n": 104,
+            "p95": 0.041103011999999994,
+            "max": 0.05746338
+          },
+          "low_ankle_hover_m": {
+            "n": 33,
+            "p95": 0.11008823999999999,
+            "max": 0.1175773
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 17,
+          "worst_phase": 0.398413,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        },
+        "R": {
+          "frames": 104,
+          "penetration_m": {
+            "n": 104,
+            "p95": 0.099846561,
+            "max": 0.1017515
+          },
+          "low_ankle_hover_m": {
+            "n": 32,
+            "p95": 0.0017986981899999984,
+            "max": 0.006074443
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 38,
+          "worst_phase": 0.7909362,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        }
+      }
+    },
+    {
+      "classId": "class_hu_dual",
+      "visual": "visual_hero_warrior_dual",
+      "nativeProfiles": 2,
+      "additionalProfiles": 6,
+      "status": "podejrzenie",
+      "asymmetry": {
+        "n": 12,
+        "p95": 36.33649178288617,
+        "max": 53.52913458257805
+      },
+      "bakedContact": {
+        "L": {
+          "frames": 132,
+          "penetration_m": {
+            "n": 132,
+            "p95": 0.06997144899999999,
+            "max": 0.07164627
+          },
+          "low_ankle_hover_m": {
+            "n": 32,
+            "p95": 0.016192968499999995,
+            "max": 0.02874209
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 32,
+          "worst_phase": 0.2406737,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        },
+        "R": {
+          "frames": 132,
+          "penetration_m": {
+            "n": 132,
+            "p95": 0.07858490800000001,
+            "max": 0.08251582
+          },
+          "low_ankle_hover_m": {
+            "n": 39,
+            "p95": 0.0,
+            "max": 0
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 46,
+          "worst_phase": 0.5746229,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        }
+      }
+    },
+    {
+      "classId": "class_hu_mage_air",
+      "visual": "visual_hero_mage_air",
+      "nativeProfiles": 1,
+      "additionalProfiles": 6,
+      "status": "podejrzenie",
+      "asymmetry": {
+        "n": 12,
+        "p95": 56.96043321937801,
+        "max": 109.9555843289549
+      },
+      "bakedContact": {
+        "L": {
+          "frames": 130,
+          "penetration_m": {
+            "n": 130,
+            "p95": 0.0546857235,
+            "max": 0.05714134
+          },
+          "low_ankle_hover_m": {
+            "n": 29,
+            "p95": 0.0046061440800000105,
+            "max": 0.01732942
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 26,
+          "worst_phase": 0.2340305,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        },
+        "R": {
+          "frames": 130,
+          "penetration_m": {
+            "n": 130,
+            "p95": 0.0697774885,
+            "max": 0.07380201
+          },
+          "low_ankle_hover_m": {
+            "n": 38,
+            "p95": 0.0,
+            "max": 0
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 42,
+          "worst_phase": 0.5746134,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        }
+      }
+    },
+    {
+      "classId": "class_hu_mage_earth",
+      "visual": "visual_hero_mage_earth",
+      "nativeProfiles": 1,
+      "additionalProfiles": 6,
+      "status": "podejrzenie",
+      "asymmetry": {
+        "n": 12,
+        "p95": 104.01815669733027,
+        "max": 174.08463652284024
+      },
+      "bakedContact": {
+        "L": {
+          "frames": 130,
+          "penetration_m": {
+            "n": 130,
+            "p95": 0.04546765,
+            "max": 0.04885209
+          },
+          "low_ankle_hover_m": {
+            "n": 31,
+            "p95": 0.0013648965,
+            "max": 0.009263596
+          },
+          "contact_point_slip_m": {
+            "n": 2,
+            "p95": 0.012335339449905974,
+            "max": 0.012335339449905974
+          },
+          "penetration_over_2cm": 31,
+          "worst_phase": 0.3040616,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        },
+        "R": {
+          "frames": 130,
+          "penetration_m": {
+            "n": 130,
+            "p95": 0.08562782299999999,
+            "max": 0.08917654
+          },
+          "low_ankle_hover_m": {
+            "n": 39,
+            "p95": 0.0,
+            "max": 0
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 49,
+          "worst_phase": 0.5746134,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        }
+      }
+    },
+    {
+      "classId": "class_hu_mage_fire",
+      "visual": "visual_hero_mage_fire",
+      "nativeProfiles": 1,
+      "additionalProfiles": 6,
+      "status": "podejrzenie",
+      "asymmetry": {
+        "n": 11,
+        "p95": 94.79240258093174,
+        "max": 113.10696880897592
+      },
+      "bakedContact": {
+        "L": {
+          "frames": 130,
+          "penetration_m": {
+            "n": 130,
+            "p95": 0.0781755495,
+            "max": 0.08088763
+          },
+          "low_ankle_hover_m": {
+            "n": 30,
+            "p95": 0.0,
+            "max": 0
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 32,
+          "worst_phase": 0.2189159,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        },
+        "R": {
+          "frames": 130,
+          "penetration_m": {
+            "n": 130,
+            "p95": 0.09501969600000001,
+            "max": 0.09975561
+          },
+          "low_ankle_hover_m": {
+            "n": 39,
+            "p95": 0.0,
+            "max": 0
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 49,
+          "worst_phase": 0.5746134,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        }
+      }
+    },
+    {
+      "classId": "class_hu_mage_water",
+      "visual": "visual_hero_mage_water",
+      "nativeProfiles": 1,
+      "additionalProfiles": 6,
+      "status": "podejrzenie",
+      "asymmetry": {
+        "n": 12,
+        "p95": 139.8526571459504,
+        "max": 166.28816994577676
+      },
+      "bakedContact": {
+        "L": {
+          "frames": 130,
+          "penetration_m": {
+            "n": 130,
+            "p95": 0.028860213499999995,
+            "max": 0.031186
+          },
+          "low_ankle_hover_m": {
+            "n": 30,
+            "p95": 0.017497865,
+            "max": 0.03757296
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 15,
+          "worst_phase": 0.2189159,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        },
+        "R": {
+          "frames": 130,
+          "penetration_m": {
+            "n": 130,
+            "p95": 0.0485914935,
+            "max": 0.05229662
+          },
+          "low_ankle_hover_m": {
+            "n": 40,
+            "p95": 0.0,
+            "max": 0
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 37,
+          "worst_phase": 0.5746134,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        }
+      }
+    },
+    {
+      "classId": "class_hu_paladin",
+      "visual": "visual_paladin_anime",
+      "nativeProfiles": 2,
+      "additionalProfiles": 6,
+      "status": "skręt poprawny w tej próbie; podejrzenie kontaktu",
+      "asymmetry": {
+        "n": 12,
+        "p95": 2.2546573726484027,
+        "max": 2.2772383710126576
+      },
+      "bakedContact": {
+        "L": {
+          "frames": 132,
+          "penetration_m": {
+            "n": 132,
+            "p95": 0.010214354150000002,
+            "max": 0.01388253
+          },
+          "low_ankle_hover_m": {
+            "n": 29,
+            "p95": 0.01854194800000001,
+            "max": 0.0227713
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 0,
+          "worst_phase": 0.2122918,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        },
+        "R": {
+          "frames": 132,
+          "penetration_m": {
+            "n": 132,
+            "p95": 0.023217971,
+            "max": 0.02674168
+          },
+          "low_ankle_hover_m": {
+            "n": 38,
+            "p95": 0.009298915949999998,
+            "max": 0.01121516
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 11,
+          "worst_phase": 0.5746229,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        }
+      }
+    },
+    {
+      "classId": "class_hu_summoner",
+      "visual": "visual_hero_mage_summoner",
+      "nativeProfiles": 1,
+      "additionalProfiles": 6,
+      "status": "podejrzenie po kościach; brak pełnej oceny buta pod szatą",
+      "asymmetry": {
+        "n": 12,
+        "p95": 44.185836726577804,
+        "max": 58.75549766467253
+      },
+      "bakedContact": {
+        "L": {
+          "frames": 130,
+          "penetration_m": {
+            "n": 130,
+            "p95": 0.003895749749999994,
+            "max": 0.01410268
+          },
+          "low_ankle_hover_m": {
+            "n": 31,
+            "p95": 0.0062936725,
+            "max": 0.02323173
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 0,
+          "worst_phase": 0.09212101,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        },
+        "R": {
+          "frames": 130,
+          "penetration_m": {
+            "n": 130,
+            "p95": 0.058118419000000004,
+            "max": 0.06129618
+          },
+          "low_ankle_hover_m": {
+            "n": 39,
+            "p95": 0.0,
+            "max": 0
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 35,
+          "worst_phase": 0.581247,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        }
+      }
+    },
+    {
+      "classId": "class_knight",
+      "visual": "visual_hero_warrior",
+      "nativeProfiles": 2,
+      "additionalProfiles": 6,
+      "status": "podejrzenie; tylko odczyt",
+      "asymmetry": {
+        "n": 12,
+        "p95": 116.13529628604573,
+        "max": 168.0271369008894
+      },
+      "bakedContact": {
+        "L": {
+          "frames": 132,
+          "penetration_m": {
+            "n": 132,
+            "p95": 0.045772847000000005,
+            "max": 0.04781564
+          },
+          "low_ankle_hover_m": {
+            "n": 32,
+            "p95": 0.0029803486499999955,
+            "max": 0.0147451
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 30,
+          "worst_phase": 0.2274064,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        },
+        "R": {
+          "frames": 132,
+          "penetration_m": {
+            "n": 132,
+            "p95": 0.0631722205,
+            "max": 0.06709842
+          },
+          "low_ankle_hover_m": {
+            "n": 38,
+            "p95": 0.0,
+            "max": 0
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 40,
+          "worst_phase": 0.5746229,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        }
+      }
+    },
+    {
+      "classId": "class_mage",
+      "visual": "visual_mage_anime",
+      "nativeProfiles": 4,
+      "additionalProfiles": 6,
+      "status": "podejrzenie",
+      "asymmetry": {
+        "n": 11,
+        "p95": 49.71656668327557,
+        "max": 63.91020594709113
+      },
+      "bakedContact": {
+        "L": {
+          "frames": 130,
+          "penetration_m": {
+            "n": 130,
+            "p95": 0.11269246499999999,
+            "max": 0.1165244
+          },
+          "low_ankle_hover_m": {
+            "n": 30,
+            "p95": 0.0,
+            "max": 0
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 34,
+          "worst_phase": 0.2340305,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        },
+        "R": {
+          "frames": 130,
+          "penetration_m": {
+            "n": 130,
+            "p95": 0.117619355,
+            "max": 0.1234848
+          },
+          "low_ankle_hover_m": {
+            "n": 38,
+            "p95": 0.0,
+            "max": 0
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 61,
+          "worst_phase": 0.5746134,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        }
+      }
+    },
+    {
+      "classId": "class_rogue",
+      "visual": "visual_rogue_hooded_meshy",
+      "nativeProfiles": 2,
+      "additionalProfiles": 6,
+      "status": "podejrzenie",
+      "asymmetry": {
+        "n": 8,
+        "p95": 101.66905309523355,
+        "max": 105.2446331613902
+      },
+      "bakedContact": {
+        "L": {
+          "frames": 143,
+          "penetration_m": {
+            "n": 143,
+            "p95": 0.012958091000000014,
+            "max": 0.01694348
+          },
+          "low_ankle_hover_m": {
+            "n": 31,
+            "p95": 0.0163748,
+            "max": 0.01923466
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 0,
+          "worst_phase": 0.1771241,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        },
+        "R": {
+          "frames": 143,
+          "penetration_m": {
+            "n": 143,
+            "p95": 0.0237156,
+            "max": 0.02883013
+          },
+          "low_ankle_hover_m": {
+            "n": 38,
+            "p95": 0.013647340999999988,
+            "max": 0.02131878
+          },
+          "contact_point_slip_m": {
+            "n": 0,
+            "p95": null,
+            "max": null
+          },
+          "penetration_over_2cm": 24,
+          "worst_phase": 0.6463544,
+          "note": "Brak okna stabilnego podparcia oznacza brak wyniku ślizgu, nigdy 0 cm."
+        }
+      }
+    }
+  ]
+}

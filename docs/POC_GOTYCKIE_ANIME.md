@@ -19,7 +19,13 @@ kontrolowana praca kolan i butów, artykulacja tułowia dzięki wagom na trzech 
 Materiał `Turris/AnimeMatte` bez refleksów.
 Dodatkowy koszt Meshy: 0.
 
-### Aktualne ograniczenie próby — tylko wojownik
+**Nowa arena, 2026-10-26:** [źródła, moduły i przywrócenie poprzedniej wersji](../ArtSource/GothicAnimePoC/Arena/README.md).
+Przygotowano 30 nowych modułów Blendera i prefabrykatów Unity, osobne materiały oraz tekstury kamienia i nocnego nieba.
+Nowa definicja zastępuje wyłącznie pierwsze piętro; stary dziedziniec i pozostałe areny są zachowane.
+Nie uruchamiano kolejnych zadań Meshy ani ElevenLabs. Poniższe ograniczenie dotyczy płatnych generacji Meshy,
+a nie autoryzowanego lokalnego modelowania areny.
+
+### Ograniczenie płatnej próby Meshy — jeden model postaci
 
 Użytkownik podał 159 kredytów i zlecił najpierw **jednego wojownika do oceny**.
 Chochlik i pozostałe assety pozostają w planie, bez uruchamiania kolejnych generacji.

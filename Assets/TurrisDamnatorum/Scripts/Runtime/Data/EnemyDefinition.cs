@@ -21,6 +21,8 @@ namespace Turris
         public float poiseRegen = 20f;
         public float maxStamina = 80f;
         [Range(0, 0.9f)] public float physicalResist;
+        [Tooltip("Unik demona (HU Evasion): szansa, że zwykły cios lub pocisk bohatera chybi; celność bohatera ją zmniejsza.")]
+        [Range(0, 0.5f)] public float evasion;
         [Range(0, 0.9f)] public float magicResist;
         public float moveSpeed = 3.5f;
         public float turnSpeed = 360f;

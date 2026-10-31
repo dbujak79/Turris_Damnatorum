@@ -36,6 +36,29 @@ namespace Turris
         public override string ToString() => Names.Effect(type, value);
     }
 
+    public static class PassiveEffects
+    {
+        /// <summary>
+        /// Wartość efektu rośnie z jakością przedmiotu HU (jak <c>PowerValue</c> i statystyki). Liczby sztuk (przebicia, rykoszety,
+        /// warstwy), przełączniki i konwersje – nie.
+        /// </summary>
+        public static bool ScalesWithQuality(PassiveEffectType t)
+        {
+            switch (t)
+            {
+                case PassiveEffectType.ProjectilePierce: case PassiveEffectType.ProjectileRicochet: case PassiveEffectType.ProjectileSplit:
+                case PassiveEffectType.ProjectileResidue: case PassiveEffectType.ProjectileVolley: case PassiveEffectType.ProjectileExplosion:
+                case PassiveEffectType.BleedMaxStacksBonus: case PassiveEffectType.FreezeStacksReduction: case PassiveEffectType.ConductionJump:
+                case PassiveEffectType.BurnImmunity: case PassiveEffectType.DodgeShockCharge: case PassiveEffectType.ParryReflect:
+                case PassiveEffectType.SunderOnHit: case PassiveEffectType.BleedOnHit: case PassiveEffectType.BurnOnHit: case PassiveEffectType.ChillOnHit:
+                case PassiveEffectType.StaggerOnHit: case PassiveEffectType.SoakedOnHit:
+                case PassiveEffectType.ConvertFireToFrost: case PassiveEffectType.ConvertPhysicalToFire:
+                    return false;
+                default: return true;
+            }
+        }
+    }
+
     [Serializable]
     public struct AttributeRequirement
     {
@@ -108,6 +131,9 @@ namespace Turris
         public Element element = Element.None;
         [Tooltip("Broń z żywiołem: ta część obrażeń fizycznych zamienia się w obrażenia żywiołu (0–1).")]
         [Range(0, 1)] public float elementShare = 0f;
+        [Tooltip("Drugi żywioł części żywiołowej (HU: obrażenia mieszane, np. ogień + ziemia) i jego udział w niej (0–1).")]
+        public Element element2 = Element.None;
+        [Range(0, 1)] public float element2Share = 0f;
         [Tooltip("Premia do obrażeń przeciw zamrożonym (0.5 = +50%). Rozbija lód.")]
         public float bonusVsFrozen = 0f;
         [Tooltip("Premia do obrażeń przeciw krwawiącym.")]

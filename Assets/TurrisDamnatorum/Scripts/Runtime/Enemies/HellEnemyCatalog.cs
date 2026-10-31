@@ -35,6 +35,7 @@ namespace Turris
                 e.attackInterval = new Vector2(r.AttackCooldownSeconds, r.AttackCooldownSeconds);
                 e.strafeChance = r.Archetype == 1 ? 0.35f : 0f;
                 e.physicalResist = r.ResistPhysical;
+                e.evasion = r.Evasion;
                 e.fireMultiplier = 1 - r.ResistFire; e.frostMultiplier = 1 - r.ResistWater;
                 e.lightningMultiplier = 1 - r.ResistAir; e.earthMultiplier = 1 - r.ResistEarth;
                 e.isBoss = r.Archetype == 3; e.isMinion = r.Id == "enemy.minion";
@@ -114,9 +115,14 @@ namespace Turris
         {
             float total = physical + fire + water + air + earth;
             a.baseDamage = total * 2.5f;
-            float max = Mathf.Max(fire, water, air, earth);
-            a.element = max <= 0 ? Element.None : max == fire ? Element.Fire : max == water ? Element.Frost : max == air ? Element.Lightning : Element.Earth;
-            a.elementShare = total > 0 ? (total - physical) / total : 0;
+            // Główny żywioł i drugi z udziałem w części żywiołowej (HU: osobne składowe, np. ogień + ziemia Kowala).
+            var parts = new[] { (Element.Fire, fire), (Element.Frost, water), (Element.Lightning, air), (Element.Earth, earth) }
+                .Where(x => x.Item2 > 0f).OrderByDescending(x => x.Item2).ToArray();
+            a.element = parts.Length > 0 ? parts[0].Item1 : Element.None;
+            a.element2 = parts.Length > 1 ? parts[1].Item1 : Element.None;
+            float elemental = total - physical;
+            a.element2Share = parts.Length > 1 && elemental > 0f ? parts.Skip(1).Sum(x => x.Item2) / elemental : 0f;
+            a.elementShare = total > 0 ? elemental / total : 0;
             a.damageType = DamageType.Physical;
         }
 
@@ -133,7 +139,7 @@ namespace Turris
 
         public static bool StatusFor(string name, out StatusKind kind)
         {
-            switch (name) { case "Ignite": kind = StatusKind.Burn; return true; case "Soaked": case "Slow": kind = StatusKind.Chill; return true; case "Bleed": kind = StatusKind.Bleed; return true; case "Stagger": kind = StatusKind.Stagger; return true; case "Sunder": kind = StatusKind.Sunder; return true; }
+            switch (name) { case "Ignite": kind = StatusKind.Burn; return true; case "Soaked": kind = StatusKind.Soaked; return true; case "Slow": kind = StatusKind.Slow; return true; case "Bleed": kind = StatusKind.Bleed; return true; case "Stagger": kind = StatusKind.Stagger; return true; case "Sunder": kind = StatusKind.Sunder; return true; }
             kind = default; return false;
         }
 
@@ -214,7 +220,7 @@ namespace Turris
     [Serializable] public class HellEnemySource
     {
         public string Id, targetId, model, sha256, displayName;
-        public float height, MaxHealth = 30, MoveSpeed = 70, BodyRadius = 8, DamagePhysical, DamageFire, DamageWater, DamageAir, DamageEarth;
+        public float height, MaxHealth = 30, MoveSpeed = 70, BodyRadius = 8, DamagePhysical, DamageFire, DamageWater, DamageAir, DamageEarth, Evasion = 0.06f;
         public int Archetype;
         public float AttackRange = 22, AttackCooldownSeconds = 1.4f, TelegraphSeconds = 0.35f, RecoverySeconds = 0.3f, AreaRadius = 42;
         public float ProjectileSpeed = 160, ProjectileLifetimeSeconds = 3, ProjectileSpreadDegrees, PreferredDistance = 140, ChargeSpeed = 420, ChargeDistance = 200;

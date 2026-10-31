@@ -338,6 +338,7 @@ namespace Turris
 
         public static AttackKeys Attack(AttackAnim anim, RigLook look)
         {
+            anim = AnimResolve.Base(anim);
             var r = Ready(look);
             var k = new AttackKeys();
             switch (anim)

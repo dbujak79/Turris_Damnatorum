@@ -38,7 +38,7 @@ namespace Turris
             var pool = config.baseItemPool.Where(d => d != null && d.minFloor <= Run.floorsCleared && !d.IsShield && d.kind != ItemKind.OffHand).ToList();
             List<ItemDefinition> candidates;
             if (rarity == ItemRarity.Unique)
-                candidates = pool.Where(d => HellEconomy.ItemRowOf(d)?.Rarity == 4 || (d.huSourceId != null && d.huSourceId.Contains(".unique."))).ToList();
+                candidates = pool.Where(HellEconomy.IsUnique).ToList();
             else if (rng.NextDouble() < 0.3)
                 candidates = pool.Where(d => d.IsWeapon && !string.IsNullOrEmpty(d.huSourceId) && !d.huSourceId.Contains(".unique.")).ToList();
             else
@@ -60,6 +60,7 @@ namespace Turris
             LootPickup.Spawn(Player, e.transform.position, c, item.Name, () =>
             {
                 if (Run != run) return;
+                if (!run.CanReceive(item)) { CombatEvents.RaiseMessage($"Plecak pełny: {item.Name} przepada", new Color(0.9f, 0.5f, 0.4f)); return; }
                 run.AddItem(item, true);
                 run.SyncGrantedSkills();
                 Player.RefreshBuild();

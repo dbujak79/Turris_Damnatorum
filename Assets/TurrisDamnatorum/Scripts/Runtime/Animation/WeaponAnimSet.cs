@@ -29,8 +29,13 @@ namespace Turris
         public AnimationClip runBack, runLeft, runRight;
         [Tooltip("Prędkości nagrania chodu i biegu – gdy klip nie niesie własnej (ruch korzenia), do dopasowania tempa kroków.")]
         public float walkSpeed = 1.4f, runSpeed = 3.9f;
+        [Tooltip("Topór i młot dwuręczny (AnimResolve.IsHeavyTwoHand): własny spoczynek zamiast miecza – szeroki rozkrok;\n" +
+                 "chwyt ciężkiej broni (pionowo z prawej, ostrzem w górę) dokłada GreatSwingPose. Puste = idle zestawu.")]
+        public AnimationClip greatWeaponIdle;
 
         [Header("Akcje")]
+        [Tooltip("Seria jednoręczna: pierwszy zamach z wykrokiem prawej nogi, drugi z wykrokiem lewej. Osobna opcja zestawu.")]
+        public bool alternatingLightSteps;
         public List<ActionClip> actions = new List<ActionClip>();
 
         [Header("Chwyt")]

@@ -169,13 +169,13 @@ namespace Turris.EditorTools
         /// przemieszczenie daje gra (wypad, odrzut). Wpieczony krok wysuwał ciało do 0,5 m przed postać, a przejście
         /// do następnej akcji ściągało je z powrotem (dłoń ~30 m/s).
         /// </summary>
-        static AnimationClip InPlace(string path, int first = -1, int last = -1) => Clip(path, first, last, dropRoot: true);
+        internal static AnimationClip InPlace(string path, int first = -1, int last = -1) => Clip(path, first, last, dropRoot: true);
 
         /// <summary>Unik: przemieszczenie daje gra, klip – tylko ruch ciała.</summary>
         static AnimationClip Roll() => Clip(Mixamo + "Loose/Falling To Roll.fbx", 5, 44, dropRoot: true);
 
         /// <summary>Cios: klatki zamachu (strike) i końca fazy aktywnej (follow) przeliczone na czas znormalizowany.</summary>
-        static ActionClip Blow(AttackAnim attack, AnimationClip clip, int start, int strike, int follow, int end) => new ActionClip
+        internal static ActionClip Blow(AttackAnim attack, AnimationClip clip, int start, int strike, int follow, int end) => new ActionClip
         {
             action = AnimAction.Attack, attack = attack, clip = clip,
             windupEnd = Mathf.Clamp01((strike - start) / (float)(end - start)),
@@ -300,7 +300,62 @@ namespace Turris.EditorTools
                 Act(AnimAction.Death, Clip(Mixamo + "Great Sword Pack/two handed sword death.fbx")),
                 Act(AnimAction.Dodge, Roll()),
             };
+            set.actions.AddRange(GreatWeaponMoves());
+            set.greatWeaponIdle = GreatWeaponIdle();
             return SaveSet("anim_greatsword", set);
+        }
+
+        /// <summary>
+        /// Zestaw ruchów topora i młota (AnimResolve.IsHeavyTwoHand) w zestawie dwuręcznym: rąbnięcie z góry z wykrokiem,
+        /// drugie rąbnięcie zza pleców, niskie cięcie z biegu (pierwsze cięcie serii „slash (2)”), rąbnięcie po uniku
+        /// i szerokie cięcia lekkie (te same nagrania co miecz – pełny łuk dokłada GreatSwingPose).
+        /// Klatki ciosu z prędkości dłoni (GreatWeaponMovesetTests.ClipHandSpeed_WhenRequested).
+        /// </summary>
+        internal static List<ActionClip> GreatWeaponMoves()
+        {
+            string gs = Mixamo + "Great Sword Pack/great sword ";
+            string down = Mixamo + "Loose/Standing Melee Attack Downward.fbx";
+            var moves = new List<ActionClip>
+            {
+                Blow(AttackAnim.Chop, InPlace(down), 0, 24, 29, 68),
+                Blow(AttackAnim.ChopFollow, InPlace(gs + "high spin attack.fbx"), 0, 30, 37, 56),
+                Blow(AttackAnim.RunningSweep, InPlace(gs + "slash (2).fbx", 0, 44), 0, 19, 27, 44),
+                Blow(AttackAnim.DodgeChop, InPlace(down), 0, 24, 29, 68),
+                Blow(AttackAnim.Cleave, InPlace(gs + "slash.fbx"), 0, 14, 23, 38),
+                Blow(AttackAnim.CleaveBack, InPlace(gs + "slash (4).fbx"), 0, 25, 32, 54),
+            };
+            // Całe przejście ostrza w fazie aktywnej (w tempie nagrania lub szybciej) – wspólny profil grał je wolniej
+            // niż nagranie, a resztę cięcia ściskał w pośpieszny powrót: cios wyglądał na urwany w połowie.
+            foreach (var m in moves) m.strikeShare = 1f;
+            return moves;
+        }
+
+        /// <summary>
+        /// Spoczynek topora i młota: „great sword idle (3)” – stopy na szerokość barków, miednica na wprost (4°).
+        /// Wcześniej „sword and shield idle (4)”: szermierczy wykrok z miednicą obróconą o 56° i stopami w jednej linii
+        /// – z przodu nogi wyglądały na skrzyżowane. Chwyt (obie dłonie na trzonku, broń pionowo z prawej), wyprostowane
+        /// plecy i podeszwy w poziomie dokłada GreatSwingPose; wybór z IdleCandidates_WhenRequested.
+        /// </summary>
+        internal static AnimationClip GreatWeaponIdle() => Loop(Mixamo + "Great Sword Pack/great sword idle (3).fbx");
+
+        /// <summary>Dopisuje ruchy topora i młota do istniejącego zestawu dwuręcznego (bez przebudowy wyglądów bohaterów).</summary>
+        [MenuItem("Turris/Zestaw ruchów topora i młota")]
+        public static void AddGreatWeaponMoves()
+        {
+            var set = AssetDatabase.LoadAssetAtPath<WeaponAnimSet>(VisualsFolder + "/anim_greatsword.asset");
+            var moves = GreatWeaponMoves();
+            set.actions.RemoveAll(a => a != null && a.action == AnimAction.Attack && moves.Any(m => m.attack == a.attack));
+            set.actions.AddRange(moves);
+            set.greatWeaponIdle = GreatWeaponIdle();
+            EditorUtility.SetDirty(set);
+            AssetDatabase.SaveAssets();
+            Debug.Log("HeroAssetImport: zestaw ruchów topora i młota – " + moves.Count + " klipów");
+        }
+
+        public static void AddGreatWeaponMovesBatch()
+        {
+            try { AddGreatWeaponMoves(); EditorApplication.Exit(0); }
+            catch (System.Exception e) { Debug.LogException(e); EditorApplication.Exit(1); }
         }
 
         static WeaponAnimSet BowSet()

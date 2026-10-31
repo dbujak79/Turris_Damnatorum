@@ -62,7 +62,7 @@ namespace Turris
         public const int MaxLatched = 3;
 
         /// <summary>Efekty trwające (krwawienie, podpalenie, chłód, porażenie, zamrożenie).</summary>
-        public readonly StatusEffects Status = new StatusEffects();
+        public readonly StatusEffects Status = new StatusEffects { AreaReactions = true, SunderAsResistance = true };
         readonly StatusFx statusFx = new StatusFx();
 
         // Skalowanie
@@ -118,6 +118,9 @@ namespace Turris
         float AttackSpeedMult => Mathf.Min(HellMaxTempo(), SpeedMult * (rules != null ? rules.enemyAttackSpeedMultiplier : 1f)
             * (hellFrenzy > 0 ? 1.4f : 1f) * (HellEnraged ? Def.huEnrageTempo : 1f));
         public float AttackWindupDuration => current != null ? current.attack.windup / Mathf.Max(0.1f, AttackSpeedMult) : 0;
+        /// <summary>Ile jeszcze (s) trwa powrót po ciosie – wróg nie zaatakuje wcześniej (okno kary, picia).</summary>
+        public float AttackRecoveryRemaining => CurrentState == State.Attacking && current != null && attackPhase == ActionPhase.Recovery
+            ? Mathf.Max(0f, (current.attack.windup + current.attack.active + current.attack.recovery - attackT) / Mathf.Max(0.1f, AttackSpeedMult)) : 0f;
         float PhaseAggression => PhaseIndex > 0 && PhaseIndex - 1 < Def.phases.Count ? Def.phases[PhaseIndex - 1].aggressionMultiplier : 1f;
 
         /// <param name="floorDamageScale">Obrażenia piętra (ujemne – jak <paramref name="floorScale"/>).</param>
@@ -522,7 +525,10 @@ namespace Turris
         {
             var a = current.attack;
             float dmg = a.baseDamage * DamageMult;
+            steamMiss = false;
             if (SpecialStrike(a, dmg)) return;
+            steamMiss = SteamCloud.Covers(transform.position) && Random.value < rules.steamMissChance;
+            if (steamMiss) { CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.6f, "PUDŁO", new Color(0.85f, 0.9f, 0.95f)); return; }
             switch (a.delivery)
             {
                 case AttackDelivery.Melee:
@@ -558,8 +564,12 @@ namespace Turris
             }
         }
 
+        /// <summary>Demon w parze chybił tym atakiem (HU Steam) – zamach bez trafienia.</summary>
+        bool steamMiss;
+
         void SweepMelee()
         {
+            if (steamMiss) return;
             var a = current.attack;
             float s = Def.scale;
             Vector3 from = transform.position + Vector3.up * 1.0f * s + transform.forward * 0.3f * s;
@@ -688,16 +698,36 @@ namespace Turris
             dead = IsDead,
         };
 
+        /// <summary>Testy: demony nie unikają (trafienia lądują deterministycznie). Boty grają z unikiem.</summary>
+        public static bool DebugNoEvasion;
+
+        /// <summary>
+        /// Unik demona (HU <c>EnemyActor</c>): zwykły cios albo pocisk bohatera chybia z szansą unik − celność. Nie dotyczy wybuchów, stref,
+        /// tyknięć efektów ani reakcji; unieruchomiony demon nie unika.
+        /// </summary>
+        bool Evades(in HitData hit)
+        {
+            if (DebugNoEvasion || Def.evasion <= 0f || IsDead || Status.Incapacitated || !(hit.attacker is PlayerCombat)) return false;
+            if (hit.isStatusTick || hit.isReaction || hit.isGroundHazard || !(hit.fromMeleeWeapon || hit.isProjectile)) return false;
+            return Random.value < Mathf.Max(0f, Def.evasion - hit.accuracy);
+        }
+
         public HitResult ReceiveHit(HitData hit)
         {
+            if (Evades(hit))
+            {
+                CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.5f, "UNIK", new Color(0.8f, 0.85f, 0.9f));
+                return new HitResult { outcome = HitOutcome.Dodged };
+            }
             // Cechy klasy gracza zależne od celu (zasadzka z tyłu, sokole oko, żądza krwi, egzekucja).
             if (hit.attacker is PlayerCombat pc && !hit.isStatusTick) pc.OutgoingAgainst(ref hit, this);
             // Słabość/odporność dotyczy części z żywiołem; porażenie i szok termiczny – przed pancerzem.
             if (hit.element != Element.None && hit.magic > 0)
             {
-                float m = Def.ElementMultiplier(hit.element);
-                if (m < 1f && hit.penetration > 0f) m = Mathf.Min(1f, m + hit.penetration); // przebicie: odporność nie spada poniżej 0
-                hit.magic *= m;
+                float pen = hit.penetration;
+                float Mult(Element e) { float x = Def.ElementMultiplier(e); return x < 1f && pen > 0f ? Mathf.Min(1f, x + pen) : x; } // przebicie: odporność nie spada poniżej 0
+                float m = hit.Weighted(Mult);
+                hit.ScaleMagicByElement(Mult);
                 if (m > 1.01f && !IsDead) CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.4f, "SŁABOŚĆ", Names.ElementColor(hit.element));
             }
             // Egzekucja: premia przeciw osłabionym (poniżej 30% życia) lub z przełamaną postawą.
@@ -709,6 +739,7 @@ namespace Turris
             string reaction = Status.ModifyIncoming(ref hit, rules);
 
             var defense = CurrentDefense();
+            defense.physicalResist -= Status.SunderResistReduction(rules); // HU: pęknięcie pancerza przed przebiciem, może zejść poniżej 0
             if (hit.physicalPenetration > 0f && defense.physicalResist > 0f) defense.physicalResist = Mathf.Max(0f, defense.physicalResist - hit.physicalPenetration);
             var r = DamageResolver.Resolve(hit, defense, rules);
             if (r.outcome == HitOutcome.Ignored) return r;
@@ -717,6 +748,8 @@ namespace Turris
             if (!hit.isStatusTick) RecordHit(hit.sourcePosition, ImpactDirector.Weight(hit)); // ten sam ciężar co odczucie ciosu
             float instant = Status.OnLanded(hit, r, rules, out var landedReaction, out bool froze, out float shatter);
             if (shatter > 0) Shatter(shatter, hit);
+            if (Status.LastEmberBurstDamage > 0) EmberBurst(Status.LastEmberBurstDamage, hit);
+            if (Status.LastSteam) SteamCloud.Spawn(transform.position, rules.steamRadius, rules.steamSeconds);
             if (hit.mods.conductionJump && Status.LastConductionDamage > 0) JumpConduction(Status.LastConductionDamage * 0.5f, hit);
             r.healthDamage += instant;
             reaction = reaction ?? landedReaction;
@@ -778,7 +811,8 @@ namespace Turris
                     break;
             }
             // Powalenie ze skilla (down_seconds): po zachwianiu, żeby krótsze drgnięcie go nie skróciło.
-            if (hit.knockdown > 0f && (r.outcome == HitOutcome.Hit || r.outcome == HitOutcome.GuardBroken)) HuThrowDown(hit.knockdown);
+            if (hit.knockdown > 0f && (r.outcome == HitOutcome.Hit || r.outcome == HitOutcome.GuardBroken)
+                && (hit.knockdownChance <= 0f || Random.value < hit.knockdownChance)) HuThrowDown(hit.knockdown);
             CombatEvents.RaiseHit(AimPoint, r, false);
             return r;
         }
@@ -844,6 +878,22 @@ namespace Turris
             FxLibrary.Shockwave(transform.position, Names.StatusColor(StatusKind.Frozen), rules.shatterRadius, false);
             FxLibrary.Impact(AimPoint, Names.StatusColor(StatusKind.Frozen), 1.5f);
             Sfx.Play(SoundId.Shatter, AimPoint);
+        }
+
+        /// <summary>Wybuch żaru (HU IgnitedEarth): ogień w promieniu wokół trafionego – także w niego.</summary>
+        void EmberBurst(float damage, in HitData source)
+        {
+            var burst = new HitData
+            {
+                magic = damage, poiseDamage = 10, guardLoad = 10, blockable = true, parryable = false, dodgeable = true,
+                sourcePosition = transform.position, attacker = source.attacker, element = Element.Fire, isReaction = true,
+                attackName = "Wybuch żaru", mods = StatusModifiers.None,
+            };
+            var attacker = source.attacker as IHitReceiver;
+            HitQuery.Sphere(transform.position + Vector3.up, rules.emberBurstRadius, attacker != null ? attacker.Faction : Faction.Player, new HitTracker(),
+                r => HitQuery.Apply(attacker, r, burst, false));
+            FxLibrary.Shockwave(transform.position, Names.ElementColor(Element.Fire), rules.emberBurstRadius, false);
+            Sfx.Play(SoundId.FireExplosion, AimPoint, 0.8f);
         }
 
         /// <summary>Przewodzenie przeskakuje na najbliższego innego wroga (przedmiot „Amulet przewodnika”).</summary>
@@ -935,6 +985,7 @@ namespace Turris
         void TakeStatusDamage(float dmg)
         {
             Health.Drain(dmg);
+            CombatEvents.RaiseStatusDamage(this, dmg);
             CombatEvents.RaiseWorldText(AimPoint, $"{dmg:0}", Status.BleedStacks > 0 ? Names.StatusColor(StatusKind.Bleed) : Names.StatusColor(StatusKind.Burn));
             Sfx.Play(Status.BleedStacks > 0 ? SoundId.BleedTick : SoundId.BurnTick, AimPoint);
             if (Health.Current <= 0) Die();

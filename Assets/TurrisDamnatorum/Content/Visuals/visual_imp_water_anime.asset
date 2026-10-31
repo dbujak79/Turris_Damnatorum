@@ -1,0 +1,97 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2b60cb6a9638374aabf2c538e75231f, type: 3}
+  m_Name: visual_imp_water_anime
+  m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.CharacterVisualDefinition
+  modelPrefab: {fileID: 6848211622737972675, guid: bf52cbc6c47e9a449a4b84e42c1796b7, type: 3}
+  scale: 1.2577273
+  demon: 1
+  rigidBootToes: 0
+  sagittalRunFeet: 0
+  footLength: 1
+  positionOffset: {x: 0, y: 0, z: 0}
+  rotationOffset: {x: 0, y: 0, z: 0}
+  attachGear: 0
+  weaponBone: 18
+  weaponPosition: {x: 0, y: 0.08, z: 0.02}
+  weaponRotation: {x: 0, y: 0, z: 0}
+  shieldBone: 15
+  shieldPosition: {x: 0, y: 0.12, z: -0.08}
+  shieldRotation: {x: 0, y: -90, z: 0}
+  weaponBonePath: 
+  shieldBonePath: 
+  idle: {fileID: 7400000, guid: 1e8b3dde4a97234429b1a315b27be84a, type: 2}
+  walk: {fileID: 7400000, guid: 0cb6a70accdebdb41a2d5887255c789a, type: 2}
+  run: {fileID: 0}
+  walkBack: {fileID: 0}
+  strafeLeft: {fileID: 0}
+  strafeRight: {fileID: 0}
+  walkSpeed: 3.24
+  runSpeed: 4.6
+  actions:
+  - action: 1
+    attack: 0
+    clip: {fileID: 7400000, guid: f346382dc0227a243a1f9cec63184167, type: 2}
+    windupEnd: 0.37499997
+    activeEnd: 0.5416666
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
+    upperBodyOnly: 0
+    loop: 0
+    rootForward:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  - action: 1
+    attack: 11
+    clip: {fileID: 7400000, guid: 479579dd1d2f3844aba99a76ca283f5f, type: 2}
+    windupEnd: 0.38235292
+    activeEnd: 0.52941173
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
+    upperBodyOnly: 0
+    loop: 0
+    rootForward:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  - action: 11
+    attack: 0
+    clip: {fileID: 7400000, guid: 7642d113fcd03604e827ca6dc47244d7, type: 2}
+    windupEnd: 0.35
+    activeEnd: 0.55
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
+    upperBodyOnly: 0
+    loop: 0
+    rootForward:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  rightSlot: HandSlot.R
+  leftSlot: HandSlot.L
+  oneHandSet: {fileID: 0}
+  twoHandSet: {fileID: 0}
+  bowSet: {fileID: 0}
+  staffSet: {fileID: 0}

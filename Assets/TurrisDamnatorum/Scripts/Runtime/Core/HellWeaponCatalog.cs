@@ -20,9 +20,9 @@ namespace Turris
         [Serializable] public class Row
         {
             public string Id, targetId, sha256, displayName, description, ClassId;
-            public int Handedness, AttackKind, RequiredStrength, RequiredDexterity, RequiredIntelligence, MinWave = 1, Rarity, Power, BasePierce;
+            public int Handedness, AttackKind, RequiredStrength, RequiredDexterity, RequiredIntelligence, MinWave = 1, Rarity, Power, BasePierce, BaseRicochet;
             public float DamagePhysical, DamageFire, DamageWater, DamageAir, DamageEarth, StaminaCost, Load, PowerValue;
-            public float WindupSeconds = 0.12f, RecoverySeconds = 0.1f, Range = 48, AttacksPerSecond = 1, ProjectileSpeed = 420, ExplosionRadius;
+            public float WindupSeconds = 0.12f, RecoverySeconds = 0.1f, Range = 48, AttacksPerSecond = 1, ProjectileSpeed = 420, ExplosionRadius, Knockback;
             public bool AvailableInShop = true;
             /// <summary>Ekonomia HU (etap 6): cena bazowa, wzrost ceny poziomu i ostatni poziom broni.</summary>
             public float BasePrice = 25f, PriceGrowth = 1.6f;
@@ -117,6 +117,15 @@ namespace Turris
                 item.tags |= BuildTag.Magic;
             }
             if (row.BasePierce > 0) item.effects.Add(new PassiveEffect(PassiveEffectType.ProjectilePierce, row.BasePierce));
+            if (row.BaseRicochet > 0) item.effects.Add(new PassiveEffect(PassiveEffectType.ProjectileRicochet, row.BaseRicochet));
+            // Odrzut broni HU (cepy, młoty, dwuręczne, różdżka powietrza) – ta sama jednostka co perk „Ciężkie uderzenia”.
+            if (row.Knockback > 0f) item.effects.Add(new PassiveEffect(PassiveEffectType.MeleeKnockback, row.Knockback));
+            // Zasięg ciosu wręcz względem broni wzorcowej szablonu, jak w HU (np. pałasz +14% od miecza); szablon Turris zostaje bazą.
+            if (row.AttackKind == 0 && w.light.delivery == AttackDelivery.Melee && templateReference != null && templateReference.Range > 0f && row.Range > 0f)
+            {
+                float reach = Mathf.Clamp(row.Range / templateReference.Range, 0.8f, 1.25f);
+                foreach (var a in new[] { w.light, w.heavy }) a.reach *= reach;
+            }
             item.minFloor = DefaultContent.MinFloorFor(row.MinWave);
             return true;
         }
@@ -138,26 +147,13 @@ namespace Turris
                     case "FireResistance": item.modifiers.Add(new StatModifier(StatType.FireResist, v * 100f)); break;
                     case "FireDamage": item.modifiers.Add(new StatModifier(StatType.FireDamage, v * 100f)); break;
                     case "AirDamage": item.modifiers.Add(new StatModifier(StatType.LightningDamage, v * 100f)); break;
-                    case "AirPenetration": item.modifiers.Add(new StatModifier(StatType.LightningDamage, v * 100f)); break; // brak przebicia odporności w Turris
                     case "BleedDamage": item.modifiers.Add(new StatModifier(StatType.BleedDamage, v * 100f)); break;
                     case "ExecuteDamage": item.modifiers.Add(new StatModifier(StatType.ExecuteDamage, v * 100f)); break;
                     case "MoveSpeed": item.modifiers.Add(new StatModifier(StatType.MoveSpeed, v * 100f)); break;
-                    case "LifeOnKill": item.effects.Add(new PassiveEffect(PassiveEffectType.HealOnKill, v * 2f)); break;
-                    case "Evasion": item.modifiers.Add(new StatModifier(StatType.Dexterity, Mathf.Round(v * 100f / 1.5f))); break; // uchylenie Turris rośnie ze Zręcznością (1,5%/pkt)
-                    case "ProjectilePierce": item.effects.Add(new PassiveEffect(PassiveEffectType.ProjectilePierce, v)); break;
+                    default: if (HellEconomy.MapEffect(parts[0], v) is PassiveEffect fx) item.effects.Add(fx); break; // uchylenie, przebicie, życie za zabójstwo…
                 }
             }
-            switch (row.Power)
-            {
-                case 1: item.effects.Add(new PassiveEffect(PassiveEffectType.CheatDeath, row.PowerValue)); break;
-                case 2: item.effects.Add(new PassiveEffect(PassiveEffectType.CorpseExplosion, row.PowerValue)); break;
-                case 3: item.effects.Add(new PassiveEffect(PassiveEffectType.EmberAura, row.PowerValue * PlayerCombat.HuDamageScale)); break;
-                case 4: item.effects.Add(new PassiveEffect(PassiveEffectType.Thorns, row.PowerValue * PlayerCombat.HuDamageScale)); break;
-                case 5: item.effects.Add(new PassiveEffect(PassiveEffectType.WeaponChainLightning, row.PowerValue)); break;
-                case 6: item.effects.Add(new PassiveEffect(PassiveEffectType.FrostWard, row.PowerValue)); break;
-                case 7: item.effects.Add(new PassiveEffect(PassiveEffectType.LowHealthDamage, row.PowerValue)); break;
-                case 8: item.effects.Add(new PassiveEffect(PassiveEffectType.SoulHarvest, row.PowerValue)); break;
-            }
+            if (HellEconomy.PowerEffect(row.Power, row.PowerValue) is PassiveEffect power) item.effects.Add(power);
             item.offerWeight = 0.35f; // unikaty rzadziej w nagrodach (w HU tylko z łupów)
         }
     }

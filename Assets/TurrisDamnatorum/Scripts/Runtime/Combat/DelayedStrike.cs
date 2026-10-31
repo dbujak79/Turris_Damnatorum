@@ -21,6 +21,11 @@ namespace Turris
         GameObject marker;
         DamageZone.Settings? afterZone;
 
+        public float Radius => radius;
+        public Faction Faction => faction;
+        /// <summary>Sekundy do uderzenia (znacznik na ziemi się wypełnia).</summary>
+        public float Remaining => delay - t;
+
         public static DelayedStrike Spawn(Vector3 center, float radius, float delay, HitData hit, Faction faction, IHitReceiver owner, Color color, DamageZone.Settings? afterZone = null)
         {
             var go = new GameObject("DelayedStrike");

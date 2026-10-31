@@ -24,6 +24,8 @@ namespace Turris
 
         readonly CharacterVisualDefinition def;
         readonly WeaponAnimSet set;
+        readonly MageStancePose mageStance;
+        readonly AnatomicalFootPose anatomicalFeet;
         PlayableGraph graph;
         AnimationLayerMixerPlayable layers;
         AnimationMixerPlayable loco;
@@ -37,6 +39,7 @@ namespace Turris
         readonly Transform character;
         readonly Animator animator;
         readonly HellOffhandPose offhandPose;
+        readonly AlternatingAttackSteps attackSteps;
         static AnimationClip emptyClip;
 
         /// <summary>Warstwa akcji: mikser z bieżącym (wejście 0) i poprzednim, zamrożonym klipem (wejście 1).</summary>
@@ -59,11 +62,20 @@ namespace Turris
         public ActionClip CurrentActionClip => currentAction;
         public float CurrentActionTime => currentAction != null && currentLayer > 0 ? (float)actionLayers[currentLayer].cur.GetTime() : 0f;
         public PlayableGraph Graph => graph;
+#if UNITY_EDITOR
+        // Diagnostyka na żądanie: obserwator nie zmienia pozy; poza edytorem nie istnieje.
+        public System.Action<string, Animator> PoseAudit;
+        public float AuditStepPhase => stepPhase;
+        public string AuditLocoClip(int slot) => locoHas[slot] ? locoClips[slot].GetAnimationClip().name : "brak";
+        void TracePose(string stage) => PoseAudit?.Invoke(stage, animator);
+#endif
         /// <summary>Wagi slotów ruchu (dla testów): 0 spoczynek, 1–4 chód P/T/L/P, 5–8 bieg.</summary>
         public float LocoWeight(int slot) => !loco.IsValid() ? 0f : slot == Idle ? loco.GetInputWeight(Idle) + loco.GetInputWeight(LocoSlots) : loco.GetInputWeight(slot);
         /// <summary>Udział warstwy akcji (1 – całe ciało, 2 – górna połowa).</summary>
         public float ActionLayerWeight(int layer) => actionLayers[layer] != null ? actionLayers[layer].weight : 0f;
         public BodyDynamics Body { get; }
+        /// <summary>Pełny zamach topora i młota dwuręcznego (dociągnięcie ciała za ciosem).</summary>
+        public GreatSwingPose GreatSwing { get; }
 
         // Krok z nagrania: najdalsze dotąd wysunięcie ciała w bieżącym ciosie i przesunięcie czekające na kontroler.
         float rootPeak, pendingAdvance;
@@ -86,7 +98,8 @@ namespace Turris
                 ? c.rootForward.Evaluate(norm) * (humanoid ? animator.humanScale : 1f) * animator.transform.lossyScale.y
                 : 0f;
 
-        public ClipAnimationDriver(Animator animator, CharacterVisualDefinition def, Transform character, WeaponAnimSet set = null)
+        /// <param name="greatWeapon">topór lub młot dwuręczny – własny spoczynek zestawu (<see cref="WeaponAnimSet.greatWeaponIdle"/>) i postawa GreatSwingPose.</param>
+        public ClipAnimationDriver(Animator animator, CharacterVisualDefinition def, Transform character, WeaponAnimSet set = null, bool greatWeapon = false)
         {
             this.def = def;
             this.set = set != null && set.idle != null ? set : null;
@@ -94,6 +107,7 @@ namespace Turris
             this.animator = animator;
             humanoid = animator.isHuman;
             offhandPose = humanoid ? new HellOffhandPose(animator) : null;
+            attackSteps = humanoid && this.set != null && this.set.alternatingLightSteps ? new AlternatingAttackSteps(animator,character) : null;
             animator.applyRootMotion = false; // ruch prowadzi logika gry
             graph = PlayableGraph.Create("TurrisCharacter_" + animator.name);
             graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
@@ -105,7 +119,7 @@ namespace Turris
             // Ruch z zestawu broni (gdy jest), inaczej z modelu.
             var s = this.set;
             var clips = s != null
-                ? new[] { s.useModelIdle && def.idle != null ? def.idle : s.idle, s.walk, s.walkBack, s.strafeLeft, s.strafeRight, s.run, s.runBack, s.runLeft, s.runRight }
+                ? new[] { greatWeapon && s.greatWeaponIdle != null ? s.greatWeaponIdle : s.useModelIdle && def.idle != null ? def.idle : s.idle, s.walk, s.walkBack, s.strafeLeft, s.strafeRight, s.run, s.runBack, s.runLeft, s.runRight }
                 : new[] { def.idle, def.walk, def.walkBack, def.strafeLeft, def.strafeRight, def.run, null, null, null };
             float walkSpeed = s != null ? s.walkSpeed : def.walkSpeed;
             float runSpeed = s != null ? s.runSpeed : def.runSpeed;
@@ -150,9 +164,12 @@ namespace Turris
             if (humanoid) layers.SetLayerMaskFromAvatarMask(2, UpperBodyMask());
 
             Body = humanoid ? new BodyDynamics(animator, character) : null;
+            GreatSwing = humanoid ? new GreatSwingPose(animator, character, greatWeapon) : null;
+            mageStance=humanoid&&def.balancedMageStance?new MageStancePose(animator,character):null;
             // Pomiary na klipach (faza kroków, kierunek stóp) dopiero w drugiej klatce: przy budowie ewaluacja grafu jeszcze
             // nie przesuwa kości (pomiar widział pozę spoczynkową – fazy wychodziły zerowe). Poza spoczynkowa – teraz.
             if (humanoid) { CaptureRestFeet(); measureIn = 2; }
+            if(humanoid&&def.anatomicalFeet)anatomicalFeet=new AnatomicalFootPose(animator,character);
             if (this.set != null)
                 foreach (var a in this.set.actions)
                     if (a != null && a.action == AnimAction.Attack && a.rootForward != null && a.rootForward.length > 1) { StepsFromClips = true; break; }
@@ -561,7 +578,7 @@ namespace Turris
             if (!graph.IsValid()) return;
             if (measureIn > 0 && --measureIn == 0)
             {
-                MeasureFootYaw();
+                if(!def.anatomicalFeet)MeasureFootYaw();
                 MeasureStepPhases();
             }
             // W gardzie (blok, picie) bez biegu: krótkie, szybsze kroki chodu zamiast długiego wykroku biegu w tył.
@@ -585,7 +602,9 @@ namespace Turris
             lastAction = s.action;
             lastNorm = norm;
             float advanceBefore = pendingAdvance;
-            if (clip != null && s.action == AnimAction.Attack)
+            bool authoredStep = attackSteps != null && AlternatingAttackSteps.IsStep(s);
+            if (attackSteps != null) pendingAdvance += attackSteps.Prepare(s,locoMoving,dt,restart);
+            if (!authoredStep && clip != null && s.action == AnimAction.Attack)
             {
                 float root = RootAt(clip, norm);
                 if (root > rootPeak) { pendingAdvance += root - rootPeak; rootPeak = root; }
@@ -622,6 +641,9 @@ namespace Turris
                 layers.SetInputWeight(l, Smooth(al.weight));
             }
             graph.Evaluate(dt);
+#if UNITY_EDITOR
+            TracePose("00-retarget");
+#endif
             // Klipy poruszają palcami jak w miękkim obuwiu. Stalowy nosek ma pozostać sztywny względem stopy.
             if (def.rigidBootToes && footL != null)
             {
@@ -630,14 +652,63 @@ namespace Turris
                 toeL.localScale = restToeScaleL; toeR.localScale = restToeScaleR;
             }
             offhandPose?.Apply(s.offhandAttack && s.action == AnimAction.Attack);
-            ApplyFootYaw();
+#if UNITY_EDITOR
+            TracePose("01-palce-offhand");
+#endif
+            if(!def.anatomicalFeet)ApplyFootYaw();
+#if UNITY_EDITOR
+            TracePose("02-foot-yaw");
+#endif
             ApplyIdleLegPose();
+#if UNITY_EDITOR
+            TracePose("03-idle-legs");
+#endif
             ApplyLegTwist();
+#if UNITY_EDITOR
+            TracePose("04-leg-twist");
+#endif
             ApplyLegIK(dt);
+#if UNITY_EDITOR
+            TracePose("05-leg-ik");
+#endif
+            mageStance?.Apply(s,worldVelocity,dt);
+#if UNITY_EDITOR
+            TracePose("06-mage-stance");
+#endif
             Body?.Apply(s, worldVelocity, dt);
+#if UNITY_EDITOR
+            TracePose("07-body");
+#endif
+            if (GreatSwing != null)
+            {
+                // Postawa topora w spoczynku i chodzie, w biegu – broń niesiona przy boku; cios i unik prowadzi klip.
+                float bodyAction = actionLayers[1] != null ? Smooth(actionLayers[1].weight) : 0f;
+                float running = 0f;
+                for (int i = Run; i < Run + 4 && i < LocoSlots; i++) running += loco.GetInputWeight(i);
+                float moving = 1f - loco.GetInputWeight(Idle) - loco.GetInputWeight(LocoSlots);
+                GreatSwing.Apply(s, dt, 1f - bodyAction, moving > 0.01f ? Mathf.Clamp01(running / moving) : 0f, 1f - moving);
+            }
+#if UNITY_EDITOR
+            TracePose("07a-great-swing");
+#endif
             AlignArmoredRunFeet();
-            AnchorFeet(s, pendingAdvance - advanceBefore);
+#if UNITY_EDITOR
+            TracePose("08-armored-feet");
+#endif
+            if(anatomicalFeet!=null){float bodyAction=actionLayers[1]!=null?Smooth(actionLayers[1].weight):0;float moving=1-loco.GetInputWeight(Idle)-loco.GetInputWeight(LocoSlots);float forward=def.sagittalRunFeet?loco.GetInputWeight(Walk)+loco.GetInputWeight(Run):0;anatomicalFeet.Apply(moving*(1-bodyAction),legTwist,Mathf.Clamp01(forward));}
+#if UNITY_EDITOR
+            TracePose("08a-anatomical-feet");
+#endif
+            attackSteps?.Apply();
+#if UNITY_EDITOR
+            TracePose("09-attack-steps");
+#endif
+            if (attackSteps == null || !attackSteps.OwnsPose) AnchorFeet(s, pendingAdvance - advanceBefore);
+            else footRelValid=false;
             lastAdvance = pendingAdvance - advanceBefore;
+#if UNITY_EDITOR
+            TracePose("10-anchor");
+#endif
         }
 
         static float Smooth(float x) { x = Mathf.Clamp01(x); return x * x * (3f - 2f * x); }
@@ -963,7 +1034,7 @@ namespace Turris
         }
 
         /// <summary>Dwukościowe IK: kolano w płaszczyźnie z bieżącej pozy; planted – udział obrotu stopy na świecie (reszta lokalnie).</summary>
-        static void Reach(Transform upper, Transform lower, Transform foot, Vector3 target, Vector3 dir, float planted)
+        internal static void Reach(Transform upper, Transform lower, Transform foot, Vector3 target, Vector3 dir, float planted)
         {
             Vector3 hip = upper.position, knee = lower.position, ankle = foot.position;
             float a = Vector3.Distance(hip, knee), b = Vector3.Distance(knee, ankle);

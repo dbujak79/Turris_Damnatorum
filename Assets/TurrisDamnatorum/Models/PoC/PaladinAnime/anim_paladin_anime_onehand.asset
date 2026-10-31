@@ -26,6 +26,7 @@ MonoBehaviour:
   runRight: {fileID: -203655887218126122, guid: f3403dbab92e22943ba1754791e9597a, type: 3}
   walkSpeed: 1.4
   runSpeed: 3.87
+  alternatingLightSteps: 1
   actions:
   - action: 1
     attack: 1

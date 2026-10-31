@@ -32,6 +32,8 @@ PRESETS = {
     "mag-zywioly": [BOTS + "MageElementBotPlaytests." + e + "_" + p
                     for e in ("Fire", "Water", "Air", "Earth") for p in ("SoulsSlasher", "Tester")],
     "mag-powietrze": [BOTS + "MageElementBotPlaytests.Air_" + p for p in ("SoulsSlasher", "Tester")],
+    "wojownik-specjalizacje": [BOTS + "WarriorSpecBotPlaytests." + c + "_" + p
+                               for c in ("Berserker", "Paladin", "Dual") for p in ("SoulsSlasher", "Tester")],
     "mag": [BOTS + "MageBotPlaytests.Mage_SoulsSlasher", BOTS + "MageBotPlaytests.Mage_Tester"],
     "wojownik": [BOTS + "WarriorBotPlaytests.Warrior_SoulsSlasher", BOTS + "WarriorBotPlaytests.Warrior_Tester"],
 }
@@ -92,6 +94,7 @@ def main():
     ap.add_argument("--out", help="katalog wyników serii (TURRIS_BOT_DIR)")
     ap.add_argument("--runs", type=int, default=20, help="podejść na serię (TURRIS_BOT_RUNS)")
     ap.add_argument("--copies", type=int, default=4, help="najwięcej kopii naraz")
+    ap.add_argument("--first-copy", type=int, default=1, help="numer pierwszej kopii (np. 3, gdy 1–2 są zajęte)")
     ap.add_argument("--copies-root", default=DEFAULT_COPIES, help="katalog z kopiami projektu")
     ap.add_argument("--realtime", action="store_true", help="normalny czas (TURRIS_BOT_REALTIME=1)")
     ap.add_argument("--sync-only", action="store_true", help="tylko przygotuj/zaktualizuj kopie")
@@ -99,7 +102,7 @@ def main():
 
     tests = list(args.tests) + (PRESETS[args.preset] if args.preset else [])
     n = max(1, min(args.copies, len(tests))) if tests and not args.sync_only else args.copies
-    copies = [os.path.join(args.copies_root, f"kopia{i + 1}") for i in range(n)]
+    copies = [os.path.join(args.copies_root, f"kopia{i + args.first_copy}") for i in range(n)]
     for c in copies:
         print(f"Synchronizacja {c}…", flush=True)
         sync_copy(c)

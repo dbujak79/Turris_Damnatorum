@@ -30,8 +30,8 @@ namespace Turris.Tests
         [Test]
         public void Catalog_HasAllSkillsAndSeals_AndEveryOpParses()
         {
-            // 61 skilli i 186 pieczęci z HU + skille Turris na komponentach HU (Ściana ognia z dwiema formami, pieczęć Grzmot).
-            Assert.AreEqual(61 + 1, HuCatalog.Skills.Count);
+            // 61 skilli i 186 pieczęci z HU + skille Turris na komponentach HU (Ściana ognia z dwiema formami, Szarża, pieczęć Grzmot).
+            Assert.AreEqual(61 + 2, HuCatalog.Skills.Count);
             Assert.AreEqual(186 + 3, HuCatalog.Seals.Count);
             CollectionAssert.IsEmpty(HuCatalog.Errors, string.Join("\n", HuCatalog.Errors));
             Assert.IsTrue(HuCatalog.Seals.All(s => !string.IsNullOrEmpty(s.name) && s.name != s.id), "każda pieczęć ma polską nazwę");
@@ -234,6 +234,19 @@ namespace Turris.Tests
             Assert.AreNotEqual(SealFit.Fits, Fresh(HuCatalog.Skill("skill.aura.purity")).Fit(HuCatalog.Seal("seal.turris.thunder")), "aura nie powala");
             Assert.AreEqual(0.5, Fresh(HuCatalog.Skill("skill.sub.tempest")).Shape.Parameters.Get("down_seconds"), 1e-6);
             Assert.AreEqual(0.6, Fresh(HuCatalog.Skill("skill.nova.air")).Shape.Parameters.Get("down_seconds"), 1e-6);
+        }
+
+        [Test]
+        public void Charge_KnocksDownWithChance_AndCutsDamageDuringDash()
+        {
+            var charge = HuCatalog.Skill(TurrisSkills.Charge);
+            Assert.AreSame(charge, HuCatalog.ForTarget(TurrisSkills.ChargeTarget));
+            Assert.IsTrue(charge.HasComponent("Dash") && charge.HasComponent("Explosion"));
+            var p1 = charge.At(1);
+            Assert.AreEqual(0.4, p1.Get("down_chance"), 1e-6, "40% szansy na powalenie");
+            Assert.AreEqual(0.5, p1.Get("dash_reduction"), 1e-6, "50% mniej obrażeń w trakcie szarży");
+            Assert.Greater(p1.Get("shield_bash_down"), p1.Get("down_seconds"), "uderzenie tarczą powala na dłużej");
+            Assert.AreEqual(0.6, charge.At(3).Get("down_chance"), 1e-6);
         }
     }
 }

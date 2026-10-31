@@ -22,6 +22,7 @@ namespace Turris
             if (inst.rarity != ItemRarity.Common || inst.huQuality > 0)
                 sb.Append($"Rzadkość: {HellEconomy.RarityName(inst.rarity)}{(inst.huQuality > 0 ? $", jakość {inst.huQuality}" : "")}{(inst.affixNames.Count > 0 ? " – " + string.Join(", ", inst.affixNames) : "")}\n");
             if (d.IsWeapon) sb.Append($"Poziom broni {inst.level + 1}/{HellEconomy.MaxLevelOf(d) + 1} (+20% obrażeń za poziom)\n");
+            if (d.IsShield) sb.Append($"Poziom tarczy {inst.level + 1}/{HellEconomy.MaxLevelOf(d) + 1} (+2 pkt bloku biernego za poziom)\n");
             if (d.IsWeapon)
             {
                 var w = d.weapon;
@@ -42,7 +43,7 @@ namespace Turris
                 sb.Append(s.canParry ? $"Parowanie: okno {s.parry.activeWindow:0.00}s\n" : "Brak parowania\n");
             }
             foreach (var m in inst.Modifiers) sb.Append(m).Append('\n');
-            foreach (var e in d.effects) sb.Append(e).Append('\n');
+            foreach (var e in inst.Effects) sb.Append(e).Append('\n');
             if (d.requirements.Count > 0)
             {
                 sb.Append("Wymaga: ");
@@ -144,7 +145,7 @@ namespace Turris
                     sb.Append("Następny skill ze slotu: +60% obrażeń i promień ×1,2; potem sloty przegrzane przez 2,5 s\n");
                     break;
                 case SpellKind.Undying:
-                    sb.Append($"Przez {s.duration:0.#} s żaden cios nie zabije; ryk wokół ({s.attack.radius:0.#} m): {dmg:0} obrażeń{knock}\n");
+                    sb.Append($"Przez {s.duration:0.#} s 80% mniej obrażeń; ryk wokół ({s.attack.radius:0.#} m): {dmg:0} obrażeń{knock}\n");
                     break;
                 case SpellKind.Projectile:
                     sb.Append($"Pocisk{(s.attack.projectileCount > 1 ? $" ×{s.attack.projectileCount}" : "")}: {dmg:0} obrażeń{knock}\n");

@@ -34,6 +34,8 @@ namespace Turris
 
         public readonly EquipmentSet equipment = new EquipmentSet();
         public readonly List<ItemInstance> inventory = new List<ItemInstance>();
+        /// <summary>Księga obrażeń podejścia (HU DamageLedger) – ekran śmierci i zwycięstwa.</summary>
+        public readonly DamageLedger ledger = new DamageLedger();
         public const int SkillSlotCount = 3;
         /// <summary>Kolekcja umiejętności podejścia (odblokowane na stałe + zdobyte w tym podejściu).</summary>
         public readonly List<SpellInstance> knownSpells = new List<SpellInstance>();
@@ -146,8 +148,51 @@ namespace Turris
             return true;
         }
 
+        /// <summary>Pojemność plecaka (HU <c>GearState.BackpackSize</c>).</summary>
+        public const int BackpackSize = 8;
+        public bool BackpackFull => inventory.Count >= BackpackSize;
+
+        /// <summary>Przedmiot się zmieści: jego slot jest wolny (założy się sam) albo w plecaku jest miejsce.</summary>
+        public bool CanReceive(ItemInstance item)
+        {
+            if (!BackpackFull || item?.definition == null) return true;
+            var slot = item.definition.DefaultSlot;
+            if (item.definition.kind == ItemKind.Ring && equipment.Get(EquipSlot.Ring1) != null) slot = EquipSlot.Ring2;
+            bool offHandBlocked = slot == EquipSlot.OffHand && equipment.Get(EquipSlot.MainHand)?.definition.twoHanded == true;
+            return equipment.Get(slot) == null && !offHandBlocked;
+        }
+
+        /// <summary>Cena sprzedaży jak w HU: 35% wartości egzemplarza, bez inflacji.</summary>
+        public static int SellPrice(ItemInstance item) => item?.definition == null ? 0 : UnityEngine.Mathf.RoundToInt(HellEconomy.Value(item) * 0.35f);
+
+        /// <summary>Można sprzedać: z plecaka albo założony pancerz i biżuterię (nie broń w rękach – jak w HU).</summary>
+        public bool CanSell(ItemInstance item)
+        {
+            if (item == null) return false;
+            if (inventory.Contains(item)) return true;
+            foreach (var kv in equipment.Equipped)
+                if (kv.Value == item) return kv.Key != EquipSlot.MainHand && kv.Key != EquipSlot.OffHand;
+            return false;
+        }
+
+        /// <summary>Sprzedaje przedmiot za <see cref="SellPrice"/> dusz (HU <c>RunState.SellItem</c>).</summary>
+        public bool SellItem(ItemInstance item)
+        {
+            if (!CanSell(item)) return false;
+            if (!inventory.Remove(item))
+            {
+                EquipSlot? slot = null;
+                foreach (var kv in equipment.Equipped) if (kv.Value == item) slot = kv.Key;
+                if (!slot.HasValue) return false;
+                equipment.Unequip(slot.Value);
+            }
+            souls += SellPrice(item);
+            return true;
+        }
+
         public bool UnequipToInventory(EquipSlot slot)
         {
+            if (BackpackFull) return false; // HU: przy pełnym plecaku nie da się zdjąć
             var item = equipment.Unequip(slot);
             if (item == null) return false;
             inventory.Add(item);

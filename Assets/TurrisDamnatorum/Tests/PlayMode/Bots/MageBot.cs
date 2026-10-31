@@ -75,12 +75,10 @@ namespace Turris.Tests.Bots
             TryManaFlask();
         }
 
-        /// <summary>Flaszka many: mało many, nikt nie stoi blisko i żaden zauważony cios nie nadchodzi.</summary>
+        /// <summary>Flaszka many: mało many i bezpieczna chwila (ta sama zasada co przy flaszce życia).</summary>
         void TryManaFlask()
         {
-            if (Root.Run.manaFlasks <= 0 || Pc.Mana.Fraction > 0.2f || !Pc.Actions.IsIdle) return;
-            if (EnemiesWithin(4f) > 0) return;
-            if (swings.Any(s => now >= s.noticeAt && Threatens(s) && TimeToImpact(s) < 1f)) return;
+            if (Root.Run.manaFlasks <= 0 || Pc.Mana.Fraction > 0.2f || !SafeToDrink()) return;
             Pc.RequestFlask(true);
             Rec.R.actions.Add("flaszka many (próba)");
         }
@@ -278,7 +276,7 @@ namespace Turris.Tests.Bots
             float elem = 1f + (WandElement != Element.None ? s[WandElementStat] / 100f : 0f);
             float dps = b.WeaponDamage(b.weapon.light) * b.attackSpeed * elem * (1f + s[StatType.SpellPower] / 100f);
             return dps + 0.3f * s[StatType.MaxHealth] + 0.4f * (s[StatType.PhysicalDefense] + s[StatType.MagicDefense])
-                   + 0.15f * s[StatType.MaxMana] + 2f * s[StatType.ManaRegen] + 0.1f * s[StatType.MaxStamina];
+                   + 0.15f * s[StatType.MaxMana] + 2f * s[StatType.ManaRegen] + 0.1f * s[StatType.MaxStamina] + EffectScore(b);
         }
     }
 }

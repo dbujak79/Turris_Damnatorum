@@ -38,9 +38,14 @@ Matowy shader `Turris/AnimeMatte` współpracuje z istniejącym `HellBodySurface
 Ma pasma światła rozproszonego, cienie oraz światła dodatkowe Forward+, bez połysku i odbić otoczenia.
 Moknięcie przyciemnia kolor i nie zmienia matowego charakteru zbroi.
 Paleta materiału odnosi się do [wzoru użytkownika](reference-palette.png): ciepła, przygaszona stal,
-stare złoto obrzeży i ciepłe cienie. Shader koryguje neutralne płyty oraz beżowe okucia osobno,
+stare złoto obrzeży i neutralne, delikatnie chłodne cienie. Shader koryguje neutralne płyty oraz beżowe okucia osobno,
 zachowując burgund i UV obecnej tekstury. Światło otoczenia jest ograniczone, a główne światło ma limit
-jasności zapobiegający wypalaniu płyt do bieli w scenie areny. Nie dodano metalicznych refleksów.
+jasności zapobiegający wypalaniu płyt do bieli w scenie areny. Ograniczona jest również suma świateł dodatkowych.
+Od 2026-10-27 paleta kompresuje białe światła z atlasu do przygaszonej stali, zachowując namalowane płaszczyzny;
+wypełnienie cienia nie ma dawnego dodatkowego mnożnika 0,35. Nie dodano metalicznych refleksów.
+Sam materiał można odtworzyć poleceniem **Turris → PoC → Odśwież malowany materiał paladyna**,
+bez ponownego importowania modelu i klipów. Porównanie w `TestResults/paladin-look/before/` i `current/`.
+Atlas źródłowy nadal wymaga oczyszczenia poszarpanych detali generatora; ta korekta nie zastępuje jego przemalowania.
 Awatar Humanoid powstaje z nowego modelu; klipy i zestawy broni pochodzą z `visual_paladin`,
 z wyjątkiem drugiego lekkiego cięcia opisanego poniżej.
 Nowa definicja ma `scale=1`, `footLength=1`, `rigidBootToes=true`, `sagittalRunFeet=true`;
@@ -67,6 +72,20 @@ Oryginalny `class_hu_paladin.visual` wskazuje nadal stary model; wyczyszczenie `
 Importer HU zapisujący `visual` nie usuwa tego wyboru. Pełne odtworzenie definicji klasy może go nadpisać.
 
 ## Seria ataków i korbacz
+
+Od 2026-10-27 prywatny zestaw jednoręczny ma `alternatingLightSteps`: lewa noga prowadzi w pozycji wyjściowej,
+pierwsze cięcie przeprowadza prawą nogę do przodu, drugie — lewą. Każdy cios kończy się przewagą nogi prowadzącej
+o 70,2 cm. Łuk buta (około 17 cm) i podparcie w świecie zastępują krok z korzenia nagrania;
+kontroler przesuwa sylwetkę o 70,2 cm na cios, łącznie 1,404 m przy dwóch uderzeniach. To kolejna korekta użytkownika:
+przesunięcie zwiększone o 30% względem wariantu 54 cm, a stopa podnoszona nieco wyżej niż poprzednie 15 cm.
+Wcześniejsze rozpoczęcie kroku i obrót buta pokazują wybicie z palców, przeniesienie nogi oraz lądowanie.
+W razie potrzeby miednica obniża się o brakujący zasięg nóg (maks. 7,5 cm), zachowując długości kości i podparcie.
+Rzeczywista proporcja czasu zamachu i trafienia prowadzi teraz postęp kroku, bez przyspieszenia na granicy faz.
+Miednica podąża za podstawą podparcia, zachowując skręt,
+pochylenie i wysokość z klipu. Powrót rąk do gardy nie cofa wypracowanej pozycji nóg.
+Opcja należy tylko do `anim_paladin_anime_onehand.asset`; wojownik i zestaw dwuręczny pozostają bez niej.
+Większy zwrot, ruch i inne akcje wygaszają tę warstwę; teleport resetuje podparcie.
+Galerie i pomiary obu broni: `TestResults/paladin-attack-steps/`.
 
 Nowy paladyn ma własny `anim_paladin_anime_onehand.asset`. Drugi cios korzysta z lokalnej kopii
 `sword and shield slash (3)`, klatki **18–24**, zamiast klipu z głębokim przysiadem.

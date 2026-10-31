@@ -36,7 +36,7 @@ MonoBehaviour:
       active: 0.09642857
       recovery: 0.28928572
       cancelAfter: 0.09642857
-      reach: 1.7
+      reach: 1.7531251
       radius: 0.6
       lunge: 0.5
       tracking: 360
@@ -53,6 +53,8 @@ MonoBehaviour:
       explosionRadius: 0
       element: 0
       elementShare: 0
+      element2: 0
+      element2Share: 0
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0
@@ -70,7 +72,7 @@ MonoBehaviour:
       active: 0.14464286
       recovery: 0.43392858
       cancelAfter: 0.21214285
-      reach: 1.9
+      reach: 1.959375
       radius: 0.6
       lunge: 0.8
       tracking: 360
@@ -87,6 +89,8 @@ MonoBehaviour:
       explosionRadius: 0
       element: 0
       elementShare: 0
+      element2: 0
+      element2Share: 0
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0

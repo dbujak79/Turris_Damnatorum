@@ -316,7 +316,7 @@ namespace Turris
                 Vector3 dir = Quaternion.Euler(0, angle, 0) * cast.direction;
                 var m = motion;
                 if (orbit) m.orbitAngle = Mathf.Atan2(dir.z, dir.x) + i * Mathf.PI * 2f / count;
-                var shot = HuShot.Spawn(cast, cast.origin + Vector3.up * height + dir * 0.7f, dir, hit, cast.Length("speed", 9f), cast.Length("projectile_radius", 0.4f),
+                var shot = HuShot.Spawn(cast, cast.origin + Vector3.up * height + dir * 0.7f, dir, hit, cast.Length("speed", 9f) * cast.caster.ProjectileSpeedMult, cast.Length("projectile_radius", 0.4f),
                     cast.P.GetF("lifetime", 1.5f), (int)cast.P.Get("pierce"), (int)cast.P.Get("ricochet"), (int)cast.P.Get("splits"),
                     burstAtEnd ? 1f : contactShare, !burstAtEnd, cast.P.On("impact_every_hit"), m, look);
                 if (shot != null && pulses) HuWorld.Add(new HuShotPulse(cast, shot));

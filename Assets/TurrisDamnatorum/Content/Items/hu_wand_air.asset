@@ -28,7 +28,11 @@ MonoBehaviour:
   - stat: 15
     mode: 1
     value: 5
-  effects: []
+  effects:
+  - type: 40
+    value: 1
+  - type: 32
+    value: 0.4
   weapon:
     light:
       name: "R\xF3\u017Cd\u017Cka powietrza"
@@ -56,6 +60,8 @@ MonoBehaviour:
       explosionRadius: 0
       element: 3
       elementShare: 0
+      element2: 0
+      element2Share: 0
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0
@@ -90,6 +96,8 @@ MonoBehaviour:
       explosionRadius: 0
       element: 3
       elementShare: 0
+      element2: 0
+      element2Share: 0
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0

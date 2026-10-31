@@ -73,6 +73,8 @@ namespace Turris
             world = new GameObject("World").transform;
             SetupSceneObjects();
             CombatEvents.Died += OnSomethingDied;
+            CombatEvents.Impact += RecordLedger;
+            CombatEvents.StatusDamage += RecordLedgerTick;
             EnemyBrain.SummonRequested += OnSummonRequested;
             ShowMainMenu();
         }
@@ -80,6 +82,8 @@ namespace Turris
         void OnDestroy()
         {
             CombatEvents.Died -= OnSomethingDied;
+            CombatEvents.Impact -= RecordLedger;
+            CombatEvents.StatusDamage -= RecordLedgerTick;
             EnemyBrain.SummonRequested -= OnSummonRequested;
             Time.timeScale = 1f;
         }
@@ -318,6 +322,7 @@ namespace Turris
             if (arena != null) Destroy(arena);
             foreach (var p in Projectile.Active.ToList()) Destroy(p.gameObject);
             foreach (var z in DamageZone.Active.ToList()) Destroy(z.gameObject);
+            foreach (var sc in SteamCloud.Active.ToList()) Destroy(sc.gameObject);
             foreach (var wave in WaveEffect.Active.ToArray()) Destroy(wave.gameObject);
             foreach (var d in DelayedStrike.Active.ToList()) Destroy(d.gameObject);
             foreach (var st in StormEffect.Active.ToList()) Destroy(st.gameObject);
@@ -327,13 +332,27 @@ namespace Turris
             arena = null;
         }
 
+        /// <summary>Księga obrażeń: ciosy bohatera (wg źródła) i ciosy w bohatera (wg demona).</summary>
+        void RecordLedger(IHitReceiver target, HitData hit, HitResult r)
+        {
+            if (Run == null || Range != null) return;
+            if (target is PlayerCombat) Run.ledger.RecordTaken((hit.attacker as EnemyBrain)?.Def?.displayName, r);
+            else if (target is EnemyBrain && hit.attacker is PlayerCombat) Run.ledger.RecordDealt(DamageLedger.Classify(hit), r.healthDamage);
+        }
+
+        void RecordLedgerTick(IHitReceiver target, float amount)
+        {
+            if (Run != null && Range == null && target is EnemyBrain) Run.ledger.RecordDealt(DamageLedger.Source.Ailments, amount);
+        }
+
         void OnSomethingDied(IHitReceiver who)
         {
             if (Run == null || !(who is EnemyBrain e) || !enemies.Contains(e)) return;
             if (Range != null) { Range.OnDummyDied(e); return; }
             Run.kills++;
             if (!IsEnemyTrial) Meta.RecordKill(e.Def);
-            AddPendingSouls(e.Def.soulReward * Run.difficulty.soulMultiplier * (e.IsElite ? 1.5f : 1f) * (CurrentFloor?.soulScale ?? 1f)); // dojrzewają 3 s (HU)
+            AddPendingSouls(e.Def.soulReward * Run.difficulty.soulMultiplier * (e.IsElite ? 1.5f : 1f) * (CurrentFloor?.soulScale ?? 1f)
+                            * (1f + (Player != null && Player.Build != null ? Player.Build.effects[PassiveEffectType.SoulGain] : 0f) / 100f)); // dojrzewają 3 s (HU); SoulGain z przedmiotów
             Sfx.Ui(SoundId.SoulGain);
             SealDrop(e);
             ItemDrop(e);

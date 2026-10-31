@@ -135,6 +135,83 @@ namespace Turris.Tests
             Assert.AreEqual(1, s.ChillStacks);
         }
 
+        [Test]
+        public void Soaked_IsOnlyAMarker_NeverFreezes()
+        {
+            var s = new StatusEffects();
+            for (int i = 0; i < 6; i++) Assert.IsFalse(s.Apply(StatusKind.Soaked, 0, 10, B), "Przemoczenie nie zamraża");
+            Assert.IsTrue(s.Soaked);
+            Assert.IsFalse(s.Frozen);
+            Assert.AreEqual(0, s.ChillStacks);
+            Assert.AreEqual(1f, s.MoveMultiplier(B), 1e-4f, "Przemoczenie samo nie spowalnia");
+            Run(s, B.soakedDuration + 0.1f, false);
+            Assert.IsFalse(s.Soaked, "Wygasa");
+        }
+
+        [Test]
+        public void Slow_SlowsMovement_DoesNotStack_NeverFreezes()
+        {
+            var s = new StatusEffects();
+            for (int i = 0; i < 6; i++) Assert.IsFalse(s.Apply(StatusKind.Slow, 0, 10, B));
+            Assert.IsFalse(s.Frozen);
+            Assert.AreEqual(B.slowMoveMultiplier, s.MoveMultiplier(B), 1e-4f, "Jedno spowolnienie bez narastania");
+            Assert.AreEqual(1f, s.ActionSpeedMultiplier(B), 1e-4f, "Spowolnienie HU dotyczy tylko ruchu");
+            Run(s, B.slowDuration + 0.1f, false);
+            Assert.AreEqual(1f, s.MoveMultiplier(B), 1e-4f);
+        }
+
+        [Test]
+        public void SoakedTarget_LightningBonus_EarthMakesMud()
+        {
+            var s = new StatusEffects();
+            s.Apply(StatusKind.Soaked, 0, 10, B);
+            var air = Fixture.FrontHit(0, 40);
+            air.element = Element.Lightning;
+            Assert.AreEqual("PRZEWODNICTWO", s.ModifyIncoming(ref air, B));
+            Assert.AreEqual(40f * (1 + B.soakedAirBonus), air.magic, 1e-3f);
+
+            var earth = Fixture.FrontHit(0, 20);
+            earth.element = Element.Earth;
+            s.OnLanded(earth, new HitResult { outcome = HitOutcome.Hit, healthDamage = 20 }, B, out var reaction, out _);
+            Assert.AreEqual("BŁOTO", reaction);
+            Assert.IsTrue(s.Stunned);
+            Assert.IsFalse(s.Soaked, "Woda zużyta");
+        }
+
+        [Test]
+        public void GroundHazardTicks_ApplyStatuses_ButDoNotTriggerReactions()
+        {
+            var s = new StatusEffects();
+            s.Apply(StatusKind.Burn, 0f, 100f, B);
+            var zone = Fixture.FrontHit(0, 20);
+            zone.element = Element.Earth; zone.isGroundHazard = true;
+            zone.statuses = new List<StatusApplication> { new StatusApplication(StatusKind.Sunder) };
+            float instant = s.OnLanded(zone, new HitResult { outcome = HitOutcome.Hit, healthDamage = 20 }, B, out var reaction, out _);
+            Assert.IsNull(reaction, "Tyknięcie strefy nie wywołuje wybuchu żaru");
+            Assert.AreEqual(0f, instant);
+            Assert.AreEqual(1, s.SunderStacks, "Efekty strefy nadal działają");
+        }
+
+        [Test]
+        public void SameReaction_OnSameTarget_AtMostOncePerCooldown()
+        {
+            var s = new StatusEffects();
+            s.Apply(StatusKind.Burn, 0f, 100f, B);
+            var earth = Fixture.FrontHit(0, 20);
+            earth.element = Element.Earth;
+            var landed = new HitResult { outcome = HitOutcome.Hit, healthDamage = 20 };
+            s.OnLanded(earth, landed, B, out var first, out _);
+            Assert.AreEqual("WYBUCH ŻARU", first);
+            Run(s, B.reactionCooldown * 0.5f, false);
+            s.Apply(StatusKind.Burn, 0f, 100f, B);
+            s.OnLanded(earth, landed, B, out var second, out _);
+            Assert.IsNull(second, "Drugi wybuch przed upływem limitu");
+            Run(s, B.reactionCooldown * 0.6f, false);
+            s.Apply(StatusKind.Burn, 0f, 100f, B);
+            s.OnLanded(earth, landed, B, out var third, out _);
+            Assert.AreEqual("WYBUCH ŻARU", third, "Po limicie znów działa");
+        }
+
         // ------------------------------------------------------------------ Na bohaterze
 
         static HitData WithStatus(HitData h, StatusKind k, int stacks = 1)

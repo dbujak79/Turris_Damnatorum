@@ -31,10 +31,9 @@ MonoBehaviour:
   - stat: 32
     mode: 0
     value: 8
-  - stat: 26
-    mode: 0
-    value: 10
   effects:
+  - type: 38
+    value: 10
   - type: 23
     value: 0.5
   weapon:
@@ -47,7 +46,7 @@ MonoBehaviour:
       active: 0.13222222
       recovery: 0.39666668
       cancelAfter: 0.17000002
-      reach: 2.2
+      reach: 2.4
       radius: 0.8
       lunge: 0.6
       tracking: 360
@@ -64,6 +63,8 @@ MonoBehaviour:
       explosionRadius: 0
       element: 3
       elementShare: 0.46153846
+      element2: 0
+      element2Share: 0
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0
@@ -81,7 +82,7 @@ MonoBehaviour:
       active: 0.17000002
       recovery: 0.5666667
       cancelAfter: 0.28333336
-      reach: 2.4
+      reach: 2.618182
       radius: 0.9
       lunge: 0.9
       tracking: 360
@@ -98,6 +99,8 @@ MonoBehaviour:
       explosionRadius: 0
       element: 3
       elementShare: 0.46153846
+      element2: 0
+      element2Share: 0
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0

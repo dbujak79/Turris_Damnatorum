@@ -25,7 +25,9 @@ MonoBehaviour:
   - attribute: 3
     value: 20
   modifiers: []
-  effects: []
+  effects:
+  - type: 32
+    value: 0.6
   weapon:
     light:
       name: Zamach
@@ -36,7 +38,7 @@ MonoBehaviour:
       active: 0.21081081
       recovery: 0.68513507
       cancelAfter: 0.31621623
-      reach: 2.7
+      reach: 3.0000002
       radius: 1.1
       lunge: 0.7
       tracking: 360
@@ -53,6 +55,8 @@ MonoBehaviour:
       explosionRadius: 0
       element: 0
       elementShare: 0
+      element2: 0
+      element2Share: 0
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0
@@ -70,7 +74,7 @@ MonoBehaviour:
       active: 0.21081081
       recovery: 0.9486486
       cancelAfter: 0.42162162
-      reach: 2.8
+      reach: 3.1111112
       radius: 1.1
       lunge: 1
       tracking: 360
@@ -87,6 +91,8 @@ MonoBehaviour:
       explosionRadius: 0
       element: 0
       elementShare: 0
+      element2: 0
+      element2Share: 0
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0

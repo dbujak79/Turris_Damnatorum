@@ -17,6 +17,9 @@ MonoBehaviour:
   demon: 0
   rigidBootToes: 1
   sagittalRunFeet: 1
+  anatomicalFeet: 1
+  anatomicalGripSlots: 0
+  balancedMageStance: 0
   footLength: 1
   positionOffset: {x: 0, y: 0, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}

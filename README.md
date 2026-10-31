@@ -77,7 +77,7 @@ W trybie `-batchmode` Unity nie wywołuje `OnGUI`, więc testy obsługi menu pad
 | Kamera | mysz | prawa gałka |
 | Bieg (zużywa wytrzymałość) | Shift | L3 |
 | Szybki atak / riposta | LPM | RB |
-| Mocny atak | F | RT |
+| Mocny atak (topór i młot dwuręczny: przytrzymaj, by naładować) | F | RT |
 | Blok (trzymaj) | PPM | LB |
 | Parowanie | Lewy Ctrl lub boczny przycisk myszy („wstecz”) | LT |
 | Unik (przerywa atak i umiejętność) | Spacja | B |
@@ -133,7 +133,7 @@ Typy bohatera zastąpiły dawnego Rycerza, Maga i Łotrzyka i mają te same id, 
 |---|---|---|---|---|---|
 | **Wojownik** | – | Furia | szarża barkiem | Okrzyk bojowy | miecz + tarcza / miecz dwuręczny |
 | | Paladyn | Pobożność (2 aury) | szarża barkiem | Boski osąd | korbacz + tarcza / miecz + tarcza |
-| | Berserker | Żądza krwi | szarża barkiem | Nieśmiertelność | topór dwuręczny / młot bojowy |
+| | Berserker | Żądza krwi (furia: do 20% redukcji, 10 życia/s) | szarża barkiem | Żelazna skóra (−80% obrażeń) | topór dwuręczny / młot bojowy |
 | | Rębajło | Dwie klingi | przewrót | Taniec ostrzy | dwa miecze / korbacz + miecz |
 | **Mag** | – | Arkanowa osłona | odskok widma | Przeciążenie | różdżka + grymuar żywiołu (4 do wyboru) |
 | | Mag ognia / wody / powietrza / ziemi | Arkanowa osłona | odskok widma | Meteor / Wir głębin / Nawałnica / Trzęsienie ziemi | różdżka + grymuar żywiołu |
@@ -194,8 +194,8 @@ Postać ma **szybki atak, mocny atak i trzy sloty umiejętności**, każdy pod w
 
 - **Umiejętność** to czar albo technika bronią:
   - **czar** kosztuje manę i skaluje z Inteligencją (pocisk, fala mocy, leczenie, zaklęte ostrze, kamienna osłona…);
-  - **technika** kosztuje wytrzymałość, a jej obrażenia to lekki atak aktualnej broni × mnożnik, więc rośnie razem z bronią (rozpłatanie, uderzenie tarczą, szarża, młynek, trzęsienie).
-- Każda umiejętność ma **odnowienie**, niektóre także **ładunki** (np. szarża od poziomu 3 ma dwa). Odnowienie należy do umiejętności, nie do slotu, liczy je zegar gry (pauza je zatrzymuje), a na nowym piętrze ładunki są pełne.
+  - **technika** kosztuje wytrzymałość, a jej obrażenia to lekki atak aktualnej broni × mnożnik, więc rośnie razem z bronią (rozpłatanie, uderzenie tarczą, młynek, trzęsienie).
+- Każda umiejętność ma **odnowienie**, niektóre także **ładunki** (np. wypad od poziomu 2 ma dwa). Odnowienie należy do umiejętności, nie do slotu, liczy je zegar gry (pauza je zatrzymuje), a na nowym piętrze ładunki są pełne.
 - Część umiejętności wymaga wyposażenia – uderzenie tarczą działa tylko z tarczą. Wymagania atrybutów są miękkie (obniżona skuteczność), jak przy broni.
 - **Skille należą do broni, nie do klas** (wzór: Path of Exile 2). Każdy skill wymaga rodzaju broni, a bronie mają wymagania atrybutów, więc dowolna klasa użyje dowolnego skilla, jeśli trzyma pasującą broń. Rodzaje broni (`WeaponFamilies.cs`, jedna tabela dla wszystkich skilli):
 
@@ -207,7 +207,8 @@ Postać ma **szybki atak, mocny atak i trzy sloty umiejętności**, każdy pod w
   | sztylet | sztylety, szabla, sztylet do rzucania | Rzut nożami, Bomba siarkowa, Sidła, Krok cienia |
   | łuk | łuki | Strzał przeszywający, Salwa, Deszcz strzał |
   | fokus | różdżka, kostur, grymuar (także w drugiej ręce) | wszystkie czary |
-  | dowolna broń | – | Szarża, Odtrącenie, okrzyki, aury, skille klas |
+  | broń dwuręczna albo tarcza | – | Szarża (z tarczą kończy ją uderzenie tarczą) |
+  | dowolna broń | – | Piekielna szarża, Odtrącenie, okrzyki, aury, skille klas |
 
   Broń może należeć do kilku rodzajów (sztylet: ostrze i sztylet, kosa: ostrze i ciężka broń). Druga ręka też się liczy: miecz z grymuarem rzuca czary, a tarcza pozwala na Uderzenie tarczą.
 - **Obrażenia skilla zależą od siły broni**: mnożnik = DPS broni / DPS wzorca rodzaju, przez który broń spełnia wymaganie (ostrze i ciężka broń – miecz jednoręczny, sztylet – sztylet, łuk – łuk myśliwski, czar – podstawowa różdżka żywiołu fokusu), × poziom ulepszenia broni (+10% za poziom). Cięcie wichru na sztylecie bije ×0,7, na mieczu ×1, na mieczu dwuręcznym ×1,25. Startowe bronie klas mają ×1. Techniki Turris biją bronią same (lekki atak × mnożnik).
@@ -247,7 +248,8 @@ Sloty ustawia się na ekranie przygotowania (klasowe + odblokowane) i między pi
 |---|---|
 | Rozpłatanie, **Krwawe cięcie** | łuk przed sobą; krwawe – dwie warstwy krwawienia |
 | Uderzenie tarczą | wymaga tarczy, mocno łamie postawę |
-| Szarża, **Wypad** | zryw trafiający wszystko na drodze; wypad krótszy, otwiera ranę |
+| **Szarża** | bieg na wroga (8 m), w biegu 50% mniej obrażeń, uderzenie powala z szansą 40–60%; broń dwuręczna albo tarcza – z tarczą uderzenie tarczą, które powala zawsze |
+| **Wypad** | krótki zryw trafiający wszystko na drodze, otwiera ranę |
 | Młynek, **Seria cięć** | wirowanie wokół / cztery cięcia przed sobą (szansa krwawienia) |
 | Trzęsienie, **Uderzenie gromu** | krąg przed sobą; grom – połowa obrażeń to błyskawica, poraża |
 | **Rzut nożami** | trzy noże w wachlarzu, szansa krwawienia – atak z dystansu |
@@ -520,7 +522,13 @@ Kluczowe decyzje architektoniczne:
 
   W kodzie walki nie ma żadnego warunku „jeśli mag” ani „jeśli rycerz”.
 - **Statystyki nie mogą się kumulować po zmianie sprzętu.** Po każdej zmianie wyposażenia są liczone od nowa ze źródeł: atrybuty bazowe, założone przedmioty i wzmocnienia.
-- **Definicja przedmiotu jest oddzielona od egzemplarza.** `ItemDefinition` to niezmienny ScriptableObject, a `ItemInstance` przechowuje poziom jakości i id egzemplarza. Broń dwuręczna jest obsłużona: zajmuje obie ręce i wypiera tarczę, a założenie tarczy wypiera ją.
+- **Definicja przedmiotu jest oddzielona od egzemplarza.** `ItemDefinition` to niezmienny ScriptableObject, a `ItemInstance` przechowuje poziom jakości i id egzemplarza. Broń dwuręczna jest obsłużona: zajmuje obie ręce i wypiera tarczę, a założenie tarczy wypiera ją. Dwuręczna broń do walki wręcz bije o 10% szybciej i ma **pancerz w ataku** (jak hyper armour w Dark Souls): od zamachu do końca uderzenia cios wroga nie wybija z ataku, a obrażenia są o połowę mniejsze (osobny mnożnik, poza limitem redukcji).
+- **Topór i młot dwuręczny mają własny zestaw ruchów** (wzór: ciężki topór z Dark Souls 3; `PlayerCombat.Moveset.cs`):
+  - lekkie – szerokie poziome cięcia na przemian; ciężkie – rąbnięcia z góry na przemian (z wykrokiem, potem zza pleców), ciężki po ciężkim to seria;
+  - przytrzymany mocny atak – broń stoi nad głową do 0,8 s (od 0,25 s cios naładowany: do +60% obrażeń i +50% postawy) i uderza z falą (50% obrażeń, promień 2,4 m);
+  - z biegu (do 0,2 s po puszczeniu biegu): lekki – niskie cięcie z rozpędu (+10%), mocny – skok z rąbnięciem (+20%, +30% postawy) i falą;
+  - lekki w końcówce uniku lub do 0,35 s po nim – szybkie rąbnięcie z góry (zamach ×0,8);
+  - pełny zamach i własna postawa (`GreatSwingPose`, nakładane po klipie): ciało idzie za ciosem (rąbnięcie kończy się w przysiadzie z ostrzem przy ziemi, cięcie – skrętem na drugą stronę); w spoczynku stopy na szerokość barków, wyprostowane plecy i broń pionowo z prawej (dłonie rozsunięte na trzonku), w biegu – niesiona przy boku ostrzem do tyłu.
 - **Każdy atak ma niezależne parametry:** czy da się go zablokować, sparować, uniknąć niewrażliwością, typ i wartość obrażeń, obciążenie gardy i obrażenia postawy. Rodzaj sygnalizacji wynika bezpośrednio z tych parametrów, więc sygnał i zachowanie nie mogą się rozjechać.
 - **Tabela dozwolonych przejść między akcjami** jest opisana w `ActionController.cs`. Najważniejsze zasady:
   - **unik przerywa atak i czar w każdej fazie**, także w trakcie zamachu; przerwana inkantacja (przed wypuszczeniem czaru) zwraca manę;

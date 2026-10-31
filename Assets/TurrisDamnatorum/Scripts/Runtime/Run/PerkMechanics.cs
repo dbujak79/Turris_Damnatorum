@@ -41,15 +41,18 @@ namespace Turris
         /// przedmiot) i – gdy perk ma warunki „którykolwiek” – posiadany inny perk albo tag broni głównej. Uśpiony perk zostaje
         /// kupiony, ale nic nie daje, dopóki wyposażenie się nie zmieni.
         /// </summary>
-        public static bool Active(HellEconomy.UpgradeRow r, RunState run)
+        public static bool Active(HellEconomy.UpgradeRow r, RunState run) =>
+            ActiveWith(r, run, run.equipment.Get(EquipSlot.MainHand)?.definition, run.equipment.Get(EquipSlot.OffHand)?.definition);
+
+        /// <summary>Jak <see cref="Active(HellEconomy.UpgradeRow, RunState)"/>, ale z podanymi rękami (HU LoadoutAnalysis: „po zmianie broni”).</summary>
+        public static bool ActiveWith(HellEconomy.UpgradeRow r, RunState run, ItemDefinition main, ItemDefinition off)
         {
             if (r == null) return true;
-            var main = run.equipment.Get(EquipSlot.MainHand)?.definition;
-            var off = run.equipment.Get(EquipSlot.OffHand)?.definition;
             if (r.RequiredTags.Length > 0 && r.RequiredSlot != 0)
             {
                 bool Has(ItemDefinition d) => d != null && r.RequiredTags.All(HellEconomy.TagsOf(d).Contains);
-                bool ok = r.RequiredSlot == 1 ? Has(main) : r.RequiredSlot == 2 ? Has(off) : run.equipment.Items.Any(i => i != null && Has(i.definition));
+                bool ok = r.RequiredSlot == 1 ? Has(main) : r.RequiredSlot == 2 ? Has(off)
+                    : Has(main) || Has(off) || run.equipment.Equipped.Any(kv => kv.Key != EquipSlot.MainHand && kv.Key != EquipSlot.OffHand && kv.Value != null && Has(kv.Value.definition));
                 if (!ok) return false;
             }
             if (r.RequiresAny.Length == 0) return true;

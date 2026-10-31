@@ -124,15 +124,76 @@ namespace Turris.Tests
         }
 
         [Test]
-        public void Undying_PreventsDeath()
+        public void BerserkerFury_ReducesDamage_AndRegenerates()
         {
+            var calm = Hero("class_hu_berserker");
+            var furious = Hero("class_hu_berserker");
+            furious.AddFury(50f);
+            float c00 = calm.Health.Current, f00 = furious.Health.Current;
+            calm.ReceiveHit(Fixture.FrontHit(120, blockable: false, parryable: false, dodgeable: false));
+            furious.ReceiveHit(Fixture.FrontHit(120, blockable: false, parryable: false, dodgeable: false));
+            Assert.AreEqual((c00 - calm.Health.Current) * 0.9f, f00 - furious.Health.Current, 0.5f, "połowa furii – 10% mniej obrażeń, poza limitem");
+            calm.AddFury(-calm.Fury);            // trafienie dokłada furii – spokojny z powrotem do zera,
+            furious.AddFury(50f - furious.Fury); // wściekły do połowy
+            float c0 = calm.Health.Current, f0 = furious.Health.Current;
+            Fixture.Advance(calm, 1f);
+            Fixture.Advance(furious, 1f);
+            float extra = (furious.Health.Current - f0) - (calm.Health.Current - c0);
+            Assert.AreEqual(PlayerCombat.BerserkerFuryRegen * 0.5f, extra, 1.5f, "połowa furii – ok. 5 życia na sekundę");
+
+            var knight = Hero("class_knight");
+            var knightFurious = Hero("class_knight");
+            knightFurious.AddFury(50f);
+            float k0 = knight.Health.Current, kf0 = knightFurious.Health.Current;
+            knight.ReceiveHit(Fixture.FrontHit(120, blockable: false, parryable: false, dodgeable: false));
+            knightFurious.ReceiveHit(Fixture.FrontHit(120, blockable: false, parryable: false, dodgeable: false));
+            Assert.AreEqual(k0 - knight.Health.Current, kf0 - knightFurious.Health.Current, 0.01f, "furia rycerza nie daje redukcji");
+        }
+
+        /// <summary>Broń dwuręczna: +10% szybkości ataku i pancerz w ataku – w zamachu połowa obrażeń i bez drgnięcia.</summary>
+        [Test]
+        public void TwoHanded_AttacksFaster_AndHasHyperArmorWhileSwinging()
+        {
+            var pc = Hero("class_hu_berserker");
+            Assert.IsTrue(pc.Build.twoHandedMelee, "topór dwuręczny");
+            Assert.IsFalse(Hero("class_hu_paladin").Build.twoHandedMelee, "korbacz z tarczą");
+            Assert.IsFalse(Hero("class_hu_dual").Build.twoHandedMelee, "dwie jednoręczne");
+
+            var idle = Hero("class_hu_berserker");
+            float hp0 = idle.Health.Current;
+            idle.ReceiveHit(Fixture.FrontHit(100, blockable: false, parryable: false, dodgeable: false));
+            float full = hp0 - idle.Health.Current;
+
+            pc.Request(ActionType.LightAttack);
+            Fixture.Advance(pc, 1f / 60f);
+            Assert.AreEqual(ActionType.LightAttack, pc.Actions.Current);
+            Assert.IsTrue(pc.HyperArmor, "zamach bronią dwuręczną");
+            float hp = pc.Health.Current;
+            pc.ReceiveHit(Fixture.FrontHit(100, blockable: false, parryable: false, dodgeable: false));
+            Assert.AreEqual(full * (1f - PlayerCombat.HyperArmorReduction), hp - pc.Health.Current, full * 0.05f + 0.5f, "połowa obrażeń");
+            Assert.AreEqual(ActionType.LightAttack, pc.Actions.Current, "cios nie wybija z ataku");
+        }
+
+        [Test]
+        public void IronSkin_CutsDamageBy80Percent_ButDoesNotPreventDeath()
+        {
+            var plain = Hero("class_hu_berserker");
+            float hp0 = plain.Health.Current, drPlain = plain.CurrentDamageReduction;
+            plain.ReceiveHit(Fixture.FrontHit(100, blockable: false, parryable: false, dodgeable: false));
+            float full = hp0 - plain.Health.Current;
+
             var pc = Hero("class_hu_berserker");
             pc.RequestSkill(PlayerCombat.SignatureSlot);
             Fixture.Advance(pc, 0.5f);
-            Assert.Greater(pc.ImmortalTime, 0f);
+            Assert.Greater(pc.IronSkinTime, 0f);
+            float hp = pc.Health.Current;
+            // Ryk daje pełną furię (szał) – jej redukcja dochodzi osobno, więc porównanie po zwykłej redukcji obu.
+            float expected = full * (1f - pc.CurrentDamageReduction) / (1f - drPlain) * (1f - PlayerCombat.IronSkinReduction)
+                             * (1f - PlayerCombat.BerserkerFuryReduction * pc.FuryFraction);
+            pc.ReceiveHit(Fixture.FrontHit(100, blockable: false, parryable: false, dodgeable: false));
+            Assert.AreEqual(expected, hp - pc.Health.Current, full * 0.05f + 0.5f, "Żelazna skóra: 80% mniej obrażeń");
             pc.ReceiveHit(Fixture.FrontHit(99999, blockable: false, parryable: false, dodgeable: false));
-            Assert.IsFalse(pc.IsDead, "Nieśmiertelność: żaden cios nie zabije");
-            Assert.GreaterOrEqual(pc.Health.Current, 1f);
+            Assert.IsTrue(pc.IsDead, "Żelazna skóra nie chroni przed śmiercią");
         }
 
         [Test]

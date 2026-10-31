@@ -70,7 +70,8 @@ namespace Turris
         public static string Requirement(BuildTag tags)
         {
             var parts = new System.Collections.Generic.List<string>();
-            if ((tags & BuildTag.Shield) != 0) parts.Add("tarczy");
+            if ((tags & BuildTag.TwoHanded) != 0) parts.Add((tags & BuildTag.Shield) != 0 ? "broni dwuręcznej albo tarczy" : "broni dwuręcznej");
+            else if ((tags & BuildTag.Shield) != 0) parts.Add("tarczy");
             if ((tags & BuildTag.Guard) != 0) parts.Add("gardy (tarczy lub broni blokującej)");
             if ((tags & BuildTag.Parry) != 0) parts.Add("możliwości parowania");
             if ((tags & BuildTag.Magic) != 0) parts.Add("znajomości czarów");
@@ -175,6 +176,8 @@ namespace Turris
                 case StatusKind.Stagger: return "zachwianie";
                 case StatusKind.Stun: return "ogłuszenie";
                 case StatusKind.Sunder: return "pęknięcie pancerza";
+                case StatusKind.Soaked: return "przemoczenie";
+                case StatusKind.Slow: return "spowolnienie";
                 default: return "zamrożenie";
             }
         }
@@ -207,6 +210,8 @@ namespace Turris
                 case StatusKind.Stagger: return new UnityEngine.Color(0.85f, 0.68f, 0.38f);
                 case StatusKind.Stun: return new UnityEngine.Color(1f, 0.85f, 0.3f);
                 case StatusKind.Sunder: return new UnityEngine.Color(0.7f, 0.7f, 0.75f);
+                case StatusKind.Soaked: return new UnityEngine.Color(0.25f, 0.5f, 0.95f);
+                case StatusKind.Slow: return new UnityEngine.Color(0.6f, 0.55f, 0.75f);
                 default: return new UnityEngine.Color(0.7f, 0.95f, 1f);
             }
         }
@@ -291,6 +296,11 @@ namespace Turris
                 case PassiveEffectType.BleedOnHit: return "Zwykłe ciosy wręcz nakładają krwawienie";
                 case PassiveEffectType.BurnOnHit: return "Zwykłe ataki bronią podpalają";
                 case PassiveEffectType.ChillOnHit: return "Zwykłe ataki bronią wychładzają";
+                case PassiveEffectType.SoakedOnHit: return "Zwykłe ataki bronią przemaczają";
+                case PassiveEffectType.SoulGain: return $"+{v:0.#}% dusz za zabójstwo";
+                case PassiveEffectType.ManaOnKill: return $"Zabicie wroga: +{v:0.#} many";
+                case PassiveEffectType.ProjectileSpeed: return $"+{v:0.#}% prędkości pocisków";
+                case PassiveEffectType.Accuracy: return $"Celność: −{v:0.#} pkt uniku wrogów";
                 case PassiveEffectType.StaggerOnHit: return "Zwykłe ataki bronią zachwiewają";
                 case PassiveEffectType.ConvertFireToFrost: return $"{UnityEngine.Mathf.Min(1f, v) * 100:0}% ognia staje się mrozem";
                 case PassiveEffectType.ConvertPhysicalToFire: return $"{UnityEngine.Mathf.Min(1f, v) * 100:0}% obrażeń fizycznych zwykłego ciosu wręcz staje się ogniem";

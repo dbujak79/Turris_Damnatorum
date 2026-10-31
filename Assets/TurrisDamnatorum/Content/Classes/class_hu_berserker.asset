@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.ClassDefinition
   id: class_hu_berserker
   displayName: Berserker
-  description: "Bro\u0144 dwur\u0119czna i sza\u0142. \u017B\u0105dza krwi: im mniej zdrowia, tym mocniejsze ciosy (do +60%). Skill klasy: Nie\u015Bmiertelno\u015B\u0107 \u2013 przez 3 s \u017Caden cios nie zabije, d\u0142ugie odnowienie."
+  description: "Bro\u0144 dwur\u0119czna i sza\u0142. \u017B\u0105dza krwi: im mniej zdrowia, tym mocniejsze ciosy (do +60%); furia chroni i leczy \u2013 przy pe\u0142nej do 20% redukcji obra\u017Ce\u0144 i 10 \u017Cycia na sekund\u0119. Skill klasy: \u017Belazna sk\u00F3ra \u2013 przez 3 s 80% mniej obra\u017Ce\u0144, d\u0142ugie odnowienie."
   tags: 0
   parent: {fileID: 11400000, guid: 14b6652c1c070c941b190a5c9859be54, type: 2}
   tagline: "Bro\u0144 dwur\u0119czna i sza\u0142"
@@ -63,10 +63,13 @@ MonoBehaviour:
     value: 3.5714285
   - stat: 32
     mode: 0
-    value: 5
+    value: 15
   - stat: 34
     mode: 0
     value: 1
+  - stat: 33
+    mode: 0
+    value: 10
   lookOverride: {fileID: 11400000, guid: 5ad2dbf245efebb4dad27ce20cf2eca6, type: 2}
   toughness: 12
   strength: 16

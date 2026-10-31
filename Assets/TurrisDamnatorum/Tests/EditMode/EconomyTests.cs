@@ -70,7 +70,7 @@ namespace Turris.Tests
             var run = fx.NewRun("class_knight");
             run.floorsCleared = 5; run.floorIndex = 5;
             var stock = FloorShop.Generate(run, fx.Cfg, new System.Random(3));
-            Assert.AreEqual(1, stock.Count(o => o.kind == FloorOffer.Kind.WeaponLevel), "kolejny poziom trzymanej broni zawsze w ofercie");
+            Assert.AreEqual(1, stock.Count(o => o.kind == FloorOffer.Kind.WeaponLevel && !o.item.definition.IsShield), "kolejny poziom trzymanej broni zawsze w ofercie");
             Assert.AreEqual(FloorShop.WeaponCount, stock.Count(o => o.kind == FloorOffer.Kind.WeaponLevel || o.kind == FloorOffer.Kind.Weapon));
             Assert.AreEqual(FloorShop.PerkCount, stock.Count(o => o.kind == FloorOffer.Kind.Perk));
             var items = stock.Where(o => o.kind == FloorOffer.Kind.Item).ToList();
@@ -88,6 +88,19 @@ namespace Turris.Tests
             Assert.AreEqual(before + 1, lvl.item.level);
             Assert.AreEqual(0, run.souls);
             Assert.IsFalse(FloorShop.Buy(lvl, run), "sprzedane raz");
+        }
+
+        [Test]
+        public void Roll_UniqueWeapon_StaysUnique_WithoutAffixes()
+        {
+            var weapon = fx.Cfg.baseItemPool.First(d => d != null && d.IsWeapon && HellEconomy.IsUnique(d));
+            var rng = new System.Random(3);
+            for (int i = 0; i < 30; i++)
+            {
+                var it = HellEconomy.Roll(weapon, LootSource.Boss, 20, rng);
+                Assert.AreEqual(ItemRarity.Unique, it.rarity, "unikatowa broń z łupu: " + weapon.id);
+                Assert.AreEqual(0, it.affixNames.Count, "unikat bez losowych affixów");
+            }
         }
     }
 }

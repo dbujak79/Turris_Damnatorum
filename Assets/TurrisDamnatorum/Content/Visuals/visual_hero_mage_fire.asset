@@ -15,6 +15,12 @@ MonoBehaviour:
   modelPrefab: {fileID: 919132149155446097, guid: f19d06cd47ea72a41ac77ca70272b720, type: 3}
   scale: 0.9729729
   demon: 0
+  rigidBootToes: 0
+  sagittalRunFeet: 0
+  anatomicalFeet: 1
+  anatomicalGripSlots: 0
+  balancedMageStance: 0
+  footLength: 1
   positionOffset: {x: 0, y: 0, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
   attachGear: 1
@@ -40,6 +46,10 @@ MonoBehaviour:
     clip: {fileID: -982115091633673366, guid: fa88bf00b30050343869982557eb6b34, type: 3}
     windupEnd: 0.35
     activeEnd: 0.55
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 0
     loop: 0
     rootForward:
@@ -53,6 +63,10 @@ MonoBehaviour:
     clip: {fileID: -5663982627635981860, guid: fa88bf00b30050343869982557eb6b34, type: 3}
     windupEnd: 0.35
     activeEnd: 0.55
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 0
     loop: 0
     rootForward:
@@ -66,6 +80,10 @@ MonoBehaviour:
     clip: {fileID: 4805745386581417271, guid: fa88bf00b30050343869982557eb6b34, type: 3}
     windupEnd: 0.35
     activeEnd: 0.55
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 1
     loop: 1
     rootForward:
@@ -79,6 +97,10 @@ MonoBehaviour:
     clip: {fileID: 1409288131723124347, guid: fa88bf00b30050343869982557eb6b34, type: 3}
     windupEnd: 0.3
     activeEnd: 0.5
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 0
     loop: 0
     rootForward:
@@ -92,6 +114,10 @@ MonoBehaviour:
     clip: {fileID: 945973500907720162, guid: fa88bf00b30050343869982557eb6b34, type: 3}
     windupEnd: 0.3
     activeEnd: 0.5
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 0
     loop: 0
     rootForward:
@@ -105,6 +131,10 @@ MonoBehaviour:
     clip: {fileID: 945973500907720162, guid: fa88bf00b30050343869982557eb6b34, type: 3}
     windupEnd: 0.35
     activeEnd: 0.55
+    strikeShare: 0
+    recoveryFadeStart: 0
+    fadeWhenFinished: 0
+    preparationBlendShare: 0
     upperBodyOnly: 0
     loop: 0
     rootForward:

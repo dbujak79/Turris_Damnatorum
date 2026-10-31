@@ -99,6 +99,9 @@ namespace Turris
         public static event Action<Vector3, string, Color> WorldText;
         /// <summary>Rozstrzygnięte bezpośrednie trafienie (bez tyknięć efektów): cel, dane ciosu, wynik – dla reakcji ciała, hitstopu i warstw dźwięku.</summary>
         public static event Action<IHitReceiver, HitData, HitResult> Impact;
+        /// <summary>Tyknięcie efektu (krwawienie, podpalenie) na celu – dla księgi obrażeń.</summary>
+        public static event Action<IHitReceiver, float> StatusDamage;
+        public static void RaiseStatusDamage(IHitReceiver target, float amount) => StatusDamage?.Invoke(target, amount);
 
         public static void RaiseHit(Vector3 pos, HitResult r, bool targetIsPlayer) => HitResolved?.Invoke(pos, r, targetIsPlayer);
         public static void RaiseMessage(string msg, Color c) => Message?.Invoke(msg, c);

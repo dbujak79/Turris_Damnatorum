@@ -45,7 +45,7 @@ MonoBehaviour:
     bleedMaxStacks: 5
     bleedMovingMultiplier: 2
     burnShare: 0.8
-    burnDuration: 2.5
+    burnDuration: 2
     chillDuration: 3
     chillSlowPerStack: 0.15
     chillStacksToFreeze: 3
@@ -93,7 +93,8 @@ MonoBehaviour:
     knockbackHeavy: 0.7
     playerKnockback: 0.4
     dodgeStaminaCost: 21.6
-    dodgeDistance: 4.2
+    dodgeDistance: 4.62
+    shieldDodgeDistanceMult: 0.9
     dodgeInvulnStart: 0.04
     dodgeInvulnDuration: 0.28
     dodgeTotalDuration: 0.82
@@ -423,7 +424,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f502ce40d226c7947b885a533ee24fc1, type: 2}
   - {fileID: 11400000, guid: d8b4d27e3d1552d49a554cf62f5d4772, type: 2}
   - {fileID: 11400000, guid: 00ed47512d8e79642a7fa495669f4fde, type: 2}
-  - {fileID: 11400000, guid: 59efb178af614df47aeafbdf226ce09c, type: 2}
   - {fileID: 11400000, guid: 767e842f5de8da346aecd3b08b6ff0e7, type: 2}
   - {fileID: 11400000, guid: e69a8b3439b44f94a9a2820d95c1591d, type: 2}
   - {fileID: 11400000, guid: bc2f8756359891c4799a4f0b6f7c4810, type: 2}
@@ -483,6 +483,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 43ee2c13d52997a49a4fb1502bb3876f, type: 2}
   - {fileID: 11400000, guid: facdc6967d3948740bbc648061df62c7, type: 2}
   - {fileID: 11400000, guid: 01c16359b926f6d40bf9420b594bc501, type: 2}
+  - {fileID: 11400000, guid: 2f81c4ffcc484d7b9bd5dc377c384e6c, type: 2}
   - {fileID: 11400000, guid: 40abed5df06915843a2aa0a0b8960d70, type: 2}
   - {fileID: 11400000, guid: f2172ab9024aa32478126154d1eccb02, type: 2}
   - {fileID: 11400000, guid: fb13a93837802e143be287739597f269, type: 2}

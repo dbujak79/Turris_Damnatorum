@@ -21,6 +21,8 @@ namespace Turris
         [Tooltip("Zręczność: uchylenie (%/pkt) liczone od tej wartości w górę.")]
         public float evasionFromDexterity = 12f;
         public float evasionPerDexterity = 1.5f;
+        [Tooltip("Celność za punkt Zręczności ponad próg uchylenia (%, HU: 1,5 × uchylenie za punkt). Zmniejsza unik demonów.")]
+        public float accuracyPerDexterity = 2.25f;
         [Tooltip("Limit szansy na uchylenie (%).")]
         public float maxEvasion = 25f;
         [Tooltip("Zręczność ponad 10: dłuższy unik (ułamek za punkt) i szybszy atak – z limitami.")]
@@ -61,7 +63,7 @@ namespace Turris
         public float bleedMovingMultiplier = 2f;
         [Tooltip("Podpalenie: łączne obrażenia = ułamek wylądowanych obrażeń ognia.")]
         public float burnShare = 0.8f;
-        public float burnDuration = 2.5f;
+        public float burnDuration = 2f; // HU ignite: 2 s
         public float chillDuration = 3f;
         [Tooltip("Spowolnienie ruchu i akcji za warstwę chłodu.")]
         public float chillSlowPerStack = 0.15f;
@@ -119,6 +121,19 @@ namespace Turris
         public float sunderDuration = 4f;
         [Tooltip("Wybuch żaru: ziemia w płonący cel – dodatkowy ogień za tę część wylądowanych obrażeń ziemi.")]
         public float emberBurstShare = 0.5f;
+        [Tooltip("Wybuch żaru: promień wokół trafionego wroga (HU IgnitedEarth 1,8 m).")]
+        public float emberBurstRadius = 1.8f;
+        [Tooltip("Para: woda w płonący cel – chmura o tym promieniu i czasie; demon w środku chybia z tą szansą.")]
+        public float steamRadius = 2.4f, steamSeconds = 3f, steamMissChance = 0.5f;
+        [Tooltip("Przemoczenie (HU Soaked): sam znacznik pod reakcje, bez narastania.")]
+        public float soakedDuration = 4f;
+        [Tooltip("Powietrze (błyskawica) w przemoczony cel: premia do części magicznej.")]
+        public float soakedAirBonus = 0.35f;
+        [Tooltip("Spowolnienie (HU Slow): mnożnik ruchu, bez narastania i bez zamrożenia.")]
+        public float slowMoveMultiplier = 0.65f;
+        public float slowDuration = 2f;
+        [Tooltip("Ta sama reakcja na tym samym celu najwyżej raz na tyle sekund (HU PerTargetCooldownSeconds).")]
+        public float reactionCooldown = 1f;
 
         [Header("Tempo")]
         [Tooltip("Globalna szybkość rozgrywki (Time.timeScale w trakcie gry). 1 = czas rzeczywisty.")]
@@ -153,7 +168,10 @@ namespace Turris
         [Header("Unik")]
         [Tooltip("HU 26.10: unik droższy o 20% (18 → 21,6).")]
         public float dodgeStaminaCost = 21.6f;
-        public float dodgeDistance = 4.2f;
+        [Tooltip("Długość uniku (m). 29.10: +10% (4,2 → 4,62); z tarczą ×shieldDodgeDistanceMult, czyli tyle co wcześniej.")]
+        public float dodgeDistance = 4.62f;
+        [Tooltip("Tarcza w drugiej ręce skraca unik (mnożnik długości).")]
+        public float shieldDodgeDistanceMult = 0.9f;
         public float dodgeInvulnStart = 0.04f;
         public float dodgeInvulnDuration = 0.28f;
         public float dodgeTotalDuration = 0.82f;

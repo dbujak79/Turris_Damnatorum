@@ -50,6 +50,12 @@ namespace Turris
         public bool rigidBootToes;
         [Tooltip("Korekta retargetu opancerzonego modelu: w ruchu do przodu kolana i sztywne buty prowadzone w płaszczyźnie kroku, stopy pod biodrami. Osobno dla modelu.")]
         public bool sagittalRunFeet;
+        [Tooltip("Korekta retargetu względem płaszczyzny kolana i rzeczywistej podeszwy. Osobno dla modelu; bez globalnego mnożenia yaw.")]
+        public bool anatomicalFeet;
+        [Tooltip("Chwyt nowych modeli: IK trafia środkiem zaciśniętej dłoni, a orientacja dłoni obejmuje drzewce.")]
+        public bool anatomicalGripSlots;
+        [Tooltip("Nowy mag: zrównoważona postawa spoczynku i ruchu, bez cofniętych bioder i przesadnego garbienia. Czary i akcje zachowują klip.")]
+        public bool balancedMageStance;
         [Tooltip("Długość stóp względem modelu (1 = bez zmian); skracana na siatce, podeszwa zostaje na ziemi.")]
         [Range(0.6f, 1.2f)] public float footLength = 1f;
         public Vector3 positionOffset;
@@ -104,6 +110,8 @@ namespace Turris
                 if (a.attack == attack) return a;
                 if (a.attack == AttackAnim.Auto && generic == null) generic = a;
             }
+            // Ruch z zestawu ciężkiej broni bez własnego klipu – klip stylu bazowego (rąbnięcie → cios z góry).
+            if (AnimResolve.Base(attack) != attack) return FindIn(actions, action, AnimResolve.Base(attack));
             if (generic != null) return generic;
             if (action == AnimAction.Attack)
                 foreach (var a in actions) if (a != null && a.clip != null && a.action == AnimAction.Attack) return a;

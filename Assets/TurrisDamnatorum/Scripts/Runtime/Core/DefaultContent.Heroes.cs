@@ -134,7 +134,7 @@ namespace Turris
             var warcry = Hu("hu_warcry", "Okrzyk bojowy", SpellKind.Warcry, false, 24, 14, 8, "Ryk, który odrzuca i zachwiewa demony wokół. Przez 5 s +20% redukcji obrażeń i +35 furii.", new Color(1f, 0.45f, 0.3f), radius: 3.6f);
             warcry.telegraph = 0.05f; warcry.knockback = 2.5f; warcry.damageReductionBuff = 0.2f; warcry.duration = 5f; warcry.furyGain = 35f;
             warcry.attack.statuses.Add(St(StatusKind.Stagger));
-            var undying = Hu("hu_undying", "Nieśmiertelność", SpellKind.Undying, false, 0, 60, 10, "Ryk, który odpycha demony. Przez 3 s żaden cios nie zabije berserkera; wpada w szał.", new Color(1f, 0.15f, 0.05f), radius: 3.4f);
+            var undying = Hu("hu_undying", "Żelazna skóra", SpellKind.Undying, false, 0, 60, 10, "Ryk, który odpycha demony. Przez 3 s berserker przyjmuje o 80% mniej obrażeń (leczenie z kradzieży życia i zabójstw o połowę słabsze); wpada w szał.", new Color(1f, 0.15f, 0.05f), radius: 3.4f);
             undying.telegraph = 0.05f; undying.knockback = 2.5f; undying.duration = 3f; undying.furyGain = 100f;
             undying.attack.statuses.Add(St(StatusKind.Stagger));
             var bladeDance = Hu("hu_blade_dance", "Taniec ostrzy", SpellKind.Whirlwind, false, 15, 12, 12, "Wir dwóch ostrzy przez 2,4 s – w biegu – zakończony szerokim cięciem.", new Color(0.85f, 0.88f, 1f), radius: 2.5f);
@@ -305,21 +305,22 @@ namespace Turris
                 14, 10, 7, 13, 12, ClassTrait.Fury, DodgeStyle.ShoulderCharge, warcry, new[] { cleaveHu, windSlash },
                 new[] { L("Miecz i tarcza", Phys, sword, shield), L("Dwuręczny", Phys, greatsword) }, 4, 1, new Color(0.7f, 0.72f, 0.8f),
                 Stats(125, 3, 0.10f, 0.10f, 0.15f, -0.1f, -0.1f, -0.1f, -0.1f, 112));
+            // 30.10: specjalizacje wojownika +10% szybkości ataku i +10% szybkości odnowień (serie botów: odstawały od wojownika bazowego).
             var paladin = Spec(warrior, "class_hu_paladin");
             Setup(paladin, "Paladyn", "Tarcza i aury", "Rycerz z korbaczem i tarczą. Nowy rodzaj skilli: aury – działają stale, dopóki ich nie zgasisz. Pobożność: dwie aury naraz – pierwsza o 20% silniejsza, druga na 75% siły. Skill klasy: Boski osąd.",
                 13, 9, 10, 14, 12, ClassTrait.Devotion, DodgeStyle.ShoulderCharge, judgement, new[] { holyFire, defiance },
                 new[] { L("Korbacz i tarcza", Phys, flail, shield), L("Miecz i tarcza", Phys, sword, shield) }, 4, 2, new Color(0.9f, 0.8f, 0.5f),
-                Stats(135, 4, 0.12f, 0.05f, 0.15f, 0f, -0.05f, -0.05f, -0.05f, 108, Flat(StatType.HealthRegen, 1f), Flat(StatType.FireResist, 10)));
+                Stats(135, 4, 0.12f, 0.05f, 0.15f, 0f, -0.05f, -0.05f, -0.05f, 108, Flat(StatType.HealthRegen, 1f), Flat(StatType.FireResist, 10), Flat(StatType.AttackSpeed, 10), Flat(StatType.CooldownReduction, 10)));
             var berserker = Spec(warrior, "class_hu_berserker");
-            Setup(berserker, "Berserker", "Broń dwuręczna i szał", "Broń dwuręczna i szał. Żądza krwi: im mniej zdrowia, tym mocniejsze ciosy (do +60%). Skill klasy: Nieśmiertelność – przez 3 s żaden cios nie zabije, długie odnowienie.",
+            Setup(berserker, "Berserker", "Broń dwuręczna i szał", "Broń dwuręczna i szał. Żądza krwi: im mniej zdrowia, tym mocniejsze ciosy (do +60%); furia chroni i leczy – przy pełnej do 20% redukcji obrażeń i 10 życia na sekundę. Skill klasy: Żelazna skóra – przez 3 s 80% mniej obrażeń, długie odnowienie.",
                 16, 11, 6, 13, 12, ClassTrait.Bloodlust, DodgeStyle.ShoulderCharge, undying, new[] { cleaveHu, windSlash },
                 new[] { L("Topór dwuręczny", Phys, greataxe), L("Młot bojowy", Phys, warhammer) }, 4, 1, new Color(0.7f, 0.25f, 0.15f),
-                Stats(140, 1, 0.05f, 0.15f, 0.05f, -0.1f, -0.1f, -0.1f, -0.1f, 116, Flat(StatType.AttackSpeed, 5), Flat(StatType.LifeLeech, 1)));
+                Stats(140, 1, 0.05f, 0.15f, 0.05f, -0.1f, -0.1f, -0.1f, -0.1f, 116, Flat(StatType.AttackSpeed, 15), Flat(StatType.LifeLeech, 1), Flat(StatType.CooldownReduction, 10)));
             var dual = Spec(warrior, "class_hu_dual");
             Setup(dual, "Rębajło", "Broń w każdej ręce", "Broń w każdej ręce: ciosy idą na zmianę z prawej i lewej. Dwie klingi: +20% szybkości ataku z dwiema broniami. Skill klasy: Taniec ostrzy.",
                 12, 14, 7, 11, 12, ClassTrait.TwinBlades, DodgeStyle.Roll, bladeDance, new[] { cleaveHu, windSlash },
                 new[] { L("Dwa miecze", Phys, sword, broad), L("Korbacz i miecz", Phys, flail, sword) }, 4, 1, new Color(0.65f, 0.15f, 0.2f),
-                Stats(120, 2, 0.05f, 0.05f, 0.10f, -0.05f, -0.05f, -0.05f, -0.05f, 120, Flat(StatType.BleedDamage, 20)));
+                Stats(120, 2, 0.05f, 0.05f, 0.10f, -0.05f, -0.05f, -0.05f, -0.05f, 120, Flat(StatType.BleedDamage, 20), Flat(StatType.AttackSpeed, 10), Flat(StatType.CooldownReduction, 10)));
 
             // ---- Mag
             mage.startingItems.Clear(); mage.startingItems.Add(robe);

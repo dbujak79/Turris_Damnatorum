@@ -73,6 +73,7 @@ namespace Turris
             tracker.Reset();
             var hit = makeHit();
             hit.sourcePosition = transform.position;
+            hit.isGroundHazard = true;
             bool any = false;
             HitQuery.Sphere(transform.position + Vector3.up * 0.8f, Radius, Faction.Player, tracker, r => { HitQuery.Apply(owner, r, hit, false); any = true; });
             if (any && FxLibrary.Enabled) HellSkillFx.Shockwave(Skill, transform.position, Radius);

@@ -65,14 +65,20 @@ namespace Turris
             var p = cast.P;
             float scale = HuDamageScale * cast.spell.huScale * cast.power * share;
             float phys = (float)p.Damage(HuElement.Physical) * scale;
-            HuElement dominant = HuElement.Physical; double best = 0;
+            // Część żywiołowa: główny żywioł i drugi z udziałem (HU: osobne składowe, np. strzała żywiołów ogień + powietrze).
+            HuElement dominant = HuElement.Physical, second = HuElement.Physical; double best = 0, next = 0;
             foreach (HuElement e in new[] { HuElement.Fire, HuElement.Water, HuElement.Air, HuElement.Earth })
-                if (p.Damage(e) > best) { best = p.Damage(e); dominant = e; }
+            {
+                double d = p.Damage(e);
+                if (d > best) { next = best; second = dominant; best = d; dominant = e; }
+                else if (d > next) { next = d; second = e; }
+            }
             float mag = (float)(p.TotalDamage - p.Damage(HuElement.Physical)) * scale;
             var def = cast.Def;
             var hit = new HitData
             {
                 physical = phys, magic = mag, element = HuCast.ToTurris(dominant),
+                element2 = next > 0 ? HuCast.ToTurris(second) : Element.None, element2Share = best + next > 0 ? (float)(next / (best + next)) : 0f,
                 guardLoad = def.attack.guardLoad, poiseDamage = def.attack.poiseDamage * Mathf.Clamp(share * cast.power, 0.2f, 2f),
                 blockable = true, parryable = false, dodgeable = true, heavy = def.attack.heavy,
                 sourcePosition = cast.origin, attacker = this, attackName = def.displayName,
@@ -83,6 +89,14 @@ namespace Turris
             {
                 hit.knockback = p.GetF(HuParams.Knockback);
                 hit.knockdown = p.GetF("down_seconds");
+                hit.knockdownChance = p.GetF("down_chance");
+                // Szarża z tarczą kończy się uderzeniem tarczą: powala zawsze, na dłużej, i mocniej łamie postawę.
+                if (p.On("shield_bash_down") && HasShield)
+                {
+                    hit.knockdown = p.GetF("shield_bash_down");
+                    hit.knockdownChance = 0f;
+                    hit.poiseDamage *= 1.5f;
+                }
                 hit.bonusVsBleeding = p.GetF("bonus_vs_bleeding");
                 hit.bonusVsChilled = p.GetF("bonus_vs_soaked");
                 hit.statuses = HuStatuses(p);
@@ -92,11 +106,10 @@ namespace Turris
             return hit;
         }
 
-        /// <summary>Efekty HU → Turris: podpalenie → podpalenie, przemoczenie i spowolnienie → chłód, reszta bez zmian.</summary>
+        /// <summary>Efekty HU → Turris: podpalenie → podpalenie, przemoczenie i spowolnienie osobno (bez zamrożenia), reszta bez zmian.</summary>
         static List<StatusApplication> HuStatuses(HuParams p)
         {
             List<StatusApplication> list = null;
-            int chill = 0;
             foreach (var kv in p.Effects)
             {
                 StatusKind? kind = null;
@@ -104,14 +117,14 @@ namespace Turris
                 {
                     case "Bleed": kind = StatusKind.Bleed; break;
                     case "Ignite": kind = StatusKind.Burn; break;
-                    case "Soaked": case "Slow": chill = Mathf.Max(chill, kv.Value); break;
+                    case "Soaked": kind = StatusKind.Soaked; break;
+                    case "Slow": kind = StatusKind.Slow; break;
                     case "Stagger": kind = StatusKind.Stagger; break;
                     case "Stun": kind = StatusKind.Stun; break;
                     case "Sunder": kind = StatusKind.Sunder; break;
                 }
                 if (kind.HasValue) (list ?? (list = new List<StatusApplication>())).Add(new StatusApplication(kind.Value, kv.Value));
             }
-            if (chill > 0) (list ?? (list = new List<StatusApplication>())).Add(new StatusApplication(StatusKind.Chill, chill));
             return list;
         }
 
@@ -180,6 +193,10 @@ namespace Turris
 
         public void HuStartSpin(HuSpin spin) { huSpin = spin; HuWorld.Add(spin); }
         public void HuStartDash(HuDash dash) { huDash = dash; HuWorld.Add(dash); }
+        /// <summary>Czy bohater trzyma tarczę (garda tarczą).</summary>
+        public bool HasShield => Build != null && Build.guardIsShield;
+        /// <summary>Redukcja obrażeń w trakcie doskoku (<c>dash_reduction</c>, np. Szarża 50%).</summary>
+        public float DashReduction => huDash != null && huDash.Running ? huDash.Reduction : 0f;
 
         /// <summary>Faza aktywna skilla HU: doskok niesie bohatera, młynek pozwala iść wolniej.</summary>
         void HuActiveTick()
@@ -236,10 +253,10 @@ namespace Turris
 
         public void HuUndying(HuCast cast)
         {
-            ImmortalTime = Mathf.Max(ImmortalTime, cast.P.GetF("duration_seconds", 4f));
+            IronSkinTime = Mathf.Max(IronSkinTime, cast.P.GetF("duration_seconds", 4f));
             AddFury(cast.P.GetF("fury", 0f));
-            CombatEvents.RaiseMessage("NIEŚMIERTELNY!", new Color(1f, 0.2f, 0.1f));
-            HellFx.Ambient(transform, Vector3.up, HellFxElement.Enemy, 0.6f, ImmortalTime);
+            CombatEvents.RaiseMessage("ŻELAZNA SKÓRA!", new Color(1f, 0.2f, 0.1f));
+            HellFx.Ambient(transform, Vector3.up, HellFxElement.Enemy, 0.6f, IronSkinTime);
         }
 
         /// <summary>Wyzwalacze pieczęci: unik, otrzymany cios, zabicie, obrona (blok, parowanie, uchylenie).</summary>

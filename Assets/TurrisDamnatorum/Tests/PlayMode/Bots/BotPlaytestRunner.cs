@@ -50,6 +50,7 @@ namespace Turris.Tests.Bots
             int runs = RunCount();
             string profile = $"turris_bot_{classId}_{persona}_{Guid.NewGuid():N}.json";
             GameRoot.ProfileFileOverride = profile;
+            EnemyBrain.DebugNoEvasion = false; // boty grają z unikiem demonów HU (testy go wyłączają)
             LogAssert.ignoreFailingMessages = true; // błędy z logu zbiera telemetria – nie przerywają serii
             TBot bot = null;
             try

@@ -106,9 +106,10 @@ namespace Turris
                 return;
             }
             ModelSet = def.SetFor(look.weapon);
+            bool greatWeapon = AnimResolve.IsHeavyTwoHand(look.weapon);
             modelGrip = AnimResolve.GripFor(look.weapon);
             uprightWeight = 1f;
-            Driver = new ClipAnimationDriver(animator, def, transform, ModelSet);
+            Driver = new ClipAnimationDriver(animator, def, transform, ModelSet, greatWeapon);
             // Graf ręczny (Tick) nakłada pozę od razu, także gdy postaci nie widać (testy, postać poza kadrem).
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
 
@@ -126,6 +127,7 @@ namespace Turris
                 weaponSocket = bow ? left : right;
                 shieldSocket = bow ? right : left;
                 weaponSocketRest = weaponSocket.localRotation;
+                if (Driver is ClipAnimationDriver clipDriver && clipDriver.GreatSwing != null) clipDriver.GreatSwing.Weapon = weaponSocket;
                 if (animator.isHuman)
                 {
                     rightHand = animator.GetBoneTransform(HumanBodyBones.RightHand);
@@ -147,7 +149,6 @@ namespace Turris
 
         /// <summary>Zestaw animacji broni użyty przez model FBX (null = klipy samego modelu).</summary>
         public WeaponAnimSet ModelSet { get; private set; }
-
         Transform MakeSlot(Animator animator, string slotName, HumanBodyBones bone, Quaternion restInCharacter, string name, Vector3 legacyPos, Vector3 legacyRot)
         {
             Transform parent = string.IsNullOrEmpty(slotName) ? null : Util.FindDeep(animator.transform, slotName);
@@ -179,7 +180,8 @@ namespace Turris
             // Noże bliźniacze: drugi nóż w lewej dłoni (jak u postaci proceduralnej).
             else if (look.weapon == WeaponModel.Knives) shieldObj = GearObject(shieldSocket, look.weaponItem, () => GearBuilder.Weapon(null, WeaponModel.Knives, look.weaponColor), out _);
             gearTint.Clear();
-            equipmentPose = new HellEquipmentPose(Model.GetComponentInChildren<Animator>(), transform, look, ModelSet, weaponObj);
+            equipmentPose = new HellEquipmentPose(Model.GetComponentInChildren<Animator>(), transform, look, ModelSet, weaponObj,
+                modelDef != null && modelDef.anatomicalGripSlots, shieldSocket);
             mainChain = HellFlailChain.Find(weaponObj);
             offhandChain = HellFlailChain.Find(shieldObj);
             if (weaponObj != null) gearTint.Collect(weaponObj.GetComponentsInChildren<Renderer>());

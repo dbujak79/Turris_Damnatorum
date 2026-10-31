@@ -205,7 +205,7 @@ namespace Turris
                 case AnimAction.Attack:
                     target = PoseLibrary.SampleAttack(Keys(s.attack), ready, s.phase == ActionPhase.Startup ? attackFrom : ready, s.phase, s.phaseProgress);
                     exact = true;
-                    if (s.attack == AttackAnim.Leap && s.phase == ActionPhase.Active)
+                    if (AnimResolve.Base(s.attack) == AttackAnim.Leap && s.phase == ActionPhase.Active)
                         pivotOffset.y = Mathf.Sin(Mathf.Clamp01(s.phaseProgress) * Mathf.PI) * 0.35f;
                     if (s.spinAngle != 0f) pivotRot = Quaternion.AngleAxis(s.spinAngle, Vector3.up);
                     break;

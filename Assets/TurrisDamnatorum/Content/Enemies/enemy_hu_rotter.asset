@@ -149,7 +149,7 @@ MonoBehaviour:
       - kind: 7
         stacks: 1
         chance: 1
-      - kind: 2
+      - kind: 8
         stacks: 1
         chance: 1
       animation: 11

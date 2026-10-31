@@ -21,6 +21,8 @@ namespace Turris
 
         const float FuryPerHitDealt = 5f, FuryPerHitTaken = 12f, FuryDrainDelay = 3f, FuryDrainPerSecond = 15f;
         const float RageSeconds = 6f, RageAttackSpeed = 0.35f, RageReduction = 0.15f;
+        /// <summary>Furia Berserkera (Żądza krwi): przy pełnej furii (i w szale) do 20% redukcji obrażeń i 10 życia/s, proporcjonalnie.</summary>
+        public const float BerserkerFuryReduction = 0.2f, BerserkerFuryRegen = 10f;
         const float WardShare = 0.2f, WardDelay = 4f, WardRegenShare = 0.5f;
         const float AmbushBackMultiplier = 1.6f, AmbushDodgeMultiplier = 1.35f, AmbushWindow = 1.5f, VanishSeconds = 0.3f;
         const float BloodlustMax = 0.6f, HawkeyeMax = 0.45f, HawkeyeNear = 3f, HawkeyeFar = 11f;
@@ -31,6 +33,16 @@ namespace Turris
         public float Fury { get; private set; }
         public float RageTime { get; private set; }
         public bool Raging => RageTime > 0f;
+        /// <summary>
+        /// Pancerz w ataku (hyper armour jak w Dark Souls): broń dwuręczna od zamachu do końca uderzenia – cios wroga nie wybija
+        /// z ataku (bez drgnięcia), a obrażenia są o połowę mniejsze. Odzyskanie po ciosie jest już odsłonięte.
+        /// </summary>
+        public bool HyperArmor => Build != null && Build.twoHandedMelee && !IsDead
+            && (Actions.Current == ActionType.LightAttack || Actions.Current == ActionType.HeavyAttack || Actions.Current == ActionType.Riposte)
+            && (Actions.Phase == ActionPhase.Startup || Actions.Phase == ActionPhase.Active);
+        public const float HyperArmorReduction = 0.5f;
+        /// <summary>Furia jako ułamek 0–1; w szale liczy się jak pełna (furia spada wtedy do zera).</summary>
+        public float FuryFraction => Raging ? 1f : Fury / 100f;
         float lastFightTime = -99f;
 
         /// <summary>Arkanowa osłona: warstwa pochłaniająca ciosy przed życiem; odrasta po kilku sekundach spokoju.</summary>
@@ -38,8 +50,9 @@ namespace Turris
         public float WardMax => Trait == ClassTrait.ArcaneWard && Build != null ? Build.MaxHealth * WardShare : 0f;
         float wardDelay;
 
-        /// <summary>Nieśmiertelność: żaden cios nie zabierze ostatniego punktu życia.</summary>
-        public float ImmortalTime { get; private set; }
+        /// <summary>Żelazna skóra (skill klasy Berserkera): 80% mniej obrażeń przez czas działania, poza miękkim limitem redukcji.</summary>
+        public float IronSkinTime { get; private set; }
+        public const float IronSkinReduction = 0.8f;
         /// <summary>Zniknięcie (przewrót w cień): bezpośrednie ciosy chybiają; potem okno zasadzki.</summary>
         float hiddenTime, ambushWindow;
         /// <summary>Mrugnięcie: niewrażliwość przez cały odskok.</summary>
@@ -68,7 +81,7 @@ namespace Turris
         /// <summary>Stan bohatera na początku piętra: furia i przegrzanie od zera, osłona pełna, sługi odchodzą (aury zostają).</summary>
         void HeroFloorStart()
         {
-            Fury = 0f; RageTime = 0f; ImmortalTime = 0f; hiddenTime = 0f; ambushWindow = 0f; blinkInvuln = 0f;
+            Fury = 0f; RageTime = 0f; IronSkinTime = 0f; hiddenTime = 0f; ambushWindow = 0f; blinkInvuln = 0f;
             blinkFxRemaining = 0f;
             OverloadReady = false; OverheatTime = 0f; cryReduction = 0f; cryTime = 0f;
             pulses.Clear();
@@ -100,7 +113,10 @@ namespace Turris
             Run?.signatureSkill?.Tick(dt * CooldownSpeed);
             if (RageTime > 0f) { RageTime -= dt; if (RageTime <= 0f) { RageTime = 0f; UpdateTempModifiers(); } }
             if (UsesFury && !Raging && Fury > 0f && clock - lastFightTime > FuryDrainDelay) Fury = Mathf.Max(0f, Fury - FuryDrainPerSecond * dt);
-            if (ImmortalTime > 0f) ImmortalTime -= dt;
+            if (IronSkinTime > 0f) IronSkinTime -= dt;
+            // Berserker: furia leczy (regeneracja, poza limitem kradzieży życia).
+            if (Trait == ClassTrait.Bloodlust && Health != null && !IsDead && FuryFraction > 0f && Health.Fraction < 1f)
+                Health.Restore(BerserkerFuryRegen * FuryFraction * dt);
             if (hiddenTime > 0f)
             {
                 hiddenTime -= dt;
@@ -254,13 +270,13 @@ namespace Turris
 
         /// <summary>
         /// Kradzież życia, życie za zabójstwo i podobne – razem najwyżej <see cref="BalanceConfig.passiveHealingPerSecond"/> maks. życia
-        /// w ruchomej sekundzie; podczas nieśmiertelności połowa. Skille leczące są poza tym limitem. Zwraca faktycznie przywrócone życie.
+        /// w ruchomej sekundzie; podczas Żelaznej skóry połowa. Skille leczące są poza tym limitem. Zwraca faktycznie przywrócone życie.
         /// </summary>
         public float PassiveHeal(float amount)
         {
             if (amount <= 0f || IsDead) return 0f;
             while (passiveHeals.Count > 0 && clock - passiveHeals.Peek().time >= 1f) passiveHealSum -= passiveHeals.Dequeue().amount;
-            if (ImmortalTime > 0f) amount *= 0.5f;
+            if (IronSkinTime > 0f) amount *= 0.5f;
             float give = Mathf.Min(amount, Health.Max * B.passiveHealingPerSecond - passiveHealSum);
             if (give <= 0f) return 0f;
             passiveHeals.Enqueue((clock, give));
@@ -284,12 +300,19 @@ namespace Turris
 
         /// <summary>
         /// Redukcja obrażeń: klasa, okrzyk, szał, więź dusz – sumowane i przez miękki limit HU (pełna do 25%, dalej połowa, maks. 45%);
-        /// potem minimum bezpośredniego ciosu, arkanowa osłona i nieśmiertelność.
+        /// potem minimum bezpośredniego ciosu, Żelazna skóra (−80%), furia Berserkera (do −20%) – obie poza limitem – i arkanowa osłona.
         /// </summary>
         float HeroMitigate(float damage, bool statusTick, float minimum = 0f)
         {
             damage *= 1f - CurrentDamageReduction;
             if (minimum > 0f && damage < minimum) damage = minimum;
+            if (IronSkinTime > 0f) damage *= 1f - IronSkinReduction;
+            // Furia Berserkera: osobny mnożnik, poza miękkim limitem redukcji (20% przy pełnej furii to zawsze 20%).
+            if (Trait == ClassTrait.Bloodlust) damage *= 1f - BerserkerFuryReduction * FuryFraction;
+            // Szarża: osobny mnożnik w trakcie doskoku, też poza limitem.
+            damage *= 1f - DashReduction;
+            // Pancerz w ataku (broń dwuręczna): osobny mnożnik, poza limitem.
+            if (HyperArmor) damage *= 1f - HyperArmorReduction;
             if (Trait == ClassTrait.ArcaneWard && damage > 0f)
             {
                 wardDelay = WardDelay;
@@ -297,7 +320,6 @@ namespace Turris
                 Ward -= absorbed;
                 damage -= absorbed;
             }
-            if (ImmortalTime > 0f && damage >= Health.Current) damage = Mathf.Max(0f, Health.Current - 1f);
             if (!statusTick) { lastFightTime = clock; if (damage > 0f) AddFury(FuryPerHitTaken); }
             return damage;
         }
@@ -450,8 +472,8 @@ namespace Turris
                     }
                     if (def.kind == SpellKind.Undying)
                     {
-                        ImmortalTime = def.duration;
-                        CombatEvents.RaiseMessage("NIEŚMIERTELNY!", new Color(1f, 0.2f, 0.1f));
+                        IronSkinTime = def.duration;
+                        CombatEvents.RaiseMessage("ŻELAZNA SKÓRA!", new Color(1f, 0.2f, 0.1f));
                         HellFx.Ambient(transform, Vector3.up, HellFxElement.Enemy, 0.6f, def.duration);
                     }
                     if (def.healPercent > 0f) Health.Restore(Health.Max * def.healPercent * mult);

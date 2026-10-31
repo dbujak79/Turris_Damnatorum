@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: hu_undying
   m_EditorClassIdentifier: TurrisDamnatorum.Runtime::Turris.SpellDefinition
   id: hu_undying
-  displayName: "Nie\u015Bmiertelno\u015B\u0107"
-  description: "Ryk, kt\xF3ry odpycha demony. Przez 3 s \u017Caden cios nie zabije berserkera; wpada w sza\u0142."
+  displayName: "\u017Belazna sk\u00F3ra"
+  description: "Ryk, kt\u00F3ry odpycha demony. Przez 3 s berserker przyjmuje o 80% mniej obra\u017Ce\u0144 (leczenie z kradzie\u017Cy \u017Cycia i zab\u00F3jstw o po\u0142ow\u0119 s\u0142absze); wpada w sza\u0142."
   tags: 1
   kind: 28
   category: 1

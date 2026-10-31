@@ -589,9 +589,9 @@ namespace Turris
             var bash = Tech("skill_shieldbash", "Uderzenie tarczą", SpellKind.ShieldBash, 16, 0.18f, 0.1f, 0.35f, 6f, 0.8f, 2.2f, 1f, 60,
                 "Szybkie pchnięcie tarczą – mało obrażeń, ale mocno łamie postawę (otwiera ripostę).", BuildTag.Shield);
             bash.arcAngle = 100f; bash.requiredTags = BuildTag.Shield; bash.color = new Color(0.92f, 0.9f, 0.72f);
-            var charge = Tech("skill_charge", "Szarża", SpellKind.Charge, 20, 0.25f, 0.35f, 0.35f, 7f, 1.3f, 6f, 0.9f, 35,
-                "Zryw naprzód, trafia każdego na drodze. Bez niewrażliwości – to atak, nie unik.", BuildTag.Agile);
-            charge.extraChargeAtLevel = 3; charge.color = new Color(1f, 0.55f, 0.25f);
+            // Stara Szarża (zryw z każdą bronią) zastąpiona Szarżą ze skilli Turris na komponentach HU: broń dwuręczna albo
+            // tarcza, 50% mniej obrażeń w biegu, uderzenie z szansą powalenia. Odblokowanie unlock_charge daje teraz ją.
+            var charge = FromHu(HuCatalog.Skill(TurrisSkills.Charge));
             var whirl = Tech("skill_whirlwind", "Młynek", SpellKind.Whirlwind, 30, 0.25f, 1.5f, 0.45f, 10f, 0.7f, 0f, 2.6f, 12,
                 "Wirujące cięcia wokół; można powoli się poruszać. Unik lub trafienie przerywają młynek.", BuildTag.Melee);
             whirl.tickInterval = 0.35f; whirl.moveMultiplier = 0.5f; whirl.requirements.Add(Req(AttributeType.Strength, 12)); whirl.color = new Color(0.85f, 0.88f, 1f);

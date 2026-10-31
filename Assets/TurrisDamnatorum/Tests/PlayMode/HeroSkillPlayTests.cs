@@ -110,7 +110,8 @@ namespace Turris.Tests
             mage.RequestSkill(PlayerCombat.SignatureSlot);
             yield return new WaitForSeconds(0.7f);
             Assert.IsTrue(Object.FindObjectsByType<HellParticles>().Any(f => f.name == "HU_Burst_Water"));
-            Assert.Greater(enemy.Status.ChillStacks,0,"Zachowana mechanika chłodu Turris");
+            Assert.IsTrue(enemy.Status.Soaked,"Woda HU przemacza");
+            Assert.IsFalse(enemy.Status.Frozen,"Przemoczenie nie zamraża");
         }
 
         [UnityTest]

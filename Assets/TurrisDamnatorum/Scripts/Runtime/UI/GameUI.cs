@@ -888,7 +888,7 @@ namespace Turris
             if (cls != null && (cls.trait == ClassTrait.Fury || cls.trait == ClassTrait.Bloodlust))
                 buffs.Add(pc.Raging ? $"<color=#ff4422>SZAŁ ({pc.RageTime:0}s)</color>" : $"<color=#dd7755>Furia {pc.Fury:0}%</color>");
             if (pc.WardMax > 0) buffs.Add($"<color=#aa99ff>Osłona arkanów {pc.Ward:0}/{pc.WardMax:0}</color>");
-            if (pc.ImmortalTime > 0) buffs.Add($"<color=#ff3322>Nieśmiertelny ({pc.ImmortalTime:0.0}s)</color>");
+            if (pc.IronSkinTime > 0) buffs.Add($"<color=#ff3322>Żelazna skóra −80% ({pc.IronSkinTime:0.0}s)</color>");
             if (pc.OverloadReady) buffs.Add("<color=#cc88ff>Przeciążenie gotowe</color>");
             if (pc.OverheatTime > 0) buffs.Add($"<color=#aa66cc>Sloty przegrzane ({pc.OverheatTime:0.0}s)</color>");
             foreach (var a in pc.Auras) if (a != null && a.Skill != null) buffs.Add($"<color=#{ColorUtility.ToHtmlStringRGB(a.Skill.color)}>{a.Skill.displayName}</color>");
@@ -1061,12 +1061,13 @@ namespace Turris
         void DrawDeath()
         {
             var run = root.Run;
-            GUILayout.BeginArea(new Rect(W / 2 - 330, H / 2 - 230, 660, 460), box);
+            GUILayout.BeginArea(new Rect(W / 2 - 330, H / 2 - 290, 660, 580), box);
             var st = new GUIStyle(bigCenter); st.normal.textColor = new Color(0.85f, 0.15f, 0.15f);
             GUILayout.Label("POLEGŁEŚ", st);
             GUILayout.Label($"Dotarłeś na piętro {run.floorIndex + 1}: {root.CurrentFloor?.name}. Pokonani wrogowie: {run.kills}.", label);
             GUILayout.Label($"<color=#e8c070>Zachowujesz: popiół zdobyty w podejściu ({run.ashEarned}) oraz wszystkie odblokowania.</color>", label);
             GUILayout.Label($"<color=#aaaaaa>Tracisz: dusze ({run.souls}), znalezione przedmioty, wzmocnienia i ulepszenia czarów.</color>", label);
+            GUILayout.Label(run.ledger.Summary(), small);
             GUILayout.Space(12);
             Btn($"Spróbuj ponownie – ten sam zestaw  {Prompt("[R]", "(Y)")}", button, root.RetrySameLoadout, GUILayout.Height(60));
             Btn("Zmień przygotowanie", button, () => { root.ShowMainMenu(); root.ShowLoadout(); }, GUILayout.Height(46));
@@ -1077,12 +1078,13 @@ namespace Turris
         void DrawVictory()
         {
             var run = root.Run;
-            GUILayout.BeginArea(new Rect(W / 2 - 330, H / 2 - 220, 660, 440), box);
+            GUILayout.BeginArea(new Rect(W / 2 - 330, H / 2 - 280, 660, 560), box);
             var st = new GUIStyle(bigCenter); st.normal.textColor = new Color(0.95f, 0.8f, 0.4f);
             GUILayout.Label("WIEŻA ZDOBYTA", st);
             GUILayout.Label($"Trudność: {run.difficulty.displayName}. Pokonani wrogowie: {run.kills}.", label);
             GUILayout.Label($"Popiół zdobyty w podejściu: <b>{run.ashEarned}</b> (w tym premia za zwycięstwo).", label);
             GUILayout.Label($"Łącznie popiołu: {root.Meta.Profile.ash}. Wyższe poziomy trudności mogą być teraz dostępne w Odblokowaniach.", label);
+            GUILayout.Label(run.ledger.Summary(), small);
             GUILayout.Space(12);
             Btn("Menu główne", button, root.ShowMainMenu, GUILayout.Height(56));
             Btn("Kolejne podejście", button, () => { root.ShowMainMenu(); root.ShowLoadout(); }, GUILayout.Height(46));
@@ -1298,6 +1300,7 @@ namespace Turris
             }
 
             float colW = (W - 120) / 3f;
+            bool canSell = root.ScreenBeforeEquipment == GameScreen.Intermission; // HU: sprzedaż tylko w sklepie (postój)
             // Sloty
             GUILayout.BeginArea(new Rect(40, 80, colW, H - 190), box);
             GUILayout.Label("Założone", header);
@@ -1308,8 +1311,15 @@ namespace Turris
                 GUILayout.BeginHorizontal();
                 string name = it != null ? it.Name : (slot == EquipSlot.OffHand && run.equipment.Get(EquipSlot.MainHand)?.definition.twoHanded == true ? "(zajęta przez broń dwuręczną)" : "—");
                 GUILayout.Label($"<b>{Names.Slot(slot)}:</b> {name}", label, GUILayout.Width(colW - 150));
-                if (it != null) Btn("Zdejmij", button, () => { run.UnequipToInventory(slot); pc.RefreshBuild(); }, GUILayout.Width(110));
+                if (it != null)
+                {
+                    GUI.enabled = !run.BackpackFull;
+                    Btn("Zdejmij", button, () => { run.UnequipToInventory(slot); pc.RefreshBuild(); }, GUILayout.Width(110));
+                    GUI.enabled = true;
+                }
                 GUILayout.EndHorizontal();
+                if (it != null && canSell && run.CanSell(it))
+                    Btn($"Sprzedaj ({RunState.SellPrice(it)} dusz)", button, () => { run.SellItem(it); pc.RefreshBuild(); });
             }
             GUILayout.Space(10);
             GUILayout.Label("Umiejętności – 3 sloty", header);
@@ -1335,7 +1345,8 @@ namespace Turris
 
             // Plecak
             GUILayout.BeginArea(new Rect(60 + colW, 80, colW, H - 190), box);
-            GUILayout.Label("Plecak", header);
+            GUILayout.Label($"Plecak {run.inventory.Count}/{RunState.BackpackSize}", header);
+            if (run.BackpackFull) GUILayout.Label("<color=#E08070>Plecak pełny: nowy łup przepada, zdjęcie przedmiotu zablokowane.</color>", small);
             BeginScroll(scrollB, H - 260);
             foreach (var it in run.inventory.ToList())
             {
@@ -1348,6 +1359,7 @@ namespace Turris
                     Btn("Załóż (P2)", button, () => { run.EquipFromInventory(it, EquipSlot.Ring2); pc.RefreshBuild(); });
                 }
                 else Btn($"Załóż → {Names.Slot(it.definition.DefaultSlot)}", button, () => { run.EquipFromInventory(it, it.definition.DefaultSlot); pc.RefreshBuild(); });
+                if (canSell) Btn($"Sprzedaj ({RunState.SellPrice(it)})", button, () => { run.SellItem(it); pc.RefreshBuild(); });
                 GUILayout.EndHorizontal();
                 GUILayout.Space(10);
             }

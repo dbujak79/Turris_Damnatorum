@@ -660,16 +660,16 @@ namespace Turris.Tests
             var e = SpawnEnemy(dummy, new Vector3(0, 0.05f, 3.6f), pc, bundle.config.balance);
             yield return new WaitForSeconds(0.1f);
 
-            // Szarża: zryw naprzód, trafia wroga na drodze.
-            var charge = pc.Run.LearnSpell(bundle.Get<SpellDefinition>("skill_charge"));
+            // Cięcie z wyskoku (technika ze zrywem, jak dawna Szarża): przesuwa bohatera, trafia wroga na drodze.
+            var charge = pc.Run.LearnSpell(bundle.Get<SpellDefinition>("skill_leapslash"));
             pc.Run.AssignSlot(charge, 2);
             pc.RefreshBuild();
             Vector3 start = pc.transform.position;
             float chargeDmg = pc.Build.WeaponDamage(pc.Build.weapon.light) * pc.Skill(2).power;
             pc.RequestSkill(2);
             yield return new WaitForSeconds(1.0f);
-            Assert.Greater(Vector3.Distance(start, pc.transform.position), 1.5f, "Szarża przesuwa bohatera");
-            Assert.AreEqual(1000f - chargeDmg, e.Health.Current, 0.5f, "Szarża trafia wroga na drodze dokładnie raz");
+            Assert.Greater(Vector3.Distance(start, pc.transform.position), 1.5f, "Zryw przesuwa bohatera");
+            Assert.AreEqual(1000f - chargeDmg, e.Health.Current, 0.5f, "Zryw trafia wroga na drodze dokładnie raz");
 
             // Rozpłatanie: jedno trafienie = lekki atak broni × mnożnik techniki.
             float hp = e.Health.Current;

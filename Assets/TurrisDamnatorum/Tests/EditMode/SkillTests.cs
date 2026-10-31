@@ -36,7 +36,7 @@ namespace Turris.Tests
             Assert.IsNull(run.skillSlots[0]);
             Assert.IsTrue(run.knownSpells.Contains(bolt), "…a umiejętność zostaje w kolekcji");
 
-            var charge = run.LearnSpell(Def("skill_charge"));
+            var charge = run.LearnSpell(Def("hu_charge"));
             Assert.AreEqual(0, run.SlotOf(charge));
             var nova = run.LearnSpell(Def("spell_nova"));
             Assert.AreEqual(-1, run.SlotOf(nova), "Przy zajętych slotach nowa umiejętność czeka w kolekcji");
@@ -92,7 +92,7 @@ namespace Turris.Tests
         public void ExtraCharge_FromUpgrade()
         {
             var run = fx.NewRun("legacy_knight");
-            var charge = run.LearnSpell(Def("skill_charge"));
+            var charge = run.LearnSpell(Def("skill_lunge"));
             Assert.AreEqual(1, charge.MaxCharges);
             charge.level = charge.definition.extraChargeAtLevel;
             Assert.AreEqual(2, charge.MaxCharges);
@@ -165,7 +165,7 @@ namespace Turris.Tests
             Assert.IsTrue(meta.Purchase(fx.Get<UnlockDefinition>("unlock_charge")));
 
             var run1 = RunFactory.Create(meta.LastPlan(), fx.Cfg, 1);
-            var charge = run1.FindSpell(Def("skill_charge"));
+            var charge = run1.FindSpell(Def("hu_charge"));
             Assert.IsNotNull(charge, "Odblokowana umiejętność jest w kolekcji od startu");
             Assert.IsTrue(charge.permanent);
 
@@ -175,7 +175,7 @@ namespace Turris.Tests
 
             // Kolejne podejście (także po ponownym wczytaniu profilu): stała umiejętność jest, tymczasowej nie ma.
             var run2 = RunFactory.Create(new MetaService(fx.Cfg, storage).LastPlan(), fx.Cfg, 2);
-            Assert.IsNotNull(run2.FindSpell(Def("skill_charge")));
+            Assert.IsNotNull(run2.FindSpell(Def("hu_charge")));
             Assert.IsNull(run2.FindSpell(Def("spell_nova")));
         }
 
@@ -216,7 +216,8 @@ namespace Turris.Tests
             }
             Assert.IsFalse(offered.Contains("skill_shieldbash"), "Mag bez tarczy nie dostaje uderzenia tarczą");
             Assert.IsFalse(offered.Contains("skill_cleave"), "Rozpłatanie wymaga ostrza lub ciężkiej broni – mag z kosturem go nie dostaje");
-            Assert.IsTrue(offered.Contains("skill_charge"), "Techniki dla dowolnej broni są proponowane także magowi");
+            Assert.IsTrue(offered.Contains("hu_infernal_charge"), "Techniki dla dowolnej broni są proponowane także magowi");
+            Assert.IsFalse(offered.Contains("hu_charge"), "Szarża wymaga broni dwuręcznej albo tarczy – nie z kosturem");
         }
 
         [Test]

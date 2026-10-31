@@ -32,6 +32,8 @@ namespace Turris
         public Vector2 LookDelta { get; private set; }
         public bool SprintHeld => sprint.IsPressed();
         public bool BlockHeld => block.IsPressed();
+        /// <summary>Mocny atak trzymany – ładowanie ciosu topora i młota.</summary>
+        public bool HeavyHeld => heavy.IsPressed();
 
         public event Action LightPressed, HeavyPressed, ParryPressed, DodgePressed,
             FlaskHealthPressed, FlaskManaPressed, LockOnPressed, PausePressed;

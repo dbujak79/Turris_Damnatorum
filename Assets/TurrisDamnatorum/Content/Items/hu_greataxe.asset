@@ -25,7 +25,9 @@ MonoBehaviour:
   - attribute: 3
     value: 16
   modifiers: []
-  effects: []
+  effects:
+  - type: 32
+    value: 0.6
   weapon:
     light:
       name: Zamach
@@ -53,6 +55,8 @@ MonoBehaviour:
       explosionRadius: 0
       element: 0
       elementShare: 0
+      element2: 0
+      element2Share: 0
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0
@@ -87,6 +91,8 @@ MonoBehaviour:
       explosionRadius: 0
       element: 0
       elementShare: 0
+      element2: 0
+      element2Share: 0
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0

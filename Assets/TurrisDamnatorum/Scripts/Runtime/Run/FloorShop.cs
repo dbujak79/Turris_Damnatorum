@@ -59,9 +59,6 @@ namespace Turris
             return pool[pool.Count - 1];
         }
 
-        static bool IsUniqueDef(ItemDefinition d) =>
-            d.huSourceId != null && (d.huSourceId.Contains(".unique.") || HellEconomy.ItemRowOf(d)?.Rarity == 4);
-
         public static List<FloorOffer> Generate(RunState run, GameConfig cfg, System.Random rng)
         {
             var b = cfg.balance;
@@ -73,9 +70,13 @@ namespace Turris
 
             // Bronie: kolejny poziom trzymanej (nie unikat) + nowe egzemplarze.
             var held = run.equipment.Get(EquipSlot.MainHand);
-            if (held != null && held.definition.IsWeapon && !IsUniqueDef(held.definition) && held.level < HellEconomy.MaxLevelOf(held.definition))
+            if (held != null && held.definition.IsWeapon && !HellEconomy.IsUnique(held.definition) && held.level < HellEconomy.MaxLevelOf(held.definition))
                 offers.Add(new FloorOffer { kind = FloorOffer.Kind.WeaponLevel, item = held, price = Mathf.RoundToInt(HellEconomy.WeaponLevelPrice(held) * infl) });
-            var weapons = cfg.baseItemPool.Where(d => d != null && d.IsWeapon && !IsUniqueDef(d) && d.minFloor <= run.floorsCleared && !string.IsNullOrEmpty(d.huSourceId)
+            // Tarcza: kolejny poziom jak w HU (blok bierny +2 pkt, krótsze odnowienie ładunku).
+            var shield = run.equipment.Get(EquipSlot.OffHand);
+            if (shield != null && shield.definition.IsShield && shield.level < HellEconomy.MaxLevelOf(shield.definition))
+                offers.Add(new FloorOffer { kind = FloorOffer.Kind.WeaponLevel, item = shield, price = Mathf.RoundToInt(HellEconomy.WeaponLevelPrice(shield) * infl) });
+            var weapons = cfg.baseItemPool.Where(d => d != null && d.IsWeapon && !HellEconomy.IsUnique(d) && d.minFloor <= run.floorsCleared && !string.IsNullOrEmpty(d.huSourceId)
                                                        && (held == null || d != held.definition)).ToList();
             while (offers.Count(o => o.kind != FloorOffer.Kind.Perk && o.kind != FloorOffer.Kind.Item) < WeaponCount && weapons.Count > 0)
             {
@@ -95,7 +96,7 @@ namespace Turris
             }
 
             // Przedmioty: 3 dla klasy (jej klasa pancerza), 3 dowolne; gwarantowane rzadkości jak w HU, bez unikatów.
-            var gear = cfg.baseItemPool.Where(d => d != null && !d.IsWeapon && !d.IsShield && d.kind != ItemKind.OffHand && !IsUniqueDef(d)
+            var gear = cfg.baseItemPool.Where(d => d != null && !d.IsWeapon && !d.IsShield && d.kind != ItemKind.OffHand && !HellEconomy.IsUnique(d)
                                                    && d.minFloor <= run.floorsCleared && HellEconomy.ItemRowOf(d) is HellEconomy.ItemRow row && row.InShop).ToList();
             string armour = ArmourOf(family);
             var own = gear.Where(d => HellEconomy.ItemRowOf(d).Tags.Contains(armour)).ToList();
@@ -130,6 +131,7 @@ namespace Turris
                     break;
                 case FloorOffer.Kind.Weapon:
                 case FloorOffer.Kind.Item:
+                    if (!run.CanReceive(o.item)) return false; // HU SlotBlocked: slot zajęty i pełny plecak
                     run.AddItem(o.item, true);
                     break;
                 case FloorOffer.Kind.Perk:

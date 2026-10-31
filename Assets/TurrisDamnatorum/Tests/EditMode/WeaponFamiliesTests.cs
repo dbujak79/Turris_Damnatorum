@@ -46,13 +46,35 @@ namespace Turris.Tests
             Assert.AreEqual(BuildTag.Blade, WeaponFamilies.Of(Item("hu_sword")));
             Assert.AreEqual(BuildTag.Blade | BuildTag.Dagger, WeaponFamilies.Of(Item("hu_dagger")), "sztylet to też ostrze");
             Assert.AreEqual(BuildTag.Blade | BuildTag.Dagger, WeaponFamilies.Of(Item("hu_sabre")), "szabla: ostrze i sztylet");
-            Assert.AreEqual(BuildTag.HeavyWeapon, WeaponFamilies.Of(Item("hu_warhammer")));
+            Assert.AreEqual(BuildTag.HeavyWeapon | BuildTag.TwoHanded, WeaponFamilies.Of(Item("hu_warhammer")));
+            Assert.AreEqual(BuildTag.HeavyWeapon | BuildTag.TwoHanded, WeaponFamilies.Of(Item("hu_flail2h")), "dwuręczny korbacz – broń ciężka");
+            Assert.AreEqual(BuildTag.None, WeaponFamilies.Of(Item("hu_flail")), "jednoręczny korbacz nie jest bronią ciężką");
             Assert.AreEqual(BuildTag.Ranged, WeaponFamilies.Of(Item("hu_bow")));
             Assert.AreEqual(BuildTag.Focus, WeaponFamilies.Of(Item("hu_wand_fire")));
             Assert.AreEqual(BuildTag.Focus, WeaponFamilies.Of(Item("hu_grimoire_fire")), "grymuar w drugiej ręce to fokus");
-            var unknown = fx.Cfg.baseItemPool.Where(i => i != null && i.IsWeapon && i != fx.Cfg.unarmed && WeaponFamilies.Of(i) == BuildTag.None)
+            // Jednoręczne korbacze i morgensterny celowo bez rodzaju: tylko skille na każdą broń (aury, szarże, okrzyki).
+            var unknown = fx.Cfg.baseItemPool.Where(i => i != null && i.IsWeapon && i != fx.Cfg.unarmed && WeaponFamilies.Of(i) == BuildTag.None
+                    && !i.id.Contains("flail") && !i.id.Contains("morningstar") && !i.id.Contains("penance"))
                 .Select(i => i.id).ToList();
             Assert.IsEmpty(unknown, "broń bez rodzaju: " + string.Join(", ", unknown));
+        }
+
+        /// <summary>Szarża: broń dwuręczna albo tarcza; jednoręczną bez tarczy (dwie bronie, sama jedna broń) się nie szarżuje.</summary>
+        [Test]
+        public void Charge_RequiresTwoHandedWeaponOrShield()
+        {
+            var charge = fx.Get<SpellDefinition>(TurrisSkills.ChargeTarget);
+            Assert.AreEqual(BuildTag.TwoHanded | BuildTag.Shield, charge.requiredTags);
+            CollectionAssert.Contains(fx.Cfg.baseSpellPool, charge);
+            Assert.IsTrue(WeaponFamilies.Usable(charge, Item("hu_warhammer"), null), "młot dwuręczny");
+            Assert.IsTrue(WeaponFamilies.Usable(charge, Item("hu_greatsword"), null), "miecz dwuręczny");
+            Assert.IsTrue(WeaponFamilies.Usable(charge, Item("hu_flail"), Item("hu_shield")), "jednoręczna z tarczą – uderzenie tarczą");
+            Assert.IsFalse(WeaponFamilies.Usable(charge, Item("hu_sword"), Item("hu_sword_broad")), "dwie jednoręczne");
+            Assert.IsFalse(WeaponFamilies.Usable(charge, Item("hu_sword"), null), "sama jednoręczna");
+            Assert.IsFalse(WeaponFamilies.Usable(charge, Item("hu_bow"), null), "łuk to nie broń dwuręczna do walki wręcz");
+            StringAssert.Contains("dwuręcznej albo tarczy", Names.Requirement(charge.requiredTags));
+            // Tarcza nadal jest wymogiem „wszystkie” dla uderzenia tarczą.
+            Assert.IsFalse(WeaponFamilies.Meets(BuildTag.Shield, BuildTag.TwoHanded | BuildTag.HeavyWeapon));
         }
 
         [Test]

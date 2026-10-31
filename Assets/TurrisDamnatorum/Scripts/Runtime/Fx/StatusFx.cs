@@ -53,6 +53,8 @@ namespace Turris
             if (s.Stunned) { c = Names.StatusColor(StatusKind.Stun); amount = 0.3f + 0.15f * Mathf.Sin(Time.time * 18f); return true; }
             if (s.ChillStacks > 0) { c = Names.StatusColor(StatusKind.Chill); amount = 0.12f * s.ChillStacks; return true; }
             if (s.Burning) { c = Names.StatusColor(StatusKind.Burn); amount = 0.12f + 0.06f * Mathf.Sin(Time.time * 14f); return true; }
+            if (s.Soaked) { c = Names.StatusColor(StatusKind.Soaked); amount = 0.15f; return true; }
+            if (s.Slowed) { c = Names.StatusColor(StatusKind.Slow); amount = 0.12f; return true; }
             c = Color.white; amount = 0f;
             return false;
         }

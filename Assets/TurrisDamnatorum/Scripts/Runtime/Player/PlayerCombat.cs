@@ -16,6 +16,8 @@ namespace Turris
         public GameConfig Config { get; private set; }
         public RunState Run { get; private set; }
         public BuildSnapshot Build { get; private set; }
+        /// <summary>Mnożnik prędkości pocisków bohatera (HU ProjectileSpeed z przedmiotów i affixów).</summary>
+        public float ProjectileSpeedMult => Build == null ? 1f : 1f + Build.effects[PassiveEffectType.ProjectileSpeed] / 100f;
 
         public ResourcePool Health { get; private set; }
         public ResourcePool Stamina { get; private set; }
@@ -371,6 +373,7 @@ namespace Turris
             // Dwie bronie: lekkie ciosy na zmianę – prawa, lewa, prawa…
             attackOffhand = type == ActionType.LightAttack && Build.offWeapon != null && Actions.Current == ActionType.LightAttack && Actions.ComboIndex % 2 == 0;
             if (attackOffhand) atk = Build.offWeapon.definition.weapon.light;
+            else atk = ChooseMove(type, atk); // topór/młot: cios z biegu, po uniku
             currentAttack = atk;
             // Zręczność przyspiesza ataki bronią; broń bez wymaganych cech – wolniejsza.
             // Rozpęd (perk HU): seria zamachów bez trafienia zeruje warstwy.
@@ -412,8 +415,10 @@ namespace Turris
                 float kb = fx[PassiveEffectType.MeleeKnockback];
                 if (kb > 0f && target is EnemyBrain e) hit.knockback += kb * (e.Def.isBoss ? 0.25f : e.IsElite ? 0.5f : 1f);
             }
+            else if (fx[PassiveEffectType.MeleeKnockback] > 0f) hit.knockback += fx[PassiveEffectType.MeleeKnockback]; // HU: odrzut zwykłego ataku także z pocisku (różdżka powietrza); bossy słabiej – EnemyBrain
             if (fx[PassiveEffectType.BurnOnHit] > 0f) AddStatus(ref hit, StatusKind.Burn);
             if (fx[PassiveEffectType.ChillOnHit] > 0f) AddStatus(ref hit, StatusKind.Chill);
+            if (fx[PassiveEffectType.SoakedOnHit] > 0f) AddStatus(ref hit, StatusKind.Soaked);
             if (fx[PassiveEffectType.StaggerOnHit] > 0f) AddStatus(ref hit, StatusKind.Stagger);
         }
 
@@ -486,6 +491,7 @@ namespace Turris
                     if (phase == ActionPhase.Active && currentAttack != null && currentAttack.delivery != AttackDelivery.Projectile) PlaySwing(currentAttack.heavy);
                     // Broń dystansowa (łuk): w fazie aktywnej wypuszcza strzały zamiast cięcia.
                     if (phase == ActionPhase.Active && currentAttack != null && currentAttack.delivery == AttackDelivery.Projectile) FireArrows(currentAttack);
+                    if (phase == ActionPhase.Recovery) MoveShockwave();
                     break;
                 case ActionType.Cast:
                     if (phase == ActionPhase.Active) { skillActiveStart = clock; FireSpell(currentSpell); }
@@ -618,7 +624,7 @@ namespace Turris
                         var hit = SkillHitData(spell, origin);
                         bool arrow = (def.requiredTags & BuildTag.Ranged) != 0 || !def.IsSpell; // strzały z łuku, noże
                         Vector3 from = ring ? transform.position + Vector3.up * 0.9f + dir * 0.7f : origin;
-                        Projectile.Spawn(from, dir, def.attack.projectileSpeed, hit, Faction.Player, this, def.color, ring ? 0.3f : def.IsSpell ? 0.22f : 0.12f,
+                        Projectile.Spawn(from, dir, def.attack.projectileSpeed * ProjectileSpeedMult, hit, Faction.Player, this, def.color, ring ? 0.3f : def.IsSpell ? 0.22f : 0.12f,
                             def.projectileLifetime > 0 ? def.projectileLifetime : 3f,
                             ring ? null : LockTarget, LockTarget != null && !ring ? (arrow ? 60f : 90f) : 0f, arrow, opts);
                     }
@@ -973,16 +979,21 @@ namespace Turris
         {
             var st = Build.stats; var fx = Build.effects;
             // Przemiana w parę (perk HU): ogień staje się mrozem – przed premiami do żywiołu.
-            if (hit.element == Element.Fire && fx[PassiveEffectType.ConvertFireToFrost] >= 0.5f) hit.element = Element.Frost;
+            if (fx[PassiveEffectType.ConvertFireToFrost] >= 0.5f)
+            {
+                if (hit.element == Element.Fire) hit.element = Element.Frost;
+                if (hit.element2 == Element.Fire) hit.element2 = Element.Frost;
+            }
             HeroOutgoing(ref hit);
             GearOutgoing(ref hit);
             if (hit.fromMeleeWeapon && fx[PassiveEffectType.SunderOnHit] > 0f) AddStatus(ref hit, StatusKind.Sunder);
             hit.physicalPenetration = fx[PassiveEffectType.PenetrationPhysical] / 100f;
-            hit.penetration = hit.element == Element.Fire ? fx[PassiveEffectType.PenetrationFire] / 100f
-                : hit.element == Element.Frost ? fx[PassiveEffectType.PenetrationFrost] / 100f
-                : hit.element == Element.Lightning ? fx[PassiveEffectType.PenetrationLightning] / 100f
-                : hit.element == Element.Earth ? fx[PassiveEffectType.PenetrationEarth] / 100f : 0f;
-            if (hit.element != Element.None && hit.magic > 0) hit.magic *= 1f + st[Names.ElementDamageStat(hit.element)] / 100f;
+            hit.accuracy = Build.accuracy;
+            hit.penetration = hit.Weighted(e => e == Element.Fire ? fx[PassiveEffectType.PenetrationFire] / 100f
+                : e == Element.Frost ? fx[PassiveEffectType.PenetrationFrost] / 100f
+                : e == Element.Lightning ? fx[PassiveEffectType.PenetrationLightning] / 100f
+                : e == Element.Earth ? fx[PassiveEffectType.PenetrationEarth] / 100f : 0f);
+            if (hit.element != Element.None && hit.magic > 0) hit.ScaleMagicByElement(e => e == Element.None ? 1f : 1f + st[Names.ElementDamageStat(e)] / 100f);
             if (DamageBuffTime > 0) { float m = 1f + DamageBuffPct / 100f; hit.physical *= m; hit.magic *= m; }
             if (Status.Burning && fx[PassiveEffectType.BurningDamageBonus] > 0)
             {
@@ -1067,7 +1078,8 @@ namespace Turris
             }
 
             // Chłód spowalnia także akcje (zamach, unik); zamrożenie trwa jako wymuszone drgnięcie.
-            Actions.Tick(Status.Incapacitated ? dt : dt * Status.ActionSpeedMultiplier(B));
+            // Ładowany ciężki cios stoi z bronią nad głową, póki przycisk trzymany.
+            if (!ChargeHolding(dt)) Actions.Tick(Status.Incapacitated ? dt : dt * Status.ActionSpeedMultiplier(B));
 
             // Aktywna faza ataku bronią: przeciągnij hitbox (każdy cel najwyżej raz na zamach).
             if ((Actions.Current == ActionType.LightAttack || Actions.Current == ActionType.HeavyAttack) && Actions.Phase == ActionPhase.Active)
@@ -1104,9 +1116,6 @@ namespace Turris
 
             if (WeaponBuffTime > 0) WeaponBuffTime -= dt;
         }
-
-        /// <summary>Ustawiane przez PlayerController.</summary>
-        public bool Sprinting { get; set; }
 
         public void SetBlockHeld(bool held)
         {
@@ -1159,7 +1168,7 @@ namespace Turris
                 // Łuk – strzały; różdżka (pocisk magiczny) – świecący pocisk w barwie żywiołu.
                 bool arrow = atk.damageType == DamageType.Physical;
                 Color col = WeaponBuffTime > 0 ? WeaponBuffColor : arrow ? new Color(1f, 0.95f, 0.85f) : Names.ElementColor(atk.element);
-                Projectile.Spawn(origin, dir, atk.projectileSpeed, hit, Faction.Player, this, col,
+                Projectile.Spawn(origin, dir, atk.projectileSpeed * ProjectileSpeedMult, hit, Faction.Player, this, col,
                     arrow ? 0.12f : 0.18f, 3f, i == 0 ? LockTarget : null, i == 0 && LockTarget != null ? (arrow ? 60f : 90f) : 0f, arrow, opts);
             }
         }
@@ -1224,6 +1233,7 @@ namespace Turris
                 hit.weapon = HeldWeaponModel;
                 ApplyWeaponBuff(ref hit);
                 BasicAttackPerks(ref hit, true, target);
+                ApplyMove(ref hit);
                 PrepareOutgoing(ref hit);
                 HitQuery.Apply(this, target, hit, true);
             });
@@ -1256,6 +1266,8 @@ namespace Turris
             {
                 float h = Build.effects[PassiveEffectType.HealOnKill];
                 if (h > 0) PassiveHeal(h);
+                float mk = Build.effects[PassiveEffectType.ManaOnKill];
+                if (mk > 0) Mana.Restore(mk);
                 GearOnKill(target);
                 if (!hit.huTriggered) HuTrigger("kill", target.Transform.position);
             }
@@ -1352,7 +1364,7 @@ namespace Turris
 
             // Odporność na żywioł redukuje część z żywiołem (pełna do 40%, dalej połowa, limit 65%).
             if (hit.element != Element.None && hit.magic > 0)
-                hit.magic *= 1f - B.HeroResist(Build.stats[Names.ElementResistStat(hit.element)]) / 100f;
+                hit.ScaleMagicByElement(e => e == Element.None ? 1f : 1f - B.HeroResist(Build.stats[Names.ElementResistStat(e)]) / 100f);
             string reaction = Status.ModifyIncoming(ref hit, B);
             var defense = CurrentDefense();
             // Blok: cios z boku (nie z pleców) – bohater błyskawicznie obraca się do napastnika i zasłania go tarczą/bronią.
@@ -1367,6 +1379,8 @@ namespace Turris
                 lastHitWeight = hit.heavy ? 0.7f : 0.35f;
             }
 
+            // Pancerz w ataku sprawdzony przed obrażeniami – HeroMitigate i drgnięcie widzą ten sam stan.
+            bool hyperArmor = HyperArmor;
             // Redukcja obrażeń klasy/okrzyku/szału, arkanowa osłona i nieśmiertelność.
             if (r.healthDamage > 0) r.healthDamage = HeroMitigate(r.healthDamage, false, r.outcome == HitOutcome.Hit ? minimumDamage : 0f);
 
@@ -1411,8 +1425,8 @@ namespace Turris
                     CombatEvents.RaiseMessage("GARDA PRZEŁAMANA!", new Color(1f, 0.4f, 0.2f));
                     break;
                 case HitOutcome.Hit:
-                    // Szał: ciosy nie wybijają z rytmu.
-                    if (!absorbedAll && !Raging && r.healthDamage > 0.01f) Actions.Force(ActionType.Flinch, B.flinchDuration);
+                    // Szał i pancerz w ataku (broń dwuręczna): ciosy nie wybijają z rytmu.
+                    if (!absorbedAll && !Raging && !hyperArmor && r.healthDamage > 0.01f) Actions.Force(ActionType.Flinch, B.flinchDuration);
                     break;
             }
 
@@ -1506,7 +1520,7 @@ namespace Turris
                     break;
                 case ActionType.HeavyAttack:
                     s.action = AnimAction.Attack;
-                    s.attack = AnimResolve.ForAttack(currentAttack ?? Build.weapon.heavy, 0, weaponModel);
+                    s.attack = AnimResolve.ForAttack(currentAttack ?? Build.weapon.heavy, a.ComboIndex, weaponModel);
                     break;
                 case ActionType.Riposte: s.action = AnimAction.Attack; s.attack = AttackAnim.Thrust; break;
                 case ActionType.Block: s.action = AnimAction.Block; break;

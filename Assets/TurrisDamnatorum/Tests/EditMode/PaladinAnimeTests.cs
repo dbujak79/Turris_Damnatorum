@@ -30,6 +30,9 @@ namespace Turris.Tests
             Assert.AreEqual("sword and shield slash (5)",previous.oneHandSet.Find(AnimAction.Attack,AttackAnim.SlashLeft).clip.name);
             Assert.AreEqual("paladin_slash_left",definition.oneHandSet.Find(AnimAction.Attack,AttackAnim.SlashLeft).clip.name);
             Assert.AreSame(previous.twoHandSet, definition.twoHandSet);
+            Assert.IsTrue(definition.oneHandSet.alternatingLightSteps);
+            Assert.IsFalse(previous.oneHandSet.alternatingLightSteps,"Pierwotny zestaw jednoręczny pozostaje bez korekty kroków");
+            Assert.IsFalse(warrior.Visual.oneHandSet.alternatingLightSteps,"Wojownik zachowuje swoje animacje");
             Assert.AreSame(previous.idle, definition.idle);
             Assert.AreSame(previous.run, definition.run);
             Assert.AreEqual(previous.actions.Count, definition.actions.Count);

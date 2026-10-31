@@ -9,7 +9,13 @@ namespace Turris
 
     /// <summary>Styl ruchu ataku. Auto = wyliczany z parametrów ataku i broni.</summary>
     /// Special i Latch – własne klipy demonów z Hell Unleashed (wielki ruch ataku specjalnego, skok czerwia).
-    public enum AttackAnim { Auto, SlashRight, SlashLeft, Overhead, Thrust, Slam, Burst, Cast, Claw, Leap, BowDraw, Special, Latch }
+    /// Chop… DodgeChop – zestaw ruchów ciężkiej broni dwuręcznej (topór, młot): rąbnięcie z góry, drugie rąbnięcie w serii,
+    /// niskie cięcie z biegu i rąbnięcie po uniku; Cleave/CleaveBack – szerokie cięcia lekkie tej broni (z prawej, z lewej);
+    /// LeapChop – skok z biegu zakończony rąbnięciem w ziemię.
+    /// Bez własnego klipu – styl bazowy (<see cref="AnimResolve.Base"/>).
+    /// Wartości zapisane w assetach – nowe tylko na końcu.
+    public enum AttackAnim { Auto, SlashRight, SlashLeft, Overhead, Thrust, Slam, Burst, Cast, Claw, Leap, BowDraw, Special, Latch,
+        Chop, ChopFollow, RunningSweep, DodgeChop, Cleave, CleaveBack, LeapChop }
 
     /// <summary>Model broni. Wartości zapisane w assetach – nowe tylko na końcu.</summary>
     public enum WeaponModel { Auto, None, Sword, Axe, GreatAxe, Dagger, Staff, Halberd, GreatSword, Claws, Mace, Hammer, Spear, Scythe, Knives, Bow }
@@ -64,6 +70,22 @@ namespace Turris
     /// <summary>Wyliczanie stylu animacji i modeli, gdy w danych ustawiono Auto.</summary>
     public static class AnimResolve
     {
+        /// <summary>Styl bazowy ruchu z zestawu ciężkiej broni – gdy zestaw animacji lub poza proceduralna nie ma własnego.</summary>
+        public static AttackAnim Base(AttackAnim a)
+        {
+            switch (a)
+            {
+                case AttackAnim.Chop: case AttackAnim.ChopFollow: case AttackAnim.DodgeChop: return AttackAnim.Overhead;
+                case AttackAnim.RunningSweep: case AttackAnim.Cleave: return AttackAnim.SlashRight;
+                case AttackAnim.CleaveBack: return AttackAnim.SlashLeft;
+                case AttackAnim.LeapChop: return AttackAnim.Leap;
+                default: return a;
+            }
+        }
+
+        /// <summary>Ciężka broń dwuręczna z własnym zestawem ruchów (rąbnięcia, ładowanie, ataki z biegu i po uniku).</summary>
+        public static bool IsHeavyTwoHand(WeaponModel weapon) => weapon == WeaponModel.GreatAxe || weapon == WeaponModel.Hammer;
+
         public static AttackAnim ForAttack(AttackDefinition a, int combo, WeaponModel weapon)
         {
             if (a.animation != AttackAnim.Auto) return a.animation;
@@ -72,7 +94,10 @@ namespace Turris
             if (a.delivery == AttackDelivery.AreaAroundSelf) return a.damageType == DamageType.Magic ? AttackAnim.Burst : AttackAnim.Slam;
             if (weapon == WeaponModel.Claws || weapon == WeaponModel.None) return combo % 2 == 0 ? AttackAnim.Claw : AttackAnim.SlashLeft;
             if (a.lunge >= 4f) return a.heavy ? AttackAnim.Leap : AttackAnim.Thrust;
+            // Topór i młot: ciężkie ciosy to rąbnięcia z góry na przemian – z wykrokiem i zza pleców, lekkie – szerokie cięcia.
+            if (a.heavy && IsHeavyTwoHand(weapon)) return combo % 2 == 0 ? AttackAnim.Chop : AttackAnim.ChopFollow;
             if (a.heavy) return AttackAnim.Overhead;
+            if (IsHeavyTwoHand(weapon)) return combo % 2 == 0 ? AttackAnim.Cleave : AttackAnim.CleaveBack; // szerokie cięcia na przemian
             if (weapon == WeaponModel.Dagger) return combo % 2 == 0 ? AttackAnim.Thrust : AttackAnim.SlashRight;
             if (weapon == WeaponModel.Spear) return AttackAnim.Thrust; // włócznia zawsze pchnięciami
             if (weapon == WeaponModel.Bow) return AttackAnim.BowDraw;  // łuk: naciągnięcie cięciwy i strzał

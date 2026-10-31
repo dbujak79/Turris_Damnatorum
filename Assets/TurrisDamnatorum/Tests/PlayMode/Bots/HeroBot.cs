@@ -98,6 +98,7 @@ namespace Turris.Tests.Bots
             blockUntil = evacuateUntil = unstickUntil = backOffUntil = 0f;
             pendingDodge = false;
             dodgeExpectedUntil = 0f; nextTacticalAt = 0f;
+            retreatSince = -1f; retreatPauseUntil = nextRetreatDodgeAt = 0f;
             shots.Clear(); shotResponse.Clear();
             refused.Clear();
             slotsFixed = false;
@@ -116,6 +117,7 @@ namespace Turris.Tests.Bots
             blockUntil = evacuateUntil = unstickUntil = backOffUntil = 0f;
             pendingDodge = false;
             dodgeExpectedUntil = 0f; nextTacticalAt = 0f;
+            retreatSince = -1f; retreatPauseUntil = nextRetreatDodgeAt = 0f;
             shots.Clear(); shotResponse.Clear();
             refused.Clear();
             lastAction = ActionType.None;
@@ -149,6 +151,8 @@ namespace Turris.Tests.Bots
             TrackSelf();
             Perceive();
             Think();
+            // Niskie życie z flaszką w zapasie: co bot robi zamiast pić (sekundy wg stanu).
+            if (Root.Run.healthFlasks > 0 && Pc.Health.Fraction < P.flaskThreshold) Rec.R.lowHpTime.Add(Pc.Actions.Current == ActionType.Flask ? "pije" : lowState, Time.deltaTime);
         }
 
         // ------------------------------------------------------------------ Własny stan (telemetria akcji)
@@ -302,11 +306,14 @@ namespace Turris.Tests.Bots
 
         // ------------------------------------------------------------------ Decyzje
 
+        string lowState = "";
+
         void Think()
         {
             MoveWorld = Vector3.zero;
             SprintHeld = false;
 
+            lowState = "unik";
             if (pendingDodge)
             {
                 // Kierunek uniku ustawiony klatkę wcześniej – teraz przycisk.
@@ -326,8 +333,6 @@ namespace Turris.Tests.Bots
                     : "odmowa: " + (dodgeRequestedIn == ActionType.None ? "inna" : ActionName(dodgeRequestedIn)));
             }
 
-            // Niskie życie: leczenie przed obroną, jeśli jest choć krótka luka (TryFlask sam ustępuje bliskiemu ciosowi).
-            if (Pc.Health.Fraction < P.flaskThreshold && TryFlask()) { BlockHeld = false; return; }
             bool defending = ProjectileDefense() | Defend();
             BlockHeld = now < blockUntil;
             if (BlockHeld && blockFor != null && blockFor.attack.delivery != AttackDelivery.Projectile &&
@@ -335,10 +340,14 @@ namespace Turris.Tests.Bots
             {
                 blockUntil = Mathf.Min(blockUntil, now + 0.08f);
             }
-            if (now < evacuateUntil) { MoveWorld = evacuateDir; SprintHeld = Pc.Stamina.Fraction > 0.2f; return; }
-            if (defending) return;
+            // Znacznik albo strefa na ziemi: zejście od środka zagrożenia ma pierwszeństwo przed ucieczką od wroga.
+            if (AvoidHazards()) { BlockHeld = false; lowState = "schodzi z zagrożenia na ziemi"; return; }
+            if (now < evacuateUntil) { MoveWorld = evacuateDir; SprintHeld = Pc.Stamina.Fraction > 0.2f; lowState = "wychodzi z zasięgu ciosu"; return; }
+            if (defending) { lowState = BlockHeld ? "blokuje" : "broni się (parowanie/unik)"; return; }
 
-            if (TryFlask()) return;
+            if (TryShakeOffLatch()) { lowState = "strząsa czerwia"; return; }
+            if (TryFlask()) { lowState = Pc.Actions.Current == ActionType.Flask ? "pije" : "odwrót do bezpiecznego miejsca"; return; }
+            lowState = now < retreatPauseUntil ? "walczy (brak bezpiecznego miejsca)" : !Pc.Actions.IsIdle ? "w trakcie akcji" : "walczy";
             if (now < unstickUntil) { MoveWorld = unstickDir; return; }
 
             if (target == null) { Wander(); CheckStuck(); return; }
@@ -411,6 +420,50 @@ namespace Turris.Tests.Bots
             return false;
         }
 
+        // ------------------------------------------------------------------ Zagrożenia na ziemi
+
+        const float HazardMargin = 0.7f, HazardLookahead = 1.6f, HazardMaxRadius = 7f;
+        bool inHazard;
+
+        /// <summary>
+        /// Znaczniki opóźnionych uderzeń (głazy, kolce, wybuchy) i strefy wrogów: gracz widzi je na ziemi i z nich schodzi –
+        /// od środka zagrożenia, nie od wroga, który je rzucił. Gdy biegiem nie zdąży przed uderzeniem – unik w tę stronę
+        /// (ciosy obszarowe są nieunikalne, więc liczy się odległość, nie nietykalność).
+        /// </summary>
+        bool AvoidHazards()
+        {
+            if (pendingDodge) return false;
+            Vector3 me = transform.position; me.y = 0f;
+            Vector3 push = Vector3.zero;
+            float worst = 0f, strikeIn = float.MaxValue;
+            foreach (var s in DelayedStrike.Active)
+                if (s != null && s.Faction == Faction.Enemy && s.Remaining <= HazardLookahead) Add(s.transform.position, s.Radius, s.Remaining);
+            foreach (var z in DamageZone.Active)
+                if (z != null && z.Faction == Faction.Enemy && z.Remaining > 0.2f) Add(z.transform.position, z.Radius, -1f);
+            if (worst <= 0f) { inHazard = false; return false; }
+            if (!inHazard) { inHazard = true; Rec.R.actions.Add("zejście z zagrożenia na ziemi"); }
+
+            Vector3 dir = push.sqrMagnitude > 1e-4f ? push.normalized : (target != null ? Strafe(DirTo(target.transform.position)) : -transform.forward);
+            if (me.magnitude > 9f) dir = (dir - me.normalized * 0.6f).normalized; // nie pod ścianę areny
+            float speed = Mathf.Max(3f, Root.config.balance.moveSpeed * (Pc.Stamina.Fraction > 0.2f ? 1.3f : 1f));
+            if (strikeIn < worst / speed + 0.1f && RequestDodge(dir, "zejście ze znacznika na ziemi")) return true;
+            MoveWorld = dir;
+            SprintHeld = Pc.Stamina.Fraction > 0.2f;
+            return true;
+
+            void Add(Vector3 c, float r, float t)
+            {
+                if (r > HazardMaxRadius) return; // pół areny – i tak nie ma dokąd zejść
+                c.y = 0f;
+                Vector3 d = me - c;
+                float dist = d.magnitude, depth = r + HazardMargin - dist;
+                if (depth <= 0f) return;
+                push += (dist > 0.05f ? d / dist : Vector3.zero) * depth;
+                worst = Mathf.Max(worst, depth);
+                if (t >= 0f) strikeIn = Mathf.Min(strikeIn, t);
+            }
+        }
+
         public static readonly string[] MarginBuckets = { "spóźniony (<0 s)", "0–0,1 s", "0,1–0,2 s", "0,2–0,4 s", ">0,4 s" };
         static string MarginBucket(float t) => t < 0f ? MarginBuckets[0] : t < 0.1f ? MarginBuckets[1] : t < 0.2f ? MarginBuckets[2] : t < 0.4f ? MarginBuckets[3] : MarginBuckets[4];
 
@@ -426,10 +479,13 @@ namespace Turris.Tests.Bots
         protected Vector3 AwayFrom(Vector3 p) { Vector3 d = transform.position - p; d.y = 0; return d.sqrMagnitude > 1e-4f ? d.normalized : -transform.forward; }
 
         /// <summary>Wybór reakcji na zamach (po czasie reakcji). Tester część ciosów przyjmuje eksperymentalnie.</summary>
+        /// <summary>Tester przyjmuje ciosy eksperymentalnie tylko przy zdrowiu powyżej progu flaszki – przy niskim gra poprawnie i szuka miejsca na łyk.</summary>
+        protected bool Experimenting => P.experimentRate > 0f && Pc.Health.Fraction >= P.flaskThreshold;
+
         protected virtual DefResponse ChooseResponse(Swing s, out bool experiment)
         {
             experiment = false;
-            if (P.experimentRate > 0f && rng.NextDouble() < P.experimentRate)
+            if (Experimenting && rng.NextDouble() < P.experimentRate)
             {
                 experiment = true;
                 var all = new[] { DefResponse.Block, DefResponse.Parry, DefResponse.Dodge, DefResponse.StepOut, DefResponse.None };
@@ -461,13 +517,14 @@ namespace Turris.Tests.Bots
                     if (a.parryable && b.CanParry && rng.NextDouble() < P.parryChance * 0.5f) return DefResponse.Parry;
                     return canDodge ? DefResponse.Dodge : DefResponse.StepOut;
                 case TelegraphKind.Unparryable:
-                    if (b.CanBlock && stam > 0.35f) return DefResponse.Block;
+                    // Blok bronią przepuszcza dużo (seria specjalizacji: rani 68% ciosów wobec 49% po uniku) – bez tarczy unik.
+                    if (b.CanBlock && stam > 0.35f && (shield || !canDodge)) return DefResponse.Block;
                     return canDodge ? DefResponse.Dodge : DefResponse.StepOut;
                 default:
                     if (a.delivery == AttackDelivery.Projectile)
                         return shield && stam > 0.25f ? DefResponse.Block : canDodge ? DefResponse.Dodge : DefResponse.StepOut;
                     if (b.CanParry && stam > 0.2f && rng.NextDouble() < P.parryChance) return DefResponse.Parry;
-                    if (b.CanBlock && stam > 0.3f && (shield || rng.NextDouble() < 0.5)) return DefResponse.Block;
+                    if (b.CanBlock && stam > 0.3f && (shield || !canDodge)) return DefResponse.Block;
                     return canDodge ? DefResponse.Dodge : DefResponse.StepOut;
             }
         }
@@ -604,7 +661,7 @@ namespace Turris.Tests.Bots
             experiment = false;
             var b = Pc.Build;
             bool shield = b.CanBlock && b.guardIsShield;
-            if (P.experimentRate > 0f && rng.NextDouble() < P.experimentRate)
+            if (Experimenting && rng.NextDouble() < P.experimentRate)
             {
                 experiment = true;
                 var all = new[] { DefResponse.Block, DefResponse.Dodge, DefResponse.StepOut, DefResponse.None };
@@ -658,26 +715,194 @@ namespace Turris.Tests.Bots
 
         // ------------------------------------------------------------------ Leczenie
 
+        // Zasada dla wszystkich botów: pić wyłącznie w bezpiecznym miejscu – picie obok wroga to wyrok śmierci.
+        // Gdy nie jest bezpiecznie, bot odskakuje unikami (i biegnie) tam, gdzie wrogowie najdłużej nie mogą go dosięgnąć.
+
+        /// <summary>Zapas ponad czas picia (s): przez tyle nikt nie może zdążyć z trafieniem.</summary>
+        const float DrinkSafetyMargin = 0.15f;
+        /// <summary>Po tylu sekundach bezskutecznego odwrotu bot wraca na chwilę do walki (dalej pije tylko w bezpiecznej chwili).</summary>
+        const float RetreatGiveUp = 5f, RetreatPause = 2.5f;
+        /// <summary>Przy tak niskim życiu walka to śmierć – odwrót trwa dłużej (RetreatGiveUpLow s).</summary>
+        const float LowHealth = 0.25f, RetreatGiveUpLow = 15f;
+        /// <summary>Promień, poza którym bot traktuje okolicę jako ścianę areny (jak przy schodzeniu z zagrożeń).</summary>
+        const float ArenaSafeRadius = 9f;
+
+        string unsafeReason = "";
+        float retreatSince = -1f, retreatPauseUntil, nextRetreatDodgeAt;
+        Vector3 retreatDir;
+
+        /// <summary>Czas (s), przez który bohater pije i nie może się bronić – do momentu, gdy flaszka działa.</summary>
+        protected float DrinkWindow => Pc.ScaleStartup(Root.config.balance.flaskDrinkTime) + 0.05f + DrinkSafetyMargin;
+
+        /// <summary>
+        /// Najkrótszy czas (s), w którym wróg może trafić bohatera stojącego w <paramref name="at"/>: trwający zamach,
+        /// albo dojście na zasięg najszybszego ataku plus jego zapowiedź; pocisk – zapowiedź plus lot. Ogłuszony,
+        /// zachwiany czy blokujący wróg najpierw musi z tego wyjść.
+        /// </summary>
+        protected float ThreatTime(EnemyBrain e, Vector3 at)
+        {
+            if (e.CurrentState == EnemyBrain.State.Latched) return 0f;
+            Vector3 d = e.transform.position - at; d.y = 0f;
+            float dist = Mathf.Max(0f, d.magnitude - 0.35f * (e.Def != null ? e.Def.scale : 1f));
+            float best = 99f;
+            if (e.CurrentState == EnemyBrain.State.Attacking && e.CurrentAttack != null && e.AttackPhase != ActionPhase.Recovery)
+            {
+                var a = e.CurrentAttack.attack;
+                if (Reaches(a, dist))
+                {
+                    var s = swings.FirstOrDefault(x => x.enemy == e);
+                    best = e.AttackPhase == ActionPhase.Active || s == null ? 0f : Mathf.Max(0f, TimeToImpact(s));
+                }
+            }
+            float wait = 0f;
+            switch (e.CurrentState)
+            {
+                case EnemyBrain.State.Staggered: case EnemyBrain.State.Recoil: case EnemyBrain.State.PoiseBroken:
+                case EnemyBrain.State.Guarding: case EnemyBrain.State.Evading: case EnemyBrain.State.Dormant:
+                    wait = Mathf.Max(0f, e.StateTimer); break;
+                case EnemyBrain.State.Attacking:
+                    wait = e.AttackRecoveryRemaining; break; // po ciosie – okno, które gracz souls wykorzystuje na łyk
+            }
+            float speed = Mathf.Max(0.5f, e.Def != null ? e.Def.moveSpeed : 3.5f);
+            if (e.Def != null)
+                foreach (var entry in e.Def.attacks)
+                {
+                    var a = entry.attack;
+                    float windup = a.windup;
+                    float t = a.delivery == AttackDelivery.Projectile
+                        ? (dist <= 24f ? windup + dist / ProjectileSpeed : 99f)
+                        : Mathf.Max(0f, dist - Range(a) - 0.5f) / speed + windup;
+                    best = Mathf.Min(best, wait + t);
+                }
+            else best = Mathf.Min(best, wait + dist / speed);
+            return best;
+
+            static float Range(AttackDefinition a) => a.delivery == AttackDelivery.AreaAroundSelf ? a.radius : a.reach + a.lunge + a.radius;
+            static bool Reaches(AttackDefinition a, float dist) => a.delivery == AttackDelivery.Projectile ? dist <= 24f : dist <= Range(a) + 0.9f;
+        }
+
+        /// <summary>Najkrótszy czas do trafienia w <paramref name="at"/> ze strony wszystkich wrogów.</summary>
+        protected float ThreatTimeAt(Vector3 at)
+        {
+            float t = 99f;
+            foreach (var e in alive) t = Mathf.Min(t, ThreatTime(e, at));
+            return t;
+        }
+
+        /// <summary>
+        /// Czy można teraz bezpiecznie pić: nikt nie zdąży trafić przed końcem picia (z zapasem), żaden lecący pocisk
+        /// nie doleci, bohater nie stoi w strefie ani pod znacznikiem uderzenia.
+        /// </summary>
+        protected bool SafeToDrink()
+        {
+            if (!Pc.Actions.IsIdle || pendingDodge) return false;
+            float window = DrinkWindow;
+            foreach (var e in alive)
+                if (ThreatTime(e, transform.position) < window)
+                {
+                    unsafeReason = e.Def != null && e.Def.attacks.Count > 0 && e.Def.attacks.All(a => a.attack.delivery == AttackDelivery.Projectile) ? "strzelec" : "wróg wręcz";
+                    return false;
+                }
+            unsafeReason = "pocisk";
+            Vector3 me = transform.position; me.y = 0f;
+            foreach (var p in Projectile.Active)
+            {
+                if (p == null || p.Side != Faction.Enemy) continue;
+                Vector3 rel = p.transform.position; rel.y = 0f; rel -= me;
+                Vector3 v = p.Velocity; v.y = 0f;
+                float vv = v.sqrMagnitude;
+                if (vv < 0.01f) continue;
+                float tClose = -Vector3.Dot(rel, v) / vv;
+                if (tClose < 0f || tClose > window) continue;
+                if ((rel + v * tClose).magnitude <= p.HitRadius + bodyRadius + 0.5f) return false;
+            }
+            unsafeReason = "strefa na ziemi";
+            foreach (var s in DelayedStrike.Active)
+                if (s != null && s.Faction == Faction.Enemy && s.Remaining <= window + 0.3f && Flat(s.transform.position - me) <= s.Radius + HazardMargin) return false;
+            foreach (var z in DamageZone.Active)
+                if (z != null && z.Faction == Faction.Enemy && z.Remaining > 0.2f && Flat(z.transform.position - me) <= z.Radius + HazardMargin) return false;
+            return true;
+
+            static float Flat(Vector3 v) { v.y = 0f; return v.magnitude; }
+        }
+
+        /// <summary>
+        /// Odwrót do bezpiecznego miejsca: z 16 kierunków wybiera ten, w którym wrogowie najdłużej nie dosięgną bohatera
+        /// (bez ściany areny i stref na ziemi); gdy ktoś jest blisko – unik w tę stronę, inaczej bieg.
+        /// </summary>
+        protected void RetreatToSafety(string reason)
+        {
+            Vector3 me = transform.position; me.y = 0f;
+            float step = Mathf.Max(3f, Pc.Build.dodge.distance);
+            Vector3 bestDir = AwayFrom(CrowdCenter(10f));
+            float bestScore = float.MinValue;
+            for (int i = 0; i < 16; i++)
+            {
+                float ang = i * Mathf.PI / 8f;
+                var dir = new Vector3(Mathf.Cos(ang), 0f, Mathf.Sin(ang));
+                Vector3 p = me + dir * step;
+                // Jeden i dwa uniki dalej – kierunek, który daleko nie kończy się w zasięgu doskoku bossa ani pod ścianą.
+                Vector3 p2 = me + dir * step * 2f;
+                float score = 0.5f * Mathf.Min(ThreatTimeAt(p), 4f) + 0.5f * Mathf.Min(ThreatTimeAt(p2), 4f);
+                if (p2.magnitude > ArenaSafeRadius) score -= (p2.magnitude - ArenaSafeRadius) * 0.3f;
+                if (p.magnitude > ArenaSafeRadius) score -= (p.magnitude - ArenaSafeRadius) * 0.6f;
+                foreach (var z in DamageZone.Active)
+                    if (z != null && z.Faction == Faction.Enemy && z.Remaining > 0.2f && Vector3.Distance(new Vector3(z.transform.position.x, 0f, z.transform.position.z), p) <= z.Radius + HazardMargin) score -= 2f;
+                foreach (var s in DelayedStrike.Active)
+                    if (s != null && s.Faction == Faction.Enemy && Vector3.Distance(new Vector3(s.transform.position.x, 0f, s.transform.position.z), p) <= s.Radius + HazardMargin) score -= 2f;
+                score += 0.15f * Vector3.Dot(dir, retreatDir); // bez szarpania w miejscu
+                if (score > bestScore) { bestScore = score; bestDir = dir; }
+            }
+            retreatDir = bestDir;
+            bool pressed = ThreatTimeAt(transform.position) < DrinkWindow + 0.4f;
+            if (pressed && now >= nextRetreatDodgeAt && Pc.Stamina.Fraction > 0.3f && RequestDodge(bestDir, reason))
+            {
+                nextRetreatDodgeAt = now + 0.45f;
+                return;
+            }
+            MoveWorld = bestDir;
+            SprintHeld = Pc.Stamina.Fraction > 0.15f;
+        }
+
+        /// <summary>Czerw wgryziony w bohatera: unik go strząsa (z nim na plecach nigdy nie jest bezpiecznie, by pić).</summary>
+        bool TryShakeOffLatch()
+        {
+            if (!alive.Any(e => e.CurrentState == EnemyBrain.State.Latched)) return false;
+            return RequestDodge(AwayFrom(CrowdCenter(6f)), "strząśnięcie czerwia");
+        }
+
         bool TryFlask()
         {
-            if (Root.Run.healthFlasks <= 0) return false;
-            float hp = Pc.Health.Fraction;
-            if (hp >= P.flaskThreshold) return false;
-            if (!Pc.Actions.IsIdle) return false;
-            // Okno na picie: najbliższe zauważone trafienie musi przyjść później niż koniec picia.
-            // Jak człowiek pod presją: pije, gdy najbliższe zauważone trafienie jest dalej niż ~0,3 s
-            // (ryzyko przerwania akceptowane); tuż obok walczącego wręcz – najpierw krok w tył.
-            float soonest = swings.Where(s => now >= s.noticeAt && Threatens(s)).Select(TimeToImpact).Where(t => t > -0.1f).DefaultIfEmpty(99f).Min();
-            float nearMelee = alive.Where(e => e.Def == null || !e.Def.attacks.Any(a => a.attack.delivery == AttackDelivery.Projectile)).Select(FlatDist).DefaultIfEmpty(99f).Min();
-            if ((soonest > 0.3f && (nearMelee > 2f || hp < 0.2f)) || hp < 0.12f) { Pc.RequestFlask(false); return true; }
-            if (soonest <= 0.3f) return false; // najpierw obrona przed tym ciosem
-            MoveWorld = AwayFrom(CrowdCenter(8f));
-            SprintHeld = Pc.Stamina.Fraction > 0.3f;
-            flaskWaiting += Time.deltaTime;
+            if (Root.Run.healthFlasks <= 0) { retreatSince = -1f; return false; }
+            // Łyk w spokojnej chwili (np. między falami): brakuje co najmniej tyle, ile flaszka leczy – nic się nie marnuje,
+            // a flaszki i tak wracają na następnym piętrze. Bot nie czeka do krytycznego życia, gdy bezpiecznej chwili może nie być.
+            float heal = Root.config.balance.healthFlaskFraction * (1f + Pc.Build.stats[StatType.FlaskPotency] / 100f);
+            if (Pc.Health.Fraction >= P.flaskThreshold)
+            {
+                retreatSince = -1f;
+                if (1f - Pc.Health.Fraction >= heal && SafeToDrink()) { Pc.RequestFlask(false); return true; }
+                return false;
+            }
+            if (SafeToDrink())
+            {
+                Pc.RequestFlask(false);
+                retreatSince = -1f;
+                return true;
+            }
+            // Nie ma bezpiecznej chwili: odwrót. Po RetreatGiveUp s bez skutku – chwila walki (picie dalej tylko, gdy bezpiecznie).
+            if (now < retreatPauseUntil) return false;
+            if (retreatSince < 0f) retreatSince = now;
+            if (now - retreatSince > (Pc.Health.Fraction < LowHealth ? RetreatGiveUpLow : RetreatGiveUp))
+            {
+                retreatSince = -1f;
+                retreatPauseUntil = now + RetreatPause;
+                Rec.R.actions.Add("brak bezpiecznego miejsca na picie: " + unsafeReason);
+                return false;
+            }
+            RetreatToSafety("odskok przed piciem flaszki");
             return true;
         }
 
-        float flaskWaiting;
         bool slotsFixed;
 
         /// <summary>Początek podejścia: czary bez wymaganej Inteligencji wyjmuje ze slotów (zamiast nich – inny znany skill).</summary>
@@ -753,8 +978,9 @@ namespace Turris.Tests.Bots
                 case SpellKind.Heal:
                 case SpellKind.Barrier:
                 case SpellKind.FrostArmor:
-                case SpellKind.Undying:
                     return hp < 0.5f && close >= 1;
+                case SpellKind.Undying: // Żelazna skóra (−80% obrażeń): w tłoku, zanim życie spadnie
+                    return close >= 3 || (hp < 0.6f && close >= 1);
                 case SpellKind.WeaponBuff:
                     return d <= 6f && Pc.WeaponBuffTime <= 0f;
                 case SpellKind.Aura:
@@ -958,7 +1184,9 @@ namespace Turris.Tests.Bots
             }
             // Przedmioty z plecaka, oferta sklepu, potem ułożenie slotów, na końcu ulepszenia skilli, które zostały w slotach.
             ManageGear();
+            SellUnused();
             ManageFloorShop();
+            SellUnused();
             ManageSeals();
             ConsiderShopOffer();
             ArrangeSlots();

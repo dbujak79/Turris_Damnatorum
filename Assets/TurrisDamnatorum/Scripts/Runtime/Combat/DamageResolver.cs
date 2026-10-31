@@ -22,13 +22,18 @@ namespace Turris
         public bool fromMeleeWeapon;   // dla efektów "trafienie bronią"
         public string attackName;
         public Element element;        // żywioł części magicznej
+        /// <summary>Drugi żywioł części magicznej (HU: składowe mieszane) i jego udział w niej (0–1); reszta to <see cref="element"/>.</summary>
+        public Element element2;
+        public float element2Share;
         public List<StatusApplication> statuses; // efekty nakładane po trafieniu (może być null)
         public float explosionRadius;  // pocisk: wybuch przy trafieniu
         public float leaveZoneDuration;// pocisk: wybuch zostawia płonącą ziemię na tyle sekund (0 = nie)
         public bool isStatusTick;      // tyknięcie efektu – bez reakcji, postawy i drgnięcia
         public bool isReaction;        // obrażenia reakcji (roztrzaskanie, przeskok przewodzenia) – nie wywołują kolejnych reakcji
+        public bool isGroundHazard;
+        public float accuracy;         // celność atakującego (ułamek) – zmniejsza unik demona    // tyknięcie strefy na ziemi albo aury (HU GroundHazard) – nakłada efekty, ale nie wywołuje reakcji
         public float bonusVsFrozen, bonusVsBleeding, executeBonus;
-        /// <summary>Premia przeciw wychłodzonym (HU: przeciw przemoczonym – Przewodnictwo, więź Burza).</summary>
+        /// <summary>Premia przeciw wychłodzonym i przemoczonym (HU: przeciw przemoczonym – Przewodnictwo, więź Burza).</summary>
         public float bonusVsChilled;
         /// <summary>Trafienie skilla odpalonego wyzwalaczem pieczęci – to, co zabije, nie odpala kolejnego wyzwalacza.</summary>
         public bool huTriggered;
@@ -36,11 +41,39 @@ namespace Turris
         public WeaponModel weapon;     // zwykły cios bronią (Auto = nie broń: czar, technika, pocisk) – barwa trafienia i hitstop atakującego
         public float knockback;        // odrzut trafionego wroga (m); ujemny = przyciągnięcie do źródła
         public float knockdown;        // powalenie trafionego wroga (s; bossy odporne, potem odporność na ogłuszenie)
+        public float knockdownChance;  // szansa powalenia (0 – zawsze); losowana osobno dla każdego trafionego
         public bool isProjectile;      // trafienie pociskiem (Sokole oko)
         /// <summary>Przebicie odporności (perki HU): część żywiołu i fizyczna – w ułamku, odporność celu nie spada poniżej 0.</summary>
         public float penetration, physicalPenetration;
 
         public float Total => physical + magic;
+
+        /// <summary>Udział żywiołu w części magicznej (0–1).</summary>
+        public float ShareOf(Element e)
+        {
+            float s2 = element2 != Element.None && element2 != element ? Mathf.Clamp01(element2Share) : 0f;
+            return (element == e ? 1f - s2 : 0f) + (element2 == e && element2 != element ? s2 : 0f);
+        }
+
+        /// <summary>Trafienie niesie ten żywioł (główny albo drugi).</summary>
+        public bool Has(Element e) => e != Element.None && ShareOf(e) > 0f;
+
+        /// <summary>Mnożnik części magicznej ważony udziałami żywiołów (odporność, premia do żywiołu).</summary>
+        public float Weighted(System.Func<Element, float> perElement)
+        {
+            float s2 = element2 != Element.None && element2 != element ? Mathf.Clamp01(element2Share) : 0f;
+            return (1f - s2) * perElement(element) + s2 * perElement(element2);
+        }
+
+        /// <summary>Mnoży część magiczną osobno dla każdego żywiołu i przelicza udział drugiego.</summary>
+        public void ScaleMagicByElement(System.Func<Element, float> perElement)
+        {
+            float s2 = element2 != Element.None && element2 != element ? Mathf.Clamp01(element2Share) : 0f;
+            float m1 = perElement(element), m2 = s2 > 0f ? perElement(element2) : 0f;
+            float w = (1f - s2) * m1 + s2 * m2;
+            magic *= w;
+            if (s2 > 0f) element2Share = w > 1e-6f ? s2 * m2 / w : 0f;
+        }
 
         public static HitData FromAttack(AttackDefinition a, float damage, Vector3 source, object attacker)
         {
@@ -59,6 +92,7 @@ namespace Turris
                 attacker = attacker,
                 attackName = a.name,
                 element = a.element,
+                element2 = a.element2, element2Share = a.element2Share,
                 statuses = a.statuses,
                 explosionRadius = a.explosionRadius,
                 bonusVsFrozen = a.bonusVsFrozen,
@@ -137,7 +171,7 @@ namespace Turris
                 return r;
             }
 
-            float phys = hit.physical * (1f - Mathf.Clamp01(def.physicalResist));
+            float phys = hit.physical * (1f - Mathf.Clamp(def.physicalResist, -1f, 1f)); // ujemna: pęknięcie pancerza poniżej zera (HU)
             float mag = hit.magic * (1f - Mathf.Clamp01(def.magicResist));
             float armored = phys + mag;
 

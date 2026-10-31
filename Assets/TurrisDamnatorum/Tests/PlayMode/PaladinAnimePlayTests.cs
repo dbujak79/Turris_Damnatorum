@@ -119,6 +119,7 @@ namespace Turris.Tests
             Vector3 previousHand = pc.transform.InverseTransformPoint(liveHand.position);
             Quaternion previousChest = liveChest.rotation;
             float livePreparationStep = 0, livePreparationTurn = 0;
+            float firstLead=float.NegativeInfinity,secondLead=float.NegativeInfinity;
             bool previousActive = false;
             float previousVisualTime = liveDriver.CurrentActionTime;
             float previousActionElapsed = previousState.actionTime;
@@ -143,6 +144,12 @@ namespace Turris.Tests
                 previousActionElapsed = previousState.actionTime; previousState = pc.GetAnimState();
                 if (pc.Actions.Current == ActionType.LightAttack)
                 {
+                    if(previousState.phase==ActionPhase.Recovery && previousState.phaseProgress>.15f)
+                    {
+                        float lead=Vector3.Dot(feet[1].position-feet[0].position,pc.transform.forward);
+                        if(pc.Actions.ComboIndex==0) firstLead=Mathf.Max(firstLead,lead);
+                        if(pc.Actions.ComboIndex==1) secondLead=Mathf.Max(secondLead,-lead);
+                    }
                     comboLow = Mathf.Min(comboLow,pelvis.position.y-pc.transform.position.y);
                     int next = pc.Actions.ComboIndex+1;
                     if (pc.Actions.ComboIndex == 2) thirdHit = true;
@@ -155,6 +162,8 @@ namespace Turris.Tests
             }
             Debug.Log($"Paladyn w grze, seria korbacza: biodra {standing:F3} → min {comboLow:F3} m");
             Assert.IsTrue(thirdHit,"Rzeczywisty system walki wykonał trzy ciosy serii");
+            Assert.Greater(firstLead,.08f,"W grze pierwszy cios kończy się prawą nogą z przodu");
+            Assert.Greater(secondLead,.08f,"W grze drugi cios kończy się lewą nogą z przodu");
             Assert.Greater(comboLow,standing-0.18f,"Seria w scenie gry nie przechodzi w przysiad");
             Assert.IsNotEmpty(liveRates,"Zmierzono tempo drugiego ciosu w prawdziwej walce");
             Debug.Log($"Paladyn korbacz w grze: tempo drugiego ciosu {liveRates.Average():F2}x nagrania");
@@ -317,6 +326,86 @@ namespace Turris.Tests
             }
         }
 
+        [UnityTest] public IEnumerator SwordCombo_AlternatesLeadFoot() => AlternatingSteps(WeaponModel.Sword,"sword");
+        [UnityTest] public IEnumerator FlailCombo_AlternatesLeadFoot() => AlternatingSteps(WeaponModel.Mace,"flail");
+
+        IEnumerator AlternatingSteps(WeaponModel weapon,string prefix)
+        {
+            var def=AssetDatabase.LoadAssetAtPath<CharacterVisualDefinition>(VisualPath);
+            var go=new GameObject("Paladyn_KrokiSerii"); cleanup.Add(go);
+            var visual=go.AddComponent<CharacterVisual>(); visual.enabled=false;
+            var source=new StubAnimSource();
+            var kit=AssetDatabase.LoadAssetAtPath<ClassDefinition>(Content+"Classes/class_hu_paladin.asset").loadouts[0];
+            visual.BuildModel(def,1,new RigLook { weapon=weapon,weaponItem=prefix=="flail"?kit.weapon:null,shield=ShieldModel.Heater }); visual.Init(source);
+            var driver=(ClipAnimationDriver)visual.Driver; var animator=visual.Model.GetComponentInChildren<Animator>();
+            var feet=new[]{animator.GetBoneTransform(HumanBodyBones.LeftFoot),animator.GetBoneTransform(HumanBodyBones.RightFoot)};
+            const float dt=1f/60;
+            for(int i=0;i<60;i++) visual.Tick(dt);
+            var cameraGo=new GameObject("KameraKrokowSerii"); cleanup.Add(cameraGo); var camera=cameraGo.AddComponent<Camera>();
+            camera.clearFlags=CameraClearFlags.SolidColor; camera.backgroundColor=new Color(.13f,.15f,.18f); camera.fieldOfView=35;
+            var lightGo=new GameObject("SwiatloKrokowSerii"); cleanup.Add(lightGo); var light=lightGo.AddComponent<Light>();
+            light.type=LightType.Directional; light.intensity=1.4f; lightGo.transform.rotation=Quaternion.Euler(40,-35,0);
+            var sheet=new Texture2D(1400,1000,TextureFormat.RGB24,false); cleanup.Add(sheet);
+            var sideSheet=new Texture2D(1400,1000,TextureFormat.RGB24,false); cleanup.Add(sideSheet);
+            var report=new System.Text.StringBuilder("cios\tfaza\tpostep\tLz\tLy\tPz\tPy\tkrokCiala\n");
+            var start=feet.Select(f=>f.position).ToArray(); float supportDrift=0,supportLift=0,worstFrame=0,highestLift=0;
+            Assert.Greater(start[0].z-start[1].z,.08f,"Pozycja wyjściowa ma lewą nogę z przodu");
+            var previous=feet.Select(f=>f.position).ToArray(); var leads=new float[2]; int tile=0;
+            for(int hit=0;hit<2;hit++)
+            {
+                int support=hit==0?0:1; var planted=feet[support].position;
+                for(int phase=0;phase<3;phase++)
+                {
+                    int count=phase==0?18:phase==1?8:hit==0?8:18;
+                    for(int i=1;i<=count;i++)
+                    {
+                        // Tak jak PlayerController: najpierw zużywa przesunięcie poprzedniej klatki, potem ewaluacja pozy.
+                        go.transform.position+=go.transform.forward*driver.ConsumeAdvance();
+                        source.state=new CharacterAnimState { action=AnimAction.Attack,attack=hit==0?AttackAnim.SlashRight:AttackAnim.SlashLeft,
+                            phase=(ActionPhase)phase,phaseProgress=i/(float)(phase==2?18:count),windupSeconds=18*dt,activeSeconds=8*dt,actionDuration=44*dt };
+                        visual.Tick(dt);
+                        var offset=feet[support].position-planted; offset.y=0; supportDrift=Mathf.Max(supportDrift,offset.magnitude);
+                        supportLift=Mathf.Max(supportLift,Mathf.Abs(feet[support].position.y-planted.y));
+                        for(int side=0;side<2;side++)
+                        {
+                            worstFrame=Mathf.Max(worstFrame,Vector3.Distance(previous[side],feet[side].position));
+                            previous[side]=feet[side].position;
+                            highestLift=Mathf.Max(highestLift,feet[side].position.y-start[side].y);
+                        }
+                        report.AppendLine($"{hit}\t{phase}\t{source.state.phaseProgress:F3}\t{feet[0].position.z:F4}\t{feet[0].position.y:F4}\t{feet[1].position.z:F4}\t{feet[1].position.y:F4}\t{go.transform.position.z:F4}");
+                        if((phase==0 && (i==6 || i==15)) || (phase==1 && i==6) || (phase==2 && i==count))
+                        {
+                            yield return null; yield return null;
+                            camera.transform.position=go.transform.position+new Vector3(2.7f,1.5f,4); camera.transform.LookAt(go.transform.position+Vector3.up*.95f);
+                            CycleTile(camera,sheet,tile);
+                            camera.transform.position=go.transform.position+new Vector3(4,1.4f,0); camera.transform.LookAt(go.transform.position+Vector3.up*.95f);
+                            CycleTile(camera,sideSheet,tile++);
+                        }
+                    }
+                }
+                leads[hit]=feet[1-hit].position.z-feet[hit].position.z;
+            }
+            string dir="TestResults/paladin-attack-steps"; Directory.CreateDirectory(dir);
+            File.WriteAllText(Path.Combine(dir,prefix+".tsv"),report.ToString()); sheet.Apply(); File.WriteAllBytes(Path.Combine(dir,prefix+".png"),sheet.EncodeToPNG());
+            sideSheet.Apply(); File.WriteAllBytes(Path.Combine(dir,prefix+"-side.png"),sideSheet.EncodeToPNG());
+            Debug.Log($"Kroki {weapon}: przód prawa/lewa {leads[0]:F3}/{leads[1]:F3} m, podpora {supportDrift:F4} m, klatka {worstFrame:F4} m, podniesienie {highestLift:F3} m, ciało {go.transform.position.z:F3} m");
+            File.WriteAllText(Path.Combine(dir,prefix+"-metrics.txt"),System.FormattableString.Invariant($"leadRight={leads[0]:F6}\nleadLeft={leads[1]:F6}\nsupportDrift={supportDrift:F6}\nsupportLift={supportLift:F6}\nmaxFrame={worstFrame:F6}\nlift={highestLift:F6}\nadvance={go.transform.position.z:F6}\n"));
+            Assert.That(leads[0],Is.InRange(.682f,.722f),"Po pierwszym ciosie prawa stopa prowadzi w dłuższym kroku");
+            Assert.That(leads[1],Is.InRange(.682f,.722f),"Po drugim ciosie lewa stopa prowadzi w dłuższym kroku");
+            Assert.Less(supportDrift,.025f,"Stopa podporowa pozostaje w miejscu podczas ciosu");
+            Assert.Less(supportLift,.005f,"Większy wykrok nie odrywa stopy podporowej od podłoża");
+            Assert.Less(worstFrame,.13f,"Pełny krok nadal przechodzi płynnie między klatkami przy 60 kl./s");
+            Assert.That(highestLift,Is.InRange(.164f,.176f),"Odrobinę wyższe przeniesienie buta: około 17 cm");
+            Assert.That(go.transform.position.z,Is.InRange(1.394f,1.414f),"Krok wydłużony o kolejne 30%: dwa ciosy przesuwają sylwetkę o 140,4 cm");
+            source.state=default;
+            for(int i=0;i<30;i++) { go.transform.position+=go.transform.forward*driver.ConsumeAdvance(); visual.Tick(dt); }
+            Assert.Greater(feet[0].position.z-feet[1].position.z,.08f,"Powrót rąk do gardy nie cofa wypracowanej lewej nogi");
+            go.transform.position+=Vector3.forward*5;
+            visual.Tick(dt);
+            var hips=animator.GetBoneTransform(HumanBodyBones.Hips);
+            Assert.Less(Mathf.Abs(hips.position.z-go.transform.position.z),.35f,"Teleport zwalnia podparcie ze starego miejsca świata");
+        }
+
         [UnityTest] public IEnumerator FlailCombo_SecondHitHasContinuousPreparation()
         {
             var def = AssetDatabase.LoadAssetAtPath<CharacterVisualDefinition>(VisualPath);
@@ -437,6 +526,7 @@ namespace Turris.Tests
                     }
                 }
                 float Difference(Color a, Color b) => Mathf.Max(Mathf.Abs(a.r-b.r), Mathf.Abs(a.g-b.g), Mathf.Abs(a.b-b.b));
+                Read(-1.732f); yield return null; yield return null;
                 Color left = Read(-1.732f), right = Read(1.732f);
                 Assert.Greater(left.grayscale, 0.05f, "Próbka rzeczywiście jest oświetlona");
                 Assert.Less(Difference(left, right), 0.015f, "Ruch kamery nie przesuwa refleksu po zbroi");
@@ -448,6 +538,7 @@ namespace Turris.Tests
                 var glossy = new Material(Shader.Find("Universal Render Pipeline/Lit")); cleanup.Add(glossy);
                 glossy.SetFloat("_Metallic", 1); glossy.SetFloat("_Smoothness", 0.85f);
                 quad.GetComponent<Renderer>().sharedMaterial = glossy;
+                Read(-1.732f); yield return null; yield return null;
                 float pbrDifference = Difference(Read(-1.732f), Read(1.732f));
                 Assert.Greater(pbrDifference, 0.05f, "Kontrola dodatnia wykrywa ruchomy refleks PBR");
                 quad.GetComponent<Renderer>().sharedMaterial = material;
@@ -457,7 +548,7 @@ namespace Turris.Tests
                 Color additional = Read(0);
                 Assert.Greater(additional.r - additional.g, 0.05f, "Matowy materiał odbiera światło punktowe w Forward+");
                 Debug.Log($"Matowy materiał: różnica widoków {Difference(left,right):F5}, kontrola PBR {pbrDifference:F5}, światło punktowe {additional}");
-                // Paleta koncepcji: ciepła, przygaszona stal, złote okucia i zachowany burgund.
+                // Paleta koncepcji: przygaszona stal, złote okucia i zachowany burgund, czytelne także w cieniu.
                 light.type = LightType.Directional; light.color = Color.white; light.intensity = 1;
                 lightGo.transform.rotation = Quaternion.Euler(0,30,0);
                 material.SetColor("_BaseColor",Color.white);
@@ -479,8 +570,12 @@ namespace Turris.Tests
                 Assert.Greater(cloth.r,cloth.g*3,"Burgund nie dostaje jednolitego złotego filtra");
                 Assert.Greater(cloth.r,cloth.b*2);
                 Assert.Less(shade.grayscale,steel.grayscale*0.65f,"Cień zachowuje czytelny podział bryły");
-                Assert.Greater(shade.r,shade.b,"Cienie stali nie przechodzą w futurystyczny błękit");
-                Debug.Log($"Paleta: stal {steel}, złoto {trim}, tkanina {cloth}, cień {shade}");
+                Assert.Less(Mathf.Abs(shade.r-shade.b),0.10f,"Cień jest neutralny lub delikatnie chłodny, bez nasyconego błękitu");
+                Assert.Greater(shade.grayscale,steel.grayscale*.35f,"W cieniu pozostaje czytelny kolor płyty");
+                lightGo.transform.rotation=Quaternion.Euler(0,30,0); light.intensity=8;
+                Color strong=SamplePigment(new Color(.98f,.98f,.98f));
+                Assert.Less(strong.grayscale,.82f,"Nawet mocne światło nie zamienia płyt w białą emalię");
+                Debug.Log($"Paleta: stal {steel}, złoto {trim}, tkanina {cloth}, cień {shade}, światło 8× {strong}");
             }
             finally
             {

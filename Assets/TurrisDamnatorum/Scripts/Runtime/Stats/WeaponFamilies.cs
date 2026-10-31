@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -74,8 +75,10 @@ namespace Turris
             { "spell_frostnova", BuildTag.Focus }, { "spell_heal", BuildTag.Focus }, { "spell_icelance", BuildTag.Focus },
             { "spell_meteor", BuildTag.Focus }, { "spell_nova", BuildTag.Focus }, { "spell_scatter", BuildTag.Focus },
             { "spell_spark", BuildTag.Focus }, { "spell_spear", BuildTag.Focus }, { "spell_storm", BuildTag.Focus },
+            // Szarża: broń dwuręczna albo tarcza (jednoręczną bez tarczy się nie szarżuje; z tarczą kończy ją uderzenie tarczą).
+            { TurrisSkills.ChargeTarget, BuildTag.TwoHanded | BuildTag.Shield },
             // Dowolna broń: szarże, odtrącenie, tupnięcie, okrzyki i aury.
-            { "hu_infernal_charge", BuildTag.None }, { "hu_repel", BuildTag.None }, { "skill_charge", BuildTag.None },
+            { "hu_infernal_charge", BuildTag.None }, { "hu_repel", BuildTag.None },
             { "skill_stomp", BuildTag.None }, { "skill_warcry", BuildTag.None }, { "hu_aura_defiance", BuildTag.None },
             { "hu_aura_holy_fire", BuildTag.None }, { "hu_aura_might", BuildTag.None }, { "hu_aura_purity", BuildTag.None },
             { "hu_aura_renewal", BuildTag.None }, { "hu_aura_zeal", BuildTag.None },
@@ -108,15 +111,18 @@ namespace Turris
         public static bool Meets(BuildTag required, BuildTag have)
         {
             var families = required & All;
-            var rest = required & ~All;
-            return (rest & have) == rest && (families == BuildTag.None || (families & have) != BuildTag.None);
+            // Broń dwuręczna razem z tarczą to też „którekolwiek” (Szarża: dwuręczna albo jednoręczna z tarczą).
+            var stance = (required & BuildTag.TwoHanded) != 0 ? required & (BuildTag.TwoHanded | BuildTag.Shield) : BuildTag.None;
+            var rest = required & ~All & ~stance;
+            return (rest & have) == rest && (families == BuildTag.None || (families & have) != BuildTag.None)
+                && (stance == BuildTag.None || (stance & have) != BuildTag.None);
         }
 
         /// <summary>Czy broń (ręka główna + druga) spełnia wymaganie rodzaju broni i tarczy skilla.</summary>
         public static bool Usable(SpellDefinition s, ItemDefinition main, ItemDefinition off)
         {
             var have = Of(main) | Of(off) | (off != null && off.IsShield ? BuildTag.Shield : BuildTag.None);
-            return Meets(s.requiredTags & (All | BuildTag.Shield), have);
+            return Meets(s.requiredTags & (All | BuildTag.Shield | BuildTag.TwoHanded), have);
         }
 
         static readonly Dictionary<ItemDefinition, BuildTag> cache = new Dictionary<ItemDefinition, BuildTag>();
@@ -131,6 +137,9 @@ namespace Turris
                 var row = HuRow(def);
                 t = row != null ? FromHuTags(row.Tags) : BuildTag.None;
             }
+            // Dwuręczna broń do walki wręcz (bez kosturów, łuków i noży do rzucania).
+            if (def.twoHanded && (t & (BuildTag.Blade | BuildTag.HeavyWeapon)) != 0 && (t & (BuildTag.Dagger | BuildTag.Focus | BuildTag.Ranged)) == 0)
+                t |= BuildTag.TwoHanded;
             if (Extra.TryGetValue(def.id, out var extra)) t |= extra;
             cache[def] = t;
             return t;
@@ -142,12 +151,14 @@ namespace Turris
         static BuildTag FromHuTags(string[] tags)
         {
             var t = BuildTag.None;
+            // Broń ciężka to tylko dwuręczne topory, młoty, korbacze i morgensterny – jednoręczny korbacz czy morgenstern nią nie jest.
+            bool twoHanded = Array.IndexOf(tags, "twohanded") >= 0;
             foreach (var tag in tags)
                 switch (tag)
                 {
                     case "sword": case "greatsword": t |= BuildTag.Blade; break;
                     case "dagger": t |= BuildTag.Blade | BuildTag.Dagger; break;
-                    case "axe": case "blunt": case "hammer": case "flail": case "morningstar": t |= BuildTag.HeavyWeapon; break;
+                    case "axe": case "blunt": case "hammer": case "flail": case "morningstar": if (twoHanded) t |= BuildTag.HeavyWeapon; break;
                     case "bow": t |= BuildTag.Ranged; break;
                     case "wand": case "staff": case "grimoire": t |= BuildTag.Focus; break;
                 }

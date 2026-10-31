@@ -73,7 +73,8 @@ namespace Turris
         public bool TryStart(ActionType type, float startupTime, float activeTime, float recoveryTime, float cancelAfterRecovery = float.PositiveInfinity)
         {
             if (!CanStart(type)) return false;
-            bool chained = type == ActionType.LightAttack && Current == ActionType.LightAttack;
+            // Seria: lekki po lekkim i ciężki po ciężkim (ciężka broń dwuręczna rąbie na przemian).
+            bool chained = (type == ActionType.LightAttack || type == ActionType.HeavyAttack) && Current == type;
             ComboIndex = chained ? ComboIndex + 1 : 0;
             Begin(type, startupTime, activeTime, recoveryTime, cancelAfterRecovery);
             return true;

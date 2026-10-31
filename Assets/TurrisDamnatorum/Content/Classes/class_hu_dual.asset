@@ -64,6 +64,12 @@ MonoBehaviour:
   - stat: 27
     mode: 0
     value: 20
+  - stat: 32
+    mode: 0
+    value: 10
+  - stat: 33
+    mode: 0
+    value: 10
   lookOverride: {fileID: 0}
   toughness: 12
   strength: 12

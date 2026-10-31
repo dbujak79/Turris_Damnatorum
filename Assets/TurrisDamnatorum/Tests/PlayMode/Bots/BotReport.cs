@@ -101,6 +101,10 @@ namespace Turris.Tests.Bots
                 sb.AppendLine($"  Ostatnie 3 s przed śmiercią: średnio {Pct(Avg(dead.Select(x => x.deathBurst3s)), 1)} maks. HP straconych " +
                               $"(śmierć z ≥50% HP w 3 s: {dead.Count(x => x.deathBurst3s >= 0.5f)}/{dead.Count}). " +
                               $"Picie: {s.runs.Sum(x => x.flaskAttempts)} prób, {s.runs.Sum(x => x.flasksUsed)} wypitych ({Pct(s.runs.Sum(x => x.flaskAttempts) - s.runs.Sum(x => x.flasksUsed), s.runs.Sum(x => x.flaskAttempts))} przerwanych trafieniem).");
+                var low = Tally.Merge(s.runs.Select(x => x.lowHpTime));
+                if (low.Sum > 0f)
+                    sb.AppendLine($"  Niskie życie z flaszką w zapasie: {F(low.Sum / s.runs.Count)} s na podejście – " +
+                                  string.Join(", ", low.Items.OrderByDescending(x => x.val).Select(x => $"{x.key} {Pct(x.val, low.Sum)}")) + ".");
             }
             sb.AppendLine();
         }

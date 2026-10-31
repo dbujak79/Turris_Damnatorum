@@ -16,11 +16,22 @@ namespace Turris
                 sb.Append($"Lekki cios {it.definition.weapon.light.baseDamage * it.WeaponLevelFactor:0}, poziom {it.level + 1}/{HellEconomy.MaxLevelOf(it.definition) + 1}\n");
             foreach (var m in it.definition.modifiers) sb.Append(m.Scaled(it.QualityFactor)).Append('\n');
             for (int i = 0; i < it.affixes.Count; i++) sb.Append($"<color=#{Hex(HellEconomy.RarityColor(it.rarity))}>{it.affixes[i].Scaled(it.HuQualityFactor)}</color>\n");
+            foreach (var e in it.Effects) sb.Append(e).Append('\n'); // moce unikatów, uchylenie, dusze, affixy bez statystyki Turris
             return sb.ToString().TrimEnd('\n');
         }
 
+        /// <summary>Podgląd oferty (HU OfferPreview): co jest teraz założone w slocie, który przedmiot zajmie.</summary>
+        static string CurrentlyWorn(RunState run, ItemInstance offer)
+        {
+            var d = offer.definition;
+            var slots = d.kind == ItemKind.Ring ? new[] { EquipSlot.Ring1, EquipSlot.Ring2 } : new[] { d.DefaultSlot };
+            var worn = slots.Select(s => run.equipment.Get(s)).Where(i => i != null).ToList();
+            if (worn.Count == 0) return "<color=#9fd49f>Teraz: pusty slot</color>";
+            return string.Join("\n", worn.Select(i => $"<color=#a8a8a8>Teraz: {i.Name} – {ItemLines(i).Replace("\n", " · ")}</color>"));
+        }
+
         static string PerkLines(BoonDefinition b, int owned) =>
-            $"poziom {owned} → {owned + 1}/{b.maxStacks}: " + string.Join(", ", b.modifiers.Select(m => m.ToString()));
+            $"poziom {owned} → {owned + 1}/{b.maxStacks}: " + string.Join(", ", b.modifiers.Select(m => m.ToString()).Concat(b.effects.Select(e => e.ToString())));
 
         /// <summary>Sekcja sklepu po piętrze w sklepie dusz.</summary>
         void DrawFloorShopSection()
@@ -29,6 +40,15 @@ namespace Turris
             var stock = root.FloorStock;
             if (stock == null || stock.Count == 0) return;
             var wrap = new GUIStyle(small) { wordWrap = true, richText = true };
+            // Siła buildu (HU LoadoutAnalysis): zwykły atak i skille w slotach – na trafienie, tempo, DPS.
+            var snap = root.Player != null ? root.Player.Build : null;
+            if (snap != null)
+            {
+                GUILayout.Label("<b>Twój build</b>", label);
+                GUILayout.Label(LoadoutAnalysis.Format(LoadoutAnalysis.MainAttack(snap), true), wrap);
+                foreach (var l in LoadoutAnalysis.Skills(snap)) GUILayout.Label(LoadoutAnalysis.Format(l, false), wrap);
+                GUILayout.Space(6);
+            }
             void Section(string title, FloorOffer.Kind[] kinds)
             {
                 var list = stock.Where(o => kinds.Contains(o.kind)).ToList();
@@ -40,11 +60,20 @@ namespace Turris
                     string color = offer.item != null ? Hex(HellEconomy.RarityColor(offer.item.rarity)) : "C8D8FF";
                     GUILayout.Label($"<color=#{color}>{offer.Title}</color>", label);
                     string lines = offer.kind == FloorOffer.Kind.Perk ? PerkLines(offer.perk, run.BoonStacks(offer.perk))
-                        : offer.kind == FloorOffer.Kind.WeaponLevel ? $"Obrażenia broni +20% (poziom {offer.item.level + 2}/{HellEconomy.MaxLevelOf(offer.item.definition) + 1})"
+                        : offer.kind == FloorOffer.Kind.WeaponLevel ? (offer.item.definition.IsShield ? "Blok bierny +2 pkt, szybszy ładunek bloku" : "Obrażenia broni +20%") + $" (poziom {offer.item.level + 2}/{HellEconomy.MaxLevelOf(offer.item.definition) + 1})"
                         : ItemLines(offer.item).Replace("\n", " · ");
                     GUILayout.Label(lines, wrap);
-                    GUI.enabled = !offer.sold && run.souls >= offer.price;
-                    Btn(offer.sold ? "Kupione" : $"Kup ({offer.price} dusz)", button, () => root.BuyFloorOffer(offer), GUILayout.Height(38));
+                    if (!offer.sold && (offer.kind == FloorOffer.Kind.Item || offer.kind == FloorOffer.Kind.Weapon)) GUILayout.Label(CurrentlyWorn(run, offer.item), wrap);
+                    if (!offer.sold && offer.kind == FloorOffer.Kind.Weapon)
+                    {
+                        var losing = LoadoutAnalysis.PerksLosingEffect(run, offer.item.definition);
+                        if (losing.Count > 0) GUILayout.Label($"<color=#E07060>Po założeniu przestaną działać: {string.Join(", ", losing.Select(p => p.displayName))}</color>", wrap);
+                    }
+                    if (!offer.sold && offer.kind == FloorOffer.Kind.Perk && snap != null && LoadoutAnalysis.PerkUseless(offer.perk, snap))
+                        GUILayout.Label("<color=#E07060>Nic nie da w tym buildzie (brak czaru w slotach)</color>", wrap);
+                    bool fits = offer.item == null || offer.kind == FloorOffer.Kind.WeaponLevel || run.CanReceive(offer.item);
+                    GUI.enabled = !offer.sold && run.souls >= offer.price && fits;
+                    Btn(offer.sold ? "Kupione" : fits ? $"Kup ({offer.price} dusz)" : "Plecak pełny", button, () => root.BuyFloorOffer(offer), GUILayout.Height(38));
                     GUI.enabled = true;
                     GUILayout.Space(4);
                 }

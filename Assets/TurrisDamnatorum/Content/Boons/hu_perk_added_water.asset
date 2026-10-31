@@ -22,7 +22,7 @@ MonoBehaviour:
     mode: 0
     value: 25
   effects:
-  - type: 49
+  - type: 57
     value: 1
   extraHealthFlasks: 0
   extraManaFlasks: 0

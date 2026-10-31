@@ -38,7 +38,9 @@ MonoBehaviour:
   - stat: 11
     mode: 0
     value: 1.5
-  effects: []
+  effects:
+  - type: 20
+    value: 0.2
   weapon:
     light:
       name: Atak
@@ -66,6 +68,8 @@ MonoBehaviour:
       explosionRadius: 0
       element: 0
       elementShare: 0
+      element2: 0
+      element2Share: 0
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0
@@ -97,6 +101,8 @@ MonoBehaviour:
       explosionRadius: 0
       element: 0
       elementShare: 0
+      element2: 0
+      element2Share: 0
       bonusVsFrozen: 0
       bonusVsBleeding: 0
       executeBonus: 0
