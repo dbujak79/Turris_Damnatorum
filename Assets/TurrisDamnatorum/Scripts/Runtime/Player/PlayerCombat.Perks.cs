@@ -140,6 +140,53 @@ namespace Turris
 
         internal void CountManifestation(float baseSeconds, float scale) { if (scale < 1f) { PerkCount("manifestacja: strefy"); PerkCount("manifestacja: czas bazowy", baseSeconds); PerkCount("manifestacja: czas efektywny", baseSeconds * scale); } }
 
+        // ================================================================== Rodzina Łotrzyka
+
+        /// <summary>Premia ciosu w plecy z Zasadzki (Długi oddech: słabsza, w zamian dłuższe okno po uniku).</summary>
+        float AmbushBackBonus => PerkActive(NativePerkCatalog.LongBreath) ? PerkT.breathBackBonus : AmbushBackMultiplier - 1f;
+        float AmbushWindowSeconds => PerkActive(NativePerkCatalog.LongBreath) ? PerkT.breathWindow : AmbushWindow;
+        /// <summary>Pozostały czas okna Zasadzki po uniku (HUD, testy).</summary>
+        public float AmbushWindowLeft => ambushWindow;
+
+        /// <summary>Otwarta rana: mnożnik bezpośredniego ręcznego ciosu w ten cel (1 – bez premii).</summary>
+        public float OpenWoundMultiplier(EnemyBrain target)
+        {
+            if (target == null || target.Status.BleedStacks <= 0 || !PerkActive(NativePerkCatalog.OpenWound)) return 1f;
+            return 1f + Mathf.Min(PerkT.woundCap, PerkT.woundPerStack * target.Status.BleedStacks);
+        }
+
+        /// <summary>Daleki strzał: mnożnik zwykłego strzału z łuku wg odległości od punktu wylotu (1 – strefa neutralna).</summary>
+        public float FarShotMultiplier(float distance)
+        {
+            if (!PerkActive(NativePerkCatalog.FarShot)) return 1f;
+            var t = PerkT;
+            return distance > t.farDistance ? 1f + t.farBonus : distance < t.nearDistance ? 1f - t.farPenalty : 1f;
+        }
+
+        void RogueOutgoing(ref HitData hit, EnemyBrain target)
+        {
+            if (!ManualDirect(hit)) return;
+            float wound = OpenWoundMultiplier(target);
+            if (wound > 1f) { hit.physical *= wound; hit.magic *= wound; PerkCount("otwarta rana: ciosy"); }
+            if (hit.basicAttack && hit.isProjectile)
+            {
+                float far = FarShotMultiplier(Vector3.Distance(hit.hasLaunchPoint ? hit.launchPoint : transform.position, target.transform.position));
+                if (far != 1f) { hit.physical *= far; hit.magic *= far; PerkCount(far > 1f ? "daleki strzał: premia" : "daleki strzał: kara"); }
+            }
+        }
+
+        bool lightStepReady;
+
+        /// <summary>Koszt wytrzymałości zwykłego ataku: każdy atak zużywa gotowość Lekkiego kroku, tańszy jest tylko lekki cios wręcz.</summary>
+        float AttackStaminaCost(ActionType type, AttackDefinition atk)
+        {
+            if (!lightStepReady) return atk.staminaCost;
+            lightStepReady = false;
+            if (type != ActionType.LightAttack || atk.delivery != AttackDelivery.Melee) return atk.staminaCost;
+            PerkCount("lekki krok: tańsze ciosy");
+            return atk.staminaCost * PerkT.stepCost;
+        }
+
         // ================================================================== Cykl życia
 
         void PerksInit()

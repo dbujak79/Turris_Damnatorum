@@ -11,6 +11,11 @@
 - Niesprawdzone: zrzuty tooltipów/porównania (OnGUI), scenariusze PlayMode P02–P05/P08/P09/P11 (pokryte EditMode), pełny PlayMode po ostatniej poprawce aur/przywołań, wycena nowych statystyk przez boty.
 - Następne kroki: obejrzeć tooltipy w grze (720p/1080p, pad); ocenić `*_add` × `*_pct` w graniu; polskie nazwy przedrostków HU; ewentualnie recovery w szybkości rzucania.
 
+### Perki rodziny Łotrzyka — 2026-11-01
+
+- Otwarta rana, Długi oddech, Lekki krok, Daleki strzał: natywne, 1 poziom, w sklepie tylko dla pasującego stylu ([raport](RAPORT_PERKI_SPECJALIZACYJNE.md)). Liczby to hipotezy, balans niezmierzony; boty oceniają je w sklepie, ale nie mają pod nie polityki.
+- Testy: `NativePerkTests`, `NativePerkPlayTests` (okno Zasadzki 1,5 → 2,5 s, premia rany do ×1,12, tańszy tylko pierwszy cios po uniku, kara i premia strzału). EditMode 316/319 (2 znane błędy wyglądu, 1 pominięty); PlayMode 203/204 (1 galeria na żądanie).
+
 ### Audyt buildcraftu: perki i unikaty — 2026-11-01
 
 - [Audyt](AUDYT_BUILDCRAFT.md), etapy 1–3. Etap 3: droga żywiołowa ok. 1,8× fizycznej przy pełnej inwestycji (rachunek), riposta omija premie, Legion niedostępny (korekta etapu 1), Sfora martwa przed piętrem 7 (teraz w sklepie od 7), T01 pięści ×2, riposta z premią ogólną i dodanymi żywiołami. Pomiar na 34 demonach: żywioł ×1,18 przy 6 affiksach, ×1,80 przy pełnej inwestycji; po zmianie dodatku na 3,5% za punkt: ×0,91 i ×1,35. Projekt perków Łotrzyka w audycie.

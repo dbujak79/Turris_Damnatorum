@@ -25,6 +25,10 @@ namespace Turris.Tests.Bots
                 case NativePerkCatalog.Breach: return IsMageBot ? 2f : 2.8f; // bot wręcz łamie postawę i ripostuje
                 case NativePerkCatalog.Pack: return SummonKindsInSlots() >= 2 ? 3f : 1f; // jeden rodzaj – premia 0%
                 case NativePerkCatalog.Manifestation: return 2.8f; // te same obrażenia stref w połowie czasu
+                case NativePerkCatalog.OpenWound: return 2.8f;    // premia do ciosów przy źródle krwawienia w buildzie
+                case NativePerkCatalog.FarShot: return 2.8f;      // bot strzela z dystansu
+                case NativePerkCatalog.LongBreath: return 2.5f;   // bot po uniku wraca do ciosu; słabszy cios w plecy
+                case NativePerkCatalog.LightStep: return 2.5f;    // oszczędność wytrzymałości
             }
             return 1f;
         }

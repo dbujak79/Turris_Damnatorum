@@ -244,9 +244,9 @@ Bez pomiaru w grze: droga żywiołowa na prawdziwych odpornościach, przeżywaln
 
 **Uwaga do metody [Z]:** tryb `batch` zawyża walkę z grupą: ten sam miecz w grupie 7610 w `batch`, 4733 w trybie graficznym; na jednym celu tryby się zgadzają (2962 / 2858). Wyniki grupowe z `AllPowers_GenericRotation` (batch) są więc dodatkowo niepewne; celowane pomiary z etapu 2 szły w trybie graficznym.
 
-### Projekt: perki rodziny Łotrzyka (propozycja, bez wdrożenia)
+### Perki rodziny Łotrzyka (wdrożone; balans niezmierzony)
 
-Wszystkie jako natywne, jednopoziomowe (`NativePerkCatalog`), oferowane tylko klasom z danym stylem. Liczby to hipotezy do pomiaru.
+Wszystkie cztery natywne, jednopoziomowe (`NativePerkCatalog`), oferowane tylko klasom z danym stylem. Liczby to hipotezy do pomiaru. Koszty: 70 / 75 / 65 / 75 dusz wg kolejności w `RAPORT_PERKI_SPECJALIZACYJNE.md`.
 
 | Perk | Fantazja | Reguła | Koszt / decyzja | Kontra | Test |
 |---|---|---|---|---|---|
@@ -255,7 +255,7 @@ Wszystkie jako natywne, jednopoziomowe (`NativePerkCatalog`), oferowane tylko kl
 | **Lekki krok** | taniec między ciosami | Pierwszy lekki cios po uniku kosztuje 50% wytrzymałości (raz na unik) | tylko unik, nie gwarda; działa wyłącznie przy grze blisko | ciosy obszarowe po uniku | wytrzymałość na minutę, liczba uników, spam unik + cios |
 | **Daleki strzał** | łucznik trzymający dystans | Strzał w cel powyżej 8 m +12%, poniżej 4 m −12% (zwykły atak łukiem, obok Sokolego oka) | kara w zwarciu; wymaga miejsca | wrogowie szybcy, skoczki, ciasne areny | średni dystans strzału, przeżywalność, kumulacja z Sokolim okiem |
 
-Rekomendacja na pierwszy test: **Otwarta rana** i **Długi oddech** – dotykają braku u łotrzyka wręcz i nie mają ryzyka pętli. Największe ryzyko nadużycia: Lekki krok (spam).
+Największe ryzyko nadużycia: Lekki krok (spam uniku i ciosu); działa raz na unik, a każdy atak zużywa gotowość. Nie zmierzono jeszcze wpływu na walkę.
 
 ### Pomiar dróg obrażeń [Z]
 

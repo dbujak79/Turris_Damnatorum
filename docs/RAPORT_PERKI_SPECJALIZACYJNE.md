@@ -18,11 +18,22 @@ Wspólne: E01–E03, E14, P01 (prawdziwy `GameConfig` ze sceny Main, bez regener
 | Id | Poziomy | Działanie | Baza | Cena (PriceScale 2,5, inflacja 1) | Waga | Od piętra |
 |---|---:|---|---:|---:|---:|---:|
 | `perk.turris.duelist` | 1 | +0,15 do sumy tempa kwalifikowanego ataku | 28 | 70 | 0,70 | 1 |
-| `perk.turris.exploit_breach` | 1 | ×1,25 bezpośredniego trafienia, okno 3 s | 30 | 75 | 0,80 | 3 |
-| `perk.turris.diverse_pack` | 1 | +10% za inny rodzaj (maks. +20%) | 32 | 80 | 0,65 | 1 |
+| `perk.turris.exploit_breach` | 1 | ×1,5 bezpośredniego trafienia, okno 3 s, tylko wrogowie z postawą od 50 | 30 | 75 | 0,80 | 3 |
+| `perk.turris.diverse_pack` | 1 | +15% za inny rodzaj (maks. +30%) | 32 | 80 | 0,65 | 7 |
 | `perk.turris.violent_manifestation` | 1 | czas i odstępy tyknięć ×0,5 | 30 | 75 | 0,65 | 1 |
 
 Jedno źródło liczb: `GameConfig.nativePerks` (`NativePerkTuning`, walidacja NaN/zakresów w `Valid()`); stary asset bez pola dostaje wartości domyślne.
+
+### Perki rodziny Łotrzyka (dodane po audycie, `docs/AUDYT_BUILDCRAFT.md`)
+
+| Id | Działanie | Warunek | Baza | Cena | Waga |
+|---|---|---|---:|---:|---:|
+| `perk.turris.open_wound` Otwarta rana | bezpośredni ręczny cios +4% za warstwę krwawienia celu, najwyżej +12% | rodzina Łotrzyka, broń wręcz, źródło krwawienia | 30 | 75 | 0,70 |
+| `perk.turris.long_breath` Długi oddech | okno Zasadzki po uniku 2,5 s; cios w plecy +50% zamiast +60% | klasa z Zasadzką | 28 | 70 | 0,70 |
+| `perk.turris.light_step` Lekki krok | pierwszy lekki cios wręcz po uniku za 50% wytrzymałości, raz na unik | rodzina Łotrzyka, broń wręcz | 26 | 65 | 0,70 |
+| `perk.turris.far_shot` Daleki strzał | zwykły strzał z łuku: ponad 8 m +12%, poniżej 4 m −12% | rodzina Łotrzyka, łuk | 30 | 75 | 0,70 |
+
+Wszystkie od piętra 1. Liczone w `PlayerCombat.Perks.cs` (`RogueOutgoing`, `AttackStaminaCost`, `AmbushWindowSeconds`). Boty oceniają je w `HeroBot.Perks.cs`, ale nie mają polityki pod te perki (np. nie trzymają dystansu pod Dalekim strzałem).
 
 ## 3. Mapa kodu
 

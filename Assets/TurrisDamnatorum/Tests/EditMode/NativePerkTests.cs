@@ -33,8 +33,9 @@ namespace Turris.Tests
         public void Catalog_FourStableIds_OneLevel_Defaults_IdempotentPerConfig()
         {
             var a = NativePerkCatalog.Boons(fx.Cfg);
-            Assert.AreEqual(4, a.Count);
-            CollectionAssert.AreEquivalent(new[] { "perk.turris.duelist", "perk.turris.exploit_breach", "perk.turris.diverse_pack", "perk.turris.violent_manifestation" }, a.Select(b => b.id));
+            Assert.AreEqual(8, a.Count);
+            CollectionAssert.AreEquivalent(new[] { "perk.turris.duelist", "perk.turris.exploit_breach", "perk.turris.diverse_pack", "perk.turris.violent_manifestation",
+                "perk.turris.open_wound", "perk.turris.long_breath", "perk.turris.light_step", "perk.turris.far_shot" }, a.Select(b => b.id));
             Assert.IsTrue(a.All(b => b.maxStacks == 1));
             Assert.AreSame(a[0], NativePerkCatalog.Boons(fx.Cfg)[0], "idempotentnie");
             var other = new Fixture();
@@ -102,6 +103,30 @@ namespace Turris.Tests
                 Assert.IsFalse(NativePerkCatalog.DuelistHands(I(id), null), id);
             foreach (var off in new[] { "hu_shield", "hu_grimoire_fire", "hu_dagger", "hu_offdagger" })
                 Assert.IsFalse(NativePerkCatalog.DuelistHands(I("hu_sword"), I(off)), "zajęta druga ręka: " + off);
+        }
+
+        // Perki rodziny Łotrzyka: kwalifikacja klasą i wyposażeniem, ceny i opisy z jednego źródła.
+        [Test]
+        public void RoguePerks_QualifyByFamilyAndWeapon()
+        {
+            string W = NativePerkCatalog.OpenWound, B = NativePerkCatalog.LongBreath, S = NativePerkCatalog.LightStep, F = NativePerkCatalog.FarShot;
+            var kris = Run("class_hu_assassin", "hu_dagger_kris", null);
+            Assert.IsTrue(NativePerkCatalog.Usable(W, kris), "sztylet krwawiący");
+            Assert.IsTrue(NativePerkCatalog.Usable(B, kris), "Zabójca ma Zasadzkę");
+            Assert.IsTrue(NativePerkCatalog.Usable(S, kris));
+            Assert.IsFalse(NativePerkCatalog.Usable(F, kris), "bez łuku");
+            var bow = Run("class_hu_archer", "hu_bow", null);
+            Assert.IsTrue(NativePerkCatalog.Usable(F, bow));
+            Assert.IsFalse(NativePerkCatalog.Usable(B, bow), "Łucznik nie ma Zasadzki");
+            Assert.IsFalse(NativePerkCatalog.Usable(S, bow), "łuk to nie broń wręcz");
+            Assert.IsFalse(NativePerkCatalog.Usable(W, bow));
+            var knight = Run("class_knight", "hu_sword", null);
+            foreach (var id in new[] { W, B, S, F }) Assert.IsFalse(NativePerkCatalog.Usable(id, knight), "poza rodziną Łotrzyka: " + id);
+            var t = NativePerkCatalog.Tuning(fx.Cfg);
+            StringAssert.Contains("2,5", NativePerkCatalog.Benefit(B, t));
+            Assert.AreEqual(t.farPrice, NativePerkCatalog.BasePrice(F, t), 1e-4f);
+            var bad = new NativePerkTuning { woundCap = float.NaN, stepCost = -1f }.Valid();
+            Assert.AreEqual(0.12f, bad.woundCap, 1e-5f); Assert.AreEqual(0f, bad.stepCost, 1e-5f);
         }
 
         // E06 (ostrzeżenie w analizie): tarcza albo broń dwuręczna usypia Pojedynkowicza, inna broń jednoręczna – nie.

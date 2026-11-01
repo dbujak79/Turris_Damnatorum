@@ -433,7 +433,7 @@ namespace Turris
             AttackWindup = ScaleStartup(atk.windup) / aspd * timeScale;
             AttackActive = ScaleStartup(atk.active) / aspd * timeScale;
             Actions.TryStart(type, AttackWindup, AttackActive, ScaleRecovery(atk.recovery) / aspd * timeScale, ScaleRecovery(atk.cancelAfter) / aspd * timeScale);
-            Stamina.Drain(atk.staminaCost, B.staminaRegenDelay);
+            Stamina.Drain(AttackStaminaCost(type, atk), B.staminaRegenDelay);
             NewOrigin();
             Feature?.AttackStarted(type, atk, ActionOrigin);
             UniquesAttackStarted(type, atk, ActionOrigin);

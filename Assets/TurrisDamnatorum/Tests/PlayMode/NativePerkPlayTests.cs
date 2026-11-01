@@ -77,7 +77,7 @@ namespace Turris.Tests
             yield return null; yield return null;
             var root = Object.FindAnyObjectByType<GameRoot>();
             Assert.IsNotNull(root);
-            Assert.AreEqual(4, NativePerkCatalog.Boons(root.config).Count);
+            Assert.AreEqual(8, NativePerkCatalog.Boons(root.config).Count);
             var plan = new LoadoutPlan { classDef = root.config.classes.First(c => c.id == "class_knight"), difficulty = root.config.difficulties[0] };
             var run = RunFactory.Create(plan, root.config, 3);
             run.equipment.Unequip(EquipSlot.OffHand);
@@ -87,12 +87,24 @@ namespace Turris.Tests
             TestContext.WriteLine("oferowane natywne: " + string.Join(", ", seen));
             Assert.IsTrue(seen.Contains(NativePerkCatalog.Duelist) && seen.Contains(NativePerkCatalog.Breach), "sklep oferuje perki zgodne z buildem");
             Assert.IsFalse(seen.Contains(NativePerkCatalog.Pack), "bez przywołań – bez Sfory");
+            Assert.IsFalse(seen.Contains(NativePerkCatalog.LongBreath) || seen.Contains(NativePerkCatalog.LightStep), "perki Łotrzyka nie dla Wojownika");
+            // Rodzina Łotrzyka w tym samym sklepie.
+            var rogue = RunFactory.Create(new LoadoutPlan { classDef = root.config.classes.First(c => c.id == "class_rogue"), difficulty = root.config.difficulties[0] }, root.config, 3);
+            rogue.floorsCleared = 4; rogue.souls = 99999;
+            var rogueSeen = new HashSet<string>();
+            for (int s = 0; s < 400; s++) foreach (var o in FloorShop.Generate(rogue, root.config, new System.Random(s))) if (o.perk != null && NativePerkCatalog.IsNative(o.perk)) rogueSeen.Add(o.perk.id);
+            TestContext.WriteLine("oferowane Łotrzykowi: " + string.Join(", ", rogueSeen));
+            Assert.IsTrue(rogueSeen.Contains(NativePerkCatalog.LongBreath), "Zasadzka – Długi oddech w ofercie");
             var offer = Enumerable.Range(0, 400).SelectMany(s => FloorShop.Generate(run, root.config, new System.Random(s))).First(o => o.perk != null && o.perk.id == NativePerkCatalog.Duelist);
             Assert.IsTrue(FloorShop.Buy(offer, run));
             var back = JsonUtility.FromJson<RunSnapshot>(JsonUtility.ToJson(RunSnapshot.Capture(run))).Restore(root.config);
             Assert.AreEqual(1, back.BoonStacks(NativePerkCatalog.Get(root.config, NativePerkCatalog.Duelist)));
             string path = System.IO.Path.Combine(Application.persistentDataPath, GameRoot.ProfileFileOverride);
             if (System.IO.File.Exists(path)) System.IO.File.Delete(path);
+            // Scena Main nie może zostać na kolejne testy.
+            var mainScene = SceneManager.GetActiveScene();
+            SceneManager.SetActiveScene(SceneManager.CreateScene("PoTesciePerkow"));
+            yield return SceneManager.UnloadSceneAsync(mainScene);
         }
 
         // P02 – Pojedynkowicz: czas serii, koszt, tarcza wyłącza, inne akcje bez zmian
@@ -178,6 +190,81 @@ namespace Turris.Tests
             yield return new WaitForSeconds(0.8f);
             Assert.AreEqual(1f, P(pc, "wyłom: riposty"), 0.01f, "riposta wykorzystała okno");
             Assert.AreEqual(1f, P(pc, "wyłom: okna zużyte"), 0.01f);
+        }
+
+        // Otwarta rana: premia rośnie z warstwami do limitu, działa w prawdziwym ciosie
+        [UnityTest]
+        public IEnumerator OpenWound_ScalesWithBleedStacks_CappedOnRealHit()
+        {
+            var pc = Hero("class_hu_assassin", null, "hu_dagger_kris", null, new[] { NativePerkCatalog.OpenWound });
+            var e = Enemy(pc, new Vector3(0, 0.05f, 1.3f));
+            yield return new WaitForSeconds(1.2f);
+            Face(pc, e);
+            Assert.AreEqual(1f, pc.OpenWoundMultiplier(e), 1e-4f, "bez krwawienia bez premii");
+            e.ApplyStatus(StatusKind.Bleed, 100f, 0f);
+            Assert.AreEqual(1f + 0.04f * e.Status.BleedStacks, pc.OpenWoundMultiplier(e), 1e-4f, "za warstwę");
+            for (int i = 0; i < 6; i++) e.ApplyStatus(StatusKind.Bleed, 100f, 0f);
+            TestContext.WriteLine($"warstwy {e.Status.BleedStacks}, mnożnik {pc.OpenWoundMultiplier(e):0.00}");
+            Assert.LessOrEqual(pc.OpenWoundMultiplier(e), 1.12f + 1e-4f, "limit");
+            pc.Request(ActionType.LightAttack);
+            float t = 0f; while (t < 2f && P(pc, "otwarta rana: ciosy") < 1f) { t += Time.deltaTime; yield return null; }
+            Assert.GreaterOrEqual(P(pc, "otwarta rana: ciosy"), 1f, "prawdziwy cios dostał premię");
+        }
+
+        // Długi oddech: dłuższe okno po uniku tylko z perkiem
+        [UnityTest]
+        public IEnumerator LongBreath_LongerAmbushWindowAfterDodge()
+        {
+            float Window(PlayerCombat pc) { pc.MoveIntent = Vector3.back; pc.Request(ActionType.Dodge); pc.MoveIntent = Vector3.zero; return pc.AmbushWindowLeft; }
+            var plain = Hero("class_hu_assassin", null, "hu_dagger", null, new string[0]);
+            yield return new WaitForSeconds(0.1f);
+            float w0 = Window(plain);
+            foreach (var o in cleanup) if (o != null) Object.Destroy(o);
+            cleanup.Clear();
+            yield return null;
+            var perk = Hero("class_hu_assassin", null, "hu_dagger", null, new[] { NativePerkCatalog.LongBreath });
+            yield return new WaitForSeconds(0.1f);
+            float w1 = Window(perk);
+            TestContext.WriteLine($"okno bez perka {w0:0.00} s, z perkiem {w1:0.00} s");
+            Assert.AreEqual(1.5f, w0, 0.05f);
+            Assert.AreEqual(2.5f, w1, 0.05f);
+        }
+
+        // Lekki krok: tylko pierwszy lekki cios po uniku, bez kumulacji
+        [UnityTest]
+        public IEnumerator LightStep_FirstLightAfterDodgeHalfCost_OnlyOnce()
+        {
+            var pc = Hero("class_hu_assassin", null, "hu_dagger", null, new[] { NativePerkCatalog.LightStep });
+            var e = Enemy(pc, new Vector3(0, 0.05f, 1.3f));
+            yield return new WaitForSeconds(0.3f);
+            Face(pc, e);
+            float Cost(ActionType a) { pc.Stamina.SetCurrent(pc.Stamina.Max); float s = pc.Stamina.Current; pc.Request(a); return s - pc.Stamina.Current; }
+            float full = pc.Build.weapon.light.staminaCost;
+            Assert.AreEqual(full, Cost(ActionType.LightAttack), 0.01f, "bez uniku pełny koszt");
+            while (!pc.Actions.IsIdle) yield return null;
+            pc.MoveIntent = Vector3.back; pc.Request(ActionType.Dodge); pc.MoveIntent = Vector3.zero;
+            while (!pc.Actions.IsIdle) yield return null;
+            Assert.AreEqual(full * 0.5f, Cost(ActionType.LightAttack), 0.01f, "pierwszy po uniku za połowę");
+            while (!pc.Actions.IsIdle) yield return null;
+            Assert.AreEqual(full, Cost(ActionType.LightAttack), 0.01f, "drugi już pełny");
+        }
+
+        // Daleki strzał: te same strzały w trzech odległościach
+        [UnityTest]
+        public IEnumerator FarShot_BonusFarPenaltyNear_NeutralBetween()
+        {
+            var pc = Hero("class_rogue", null, "hu_bow", null, new[] { NativePerkCatalog.FarShot });
+            yield return new WaitForSeconds(0.1f);
+            Assert.AreEqual(0.88f, pc.FarShotMultiplier(3f), 1e-4f);
+            Assert.AreEqual(1f, pc.FarShotMultiplier(6f), 1e-4f);
+            Assert.AreEqual(1.12f, pc.FarShotMultiplier(10f), 1e-4f);
+            var e = Enemy(pc, new Vector3(0, 0.05f, 10f));
+            yield return new WaitForSeconds(1.2f);
+            Face(pc, e);
+            pc.Request(ActionType.LightAttack);
+            float t = 0f; while (t < 3f && P(pc, "daleki strzał: premia") < 1f) { t += Time.deltaTime; yield return null; }
+            Assert.GreaterOrEqual(P(pc, "daleki strzał: premia"), 1f, "prawdziwy strzał z daleka");
+            Assert.Greater(e.Health.Max - e.Health.Current, 0f);
         }
 
         // Riposta: premia ogólna i dodane żywioły (audyt, etap 3), przed nimi omijała cały potok.

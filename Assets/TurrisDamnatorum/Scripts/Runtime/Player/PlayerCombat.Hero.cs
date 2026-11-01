@@ -235,13 +235,14 @@ namespace Turris
             {
                 Vector3 toHero = transform.position - target.transform.position; toHero.y = 0f;
                 bool behind = toHero.sqrMagnitude > 1e-4f && Vector3.Dot(target.transform.forward, toHero.normalized) < -0.25f;
-                if (behind) { m *= 1f + UniquesBackstab(AmbushBackMultiplier - 1f, hit, target); CombatEvents.RaiseWorldText(target.AimPoint + Vector3.up * 0.5f, "Z ZASKOCZENIA", new Color(1f, 0.8f, 0.3f)); }
+                if (behind) { m *= 1f + UniquesBackstab(AmbushBackBonus, hit, target); CombatEvents.RaiseWorldText(target.AimPoint + Vector3.up * 0.5f, "Z ZASKOCZENIA", new Color(1f, 0.8f, 0.3f)); }
                 else if (ambushWindow > 0f) { m *= AmbushDodgeMultiplier; ambushWindow = 0f; CombatEvents.RaiseWorldText(target.AimPoint + Vector3.up * 0.5f, "Z ZASKOCZENIA", new Color(1f, 0.8f, 0.3f)); }
             }
             if (Trait == ClassTrait.Bloodlust && Health != null) m *= 1f + BloodlustMax * (1f - Health.Fraction);
             Feature?.OutgoingAgainst(ref hit, target);
             UniquesOutgoingAgainst(ref hit, target);
             BreachOutgoing(ref hit, target);
+            RogueOutgoing(ref hit, target);
             if (Trait == ClassTrait.Hawkeye && hit.isProjectile)
             {
                 // Stanowisko strzeleckie: odległość od punktu wylotu, nie od łucznika.
@@ -359,6 +360,7 @@ namespace Turris
         /// <summary>Unik według stylu klasy (po rozpoczęciu zwykłego uniku).</summary>
         void HeroDodgeStarted()
         {
+            lightStepReady = PerkActive(NativePerkCatalog.LightStep);
             dodgeTracker.Reset();
             switch (DodgeKind)
             {
@@ -380,7 +382,7 @@ namespace Turris
                 }
                 case DodgeStyle.Vanish:
                     hiddenTime = VanishSeconds;
-                    ambushWindow = AmbushWindow;
+                    ambushWindow = AmbushWindowSeconds;
                     HellFx.Shadow(null, transform.position);
                     HellFx.Shadow(transform, transform.position, true, VanishSeconds);
                     break;
@@ -388,7 +390,7 @@ namespace Turris
                     Sfx.Play(SoundId.Warcry, AimPoint, 0.35f, 1.2f);
                     break;
             }
-            if (Trait == ClassTrait.Ambush && DodgeKind != DodgeStyle.Vanish) ambushWindow = AmbushWindow;
+            if (Trait == ClassTrait.Ambush && DodgeKind != DodgeStyle.Vanish) ambushWindow = AmbushWindowSeconds;
         }
 
         // ------------------------------------------------------------------ Skill klasy i aury
