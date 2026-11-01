@@ -29,6 +29,39 @@ namespace Turris
         public Transform Transform => transform;
         public Vector3 AimPoint => transform.position + Vector3.up;
 
+        /// <summary>Wabik doczepiony do celu (fałszywy król, śmiertelna chimera): trafienia przekazywane funkcją, bez własnego ciała.</summary>
+        Transform follow; System.Func<HitData, float> onHit;
+
+        public static FeatureDecoy SpawnOn(PlayerCombat owner, Transform follow, float seconds, int maxDeceived, float range, System.Func<HitData, float> onHit, EnemyBrain exclude = null)
+        {
+            var go = new GameObject("FeatureDecoyBound");
+            go.transform.SetPositionAndRotation(follow.position, follow.rotation);
+            var d = go.AddComponent<FeatureDecoy>();
+            d.owner = owner; d.life = seconds; d.health = d.maxHealth = 1e9f; d.maxDeceived = maxDeceived;
+            d.follow = follow; d.onHit = onHit;
+            var col = go.AddComponent<CapsuleCollider>();
+            col.center = Vector3.up * 0.9f; col.height = 1.8f; col.radius = 0.55f; col.isTrigger = false;
+            // Wabik nakłada się na ciało celu: bez tego fizyka wypycha kontroler celu, a wabik za nim podąża (cel ucieka przez arenę).
+            foreach (var body in follow.GetComponentsInChildren<Collider>()) Physics.IgnoreCollision(col, body);
+            Active.Add(d);
+            d.Deceive(range, exclude);
+            return d;
+        }
+
+        /// <summary>Oszukuje (ponownie) wrogów w zasięgu do limitu – najbliżsi najpierw.</summary>
+        public void Deceive(float range, EnemyBrain exclude = null)
+        {
+            Vector3 at = transform.position;
+            var near = new List<EnemyBrain>();
+            foreach (var e in EnemyBrain.All) if (e != null && !e.IsDead && e != exclude && !deceived.Contains(e) && HuWorld.Flat(e.transform.position, at) <= range) near.Add(e);
+            near.Sort((a, b) => HuWorld.Flat(a.transform.position, at).CompareTo(HuWorld.Flat(b.transform.position, at)));
+            foreach (var e in near)
+            {
+                if (deceived.Count >= maxDeceived) break;
+                if (e.TryDeceive(this)) deceived.Add(e);
+            }
+        }
+
         public static FeatureDecoy Spawn(PlayerCombat owner, Vector3 at, float seconds, float health, int maxDeceived, float range)
         {
             var go = new GameObject("FeatureDecoy");
@@ -68,7 +101,7 @@ namespace Turris
             spent++;
             deceived.Remove(e);
             owner?.FeatureTelemetry.Add("wabik: przekierowane ataki");
-            if (deceived.Count == 0 && spent >= maxDeceived) End();
+            if (deceived.Count == 0 && spent >= maxDeceived && follow == null) End();
         }
 
         void Update() => Tick(Time.deltaTime);
@@ -76,6 +109,7 @@ namespace Turris
         public void Tick(float dt)
         {
             if (dead) return;
+            if (follow != null) { if (follow == null || !follow.gameObject.activeInHierarchy) { End(); return; } transform.position = follow.position; }
             life -= dt;
             if (life <= 0f || owner == null || owner.IsDead) End();
         }
@@ -83,6 +117,7 @@ namespace Turris
         public HitResult ReceiveHit(HitData hit)
         {
             if (!Alive) return new HitResult { outcome = HitOutcome.Ignored };
+            if (onHit != null) { float taken = onHit(hit); return new HitResult { outcome = HitOutcome.Hit, healthDamage = taken }; }
             float dmg = hit.Total;
             health -= dmg;
             CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.4f, "WABIK", new Color(0.7f, 0.65f, 1f));

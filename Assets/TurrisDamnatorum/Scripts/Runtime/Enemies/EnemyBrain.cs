@@ -34,6 +34,16 @@ namespace Turris
             /// <summary>Czerw (Hell Unleashed) wgryziony w bohatera: jedzie na nim, spowalnia go i co sekundę rani.</summary>
             Latched }
 
+        /// <summary>Tempo rozliczania ran tego wroga (Topór kroczącej rzezi); null albo −1 – zwykłe zasady.</summary>
+        public static System.Func<EnemyBrain, float> BleedRateProvider;
+        /// <summary>Rzeczywiste przełamanie postawy: (wróg, gracz-sprawca, trafienie; null – parowanie). Wykorzystaj wyłom.</summary>
+        public static event System.Action<EnemyBrain, PlayerCombat, HitData?> PoiseBroke;
+        /// <summary>Wróg ginie: wołane przed wyczyszczeniem statusów (Mankiety popielnych marionetek przenoszą pozostałe rany).</summary>
+        public static event System.Action<EnemyBrain> Dying;
+        /// <summary>Obrońca, którego parowanie właśnie rozstrzyga HitQuery (ustawiane tylko na czas OnAttackParried).</summary>
+        public static PlayerCombat ParryDefender;
+        /// <summary>Wróg jest właśnie przesuwany odrzutem/przyciąganiem (Rękawice burzowego kowala).</summary>
+        public bool Displaced => displacementTime > 0f;
         public EnemyDefinition Def { get; private set; }
         public State CurrentState { get; private set; } = State.Dormant;
         public ResourcePool Health { get; private set; }
@@ -212,6 +222,7 @@ namespace Turris
             }
 
             // Efekty trwające: tyknięcia obrażeń, a zamrożony wróg stoi (bieżący stan czeka).
+            Status.BleedRate = BleedRateProvider != null ? BleedRateProvider(this) : -1f;
             float statusDamage = Status.Tick(dt, cc.velocity.sqrMagnitude > 0.25f, rules);
             if (statusDamage > 0f) { TakeStatusDamage(statusDamage); if (IsDead) return; }
             statusFx.Update(Status, transform, Def.scale, dt);
@@ -729,13 +740,10 @@ namespace Turris
             // Cechy klasy gracza zależne od celu (zasadzka z tyłu, sokole oko, żądza krwi, egzekucja).
             if (hit.attacker is PlayerCombat pc && !hit.isStatusTick) pc.OutgoingAgainst(ref hit, this);
             // Słabość/odporność dotyczy części z żywiołem; porażenie i szok termiczny – przed pancerzem.
-            if (hit.element != Element.None && hit.magic > 0)
+            if (hit.Elemental)
             {
-                float pen = hit.penetration;
-                float cut = FeatureResistCut; // Sąd przysięgi (Czystość): odporności żywiołów niżej
-                float Mult(Element e) { float x = Def.ElementMultiplier(e) + cut; return x < 1f && pen > 0f ? Mathf.Min(1f, x + pen) : x; } // przebicie: odporność nie spada poniżej 0
-                float m = hit.Weighted(Mult);
-                hit.ScaleMagicByElement(Mult);
+                float cut = FeatureResistCut + Status.SunderElementCut; // Sąd przysięgi (Czystość), Zbroja runożercy: odporności żywiołów niżej
+                float m = DamageResolver.ApplyElementResistances(ref hit, Def.ElementMultiplier, cut);
                 if (m > 1.01f && !IsDead) CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.4f, "SŁABOŚĆ", Names.ElementColor(hit.element));
             }
             // Egzekucja: premia przeciw osłabionym (poniżej 30% życia) lub z przełamaną postawą.
@@ -745,7 +753,14 @@ namespace Turris
                 hit.physical *= 1f + hit.executeBonus; hit.magic *= 1f + hit.executeBonus;
                 CombatEvents.RaiseWorldText(AimPoint + Vector3.up * 0.4f, "EGZEKUCJA", new Color(1f, 0.3f, 0.2f));
             }
+            float preReaction = hit.Total;
             string reaction = Status.ModifyIncoming(ref hit, rules);
+            // Kołczan skradzionych żywiołów: część obrażeń reakcji z Strzały odpowiedzi trafia do ładunku zamiast tej ofiary.
+            if (reaction != null && hit.answerCharge && hit.attacker is PlayerCombat rp && hit.Total > preReaction)
+            {
+                float keep = rp.UniquesReactionStore(hit.Total - preReaction, hit.element);
+                if (keep > 0f && hit.Total > 0f) { float k = 1f - keep / hit.Total; hit.physical *= k; hit.magic *= k; }
+            }
 
             var defense = CurrentDefense();
             defense.physicalResist -= Status.SunderResistReduction(rules); // HU: pęknięcie pancerza przed przebiciem, może zejść poniżej 0
@@ -809,6 +824,8 @@ namespace Turris
                             lastHitWeight = Mathf.Max(lastHitWeight, 0.8f);
                             Interrupt(State.Staggered, 0.75f);
                             Poise.SetCurrent(Poise.Max);
+                            // Jedno zdarzenie na rzeczywiste przełamanie (po przerwaniu, przed dalszą walką) – właściciel z trafienia.
+                            if (!IsDead && hit.attacker is PlayerCombat breaker) PoiseBroke?.Invoke(this, breaker, hit);
                         }
                     }
                     break;
@@ -848,6 +865,7 @@ namespace Turris
             if (Poise.Current <= 0)
             {
                 Interrupt(State.PoiseBroken, Def.riposteWindow);
+                if (ParryDefender != null) PoiseBroke?.Invoke(this, ParryDefender, null); // przełamanie parowaniem – obrońca przekazany jawnie
                 CombatEvents.RaiseMessage("Postawa przełamana – RIPOSTA!", new Color(1f, 0.9f, 0.4f));
             }
             else
@@ -860,11 +878,17 @@ namespace Turris
 
         public void OnHitResolved(IHitReceiver target, in HitData hit, in HitResult result) { }
 
-        public void ReceiveRiposte(float damage, IHitReceiver attacker)
+        public void ReceiveRiposte(float damage, IHitReceiver attacker, HitData elements = default)
         {
             if (!CanBeRiposted) return;
             if (attacker != null) RecordHit(attacker.Transform.position, 1f);
             float dmg = damage * (1f - Def.physicalResist * 0.5f);
+            // Dodane żywioły broni gracza: odporności celu jak w zwykłym trafieniu.
+            if (elements.Elemental)
+            {
+                DamageResolver.ApplyElementResistances(ref elements, Def.ElementMultiplier, FeatureResistCut + Status.SunderElementCut);
+                dmg += elements.magic;
+            }
             Health.Drain(dmg);
             CombatEvents.RaiseHit(AimPoint, new HitResult { outcome = HitOutcome.Hit, healthDamage = dmg }, false);
             if (Health.Current <= 0) { Die(); return; }
@@ -1005,6 +1029,7 @@ namespace Turris
         void Die()
         {
             if (IsDead) return;
+            Dying?.Invoke(this);
             ReleaseAggression();
             ClearHell();
             if (Def.huSplitCount > 0 && Def.huSummon != null)

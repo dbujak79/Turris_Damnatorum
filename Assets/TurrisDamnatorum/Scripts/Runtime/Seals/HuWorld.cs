@@ -128,6 +128,9 @@ namespace Turris
             return f;
         }
 
+        /// <summary>Zjedzony Krąg żaru: pole w tym miejscu przestaje zaklinać pociski.</summary>
+        public static int RemoveInfusionsAt(Vector3 at, float radius) => infusions.RemoveAll(f => Flat(f.center, at) <= radius + f.radius * 0.5f);
+
         public static HuInfusion InfusionAt(Vector3 at, HashSet<int> used)
         {
             foreach (var f in infusions)

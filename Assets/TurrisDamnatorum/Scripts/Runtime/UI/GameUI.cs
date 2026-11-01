@@ -419,11 +419,12 @@ namespace Turris
 
         void DrawMainMenu()
         {
+            if (showUniqueCatalog) { DrawUniqueCatalog(); return; }
             var p = root.Meta.Profile;
             GUI.Label(new Rect(0, 90, W, 90), "TURRIS DAMNATORUM", title);
             GUI.Label(new Rect(0, 175, W, 40), "Wieża Potępionych – prototyp souls-like / rogue-lite", center);
 
-            var r = new Rect(W / 2 - 300, 250, 600, 610);
+            var r = new Rect(W / 2 - 300, 240, 600, 670);
             GUILayout.BeginArea(r, box);
             GUILayout.Label($"Popiół (waluta trwała): <b>{p.ash}</b>", label);
             GUILayout.Label($"Najwyższe piętro: {p.bestFloor}/{root.config.tower.floors.Count}   Podejścia: {p.totalRuns}   Zwycięstwa: {p.totalVictories}", small);
@@ -438,6 +439,7 @@ namespace Turris
             Btn("Odblokowania", button, root.ShowUnlocks, GUILayout.Height(48));
             Btn("Poligon umiejętności", button, () => root.StartSkillRange(root.Meta.LastPlan().classDef), GUILayout.Height(44));
             Btn("Bestiariusz", button, OpenBestiary, GUILayout.Height(44));
+            Btn($"Katalog unikatów ({p.discoveredUniques.Count}/{UniqueCatalog.All.Count})", button, () => { showUniqueCatalog = true; scrollUniques.pos = Vector2.zero; }, GUILayout.Height(40));
             // Wyzwania botów: piętra, których bot nie przeszedł w trzech próbach – lista w osobnym panelu obok menu.
             var challenges = RunSnapshot.ChallengeFiles();
             if (challenges.Count > 0)
@@ -826,6 +828,11 @@ namespace Turris
             // Trzy sloty i – jeśli klasa go ma – skill klasy pod osobnym przyciskiem.
             int count = RunState.SkillSlotCount + (pc.Skill(PlayerCombat.SignatureSlot) != null ? 1 : 0);
             if (pc.Feature != null) DrawFeatureSlot(pc, new Rect(x + RunState.SkillSlotCount * (w + 10), y, w, h));
+            // Magazyny mocy unikatów – tylko gdy coś przechowują (runy, ślady, ładunki, warta…).
+            string uh = UniqueText.Hud(pc);
+            string ph = pc.PerkHud; // perki: skład sfory i okna wyłomu
+            if (ph != null) uh = uh == null ? ph : uh + " · " + ph;
+            if (uh != null) GUI.Label(new Rect(x, y - 30, (w + 10) * (RunState.SkillSlotCount + 1), 28), $"<size=15><color={UniqueText.Color}>{uh}</color></size>", rich);
             for (int i = 0; i < count; i++)
             {
                 var r = new Rect(x + i * (w + 10), y, w, h);
@@ -1326,6 +1333,7 @@ namespace Turris
                     GUI.enabled = true;
                 }
                 GUILayout.EndHorizontal();
+                if (it != null && it.definition.IsNativeUnique) DrawUniqueEquipped(it, pc, colW);
                 if (it != null && canSell && run.CanSell(it))
                     Btn($"Sprzedaj ({RunState.SellPrice(it)} dusz)", button, () => { run.SellItem(it); pc.RefreshBuild(); });
             }
@@ -1359,7 +1367,11 @@ namespace Turris
             BeginScroll(scrollB, H - 260);
             foreach (var it in run.inventory.ToList())
             {
+                GUILayout.BeginHorizontal();
+                var icon = UniqueRegistry.Icon(UniqueRegistry.CardOf(it.definition));
+                if (icon != null) GUILayout.Label(icon, GUILayout.Width(48), GUILayout.Height(48));
                 GUILayout.Label($"<b>{it.Name}</b>", label);
+                GUILayout.EndHorizontal();
                 GUILayout.Label(Describe.Item(it, snap.stats, b), small);
                 GUILayout.BeginHorizontal();
                 if (it.definition.kind == ItemKind.Ring)
@@ -1395,6 +1407,18 @@ namespace Turris
             GUILayout.Label($"Obciążenie {run.equipment.TotalWeight:0.#}/{st[StatType.EquipLoad]:0} ({snap.loadRatio * 100:0}%) – unik {snap.dodge.distance:0.#} m, niewrażliwość {snap.dodge.invulnDuration:0.00}s, koszt {snap.dodge.staminaCost:0}", label);
             GUILayout.Label($"Premie: obrażenia broni +{st[StatType.PhysicalDamage]:0}%, moc czarów +{st[StatType.SpellPower]:0}%, flaszki +{st[StatType.FlaskPotency]:0}%, riposta +{st[StatType.RiposteDamage]:0}%", small);
             GUILayout.Label($"Żywioły – obrażenia: ogień +{st[StatType.FireDamage]:0}%, mróz +{st[StatType.FrostDamage]:0}%, błyskawice +{st[StatType.LightningDamage]:0}%, krwawienie +{st[StatType.BleedDamage]:0}%", small);
+            var light = LoadoutAnalysis.WeaponComponents(snap, snap.weapon.light);
+            GUILayout.Label($"Lekki cios – składniki przed obroną: {LoadoutAnalysis.Breakdown(light)}", small);
+            {
+                var spec = new List<string>();
+                if (st[StatType.CastSpeed] > 0) spec.Add($"szybkość rzucania +{st[StatType.CastSpeed]:0.#}% (osobno od odnowień {st[StatType.CooldownReduction]:0.#}%)");
+                if (st[StatType.MinionDamage] > 0) spec.Add($"obrażenia sług +{st[StatType.MinionDamage]:0.#}% (nowe przyzwania)");
+                if (st[StatType.HeavyPoiseDamage] > 0) spec.Add($"postawa ciężkiej broni +{st[StatType.HeavyPoiseDamage]:0.#}%" + (WeaponFamilies.IsHeavyMelee(snap.mainHand.definition) ? "" : " <color=#ff9966>(nie działa – brak ciężkiej broni)</color>"));
+                if (snap.shieldBlockAffix > 0) spec.Add($"tańszy blok tarczą −{Mathf.Min(snap.shieldBlockAffix, AffixMath.ShieldBlockCap * 100f):0.#}%" +
+                    (AffixMath.ShieldBlockCapped(snap.shieldBlockAffix) ? $" <color=#ff9966>(limit {AffixMath.ShieldBlockCap * 100f:0}%, nadwyżka {snap.shieldBlockAffix - AffixMath.ShieldBlockCap * 100f:0.#}% nie działa)</color>" : "")
+                    + (snap.guardIsShield ? "" : " <color=#ff9966>(nie działa – brak tarczy)</color>"));
+                if (spec.Count > 0) GUILayout.Label("Specjalizacje: " + string.Join(" · ", spec), small);
+            }
             GUILayout.Label($"Odporności (skuteczne): ogień {b.HeroResist(st[StatType.FireResist]):0}%, mróz {b.HeroResist(st[StatType.FrostResist]):0}%, błyskawice {b.HeroResist(st[StatType.LightningResist]):0}%, ziemia {b.HeroResist(st[StatType.EarthResist]):0}%", small);
             var fxs = new List<string>();
             foreach (PassiveEffectType t in Enum.GetValues(typeof(PassiveEffectType)))

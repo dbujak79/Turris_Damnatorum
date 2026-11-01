@@ -54,7 +54,9 @@ namespace Turris
                         : $"  [niespełnione – skuteczność {b.unmetRequirementEffectiveness * 100:0}%]");
                 sb.Append('\n');
             }
-            if (!string.IsNullOrEmpty(d.description)) sb.Append(d.description);
+            // Natywny unikat: statystyki osobno (wyżej), potem reguła legendarna, cena, warunek i źródło.
+            if (d.IsNativeUnique) sb.Append(UniqueText.Lines(inst));
+            else if (!string.IsNullOrEmpty(d.description)) sb.Append(d.description);
             return sb.ToString().TrimEnd();
         }
 

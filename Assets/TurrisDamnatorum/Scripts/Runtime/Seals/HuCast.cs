@@ -23,6 +23,10 @@ namespace Turris
         public readonly float area;
         public readonly Color color;
         public readonly HellFxElement family;
+        /// <summary>Gwałtowna manifestacja: skala czasu stref tego rzutu, pobrana raz przy tworzeniu (kopie dziedziczą profil bez ponownej kompresji).</summary>
+        public float zoneTimeScale = 1f;
+        /// <summary>Strefy tego rzutu kwalifikują się do manifestacji (pomiar realizacji budżetu także bez perka).</summary>
+        public bool zoneQualified;
 
         public HuCast(PlayerCombat caster, SpellRuntime spell, Vector3 origin, Vector3 direction, Vector3 target, float power = 1f,
             bool relayed = false, bool copy = false, bool triggered = false)
@@ -39,6 +43,8 @@ namespace Turris
             bool ice = P.On("ice");
             family = ice ? HellFxElement.Ice : FamilyFor(shape.Element, spell.Def);
             color = ice ? new Color(0.6f, 0.9f, 1f) : ColorFor(shape.Element, spell.Def.color);
+            zoneTimeScale = caster != null ? caster.ManifestationScale(spell.Def, triggered) : 1f;
+            zoneQualified = caster != null && caster.ManifestationQualifies(spell.Def, triggered);
         }
 
         public HuParams P => shape.Parameters;

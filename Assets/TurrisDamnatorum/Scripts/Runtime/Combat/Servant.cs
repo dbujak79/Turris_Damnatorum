@@ -26,6 +26,89 @@ namespace Turris
             public Func<HitData> makeHit;
         }
 
+        // ------------------------------------------------------------------ Moce unikatów (Habit, Serce, Dyrygent, Kokony, Dziedzictwo)
+
+        /// <summary>Sługa doczekał naturalnego końca czasu (nie odwołanie, scalenie, limit ani śmierć).</summary>
+        public static event Action<Servant> Expired;
+        /// <summary>Wróg zabił śmiertelnego sługę.</summary>
+        public static event Action<Servant> Killed;
+        /// <summary>Śmiertelny sługa (Serce szóstego żebra): prawdziwe zdrowie, czas wkładów nie upływa (limit <see cref="MortalSecondsLeft"/>).</summary>
+        public bool Mortal { get; private set; }
+        public float HealthCurrent { get; private set; }
+        public float HealthMax { get; private set; }
+        public float MortalSecondsLeft { get; private set; }
+        /// <summary>Lodowy kokon-amunicja (Grymuar niemego lodowca): porcja trafienia wyzwalana przy następnym ataku.</summary>
+        public HitData? Cocoon { get; private set; }
+        float cocoonTime, cocoonRadius;
+        /// <summary>Dziedziczona właściwość poprzednika (Pas dziedziczonej bestii) – efekt dokładany do ataków.</summary>
+        public StatusKind? Inherited { get; set; }
+        /// <summary>Komenda ataku od pana (Rękawice kościanego dyrygenta).</summary>
+        bool commanded;
+        float lastAttackAt = -99f, age;
+
+        public void MakeMortal(float health, float maxSeconds)
+        {
+            Mortal = true; HealthCurrent = HealthMax = Mathf.Max(1f, health); MortalSecondsLeft = maxSeconds;
+        }
+
+        /// <summary>Obrażenia od wroga dla śmiertelnego sługi; zwraca przyjęte.</summary>
+        public float TakeDamage(float dmg)
+        {
+            if (!Mortal || dmg <= 0f) return 0f;
+            float taken = Mathf.Min(HealthCurrent, dmg);
+            HealthCurrent -= taken;
+            if (HealthCurrent <= 0.01f) { Killed?.Invoke(this); Dismiss(); }
+            return taken;
+        }
+
+        /// <summary>Leczenie śmiertelnego sługi (aura, czar) – do maksimum; zwraca przywrócone.</summary>
+        public float Heal(float amount)
+        {
+            if (!Mortal || amount <= 0f) return 0f;
+            float give = Mathf.Min(amount, HealthMax - HealthCurrent);
+            HealthCurrent += give;
+            return give;
+        }
+
+        /// <summary>Koszt wkładu (Grymuar otwartych pysków): czas życia zwykłego sługi albo zdrowie śmiertelnego.</summary>
+        public void SpendLife(float seconds, float health)
+        {
+            if (Mortal) { HealthCurrent -= Mathf.Max(0f, health); if (HealthCurrent <= 0.01f) Dismiss(); return; }
+            if (Parts != null) foreach (var p in Parts) p.remaining -= seconds;
+            else Remaining -= seconds;
+        }
+
+        public void SetCocoon(HitData hit, float seconds, float radius) { Cocoon = hit; cocoonTime = seconds; cocoonRadius = radius; }
+
+        /// <summary>Komenda ataku: sługa uderza teraz, jeśli ma ofiarę w zasięgu i minął najkrótszy odstęp. Zwraca true, gdy uderzył.</summary>
+        public bool Command(float minIntervalShare)
+        {
+            if (prey == null || prey.IsDead || master == null) return false;
+            float dist = HuWorld.Flat(prey.transform.position, transform.position);
+            if (Parts != null)
+            {
+                // Chimera: komenda uruchamia jeden gotowy składnik (jego własny rytm).
+                foreach (var p in Parts)
+                {
+                    if (p.timer > 0f || dist > ReachOf(p.kind)) continue;
+                    p.timer = Mathf.Max(0.2f, p.interval * minIntervalShare);
+                    swingTime = 0f; swingKind = p.kind; lastAttackAt = age;
+                    Attack(p.kind, p.makeHit());
+                    return true;
+                }
+                return false;
+            }
+            if (age - lastAttackAt < attackInterval * minIntervalShare) return false;
+            if (dist > reach + 0.3f) { commanded = true; return false; }
+            commanded = false;
+            DoAttack(Kind, makeHit != null ? makeHit() : default);
+            return true;
+        }
+
+        public EnemyBrain Prey => prey;
+        public float Age => age;
+        public PlayerCombat Master => master;
+
         public ServantKind Kind { get; private set; }
         public float Remaining { get; private set; }
         /// <summary>Składniki chimery (null – zwykły sługa).</summary>
@@ -39,6 +122,8 @@ namespace Turris
 
         PlayerCombat master;
         Func<HitData> makeHit;
+        /// <summary>Trafienie z przyzwania bez premii obrażeń sług (Wcielenie gracza – atak gracza, bez affiksu sług).</summary>
+        Func<HitData> baseMakeHit;
         float attackInterval, attackTimer, speed, reach;
         Color color;
         CharacterVisual visual;
@@ -46,6 +131,9 @@ namespace Turris
         float swingTime = -1f;
         ServantKind swingKind;
         const float SwingLength = 0.45f;
+
+        /// <summary>Mnożnik obrażeń sług zapisany przy przyzwaniu (1 = brak premii; chimera – 1, mnożniki są w składnikach).</summary>
+        public float MinionMultiplier { get; private set; } = 1f;
 
         public static Servant Spawn(PlayerCombat master, ServantKind kind, float duration, float attackInterval, Func<HitData> makeHit, Color color)
         {
@@ -55,6 +143,16 @@ namespace Turris
             var go = new GameObject("Servant_" + kind);
             go.transform.SetPositionAndRotation(pos, master.transform.rotation);
             var s = go.AddComponent<Servant>();
+            // Obrażenia sług z wyposażenia (affiksy): migawka przy przyzwaniu, raz, po skalowaniu trafienia sługi. Składniki chimery,
+            // komendy i scalenia niosą tę samą funkcję trafienia – bez ponownego mnożenia; zmiana sprzętu działa od następnego przyzwania.
+            float minion = master != null ? master.MinionSnapshotMultiplier : 1f;
+            s.MinionMultiplier = minion;
+            s.baseMakeHit = makeHit;
+            if (makeHit != null && minion != 1f)
+            {
+                var inner = makeHit;
+                makeHit = () => { var h = inner(); h.physical *= minion; h.magic *= minion; return h; };
+            }
             s.master = master; s.Kind = kind; s.Remaining = duration; s.makeHit = makeHit; s.color = color;
             s.attackInterval = Mathf.Max(0.2f, attackInterval);
             s.speed = SpeedOf(kind); s.reach = ReachOf(kind);
@@ -126,7 +224,8 @@ namespace Turris
         }
 
         /// <summary>Migawka trafienia z chwili przyzwania (Wcielenie: jedno źródło skalowania przywołania).</summary>
-        public HitData SnapshotHit() => makeHit != null ? makeHit() : default;
+        /// <remarks>Bez premii obrażeń sług z affiksów: Wcielenie pozostaje atakiem gracza.</remarks>
+        public HitData SnapshotHit() => baseMakeHit != null ? baseMakeHit() : makeHit != null ? makeHit() : default;
         public float AttackInterval => attackInterval;
 
         /// <summary>Składniki do scalenia: zwykły sługa – on sam; chimera – jej żywe wkłady (z zachowanym czasem).</summary>
@@ -170,14 +269,24 @@ namespace Turris
         /// <summary>Krok sługi (publiczny na potrzeby testów).</summary>
         public void Tick(float dt)
         {
-            if (Parts != null)
+            age += dt;
+            if (cocoonTime > 0f) { cocoonTime -= dt; if (cocoonTime <= 0f) Cocoon = null; }
+            if (Mortal)
+            {
+                // Śmiertelna chimera: żyje, dopóki ma zdrowie (najdłużej do limitu) – czas wkładów stoi.
+                MortalSecondsLeft -= dt;
+                if (Parts != null) foreach (var p in Parts) p.timer -= dt;
+                if (MortalSecondsLeft <= 0f || master == null || master.IsDead) { Dismiss(); return; }
+            }
+            else if (Parts != null)
             {
                 for (int i = Parts.Count - 1; i >= 0; i--) { Parts[i].remaining -= dt; Parts[i].timer -= dt; if (Parts[i].remaining <= 0f) Parts.RemoveAt(i); }
                 if (Parts.Count == 0 || master == null || master.IsDead) { Dismiss(); return; }
                 RecomputeChimera();
             }
             else Remaining -= dt;
-            if (Remaining <= 0f || master == null || master.IsDead) { Dismiss(); return; }
+            if (!Mortal && Parts == null && Remaining <= 0f && master != null && !master.IsDead) { Expired?.Invoke(this); Dismiss(); return; }
+            if ((!Mortal && Remaining <= 0f) || master == null || master.IsDead) { Dismiss(); return; }
             if (swingTime >= 0f) swingTime += dt;
             if (swingTime > SwingLength) swingTime = -1f;
             attackTimer -= dt;
@@ -193,12 +302,19 @@ namespace Turris
             if (dist > 0.05f) transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(to), 1f - Mathf.Exp(-12f * dt));
             if (dist > stopAt) transform.position = pos + to / dist * Mathf.Min(speed * dt, dist - stopAt);
             if (prey == null) return;
+            // Dyrygent: sługa atakuje tylko na komendę pana (zaległa komenda – gdy dojdzie do ofiary).
+            if (master.ServantsCommanded)
+            {
+                if (commanded && dist <= reach && age - lastAttackAt >= attackInterval * 0.45f) { commanded = false; DoAttack(Kind, makeHit != null ? makeHit() : default); }
+                return;
+            }
+            float speedMult = master.ServantSpeedMult;
             if (Parts != null)
             {
                 foreach (var p in Parts)
                 {
                     if (p.timer > 0f || dist > ReachOf(p.kind)) continue;
-                    p.timer = Mathf.Max(0.2f, p.interval);
+                    p.timer = Mathf.Max(0.2f, p.interval * speedMult);
                     swingTime = 0f; swingKind = p.kind;
                     Attack(p.kind, p.makeHit());
                 }
@@ -206,10 +322,16 @@ namespace Turris
             }
             if (dist <= reach && attackTimer <= 0f)
             {
-                attackTimer = attackInterval;
-                swingTime = 0f; swingKind = Kind;
-                Attack(Kind, makeHit());
+                attackTimer = attackInterval * speedMult;
+                DoAttack(Kind, makeHit());
             }
+        }
+
+        void DoAttack(ServantKind kind, HitData hit)
+        {
+            swingTime = 0f; swingKind = kind;
+            lastAttackAt = age;
+            Attack(kind, hit);
         }
 
         EnemyBrain FindPrey()
@@ -230,7 +352,25 @@ namespace Turris
             Attacks++;
             hit.sourcePosition = transform.position;
             hit.attacker = master;
+            hit.servantHit = true;
+            // Różnorodna sfora: osobna warstwa liczona w chwili ataku (nie w migawce przyzwania); pocisk w locie zachowuje budżet.
+            float dm = master.ServantDamageMult * master.PackMultiplier;
+            if (dm != 1f) { hit.physical *= dm; hit.magic *= dm; }
+            if (Inherited.HasValue)
+            {
+                var merged = hit.statuses != null ? new List<StatusApplication>(hit.statuses) : new List<StatusApplication>();
+                if (!merged.Exists(s => s.kind == Inherited.Value)) merged.Add(new StatusApplication(Inherited.Value));
+                hit.statuses = merged;
+            }
             Deliver(master, kind, hit, transform, prey, ReachOf(kind), color);
+            if (Cocoon.HasValue && prey != null)
+            {
+                // Kokon: porcja novy na ofierze – raz, potem znika.
+                var c = Cocoon.Value; Cocoon = null;
+                c.sourcePosition = prey.transform.position;
+                HuWorld.Explode(master, prey.transform.position, cocoonRadius, c, new Color(0.6f, 0.9f, 1f));
+                master.UniqueTelemetry.Add("H03: kokony uwolnione");
+            }
         }
 
         /// <summary>Atak danego rodzaju sługi z punktu <paramref name="from"/> (wspólny dla sług, chimer i Wcielenia gracza).</summary>

@@ -24,6 +24,16 @@ namespace Turris
         readonly HitTracker tracker = new HitTracker();
 
         public bool Returning => returning;
+        public PlayerCombat Owner => owner;
+        /// <summary>Karwasze przykutego rzeźnika: broń zatrzymuje się na pierwszej ofierze.</summary>
+        public bool AnchorOnHit { get; set; }
+        public float AnchorSeconds { get; set; } = 6f;
+        public EnemyBrain Anchored { get; private set; }
+        float anchorLeft;
+        /// <summary>Broń wraca do właściciela (koniec zakotwiczenia, śmierć ofiary, przyciągnięcie).</summary>
+        public void Recall() { Anchored = null; BeginReturn(); }
+        /// <summary>Natychmiastowy zwrot do ręki (gracz doszedł do broni).</summary>
+        public void Catch() { onReturn?.Invoke(); onReturn = null; Destroy(gameObject); }
 
         public static ThrownWeapon Spawn(PlayerCombat owner, Vector3 origin, Vector3 dir, float distance, float speed, float radius,
                                          WeaponModel weaponModel, Color color, Func<HitData> makeHit, Action onReturn)
@@ -57,6 +67,17 @@ namespace Turris
 
             Vector3 pos = transform.position;
             Vector3 next;
+            if (Anchored != null)
+            {
+                anchorLeft -= dt;
+                if (Anchored.IsDead || anchorLeft <= 0f) { Recall(); return; }
+                // Wbita broń sterczy z ofiary w stronę właściciela (czytelna, nie schowana w ciele).
+                Vector3 toOwner = owner.transform.position - Anchored.transform.position; toOwner.y = 0f;
+                transform.position = Anchored.AimPoint + (toOwner.sqrMagnitude > 1e-4f ? toOwner.normalized : Vector3.zero) * (0.45f * Anchored.Def.scale);
+                if (model != null) model.localRotation = Quaternion.Euler(35f, 0f, 0f);
+                last = transform.position;
+                return;
+            }
             if (!returning)
             {
                 float step = speed * dt;
@@ -85,7 +106,12 @@ namespace Turris
                 }
                 next = pos + to.normalized * step;
             }
-            HitQuery.Capsule(last, next, radius, Faction.Player, tracker, r => HitQuery.Apply(owner, r, makeHit(), true));
+            HitQuery.Capsule(last, next, radius, Faction.Player, tracker, r =>
+            {
+                if (Anchored != null) return;
+                HitQuery.Apply(owner, r, makeHit(), true);
+                if (AnchorOnHit && !returning && r is EnemyBrain e && !e.IsDead) { Anchored = e; anchorLeft = AnchorSeconds; next = e.AimPoint; }
+            });
             last = next;
             transform.position = next;
         }

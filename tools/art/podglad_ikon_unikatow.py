@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -14,6 +15,7 @@ OUT = ROOT / "TestResults/unique-icons-v1"
 
 
 def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8")
     manifest = json.loads((ART / "manifest.json").read_text(encoding="utf-8"))
     font_path = Path("C:/Windows/Fonts/segoeui.ttf")
     font = ImageFont.truetype(str(font_path), 14)

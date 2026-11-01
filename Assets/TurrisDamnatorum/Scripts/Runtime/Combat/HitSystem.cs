@@ -32,7 +32,7 @@ namespace Turris
     public interface IRiposteTarget
     {
         bool CanBeRiposted { get; }
-        void ReceiveRiposte(float damage, IHitReceiver attacker);
+        void ReceiveRiposte(float damage, IHitReceiver attacker, HitData elements = default);
     }
 
     /// <summary>Pilnuje, by jeden zamach trafił ten sam cel najwyżej raz.</summary>
@@ -103,7 +103,11 @@ namespace Turris
             var result = target.ReceiveHit(hit);
             if (result.outcome != HitOutcome.Ignored) CombatEvents.RaiseImpact(target, hit, result);
             if (result.outcome == HitOutcome.Parried && melee && attacker != null && !attacker.IsDead)
-                attacker.OnAttackParried(result.attackerPoiseDamage);
+            {
+                EnemyBrain.ParryDefender = target as PlayerCombat; // jawne pochodzenie parowania (bez zgadywania globalnego gracza)
+                try { attacker.OnAttackParried(result.attackerPoiseDamage); }
+                finally { EnemyBrain.ParryDefender = null; }
+            }
             attacker?.OnHitResolved(target, hit, result);
             return result;
         }

@@ -14,6 +14,8 @@ namespace Turris.Tests.Bots
 
         protected virtual float PerkScore(BoonDefinition b)
         {
+            float native = NativePerkScore(b);
+            if (native >= 0f) return native;
             float s = OffensivePerk(b) ? 3f : b.modifiers.Any(m => m.stat == StatType.MaxHealth || m.stat == StatType.PhysicalDefense || m.stat == StatType.DamageReduction) ? 2.5f : 1f;
             return s + Root.Run.BoonStacks(b) * 0.5f; // podnoszenie posiadanego perka
         }

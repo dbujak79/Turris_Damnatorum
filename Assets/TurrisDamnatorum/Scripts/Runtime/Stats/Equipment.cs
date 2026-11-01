@@ -19,10 +19,32 @@ namespace Turris
         /// <summary>Affixy ze statystyką HU bez odpowiednika w statystykach Turris (uchylenie, dusze, przebicie…).</summary>
         public List<PassiveEffect> affixEffects = new List<PassiveEffect>();
         public List<string> affixNames = new List<string>();
+        /// <summary>Trwałe id wylosowanych affiksów (równolegle do <see cref="affixNames"/>); puste w starym zapisie.</summary>
+        public List<string> affixIds = new List<string>();
+        /// <summary>
+        /// Wersja znaczenia affiksów (<see cref="HellEconomy.AffixVersion"/>); 0 – stary egzemplarz: zachowuje zapisane premie,
+        /// a dawne „dodane żywioły” są premią obrażeń broni ze starego zapisu (bez zgadywania żywiołu, bez ponownego losowania).
+        /// </summary>
+        public int affixVersion;
+        /// <summary>Ustawienie mocy unikatu w ekwipunku (np. slot czaru zastępującego ripostę). 0 – pierwszy slot.</summary>
+        public int powerSlot;
 
         public ItemInstance(ItemDefinition def, int level = 0)
         {
             definition = def; this.level = level; uid = nextUid++;
+        }
+
+        static readonly HashSet<int> claimed = new HashSet<int>();
+
+        /// <summary>Początek odtwarzania zapisu: zapisane id egzemplarzy mogą wrócić, każde najwyżej raz.</summary>
+        public static void BeginRestore() => claimed.Clear();
+
+        /// <summary>Przywraca zapisane id egzemplarza (false – kolizja w tym zapisie: egzemplarz dostaje nowe id).</summary>
+        public static bool Claim(int uid)
+        {
+            if (uid <= 0 || !claimed.Add(uid)) return false;
+            if (uid >= nextUid) nextUid = uid + 1;
+            return true;
         }
 
         public string Name => level > 0 ? $"{definition.displayName} +{level}" : definition.displayName;
@@ -62,6 +84,8 @@ namespace Turris
         readonly Dictionary<EquipSlot, ItemInstance> slots = new Dictionary<EquipSlot, ItemInstance>();
 
         public event Action Changed;
+        /// <summary>Lokalny wyjątek slotu z unikatu (Rękawice podwójnego sekretu: różdżka w drugiej ręce) – nie zmienia FitsSlot.</summary>
+        public Func<ItemInstance, EquipSlot, bool> ExtraFit;
 
         public ItemInstance Get(EquipSlot slot) => slots.TryGetValue(slot, out var i) ? i : null;
 
@@ -79,7 +103,7 @@ namespace Turris
         {
             reason = null;
             if (item == null || item.definition == null) { reason = "Brak przedmiotu"; return false; }
-            if (!item.definition.FitsSlot(slot)) { reason = $"{item.Name} nie pasuje do slotu {Names.Slot(slot)}"; return false; }
+            if (!item.definition.FitsSlot(slot) && !(ExtraFit != null && ExtraFit(item, slot))) { reason = $"{item.Name} nie pasuje do slotu {Names.Slot(slot)}"; return false; }
             return true;
         }
 

@@ -37,7 +37,7 @@ namespace Turris.Tests
         [Test]
         public void AllAffixes_AreSupported_AndEffectAffixesRoll()
         {
-            Assert.IsTrue(HellEconomy.Affixes.All(a => a.Ranges.All(r => HellEconomy.Supported(r.Split('|')[0]))), "każdy affix HU ma odpowiednik");
+            Assert.IsTrue(HellEconomy.Affixes.All(a => a.Ranges.All(r => HellEconomy.AffixSupported(r.Split('|')[0]))), "każdy affix HU ma odpowiednik");
             var rng = new System.Random(7);
             var body = fx.Get<ItemDefinition>("hu_item_body_light_t2");
             bool sawEffect = Enumerable.Range(0, 200).Any(_ => HellEconomy.Roll(body, LootSource.Shop, 20, rng, ItemRarity.Legendary).affixEffects.Count > 0);

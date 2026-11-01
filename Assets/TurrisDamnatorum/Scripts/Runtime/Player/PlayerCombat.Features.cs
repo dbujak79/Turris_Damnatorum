@@ -190,7 +190,7 @@ namespace Turris
         }
 
         /// <summary>Taniec bez przerwy: przeciągnięcie hitboxa przeniesionego ciosu z jego własną listą trafionych.</summary>
-        internal void SweepCarried(AttackDefinition atk, HitTracker carriedTracker, bool offhand, int origin)
+        internal void SweepCarried(AttackDefinition atk, HitTracker carriedTracker, bool offhand, int origin, float scale = 1f)
         {
             if (atk == null || atk.delivery == AttackDelivery.Projectile) return;
             Vector3 from = transform.position + Vector3.up * 1.0f + transform.forward * 0.3f;
@@ -199,11 +199,13 @@ namespace Turris
             int prev = ActionOrigin; ActionOrigin = origin;
             HitQuery.Capsule(from, to, atk.radius, Faction.Player, carriedTracker, target =>
             {
-                float dmg = offhand ? Build.OffWeaponDamage(atk) : Build.WeaponDamage(atk);
+                float dmg = (offhand ? Build.OffWeaponDamage(atk) : Build.WeaponDamage(atk)) * scale;
                 var hit = HitData.FromAttack(atk, dmg, transform.position, this);
                 hit.fromMeleeWeapon = true; hit.basicAttack = true;
                 hit.weapon = HeldWeaponModel;
+                AddWeaponElements(ref hit, dmg / PhysicalFactor); // przeniesiony zwykły cios – własna baza
                 ApplyWeaponBuff(ref hit);
+                ApplyHeavyPoise(ref hit, offhand);
                 BasicAttackPerks(ref hit, true, target);
                 PrepareOutgoing(ref hit);
                 HitQuery.Apply(this, target, hit, true);
@@ -225,9 +227,11 @@ namespace Turris
             var hit = HitData.FromAttack(atk, dmg, transform.position, this);
             hit.fromMeleeWeapon = true; hit.basicAttack = true;
             hit.weapon = item != null ? AnimResolve.ForItem(item.definition) : HeldWeaponModel;
+            AddWeaponElements(ref hit, dmg / PhysicalFactor); // atak drugiej broni – baza tej ręki
             ApplyWeaponBuff(ref hit);
             if (!offhand) BasicAttackPerks(ref hit, true, target);
             ApplyMove(ref hit);
+            ApplyHeavyPoise(ref hit, offhand || (item != null && item != Build.mainHand));
             PrepareOutgoing(ref hit);
             return hit;
         }

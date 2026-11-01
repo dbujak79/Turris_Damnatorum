@@ -46,9 +46,40 @@ namespace Turris
                 case StatType.CooldownReduction: return "Skrócenie odnowień";
                 case StatType.LifeLeech: return "Kradzież życia (%)";
                 case StatType.ExecuteDamage: return "Obrażenia egzekucji";
+                case StatType.AddedWeaponFire: return "Dodany ogień (% bazy broni)";
+                case StatType.AddedWeaponFrost: return "Dodany mróz (% bazy broni)";
+                case StatType.AddedWeaponLightning: return "Dodane błyskawice (% bazy broni)";
+                case StatType.AddedWeaponEarth: return "Dodana ziemia (% bazy broni)";
+                case StatType.CastSpeed: return "Szybkość rzucania czarów";
+                case StatType.MinionDamage: return "Obrażenia sług (nowe przyzwania)";
+                case StatType.HeavyPoiseDamage: return "Obrażenia postawy ciężkiej broni";
+                case StatType.ShieldBlockCost: return "Tańszy blok tarczą";
             }
             return s.ToString();
         }
+
+        /// <summary>
+        /// Pełny opis premii affiksu specjalizacyjnego (wartość już po jakości); null – zwykły format „+X Nazwa”.
+        /// </summary>
+        public static string StatLine(StatType s, float v)
+        {
+            switch (s)
+            {
+                case StatType.AddedWeaponFire: return $"Dodaje obrażenia od ognia równe {v:0.#}% bazowych obrażeń broni";
+                case StatType.AddedWeaponFrost: return $"Dodaje obrażenia od mrozu równe {v:0.#}% bazowych obrażeń broni";
+                case StatType.AddedWeaponLightning: return $"Dodaje obrażenia od błyskawic równe {v:0.#}% bazowych obrażeń broni";
+                case StatType.AddedWeaponEarth: return $"Dodaje obrażenia od ziemi równe {v:0.#}% bazowych obrażeń broni";
+                case StatType.CastSpeed: return $"Przygotowanie czarów szybsze o {v:0.#}%";
+                case StatType.MinionDamage: return $"Obrażenia przyzwanych sług +{v:0.#}% (przy przyzwaniu)";
+                case StatType.HeavyPoiseDamage: return $"Ciosy ciężką bronią wręcz: +{v:0.#}% obrażeń postawy";
+                case StatType.ShieldBlockCost: return $"Aktywny blok tarczą kosztuje {v:0.#}% mniej wytrzymałości (razem do {AffixMath.ShieldBlockCap * 100f:0}%)";
+            }
+            return null;
+        }
+
+        /// <summary>Statystyka dodanego żywiołu broni dla żywiołu (None – brak).</summary>
+        public static StatType? AddedWeaponStat(Element e) => e == Turris.Element.Fire ? StatType.AddedWeaponFire : e == Turris.Element.Frost ? StatType.AddedWeaponFrost
+            : e == Turris.Element.Lightning ? StatType.AddedWeaponLightning : e == Turris.Element.Earth ? StatType.AddedWeaponEarth : (StatType?)null;
 
         public static string Attribute(AttributeType a) => Stat((StatType)(int)a);
 
@@ -282,10 +313,10 @@ namespace Turris
                 case PassiveEffectType.MeleeRange: return $"+{v:0}% zasięgu zwykłego ciosu wręcz";
                 case PassiveEffectType.MomentumAttackSpeed: return $"Rozpęd: każdy celny cios wręcz +{v:0}% szybkości ataku (do 5 warstw, 1,5 s)";
                 case PassiveEffectType.PenetrationPhysical: return $"Przebicie odporności fizycznej: {v:0}%";
-                case PassiveEffectType.PenetrationFire: return $"Przebicie odporności na ogień: {v:0}%";
-                case PassiveEffectType.PenetrationFrost: return $"Przebicie odporności na mróz: {v:0}%";
-                case PassiveEffectType.PenetrationLightning: return $"Przebicie odporności na błyskawice: {v:0}%";
-                case PassiveEffectType.PenetrationEarth: return $"Przebicie odporności na ziemię: {v:0}%";
+                case PassiveEffectType.PenetrationFire: return $"Trafienia ignorują {v:0.#} p.p. odporności na ogień";
+                case PassiveEffectType.PenetrationFrost: return $"Trafienia ignorują {v:0.#} p.p. odporności na mróz";
+                case PassiveEffectType.PenetrationLightning: return $"Trafienia ignorują {v:0.#} p.p. odporności na błyskawice";
+                case PassiveEffectType.PenetrationEarth: return $"Trafienia ignorują {v:0.#} p.p. odporności na ziemię";
                 case PassiveEffectType.ProjectileRicochet: return $"Pociski broni odbijają się do {v:0} wrogów";
                 case PassiveEffectType.ProjectileVolley: return $"Strzał broni: {PerkMechanics.VolleyCount(v)} pocisków (boczne za 40%)";
                 case PassiveEffectType.ProjectileSplit: return "Pocisk broni pęka przy trafieniu na 2 drzazgi (40%)";

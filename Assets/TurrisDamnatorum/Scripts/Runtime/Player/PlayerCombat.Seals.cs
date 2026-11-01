@@ -40,8 +40,10 @@ namespace Turris
             Vector3 aim = AimDirection();
             float range = shape.Parameters.GetF(HuParams.Range, 8f);
             Vector3 target = shape.Targeting == HuTargeting.Point ? HuPointTarget(aim, range) : transform.position + aim * range;
-            float power = overloadThisCast ? OverloadPower : 1f;
-            HuSkillCaster.CastByHand(this, spell, aim, target, power);
+            float power = (overloadThisCast ? OverloadPower : 1f) * uniqueCastPower;
+            Vector3 origin = transform.position;
+            UniquesModifyHuCast(spell, ref origin, ref aim, ref target); // moce unikatów: źródło po uniku, warta, odwrót…
+            HuSkillCaster.CastByHand(this, spell, aim, target, power, origin);
         }
 
         /// <summary>Punkt dla skilla na miejsce: namierzony (albo wskazany pomocą celowania) wróg w zasięgu, inaczej średnia odległość.</summary>
@@ -58,6 +60,8 @@ namespace Turris
             if (AssistTarget != null && !AssistTarget.IsDead && HuWorld.Flat(AssistTarget.transform.position, origin) <= range) return AssistTarget;
             return HuWorld.AimTarget(origin, dir, range, angle);
         }
+
+        static readonly HuElement[] HuElementsOnly = { HuElement.Fire, HuElement.Water, HuElement.Air, HuElement.Earth };
 
         /// <summary>Trafienie skilla HU z parametrów przerobionego kształtu (część <paramref name="share"/> mocy rzutu).</summary>
         public HitData HuHit(HuCast cast, float share, bool projectile, bool plain)
@@ -83,8 +87,20 @@ namespace Turris
                 blockable = true, parryable = false, dodgeable = true, heavy = def.attack.heavy,
                 sourcePosition = cast.origin, attacker = this, attackName = def.displayName,
                 visualElement = cast.family, mods = StatusModifiers.None,
-                isProjectile = projectile, huTriggered = cast.triggered,
+                isProjectile = projectile, huTriggered = cast.triggered, copyHit = cast.copy || cast.triggered,
             };
+            // Trzy lub cztery żywioły naraz: podział kanoniczny zamiast odrzucania najsłabszych składowych.
+            int parts = 0;
+            foreach (HuElement e in HuElementsOnly) if (p.Damage(e) > 0) parts++;
+            if (parts > 2 && mag > 0f)
+            {
+                var s = new MagicSplit { active = true };
+                foreach (HuElement e in HuElementsOnly) s.Set(HuCast.ToTurris(e), (float)p.Damage(e));
+                s.Normalize();
+                hit.split = s;
+            }
+            // Technika HU (nie czar): dodane żywioły broni od bazy trafienia bez premii fizycznej (huScale zawiera ją raz).
+            if (!def.IsSpell && !cast.Data.tags.Contains("spell") && def.kind != SpellKind.Aura && def.kind != SpellKind.Summon) AddWeaponElements(ref hit, (phys + mag) / PhysicalFactor);
             if (!plain)
             {
                 hit.knockback = p.GetF(HuParams.Knockback);
@@ -101,7 +117,9 @@ namespace Turris
                 hit.bonusVsChilled = p.GetF("bonus_vs_soaked");
                 hit.statuses = HuStatuses(p);
             }
-            if (!def.IsSpell && !projectile && !cast.Data.tags.Contains("spell") && cast.Data.tags.Contains("melee")) { hit.fromMeleeWeapon = true; ApplyWeaponBuff(ref hit); }
+            if (!def.IsSpell && !projectile && !cast.Data.tags.Contains("spell") && cast.Data.tags.Contains("melee")) { hit.fromMeleeWeapon = true; ApplyWeaponBuff(ref hit); ApplyHeavyPoise(ref hit, false); }
+            if (UniquesSuppressKnockback(cast)) { hit.knockback = 0f; } // Obrączka odpływu, Buty podmuchu: bez odrzutu wrogów
+            if (uniqueElementOverride != Element.None) { hit.magic += hit.physical; hit.physical = 0f; hit.SetSingleElement(uniqueElementOverride); }
             PrepareOutgoing(ref hit);
             return hit;
         }

@@ -117,6 +117,7 @@ namespace Turris
             float paid = Mathf.Min(manaNeeded, pc.Mana.Current);
             float covered = paid / Mathf.Max(0.01f, T.cloakManaPerHealth);
             pc.Mana.Drain(paid);
+            if (paid > 0f) { float spent = paid; pc.UniquesFeatureEvent("cloak.paid", ref spent); } // Szata zamkniętego źródła: runy z wydanej many
             Telemetry.Add("płaszcz: mana na ochronę", paid);
             Telemetry.Add("płaszcz: osłonięte PŻ", covered);
             if (covered < want - 0.01f) Telemetry.Add("płaszcz: przepuszczone przy braku many", want - covered);
@@ -185,7 +186,13 @@ namespace Turris
             Ember = 0f;
         }
 
-        public override void AttackStarted(ActionType type, AttackDefinition atk, int origin) => Arm(origin, atk != null && atk.delivery == AttackDelivery.Projectile ? Mathf.Max(1, atk.projectileCount) : 1);
+        public override void AttackStarted(ActionType type, AttackDefinition atk, int origin)
+        {
+            // Młot pożyczonego słońca: mocny cios oddaje cały Żar paleniskiu (zamiast zwykłego wydania tego samego ataku).
+            float e = Ember * T.furnaceEmberToDamage;
+            if (Ember > 0f && pc.UniquesFeatureEvent("furnace.attack", ref e, type)) { Telemetry.Add("ogień: Żar do paleniska", Ember); Ember = 0f; return; }
+            Arm(origin, atk != null && atk.delivery == AttackDelivery.Projectile ? Mathf.Max(1, atk.projectileCount) : 1);
+        }
         public override void BasicShot(ref HitData hit, int index, int count) { if (hit.originId == 0 || hit.originId == chargeOrigin) chargeCount = Mathf.Max(1, count); }
         public override void CastFired(SpellRuntime skill, int origin)
         {
@@ -283,6 +290,14 @@ namespace Turris
 
         protected override void OnPress()
         {
+            float circle = T.frostSeconds;
+            if (pc.UniquesFeatureEvent("frost.press", ref circle))
+            {
+                Clear();
+                Used(T.frostCooldown, "SZRON W KRĘGU");
+                Sfx.Play(SoundId.FrostCast, pc.AimPoint, 0.8f);
+                return;
+            }
             var e = pc.FeatureTarget(T.frostRange);
             if (e == null) { Fail("brak celu", "Niezmienny szron: brak celu w zasięgu"); return; }
             Clear();
@@ -320,6 +335,9 @@ namespace Turris
     /// tyknięć, pochodzenia i statusów; bez nowego rzutu i bez wybuchu początkowego. Opłata za faktycznie przesunięte pola; brak
     /// pola – bez opłaty. Ruch zatrzymuje się przed geometrią areny (bez przenikania przez ściany).
     /// </summary>
+    /// <summary>Przesuwane pole Prądu głębin (dla mocy unikatu).</summary>
+    public sealed class CurrentGlide { public DamageZone zone; public Vector3 to; }
+
     public sealed class DeepCurrentFeature : ClassFeatureController
     {
         protected override void OnBind() { color = new Color(0.3f, 0.6f, 1f); }
@@ -344,6 +362,8 @@ namespace Turris
                 var z = zones[i];
                 Vector3 to = point + side * (i == 0 ? 0f : z.Radius * 1.1f * (i % 2 == 1 ? 1f : -1f));
                 to = HuWorld.Clamp(z.transform.position, to, z.Radius * 0.5f);
+                // Płaszcz wędrującej rzeki: pole rozwija się w smugę po drodze zamiast płynąć w całości.
+                if (pc.UniquesFeatureEvent("current.glide", new CurrentGlide { zone = z, to = to })) continue;
                 z.GlideTo(to, T.currentMoveSeconds);
                 FxLibrary.Lightning(z.transform.position + Vector3.up * 0.3f, to + Vector3.up * 0.3f, new Color(0.4f, 0.7f, 1f));
             }
@@ -426,6 +446,14 @@ namespace Turris
             open = 0f;
             if (fx != null) { fx.StopAndRelease(); fx = null; }
             if (stored.Count == 0 || pc.IsDead) { stored.Clear(); return; }
+            // Flakon ostatniego oddechu: cały magazyn jako jeden przebijający piorun (kontrolowana suma budżetów).
+            float sum = 0f; foreach (var s0 in stored) sum += s0.hit.Total;
+            if (pc.UniquesFeatureEvent("eye.release", ref sum, stored.Count))
+            {
+                Telemetry.Add("powietrze: wypuszczone pociski", stored.Count);
+                stored.Clear();
+                return;
+            }
             Vector3 aim = pc.FeatureAim();
             var e = pc.FeatureTarget(25f);
             Vector3 from = pc.AimPoint + Vector3.up * 0.3f + aim * 0.8f;
@@ -508,6 +536,8 @@ namespace Turris
         protected override void OnPress()
         {
             Vector3 aim = pc.FeatureAim();
+            // Buty ruchomego bastionu: dwie boczne płyty prowadzone z postacią zamiast jednej ściany.
+            if (pc.UniquesFeatureEvent("bastion.press")) { Telemetry.Add("ziemia: płyty boczne"); Used(T.wallCooldown, "RUCHOMY BASTION"); return; }
             Vector3 center = pc.transform.position + aim * T.wallDistance;
             var rot = Quaternion.LookRotation(aim);
             string why = EarthWall.Validate(center, rot, T.wallLength, T.wallHeight, T.wallThickness);
@@ -566,6 +596,9 @@ namespace Turris
             if (type != ActionType.HeavyAttack || plates.Count == 0) return;
             float budget = plates[0];
             plates.RemoveAt(0);
+            // Pas grobowego moździerza: płyta spada z nieba w punkt zamiast lecieć z postaci.
+            float b2 = budget * T.shellPlateFactor;
+            if (pc.UniquesFeatureEvent("shell.plate", ref b2)) { Telemetry.Add("ziemia: wydane płyty"); Telemetry.Add("ziemia: budżet płyt", budget); return; }
             Vector3 aim = pc.FeatureAim();
             var e = pc.FeatureTarget(18f);
             var h = pc.FeatureHit("Kamienna płyta", 0f, budget * T.shellPlateFactor, Element.Earth, pc.transform.position);

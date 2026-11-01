@@ -135,8 +135,10 @@ namespace Turris.Tests.Bots
         /// <summary>Zapis telemetrii cechy do rekordu podejścia (mechanika osobno od polityki).</summary>
         void RecordFeature()
         {
-            if (Rec == null || Pc == null || Pc.Feature == null) return;
+            if (Rec == null || Pc == null) return;
             var R = Rec.R;
+            foreach (var kv in Pc.PerkTelemetry) R.perkStats.Add(kv.Key, Mathf.Round(kv.Value * 100f) / 100f);
+            if (Pc.Feature == null) return;
             R.featureId = Pc.Feature.Def.id;
             R.featurePresses = Pc.FeatureTelemetry.presses;
             R.featureUses = Pc.FeatureTelemetry.uses;

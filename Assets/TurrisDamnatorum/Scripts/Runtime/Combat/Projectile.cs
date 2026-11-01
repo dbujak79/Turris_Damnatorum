@@ -67,6 +67,27 @@ namespace Turris
 
         /// <summary>Odczyt dla obserwatorów (boty testowe): prędkość, strona, właściciel i czy unik przed pociskiem chroni.</summary>
         public Vector3 Velocity => velocity;
+        /// <summary>Pocisk doleciał do końca bez trafienia (grot w podłożu, lustro).</summary>
+        public static event System.Action<Projectile, Vector3> Expired;
+        /// <summary>Peleryna bezwietrznej nocy: nowy kierunek i szybkość (bez odświeżenia czasu życia i trafień).</summary>
+        public void Redirect(Vector3 dir, float speedMult)
+        {
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 1e-6f) return;
+            speedValue *= speedMult;
+            velocity = dir.normalized * speedValue;
+            homingTarget = null;
+            transform.rotation = Quaternion.LookRotation(velocity);
+        }
+        /// <summary>Przeniesienie części obrażeń na żywioł (lustro soli).</summary>
+        public void ConvertShare(Element e, float share)
+        {
+            float moved = hit.Total * Mathf.Clamp01(share);
+            float p = Mathf.Min(hit.physical, moved); hit.physical -= p; moved -= p;
+            hit.magic += p;
+            hit.element = e;
+        }
+        public void SetHoming(IHitReceiver target, float turn) { homingTarget = target; homing = turn; }
         public Faction Side => faction;
         public IHitReceiver Owner => owner;
         public float HitRadius => radius;
@@ -299,7 +320,7 @@ namespace Turris
         {
             if (dt <= 0f) return;
             life -= dt;
-            if (life <= 0) { Explode(opts.fullExplosion); return; }
+            if (life <= 0) { Expired?.Invoke(this, transform.position); Explode(opts.fullExplosion); return; }
 
             if (homingTarget != null && !homingTarget.IsDead && homing > 0)
             {

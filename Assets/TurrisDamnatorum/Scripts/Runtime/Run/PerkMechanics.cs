@@ -69,6 +69,7 @@ namespace Turris
         }
 
         /// <summary>Wzmocnienie działa (zwykłe wzmocnienia Turris – zawsze; perki HU – gdy nie są uśpione).</summary>
-        public static bool Active(BoonDefinition b, RunState run) => b == null || !b.id.StartsWith("hu_perk_") || Active(FloorShop.PerkRow(b), run);
+        public static bool Active(BoonDefinition b, RunState run) =>
+            b == null || (NativePerkCatalog.IsNative(b) ? NativePerkCatalog.Usable(b.id, run) : !b.id.StartsWith("hu_perk_") || Active(FloorShop.PerkRow(b), run));
     }
 }

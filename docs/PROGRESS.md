@@ -1,5 +1,87 @@
 # Turris Damnatorum — stan prac i plan
 
+### Affiksy specjalizacyjne i rzeczywiste dodane żywioły — 2026-11-01
+- Zadanie: [PROMPT_WDROZENIE_AFFIKSOW_POE2.md](PROMPT_WDROZENIE_AFFIKSOW_POE2.md); raport: [RAPORT_AFFIKSY_SPECJALIZACYJNE.md](RAPORT_AFFIKSY_SPECJALIZACYJNE.md); katalog: [AFFIKSY_PRZEDMIOTOW.md](AFFIKSY_PRZEDMIOTOW.md), [AFFIKSY_SKROT.md](AFFIKSY_SKROT.md) (generator `tools/art/affix_docs.py`).
+- **Dodane żywioły** (`fire/water/air/earth_add`) dają teraz rzeczywisty składnik żywiołu: `B × % / 100`, B = obrażenia ataku bronią bez premii fizycznej (nowe `StatType.AddedWeapon*`, `HellEconomy.MapAffix`; przedmioty bazowe i perki bez zmian). Zwykłe ciosy, strzały, techniki Turris i HU; nie czary, sługi, aury, efekty wtórne.
+- **`HitData.split` (`MagicSplit`)** – wszystkie żywioły naraz w jednym trafieniu (struktura wartościowa, aktywna tylko gdy dawny zapis nie wystarcza); **przebicie per żywioł** (`penFire…`, `DamageResolver.ApplyElementResistances`; usunięte ważone `penetration`).
+- **8 nowych grup × 3 tiery** z nakładki `tools/data/affixes_turris.json` (scalanie `tools/art/turris_affix_overlay.py`, też w importerze HU): przebicie ×4, Kruszący (postawa ciężkiej broni), Władczy (sługi – migawka przy przyzwaniu), Muru tarcz (blok tarczą, osobny mnożnik, limit 50%), Inkantacji (szybkość rzucania – tylko przygotowanie czaru). Katalog 155 rekordów / 54 grupy. Filtr przedmiotu `AffixRow.Filter` (`HellEconomy.Qualifies`).
+- Wspólna matematyka `Stats/AffixMath.cs`, haki gracza `Player/PlayerCombat.Affixes.cs`. Zapis: `ItemInstance.affixIds` + `affixVersion` (stare zapisy: premie bez zmian, opis „ze starego zapisu”). UI: opisy affiksów po jakości, składniki ciosu w statystykach i analizie buildu, linia „Specjalizacje”.
+- Testy: EditMode **307/310** (17 nowych `AffixSpecializationTests` + pomiar – zielone; 2 znane `AnimeForward`). Nowe PlayMode `AffixSpecializationPlayTests` **4/4**. Pełny PlayMode `window` 263/326 (58 pominiętych), 5 porażek: znane `FrameCost` i Krok wichru; `ParriedCharge`, `Bellringer` (parowanie – trafienia czysto fizyczne w starym zapisie, okno parowania mija przed uderzeniem, poza ścieżkami pakietu) i `FullFlow_WithGamepadOnly` (liczenie przycisków postoju) – bez punktu wyjścia do porównania, do potwierdzenia przy równoległych pracach.
+- Pomiary (raport 7.3): maksymalny legalny zestaw dodanego ognia = +525% B (84% ciosu) – ryzyko dominacji do obserwacji; przebicie 45 p.p. prawie znosi odporność 50%; szybkość rzucania słaba przy przygotowaniu 0,25 s.
+- Niesprawdzone: zrzuty tooltipów/porównania (OnGUI), scenariusze PlayMode P02–P05/P08/P09/P11 (pokryte EditMode), pełny PlayMode po ostatniej poprawce aur/przywołań, wycena nowych statystyk przez boty.
+- Następne kroki: obejrzeć tooltipy w grze (720p/1080p, pad); ocenić `*_add` × `*_pct` w graniu; polskie nazwy przedrostków HU; ewentualnie recovery w szybkości rzucania.
+
+### Audyt buildcraftu: perki i unikaty — 2026-11-01
+
+- [Audyt](AUDYT_BUILDCRAFT.md), etapy 1–3. Etap 3: droga żywiołowa ok. 1,8× fizycznej przy pełnej inwestycji (rachunek), riposta omija premie, Legion niedostępny (korekta etapu 1), Sfora martwa przed piętrem 7 (teraz w sklepie od 7), T01 pięści ×2, riposta z premią ogólną i dodanymi żywiołami. Pomiar na 34 demonach: żywioł ×1,18 przy 6 affiksach, ×1,80 przy pełnej inwestycji; po zmianie dodatku na 3,5% za punkt: ×0,91 i ×1,35. Projekt perków Łotrzyka w audycie.
+- **Perki:** Wyłom ×1,5 tylko na wrogach z postawą ≥ 50; Sfora +15% za rodzaj (do +30%); Manifestacja bez zmian, zmierzony szacunek ×1,30 realizacji budżetu stref (mała próba).
+- **Unikaty – dowody:** `UniqueProofPlayTests` 24/24 (3 przebiegi z rzędu) dla mocy bez dowodu działania.
+- **Naprawione wady w grze:** wyjątek listy mocy przy odświeżeniu buildu; Q02, Z05 i F02 nie mogły zadziałać; L01 wystrzeliwał cel przez arenę; R05 walczył pięścią zamiast lewą bronią. Poprawione opisy rdzeni: A02, L05, T03, T04. R05: wir 70%.
+- **Pomiary:** `UniqueMeasurePlayTests` (`TURRIS_MEASURE`, `TURRIS_MEASURE_ALL`). Żadna dominacja obrażeń się nie potwierdziła; największy zysk B02 ×1,20–1,39; T01 ×0,5 wobec miecza. Ogólna rotacja ma szum ok. ±15% i 28/75 mocy bez zdarzeń – nie służy do wyceny.
+- **Boty:** wycena 8 mocy z pomiarów celowanych, reszta stałe 25 pkt.
+- **Testy:** EditMode 315/318 (2 znane, 1 pominięty); PlayMode – patrz audyt. Przy okazji: `NativePerkBotTests` zostawiał scenę `Main` i psuł kolejne testy (naprawione).
+- Nic nie zacommitowano.
+
+### Wdrożenie czterech perków specjalizacyjnych — 2026-11-01
+
+- Pojedynkowicz, Wykorzystaj wyłom, Różnorodna sfora, Gwałtowna manifestacja – natywny katalog (`Run/NativePerks.cs`, strojenie w `GameConfig.nativePerks`) we wspólnej puli sklepu z perkami HU; ceny 70/75/80/75 przy inflacji 1; zapis bez wcześniejszego sklepu. Szczegóły, mapa kodu i zasady interakcji: [raport](RAPORT_PERKI_SPECJALIZACYJNE.md).
+- Walka: `PlayerCombat.Perks.cs` (dodatek tempa, okna wyłomu po rzeczywistym przełamaniu – `EnemyBrain.PoiseBroke`, warstwa sfory w `Servant.Attack`, lokalny zegar `DamageZone`/stref HU). UI: korzyść, warunek, koszt alternatywny, powód uśpienia, ostrzeżenie przy zmianie broni/drugiej ręki, HUD sfory i wyłomu.
+- **Regresja bazowa naprawiona:** `DamageZone` liczy tyknięcia jako `k × interwał` (wcześniej liczba tyknięć zależała od FPS).
+- Testy: EditMode `NativePerkTests` 8/8, pełny EditMode 315/318 (2 znane błędy „AnimeForward”, 1 pominięty); PlayMode `NativePerkPlayTests` 6/6; regresje cech/unikatów/skilli/przepływu/HU/pieczęci/affiksów zielone (W03 Hełm dzwonnika raz niestabilny, przy powtórce zaliczony).
+- Boty (`HeroBot.Perks.cs`): ocena natywnych perków w sklepie zależna od buildu, wartość działającego perka w ocenie wyposażenia (tarcza nie wypiera Pojedynkowicza), pierwszeństwo i mocny cios na cel z wyłomem, Sfora – najpierw brakujący rodzaj sługi; sekcja perków w raporcie serii. Test `NativePerkBotTests` 1/1.
+- Nie zrobiono: balans na seedach (liczby to hipotezy), zrzuty sklepu/HUD, część scenariuszy E/P jako osobne testy. Nic nie zacommitowano (czeka na zakończenie pracy nad affiksami).
+
+### Prompt wdrożenia czterech perków specjalizacyjnych — 2026-11-01
+
+- Gotowy [prompt wdrożeniowy](PROMPT_WDROZENIE_PERKOW_SPECJALIZACYJNYCH.md): Pojedynkowicz, Wykorzystaj wyłom, Różnorodna sfora i Gwałtowna manifestacja. Każdy ma jeden poziom; podano stabilne id, hipotezy parametrów/cen/wag, warunki ofert i integrację natywnego katalogu z obecnym sklepem HU oraz zapisem.
+- Doprecyzowano rzeczywiste pułapki kodu: przełamanie postawy poza stanem `PoiseBroken`, osobne ścieżki parowania i riposty, sługi wskazujące gracza jako atakującego, dynamiczna różnorodność obok migawek affiksów oraz strefy HU liczące trafienie z `share × tick`. Manifestacja kompresuje czas i odstępy tyknięć o połowę, zachowując ich liczbę i jednostkowy budżet; nie podwaja równocześnie obrażeń tyknięcia.
+- Kontrakty obejmują 16 scenariuszy EditMode i 10 PlayMode, kwalifikację stref, interakcje z cechami/unikatami/affiksami, polskie UI, pad, migrację bez resetowania i krótkie porównania balansu. Wielogodzinne serie botów pozostają wstrzymane.
+- **W tej pracy przygotowano tylko prompt, bez wdrażania perków i bez testów Unity.** Zweryfikowano strukturę dokumentu, ścieżki kodu oraz przykłady liczbowe. Następny krok: realizacja promptu i `RAPORT_PERKI_SPECJALIZACYJNE.md`.
+
+### Wdrożenie 75 unikatów klasowych — 2026-11-01
+
+- Według [promptu](PROMPT_WDROZENIE_75_UNIKATOW_KLASOWYCH.md); raport, architektura, tabela i luki: [RAPORT_UNIKATY_KLASOWE.md](RAPORT_UNIKATY_KLASOWE.md).
+- **75 kart, 75 przedmiotów, 75 kontrolerów mocy** (`Scripts/Runtime/Uniques/`). Natywny rejestr w kodzie (bez `RunBatchForce`, bez fałszywego `huSourceId`): bronie/tarcze/grymuary kopiują bazę z puli; rzadkość Unique zachowana w `Roll`; poza sklepem i nagrodami; łup elit/bossów przez `UniqueLoot` (preferencja klasy, „poszukiwany” ×4); zapis z trwałym `uid` i ustawieniem mocy; ikony 128 px w `Resources/UniqueIcons`.
+- Moce wpięte hakami w potok gracza i w punkty przemiany 30 cech (`UniquesFeatureEvent`); bez unikatu zachowanie gry bez zmian. Duplikat (2 pierścienie) = jedna moc; moc cechy działa tylko z wybraną cechą właściwej klasy.
+- UI: opis unikatu (reguła, cena, warunek, stan uśpienia, gdzie szukać), ikony w ekwipunku, wybór slotu dla T04, magazyny mocy w HUD, **Katalog unikatów** w menu (odkryte, „Szukaj”). Boty liczą tylko działającą moc (`UniqueScore`).
+- Testy: EditMode `UniqueItemTests` **14/14**, pełny EditMode **289/292** (2 znane „AnimeForward”, 1 pominięty); PlayMode `UniquePlayTests` **12/12**, `UniqueScenarioPlayTests` **7/7**, `UniqueSmokePlayTests` **75/75** (każdy unikat w legalnym rdzeniu buildu, walka z AI, bez wyjątków; 39/75 mocy zadziałało w ogólnym scenariuszu), galeria `UniqueGalleryTests` 2/2 (zrzuty obejrzane: `TestResults/unique-items/shots`). Zrzuty wykryły wyciek bytów mocy po zniszczeniu postaci – naprawiony.
+- Uwaga: w trakcie pracy równoległa edycja `DamageResolver.cs` (pole `MagicSplit`, nie z tej pracy) zepsuła kompilację – regresji PlayMode cech klasowych nie dało się już uruchomić. Do zrobienia: regresje po tej zmianie, testy silnika dla pozostałych ~36 mocy, polityki botów dla nowych pętli, balans na seedach.
+
+### Prompt wdrożenia affiksów specjalizacyjnych — 2026-11-01
+
+- Gotowy [prompt wdrożeniowy](PROMPT_WDROZENIE_AFFIKSOW_POE2.md): poprawka czterech dodatków żywiołów oraz pięć rodzin nowych affiksów — przebicie wybranego żywiołu (4 grupy), aktywny blok tarczą, postawa ciężkiej broni, szybkość rzucania i obrażenia sług. Łącznie 8 nowych grup / 24 rekordy; tiery, sloty, filtry, progi i wagi są hipotezami startowymi do pomiarów.
+- Ujęto ograniczenia faktycznego kodu: najwyżej dwa żywioły w dotychczasowym `HitData`, wspólne ważenie penetracji, skalowanie jakością HU, osobne ścieżki technik HU/Turris, migawki sług oraz brak pełnej historii losowania w starych snapshotach. Nowe dodatki wymagają poprawnego reprezentowania wszystkich czterech żywiołów w jednym zdarzeniu trafienia.
+- Kontrakty obejmują migrację bez ponownego losowania starych przedmiotów, trwałą nakładkę importu poza źródłem HU, polskie UI, 14 scenariuszy EditMode i 12 PlayMode, krótkie porównania balansu i kontrolę zrzutów. Wielogodzinne serie botów pozostają wstrzymane.
+- **W tej pracy przygotowano tylko prompt, bez wdrażania mechanik i zmian katalogu affiksów.** Sprawdzono strukturę dokumentu, lokalizacje źródeł, komplet scenariuszy i przykłady liczbowe; testów Unity nie uruchamiano. Następny krok: realizacja promptu i raport `RAPORT_AFFIKSY_SPECJALIZACYJNE.md`.
+
+### Skill oprawy wizualnej umiejętności — 2026-11-01
+
+- Nowy projektowy [skill-visuals](../.agents/skills/skill-visuals/SKILL.md): praca nad VFX czarów i technik broni z inspiracją jakościową Path of Exile 2, dopasowana do gotyckiego anime Turris. Obejmuje formę, rytm, kontakt, rodziny żywiołów, czytelność i synchronizację z rzeczywistą mechaniką; zachowuje zaakceptowany charakter ruchów.
+- Trzy referencje: mapa kodu Turris, język efektów i procedura weryfikacji. Wymaga podglądu przed/po w kamerze gry, obsługi przerwań i ponownego użycia puli oraz jawnego rozdzielenia oceny wizualnej od pomiarów wydajności. Metadane wywołania: `$skill-visuals`.
+- Walidacja `quick_validate.py` w trybie UTF-8: **Skill is valid!**; sprawdzono odnośniki i brak szablonowych TODO. Zmiana dotyczy instrukcji, bez modyfikacji efektów gry i bez uruchamiania testów Unity. Skuteczność instrukcji wymaga jeszcze pierwszego zastosowania na konkretnej umiejętności.
+
+### Lista affiksów przedmiotów losowych — 2026-11-01
+- [AFFIKSY_PRZEDMIOTOW.md](AFFIKSY_PRZEDMIOTOW.md): wszystkie 131 affiksów (74 przedrostki w 24 grupach, 57 przyrostków w 22 grupach), zakresy w jednostkach Turris (po przeliczeniu z `HellEconomy`), próg piętra, waga, sloty i wymagane tagi, a także zasady losowania.
+- Do decyzji: przedrostki bez polskich nazw; zaokrąglanie płaskich wartości z max ≥ 2 spłaszcza zakresy (`regen` T3 zawsze +4/s); dodane obrażenia żywiołów działają jak procent obrażeń fizycznych broni.
+
+### Korekta UX projektu HUD — rewizja 2 — 2026-10-31
+
+- Po uwadze autora o zasłanianiu obrazu poprawiono pakiet projektowy, **bez wdrażania GameUI w Unity**. Usunięto pełny dolny pas 230 px (21,30% obrazu). Flaszki są po lewej, skille Q/E/R i cecha G po prawej; sloty 64 px zamiast 96 px, bez stałych nazw i „Gotowa”. Środek dołu odsłonięty na 70,6% szerokości. Obwiednie dolnych kontrolek, klawiszy i separatora: 31 056 px² (1,50% obrazu 1080p); to miara geometrii, nie wynik playtestu.
+- Mniejsze grupy zasobów i celu piętra; pojedynczy powód blokady długu przy manie. Rezerwacja życia, bieżąca redukcja skóry, czas działania i cooldown pozostają widoczne. F1 pokazuje nazwy/przypisania, Esc/pad nadal pauzuje; waluta i trudność dostępne na pauzie. Na ultrawide HUD ograniczony do środkowego obszaru 16:9. Komunikat o ukończeniu fali zastępuje baner po zwykłym zabiciu.
+- Zaktualizowano 9 widoków UI06/07/08/09/16/23/27/31/34, cztery HUD-y ultrawide, układy, tokeny, galerię i plansze. [Analiza UX i kompromisy](../ArtSource/Interfejs/DarkFantasy_v1/HUD_UX.md), [porównanie przed i po](../ArtSource/Interfejs/DarkFantasy_v1/przeglad/HUD_przed_i_po.png). Cztery poprzednie PNG i układy zachowano w referencje/hud_przed_korekta; wcześniejsze odnośniki do pakietu nadal działają.
+- Kontrola plików: 342 PNG, 174 SVG, 36 makiet, 6 wariantów ultrawide; brak błędów układu. Walidator sprawdza sześć slotów z przypisaniami, pusty dolny środek i brak szerokiego dolnego panelu w czterech HUD-ach. 75 masterów ikon bez zmian. Obejrzano zmienione makiety, w tym stany w 720p/1080p, pomoc, pauzę, poligon, modal i ultrawide.
+- Następny etap po wdrożeniu: próba w ruchu z grupą przeciwników, bossem/AoE, długiem i niskim życiem, na padzie oraz przy powiększonym UI. Podział na dwa rogi może zwiększyć ruch wzroku — to jawny kompromis do sprawdzenia. Testów Unity nie uruchamiano: zmiana dotyczy projektu i generatorów makiet.
+
+### Pakiet projektów całego interfejsu — dark fantasy — 2026-10-31
+
+- Autor wybrał **pakiet grafik i projektów dla kolejnego agenta, bez wdrożenia w Unity**. Styl dopasowany do prostych ikon 75 unikatów: grafit, stal, przygaszony mosiądz, jasna typografia, rozróżniony wybór i fokus.
+- Gotowy [pakiet](../ArtSource/Interfejs/DarkFantasy_v1/README.md): **132 elementy UI, w tym 74 piktogramy**, SVG + PNG RGBA 1x/2x; **36 makiet** w SVG i PNG 1920 × 1080 / 1280 × 720; **6 wariantów 2560 × 1080**. Pokryte wszystkie 11 stanów GameScreen oraz istotne podwidoki, potwierdzenia i stany HUD.
+- Dołączono fonty Cinzel i Source Sans 3 z OFL oraz trzy statyczne odmiany o nowych nazwach Turris Tytul / Turris Tekst. Motyw, nine-slice, układy JSON, [katalog ekranów](../ArtSource/Interfejs/DarkFantasy_v1/KATALOG_EKRANOW.md), lokalna przeglądarka index.html, specyfikacja i szczegółowe DLA_AGENTA.md.
+- Kontrola: **342 PNG, 174 SVG, komplet polskich liter, zgodne wymiary, cele nawigacji i pliki zależne**, składnia JS; brak przekroczeń szerokości i wyjścia elementów poza płótno. Kontrast głównych ról tekstowych na panelu **5,49–12,31:1**. Wszystkie wcześniejsze 75 masterów ikon bez zmian według SHA-256.
+- Obejrzano 9 plansz wszystkich makiet, planszę ultrawide i krytyczne widoki w 720p/1080p. Poprawiono proporcje modeli, opis buildu, budżet, porównywanie, układ statystyk, zajęcie obu rąk w Arsenale i wyjmowanie uśpionej pieczęci. Szczegóły i granice: [KONTROLA.md](../ArtSource/Interfejs/DarkFantasy_v1/KONTROLA.md).
+- Narzędzia w tools/art: interfejs_motyw.py, interfejs_elementy.py, interfejs_ekrany.py, przygotuj_pakiet_interfejsu.py, sprawdz_pakiet_interfejsu.py. W tym zadaniu bez zmian kodu gry, scen i istniejących assetów Unity; testów Unity nie uruchamiano. Podgląd HTML jest nawigacją po statycznych makietach.
+- Następny osobny etap: import i wdrożenie na rzeczywistych danych GameUI, z zachowaniem wejścia/pada, cech, ekonomii i warunków slotów. Docelowy interfejs wymaga późniejszej kontroli w grze; pakiet nie dodaje automatycznie mocy nowych unikatów.
+
 ### Naprawa animacji berserkera, etap 1: przegląd i lekkie cięcia — 2026-10-31
 
 - Na polecenie użytkownika („kompleksowo naprawiamy Berserker, do przeglądu wszystkie animacje”) – skill `repair-souls-animation`, Blender 5.2.2 przez MCP.
@@ -91,13 +173,15 @@
 - **`LoadoutAnalysis`** w sklepie: panel „Twój build” (DPS zwykłego ataku i skilli), ostrzeżenie o perkach zasypiających po zmianie broni i o perku bez działania. Zrzut sklepu sprawdzony.
 - Testy po tym etapie: EditMode 250/253 (2 znane „AnimeForward”, 1 pominięty), PlayMode wsadowo 52/57 (te same 2 niezwiązane).
 - Zostaje: `BossTrial`. Następne: seria botów (gracz i tester) po zmianach ekonomii i żywiołów.
-### Kontynuacja ikon 75 unikatów — 2026-10-31
+### Komplet 75 ikon unikatów — 2026-10-31
 
 - Po przerwie autor polecił kontynuować. Obowiązuje uproszczony styl ikon i zapis plików w projekcie bez publikowania kolejnych podglądów w czacie.
 - [Katalog grafik](../ArtSource/Unikaty/ProsteIkony_v1/README.md) ma plan wszystkich **75 kart**, osobne prompty, id klas i przedmiotów oraz jednoznaczne nazwy PNG. Aktualny postęp zapisany w manifest.json i rejestr_generowania/KOD.json; brak PNG jest jawnie oznaczony jako do_wygenerowania.
 - Dodano narzędzia katalogowania i kontroli: tools/art/katalog_ikon_unikatow.py (w tym --wymagaj-kompletu) oraz tools/art/podglad_ikon_unikatow.py. Źródłowe PNG pozostają bez zmian. Lokalna galeria HTML i plansze TestResults/unique-icons-v1 pokazują skalę 120/64/32 px.
 - Pierwsza kontrola małej skali: sylwetki pierwszej partii są czytelne przy 64 px; 32 px zachowuje główne bryły, ale traci detale. To kontrola planszy, bez integracji z właściwym UI gry. Testów Unity nie uruchamiano, kod gry i modele 3D bez zmian w tym zadaniu.
-- W chwili wznowienia partii zbiorczej zapisano **11/75** źródeł; kolejne generowane i rejestrowane partiami. Pełny wynik i dalsze uwagi należy odczytać z manifestu, nie zakładać ukończenia z samej obecności planu.
+- **Zakończono 75/75 ikon, po pięć na każdą z 15 klas**: 72 nowe grafiki i trzy zachowane wcześniejsze próbki. Wszystkie PNG RGBA 1254 × 1254 z alfa 0–255, 75 różnych SHA-256; potwierdzono zgodność każdego kodu karty z jego id. Źródła zajmują 66 013 429 bajtów.
+- Obejrzano wszystkie pięć plansz, razem 75 ikon w skalach 120/64/32 px. 64 px zachowuje główny motyw; 32 px traci część szczegółów, zwłaszcza przy smukłych broniach. Pełny [katalog](../ArtSource/Unikaty/ProsteIkony_v1/KATALOG.md), [kontrola](../ArtSource/Unikaty/ProsteIkony_v1/KONTROLA.md) i wynik_weryfikacji.json w folderze grafik.
+- Następne osobne zadanie: eksport/import małych ikon i podłączenie danych/UI. Te grafiki są źródłami 2D; nie wykonano tutaj modeli 3D, mocy przedmiotów ani integracji z ekwipunkiem.
 
 ### Grafiki unikatów: trzy proste ikony źródłowe — 2026-10-31
 

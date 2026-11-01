@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace Turris.Tests.Bots
 {
@@ -45,6 +46,7 @@ namespace Turris.Tests.Bots
             Dodges(sb, series);
             Loadouts(sb, series);
             Features(sb, series);
+            NativePerks(sb, series);
             Skills(sb, series);
             SkillCollection(sb, series);
             ActionsAndEconomy(sb, series);
@@ -323,6 +325,39 @@ namespace Turris.Tests.Bots
             }
             sb.AppendLine();
             sb.AppendLine("Brak użyć przy wielu naciśnięciach to sygnał słabej polityki bota albo braku warunku (odmowy z przyczyną), nie dowód słabości cechy.");
+            sb.AppendLine();
+        }
+
+        /// <summary>Perki specjalizacyjne: zakupy i działanie mechaniki (tempo, okna wyłomu, strefy manifestacji).</summary>
+        static void NativePerks(StringBuilder sb, IList<BotSeries> series)
+        {
+            var names = NativePerkCatalog.Ids.Select(NativePerkCatalog.Name).ToList();
+            var rows = series.Select(s =>
+            {
+                var buys = new Tally(); var mech = new Tally();
+                foreach (var r in s.runs)
+                {
+                    for (int i = 0; i < r.purchases.k.Count; i++) foreach (var n in names) if (r.purchases.k[i] == "sklep: " + n) buys.Add(n, r.purchases.v[i]);
+                    for (int i = 0; i < r.perkStats.k.Count; i++) mech.Add(r.perkStats.k[i], r.perkStats.v[i]);
+                }
+                return (s.personaName, buys, mech);
+            }).Where(x => x.buys.k.Count > 0 || x.mech.k.Count > 0).ToList();
+            if (rows.Count == 0) return;
+            sb.AppendLine("## Perki specjalizacyjne");
+            sb.AppendLine();
+            sb.AppendLine("| Osobowość | Zakupy | Mechanika (suma) |");
+            sb.AppendLine("|---|---|---|");
+            foreach (var x in rows)
+                sb.AppendLine($"| {x.personaName} | {string.Join(", ", Enumerable.Range(0, x.buys.k.Count).Select(i => $"{x.buys.k[i]} ×{x.buys.v[i]:0}"))} | {string.Join(", ", Enumerable.Range(0, x.mech.k.Count).Select(i => $"{x.mech.k[i]}: {x.mech.v[i]:0.##}"))} |");
+            sb.AppendLine();
+            // Audyt Gwałtownej manifestacji: ile dałaby kompresja przy tym samym zachowaniu wrogów (strefy zwykłe).
+            foreach (var x in rows)
+            {
+                float Get(string key) { int i = x.mech.k.IndexOf(key); return i < 0 ? 0f : x.mech.v[i]; }
+                float hits = Get("strefy zwykłe: trafienia celów"), first = Get("strefy zwykłe: trafienia w 1. połowie"), n = Get("strefy zwykłe: liczba");
+                if (n > 0 && hits > 0)
+                    sb.AppendLine($"- {x.personaName}: {n:0} kwalifikowanych stref, trafienia celów {hits:0}, w pierwszej połowie {first:0} ({first / hits:P0}) → szacowany zysk Manifestacji ×{Mathf.Min(2f, 2f * first / hits):0.00} realizacji budżetu.");
+            }
             sb.AppendLine();
         }
 

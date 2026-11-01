@@ -7,6 +7,12 @@ namespace Turris
     // ====================================================================== Łotrzyk A – Fałszywy świadek
 
     /// <summary>Wabik w miejscu łotrzyka: do limitu wrogów w zasięgu kieruje w niego swój następny zwykły atak (FeatureDecoy).</summary>
+    /// <summary>Naciśnięcie Fałszywego świadka (dane dla mocy unikatu: moc tworzy własny wabik).</summary>
+    public sealed class WitnessPress { public float seconds, range; public int maxDeceived; public FeatureDecoy decoy; }
+
+    /// <summary>Sztuczka gotowa do wykonania (dane dla mocy unikatu).</summary>
+    public sealed class TrickData { public StolenTrickFeature.TrickKind kind; public HitData hit; public float reach, radius, spread; public int count; public Element element; public bool heavy; }
+
     public sealed class FalseWitnessFeature : ClassFeatureController
     {
         FeatureDecoy decoy;
@@ -16,6 +22,15 @@ namespace Turris
         protected override void OnPress()
         {
             if (Decoy != null) Decoy.End();
+            // Maska fałszywego króla: obiektem oszustwa staje się wskazany prawdziwy wróg.
+            var king = new WitnessPress { seconds = T.decoySeconds, maxDeceived = T.decoyMaxDeceived, range = T.decoyRange };
+            if (pc.UniquesFeatureEvent("witness.press", king) && king.decoy != null)
+            {
+                decoy = king.decoy;
+                Telemetry.Add("wabik: oszukani wrogowie", decoy.DeceivedCount);
+                Used(T.decoyCooldown, $"FAŁSZYWY KRÓL ({decoy.DeceivedCount})");
+                return;
+            }
             decoy = FeatureDecoy.Spawn(pc, pc.transform.position - pc.transform.forward * 0.3f, T.decoySeconds, pc.Health.Max * T.decoyHealth, T.decoyMaxDeceived, T.decoyRange);
             Telemetry.Add("wabik: oszukani wrogowie", decoy.DeceivedCount);
             Used(T.decoyCooldown, decoy.DeceivedCount > 0 ? $"FAŁSZYWY ŚWIADEK ({decoy.DeceivedCount})" : "FAŁSZYWY ŚWIADEK – nikt nie patrzy");
@@ -90,6 +105,15 @@ namespace Turris
             h.featureEffect = false; h.statuses = trickStatuses; h.heavy = trickHeavy; h.poiseDamage = trickHeavy ? 45f : 25f;
             Vector3 aim = pc.FeatureAim();
             var tr = new HitTracker();
+            // Rękawice zawodowego oszusta: sztuczka zostaje pułapką (ten sam profil nie istnieje też w magazynie).
+            if (pc.UniquesFeatureEvent("trick.execute", new TrickData { kind = trick, hit = h, reach = trickReach, radius = trickRadius, spread = trickSpread, count = trickCount, element = trickElement, heavy = trickHeavy }))
+            {
+                pc.Stamina.Drain(15f, pc.Config.balance.staminaRegenDelay);
+                Telemetry.Add("kradzież: pułapki " + trick);
+                trick = TrickKind.None;
+                Used(T.stealCooldown, "SZTUCZKA → PUŁAPKA");
+                return;
+            }
             switch (trick)
             {
                 case TrickKind.Melee:
@@ -182,8 +206,14 @@ namespace Turris
             Telemetry.Add("groty: budżet", hit.Total * hit.nailShare * share);
         }
 
+        /// <summary>Groty na celach (dla mocy unikatu: Rękawice tkacza cięciw).</summary>
+        public List<KeyValuePair<EnemyBrain, float>> NailBudgets() => nails.Where(kv => kv.Key != null && !kv.Key.IsDead).Select(kv => new KeyValuePair<EnemyBrain, float>(kv.Key, kv.Value.budget)).ToList();
+        public bool Embedding => active > 0f;
+
         void Rip()
         {
+            float rip = T.nailsRip;
+            if (pc.UniquesFeatureEvent("nails.rip", ref rip, this)) { Telemetry.Add("groty: linie"); nails.Clear(); return; }
             int ripped = 0; float dealt = 0f;
             foreach (var kv in nails.ToList())
             {
@@ -250,6 +280,7 @@ namespace Turris
             fromPost = false;
             var p = Post;
             if (p == null) return;
+            if (pc.UniquesFeatureEvent("post.shot", p)) return; // Buty wygnanego strzelca: mocny strzał z ręki, potem zamiana
             if (HuWorld.Flat(p.transform.position, pc.transform.position) > T.postLinkRange)
             {
                 Telemetry.Add("stanowisko: poza zasięgiem");
@@ -346,11 +377,14 @@ namespace Turris
     /// walidacji (łuk zastępuje wyłącznie fokus). Ładunek wyzwala się raz, na pierwszym trafieniu, w jego miejscu, z mocą czaru
     /// bez drugiego mnożnika broni (wzorzec fokusu ×1). Pudło (ściana, koniec lotu) – ładunek przepada bez zwrotu.
     /// </summary>
+    /// <summary>Uwolnienie czaru ze strzały (dane dla mocy unikatu).</summary>
+    public sealed class SpellArrowRelease { public HuCast cast; public Vector3 from, at; public EnemyBrain target; }
+
     public sealed class SpellArrowFeature : ClassFeatureController
     {
         float preparing;
         SpellRuntime armed;
-        struct Pending { public SpellRuntime spell; public float time; }
+        struct Pending { public SpellRuntime spell; public float time; public Vector3 from; }
         readonly Dictionary<int, Pending> pending = new Dictionary<int, Pending>();
         static int tokens;
         public bool Preparing => preparing > 0f;
@@ -420,7 +454,7 @@ namespace Turris
             sk.instance.TryUse();
             int token = ++tokens;
             hit.spellArrowToken = token;
-            pending[token] = new Pending { spell = Normalized(sk), time = 4f };
+            pending[token] = new Pending { spell = Normalized(sk), time = 4f, from = hit.sourcePosition };
             Telemetry.Add("strzała zaklęcia: opłacone", 1f);
             Used(0f);
             Telemetry.Add("strzała zaklęcia: mana", sk.manaCost);
@@ -443,6 +477,8 @@ namespace Turris
             Vector3 dir = target.Transform.position - pc.transform.position; dir.y = 0f;
             dir = dir.sqrMagnitude > 1e-4f ? dir.normalized : pc.transform.forward;
             var cast = new HuCast(pc, p.spell, at, dir, at, 1f);
+            // Łuk siódmej pieczęci / Amulet niedokończonej inkantacji: pas wzdłuż toru albo runa w miejscu trafienia.
+            if (pc.UniquesFeatureEvent("spellarrow.release", new SpellArrowRelease { cast = cast, from = p.from, at = at, target = target as EnemyBrain })) { Telemetry.Add("strzała zaklęcia: uwolnienia"); return; }
             HuSkillCaster.Fire(cast, dir, p.spell.instance.seals.Shape.Parameters.GetF(HuParams.Range, 8f));
             Telemetry.Add("strzała zaklęcia: uwolnienia");
             HellFx.Shockwave(at, HellSkillFx.Family(p.spell.Def), p.spell.Def.color, 1.2f, false);
@@ -479,6 +515,8 @@ namespace Turris
     {
         int charges; float life;
         public int Charges => charges;
+        /// <summary>Koniec okna ładunków (czas gry) – odłożony pocisk nie przedłuża uprawnienia.</summary>
+        public float WindowEnds => pc.Clock + (charges > 0 ? life : 0f);
         protected override void OnBind() { color = new Color(0.8f, 0.6f, 1f); }
 
         protected override void OnPress()
@@ -513,9 +551,13 @@ namespace Turris
             if (el == Element.None) return;
             float moved = hit.physical;
             hit.physical = 0f;
-            if (hit.magic > 0f && hit.element != Element.None && hit.element != el) { hit.element2 = hit.element; hit.element2Share = hit.magic / (hit.magic + moved); }
-            hit.magic += moved;
-            hit.element = el;
+            if (hit.split.active) hit.AddMagic(el, moved); // podział wielu żywiołów (affiksy) – dokładny składnik
+            else
+            {
+                if (hit.magic > 0f && hit.element != Element.None && hit.element != el) { hit.element2 = hit.element; hit.element2Share = hit.magic / (hit.magic + moved); }
+                hit.magic += moved;
+                hit.element = el;
+            }
             hit.magic *= 1f + pc.Build.stats[Names.ElementDamageStat(el)] / 100f;
             HellFx.Impact(target.AimPoint, HellFx.For(el), Names.ElementColor(el), 0.9f);
         }

@@ -55,6 +55,7 @@ namespace Turris.Tests.Bots
         public string featureId;
         public int featurePresses, featureUses;
         public Tally featureStats = new Tally(), featureRejections = new Tally();
+        public Tally perkStats = new Tally();        // perki specjalizacyjne: liczniki PlayerCombat.PerkTelemetry
         public int run, seed;
         /// <summary>„Zwycięstwo”, „Śmierć” albo „Limit czasu”.</summary>
         public string result;

@@ -34,6 +34,13 @@ namespace Turris
         public float offerWeight = 1f;
         [Tooltip("Umiejętność, którą daje przedmiot, dopóki jest założony (np. grymuar – nova, sztylet do rzucania – rzut nożami).")]
         public SpellDefinition grantedSkill;
+        [Tooltip("Natywny unikat Turris: id karty z UniqueCatalog (moc legendarna). Puste = zwykły przedmiot.")]
+        public string uniquePowerId = "";
+        /// <summary>Natywny unikat: przedmiot bazowy (rodzaj broni, model, chwyt) – ustawia rejestr w pamięci.</summary>
+        [NonSerialized] public ItemDefinition familyBase;
+
+        /// <summary>Natywny unikat Turris (rejestr w kodzie, nie katalog HU).</summary>
+        public bool IsNativeUnique => !string.IsNullOrEmpty(uniquePowerId);
 
         public bool IsWeapon => kind == ItemKind.Weapon;
         public bool IsShield => kind == ItemKind.Shield;

@@ -38,7 +38,11 @@ namespace Turris
             var pool = config.baseItemPool.Where(d => d != null && d.minFloor <= Run.floorsCleared && !d.IsShield && d.kind != ItemKind.OffHand).ToList();
             List<ItemDefinition> candidates;
             if (rarity == ItemRarity.Unique)
-                candidates = pool.Where(HellEconomy.IsUnique).ToList();
+            {
+                // Unikaty HU i natywne unikaty Turris (UniqueLoot: preferencja klasy i poszukiwanego przedmiotu).
+                var picked = UniqueLoot.Pick(config, Run, source, Meta?.Profile.soughtUnique, rng);
+                candidates = picked != null ? new List<ItemDefinition> { picked } : new List<ItemDefinition>();
+            }
             else if (rng.NextDouble() < 0.3)
                 candidates = pool.Where(d => d.IsWeapon && !string.IsNullOrEmpty(d.huSourceId) && !d.huSourceId.Contains(".unique.")).ToList();
             else
@@ -62,6 +66,7 @@ namespace Turris
                 if (Run != run) return;
                 if (!run.CanReceive(item)) { CombatEvents.RaiseMessage($"Plecak pełny: {item.Name} przepada", new Color(0.9f, 0.5f, 0.4f)); return; }
                 run.AddItem(item, true);
+                if (item.definition.IsNativeUnique && Meta != null) Meta.DiscoverUnique(item.definition.id);
                 run.SyncGrantedSkills();
                 Player.RefreshBuild();
                 CombatEvents.RaiseMessage($"Łup: {item.Name} ({HellEconomy.RarityName(item.rarity)})", c);

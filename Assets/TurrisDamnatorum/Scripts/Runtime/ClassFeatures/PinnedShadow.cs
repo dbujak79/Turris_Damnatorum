@@ -63,9 +63,14 @@ namespace Turris
 
         void Update() => Tick(Time.deltaTime);
 
+        Transform follow; Vector3 followOffset;
+        /// <summary>Całun własnego pogrzebu: cień idzie przy właścicielu (zasięg połączenia z ofiarą bez zmian).</summary>
+        public void Follow(Transform owner, Vector3 offset) { follow = owner; followOffset = offset; }
+
         public void Tick(float dt)
         {
             if (ended) return;
+            if (follow != null) transform.position = HuWorld.Ground(follow.position + follow.rotation * followOffset);
             life -= dt;
             if (!Alive) { End(); return; }
             if (tether != null)

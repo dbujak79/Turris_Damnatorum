@@ -50,32 +50,33 @@ namespace Turris
             return null;
         }
 
-        public static EarthWall Spawn(PlayerCombat owner, Vector3 center, Quaternion rot, ClassFeatureTuning t)
+        public static EarthWall Spawn(PlayerCombat owner, Vector3 center, Quaternion rot, ClassFeatureTuning t, float lengthOverride = 0f, float secondsOverride = 0f, int maxWalls = MaxWalls)
         {
-            while (Active.Count >= MaxWalls) Active[0].End(false);
+            while (Active.Count >= Mathf.Max(1, maxWalls)) Active[0].End(false);
+            float L = lengthOverride > 0f ? lengthOverride : t.wallLength;
             var go = new GameObject("EarthWall");
             go.transform.SetPositionAndRotation(HuWorld.Ground(center), rot);
             var w = go.AddComponent<EarthWall>();
-            w.owner = owner; w.life = t.wallSeconds; w.length = t.wallLength; w.thickness = t.wallThickness;
+            w.owner = owner; w.life = secondsOverride > 0f ? secondsOverride : t.wallSeconds; w.length = L; w.thickness = t.wallThickness;
             w.durability = w.maxDurability = Mathf.Max(50f, owner.Health.Max * t.wallDurability);
             w.box = go.AddComponent<BoxCollider>();
-            w.box.size = new Vector3(t.wallLength, t.wallHeight, t.wallThickness);
+            w.box.size = new Vector3(L, t.wallHeight, t.wallThickness);
             w.box.center = Vector3.up * t.wallHeight * 0.5f;
             // Widoczna bryła = kolizja (te same wymiary), z kilku kamiennych bloków.
-            int blocks = Mathf.Max(3, Mathf.RoundToInt(t.wallLength / 0.75f));
+            int blocks = Mathf.Max(3, Mathf.RoundToInt(L / 0.75f));
             for (int i = 0; i < blocks; i++)
             {
-                float x = Mathf.Lerp(-t.wallLength * 0.5f, t.wallLength * 0.5f, (i + 0.5f) / blocks);
+                float x = Mathf.Lerp(-L * 0.5f, L * 0.5f, (i + 0.5f) / blocks);
                 float h = t.wallHeight * (0.9f + 0.1f * Mathf.Sin(i * 1.7f));
                 var part = PartBuilder.Add(go.transform, ProcMesh.Box(), Surface.Stone, new Color(0.42f, 0.36f, 0.3f),
-                    new Vector3(x, h * 0.5f, 0f), new Vector3(t.wallLength / blocks * 1.02f, h, t.wallThickness), new Vector3(0f, 0f, (i % 2 == 0 ? 2f : -2f)));
+                    new Vector3(x, h * 0.5f, 0f), new Vector3(L / blocks * 1.02f, h, t.wallThickness), new Vector3(0f, 0f, (i % 2 == 0 ? 2f : -2f)));
                 var col = part.GetComponent<Collider>();
                 if (col != null) Destroy(col);
             }
             if (Application.isPlaying)
             {
-                FxLibrary.Dust(go.transform.position, t.wallLength * 0.5f);
-                HellFx.Shockwave(go.transform.position, HellFxElement.Earth, new Color(0.7f, 0.55f, 0.35f), t.wallLength * 0.5f, true);
+                FxLibrary.Dust(go.transform.position, L * 0.5f);
+                HellFx.Shockwave(go.transform.position, HellFxElement.Earth, new Color(0.7f, 0.55f, 0.35f), L * 0.5f, true);
                 Sfx.Play(SoundId.Quake, go.transform.position, 0.8f, 1.1f);
             }
             Active.Add(w);
@@ -84,9 +85,23 @@ namespace Turris
 
         void Update() => Tick(Time.deltaTime);
 
+        Transform follow; Vector3 followOffset;
+        /// <summary>Buty ruchomego bastionu: płyta prowadzona z postacią (pozycja względem niej, z kolizją).</summary>
+        public void Follow(Transform target, Vector3 localOffset) { follow = target; followOffset = localOffset; }
+
         public void Tick(float dt)
         {
             if (ended) return;
+            if (follow != null)
+            {
+                Vector3 fwd = follow.forward; fwd.y = 0f;
+                if (fwd.sqrMagnitude > 1e-4f)
+                {
+                    var rot = Quaternion.LookRotation(fwd.normalized);
+                    // Płyty po bokach: oś ściany wzdłuż kierunku ruchu.
+                    transform.SetPositionAndRotation(HuWorld.Ground(follow.position + rot * followOffset), rot * Quaternion.Euler(0f, 90f, 0f));
+                }
+            }
             life -= dt;
             if (life <= 0f || owner == null || owner.IsDead) End(false);
         }

@@ -18,19 +18,38 @@ namespace Turris
         [Serializable] public class Item
         {
             public string id; public int level; public int slot = -1;
+            /// <summary>Trwałe id egzemplarza (0 – stary zapis: nowe id przy wczytaniu).</summary>
+            public int uid;
+            public int powerSlot;
             public int rarity, quality; public List<StatModifier> affixes = new List<StatModifier>(); public List<string> affixNames = new List<string>();
             public List<PassiveEffect> affixEffects = new List<PassiveEffect>();
+            /// <summary>Id affiksów i wersja ich znaczenia (brak w starym zapisie → 0: premie jak zapisane).</summary>
+            public List<string> affixIds = new List<string>();
+            public int affixVersion;
             public static Item Of(ItemInstance it, int slot = -1) => new Item
             {
-                id = it.definition.id, level = it.level, slot = slot, rarity = (int)it.rarity, quality = it.huQuality,
+                id = it.definition.id, level = it.level, slot = slot, rarity = (int)it.rarity, quality = it.huQuality, uid = it.uid, powerSlot = it.powerSlot,
                 affixes = new List<StatModifier>(it.affixes), affixNames = new List<string>(it.affixNames),
                 affixEffects = new List<PassiveEffect>(it.affixEffects),
+                affixIds = new List<string>(it.affixIds), affixVersion = it.affixVersion,
             };
-            public ItemInstance Make(ItemDefinition def) => new ItemInstance(def, level)
+            public ItemInstance Make(ItemDefinition def)
             {
-                rarity = (ItemRarity)rarity, huQuality = quality, affixes = new List<StatModifier>(affixes), affixNames = new List<string>(affixNames),
-                affixEffects = affixEffects != null ? new List<PassiveEffect>(affixEffects) : new List<PassiveEffect>(),
-            };
+                var it = new ItemInstance(def, level)
+                {
+                    rarity = (ItemRarity)rarity, huQuality = quality, affixes = new List<StatModifier>(affixes), affixNames = new List<string>(affixNames),
+                    affixEffects = affixEffects != null ? new List<PassiveEffect>(affixEffects) : new List<PassiveEffect>(), powerSlot = powerSlot,
+                    // Wartości zawsze z zapisanych list (jedno źródło); id i wersja tylko identyfikują znaczenie – bez przeliczania.
+                    affixIds = affixIds != null ? new List<string>(affixIds) : new List<string>(),
+                    affixVersion = affixVersion,
+                };
+                // Unikat nie może spaść do zwykłej rzadkości przez stary/uszkodzony zapis.
+                if (HellEconomy.IsUnique(def)) it.rarity = ItemRarity.Unique;
+                int fresh = it.uid;
+                if (uid > 0 && ItemInstance.Claim(uid)) it.uid = uid;
+                else ItemInstance.Claim(fresh); // nowe id też zajęte – późniejszy zapis go nie powieli
+                return it;
+            }
         }
         [Serializable] public class Skill { public string id; public int level; public bool permanent, fromItem; public int slot = -1; public string form; public List<string> supports = new List<string>(); }
         [Serializable] public class Stack { public string id; public int count; }
@@ -101,6 +120,8 @@ namespace Turris
                 all.AddRange(c.startingTalents); all.Add(c.signatureSkill);
                 foreach (var l in c.loadouts) { all.Add(l.weapon); all.Add(l.offHand); }
             }
+            all.AddRange(UniqueRegistry.Items(cfg)); // natywne unikaty Turris (rejestr w kodzie)
+            all.AddRange(NativePerkCatalog.Boons(cfg)); // natywne perki specjalizacyjne – gotowe przed odczytem, bez sklepu
             all.AddRange(all.OfType<ItemDefinition>().Select(i => i.grantedSkill).ToList());
             var map = new Dictionary<string, ContentDefinition>();
             foreach (var d in all) if (d != null && !string.IsNullOrEmpty(d.id) && !map.ContainsKey(d.id)) map[d.id] = d;
@@ -110,6 +131,7 @@ namespace Turris
         /// <summary>Odtwarza stan podejścia; null, gdy brakuje klasy albo trudności.</summary>
         public RunState Restore(GameConfig cfg)
         {
+            ItemInstance.BeginRestore();
             var map = Index(cfg);
             T Get<T>(string id) where T : ContentDefinition => id != null && map.TryGetValue(id, out var d) ? d as T : null;
             var cls = Get<ClassDefinition>(classId);

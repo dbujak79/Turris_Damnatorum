@@ -117,7 +117,9 @@ namespace Turris
             StatType[] percentStats = { StatType.PhysicalDamage, StatType.SpellPower, StatType.FlaskPotency, StatType.RiposteDamage, StatType.MoveSpeed,
                 StatType.FireResist, StatType.FrostResist, StatType.LightningResist, StatType.FireDamage, StatType.FrostDamage, StatType.LightningDamage, StatType.BleedDamage,
                 StatType.EarthResist, StatType.EarthDamage, StatType.GlobalDamage, StatType.DamageReduction, StatType.AttackSpeed, StatType.CooldownReduction,
-                StatType.LifeLeech, StatType.ExecuteDamage };
+                StatType.LifeLeech, StatType.ExecuteDamage,
+                StatType.AddedWeaponFire, StatType.AddedWeaponFrost, StatType.AddedWeaponLightning, StatType.AddedWeaponEarth,
+                StatType.CastSpeed, StatType.MinionDamage, StatType.HeavyPoiseDamage, StatType.ShieldBlockCost };
             foreach (var s in percentStats) sheet[s] = flat[(int)s] + pct[(int)s];
             return sheet;
         }

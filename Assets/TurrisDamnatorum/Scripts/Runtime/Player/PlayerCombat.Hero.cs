@@ -148,7 +148,7 @@ namespace Turris
                 HitQuery.Sphere(c, 0.75f, Faction.Player, dodgeTracker, t =>
                 {
                     var h = HitData.FromAttack(atk, Build.WeaponDamage(atk) * 0.5f, transform.position, this);
-                    h.element = Element.None; h.magic = 0f; h.physical = Build.WeaponDamage(atk) * 0.5f;
+                    h.element = Element.None; h.magic = 0f; h.split = default; h.physical = Build.WeaponDamage(atk) * 0.5f;
                     h.statuses = new List<StatusApplication> { new StatusApplication(StatusKind.Stagger) };
                     h.knockback = 2.2f; h.fromMeleeWeapon = true; h.attackName = "Szarża barkiem";
                     PrepareOutgoing(ref h);
@@ -202,13 +202,17 @@ namespace Turris
                 // Sąd przysięgi: aura działa odwrócona na wrogu – premie znikają, rezerwacja zostaje.
                 bool judged = Feature != null && Feature.SuppressesAura(a);
                 if (judged) { }
-                else if (a.IsHu) Run.tempModifiers.AddRange(a.HuModifiers());
-                else foreach (var m in a.Skill.auraModifiers) Run.tempModifiers.Add(new StatModifier(m.stat, m.value * power, m.mode));
+                else
+                {
+                    float own = UniquesAuraOwnerScale; // Habit pustego klasztoru: właściciel dostaje słabszą część
+                    if (a.IsHu) foreach (var m in a.HuModifiers()) Run.tempModifiers.Add(m.Scaled(own));
+                    else foreach (var m in a.Skill.auraModifiers) Run.tempModifiers.Add(new StatModifier(m.stat, m.value * power * own, m.mode));
+                }
                 // Koszt aury: Pobożność rezerwuje manę (20% pierwsza, 30% druga – jak w HU); inne klasy po 20% wytrzymałości.
                 if (Trait == ClassTrait.Devotion) Run.tempModifiers.Add(new StatModifier(StatType.MaxMana, i == 0 ? -AuraManaReserveFirst : -AuraManaReserveSecond, ModifierMode.Percent));
                 else Run.tempModifiers.Add(new StatModifier(StatType.MaxStamina, -AuraStaminaReserve, ModifierMode.Percent));
             }
-            if (Raging) Run.tempModifiers.Add(new StatModifier(StatType.AttackSpeed, RageAttackSpeed * 100f));
+            if (Raging && !UniquesSuppressRageSpeed) Run.tempModifiers.Add(new StatModifier(StatType.AttackSpeed, RageAttackSpeed * 100f));
             if (Build != null) RefreshBuild();
         }
 
@@ -231,11 +235,13 @@ namespace Turris
             {
                 Vector3 toHero = transform.position - target.transform.position; toHero.y = 0f;
                 bool behind = toHero.sqrMagnitude > 1e-4f && Vector3.Dot(target.transform.forward, toHero.normalized) < -0.25f;
-                if (behind) { m *= AmbushBackMultiplier; CombatEvents.RaiseWorldText(target.AimPoint + Vector3.up * 0.5f, "Z ZASKOCZENIA", new Color(1f, 0.8f, 0.3f)); }
+                if (behind) { m *= 1f + UniquesBackstab(AmbushBackMultiplier - 1f, hit, target); CombatEvents.RaiseWorldText(target.AimPoint + Vector3.up * 0.5f, "Z ZASKOCZENIA", new Color(1f, 0.8f, 0.3f)); }
                 else if (ambushWindow > 0f) { m *= AmbushDodgeMultiplier; ambushWindow = 0f; CombatEvents.RaiseWorldText(target.AimPoint + Vector3.up * 0.5f, "Z ZASKOCZENIA", new Color(1f, 0.8f, 0.3f)); }
             }
             if (Trait == ClassTrait.Bloodlust && Health != null) m *= 1f + BloodlustMax * (1f - Health.Fraction);
             Feature?.OutgoingAgainst(ref hit, target);
+            UniquesOutgoingAgainst(ref hit, target);
+            BreachOutgoing(ref hit, target);
             if (Trait == ClassTrait.Hawkeye && hit.isProjectile)
             {
                 // Stanowisko strzeleckie: odległość od punktu wylotu, nie od łucznika.

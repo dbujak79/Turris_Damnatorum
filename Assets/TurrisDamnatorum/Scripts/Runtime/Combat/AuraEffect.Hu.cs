@@ -49,6 +49,9 @@ namespace Turris
         }
 
         Vector3 Center => anchor ?? transform.position;
+        /// <summary>Środek działania aury (sztandar, bohater albo cel Sądu przysięgi).</summary>
+        public Vector3 CenterPoint => Center;
+        public float PulseEvery => huCast != null ? huCast.P.GetF("pulse_interval") : 0f;
 
         /// <summary>Premie aury HU dla statystyk bohatera (× moc Pobożności × siła formy).</summary>
         public IEnumerable<StatModifier> HuModifiers()
@@ -121,7 +124,8 @@ namespace Turris
             {
                 var hit = huCast.Hit(pulsePower);
                 hit.knockback = 0f; hit.knockdown = 0f;
-                if (HuWorld.HitCircle(hero, Center, Radius, hit) > 0 && FxLibrary.Enabled) HellFx.Shockwave(Center, huCast.family, huCast.color, Radius);
+                if (hero.UniquesAuraPulse(this, hit)) { }
+                else if (HuWorld.HitCircle(hero, Center, Radius, hit) > 0 && FxLibrary.Enabled) HellFx.Shockwave(Center, huCast.family, huCast.color, Radius);
             }
             int enemies = p.On("heal_per_enemy") ? CountInside() : enemiesInside;
             float heal = (p.GetF("heal_pulse") + p.GetF("heal_per_enemy") * Mathf.Min(HealPerEnemyCap, enemies)) * power;

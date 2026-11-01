@@ -70,7 +70,8 @@ namespace Turris
 
             // Bronie: kolejny poziom trzymanej (nie unikat) + nowe egzemplarze.
             var held = run.equipment.Get(EquipSlot.MainHand);
-            if (held != null && held.definition.IsWeapon && !HellEconomy.IsUnique(held.definition) && held.level < HellEconomy.MaxLevelOf(held.definition))
+            // Natywny unikat Turris ma tę samą drogę ulepszeń (poziom broni, droższy ×1,5) – unikat HU nie.
+            if (held != null && held.definition.IsWeapon && (!HellEconomy.IsUnique(held.definition) || held.definition.IsNativeUnique) && held.level < HellEconomy.MaxLevelOf(held.definition))
                 offers.Add(new FloorOffer { kind = FloorOffer.Kind.WeaponLevel, item = held, price = Mathf.RoundToInt(HellEconomy.WeaponLevelPrice(held) * infl) });
             // Tarcza: kolejny poziom jak w HU (blok bierny +2 pkt, krótsze odnowienie ładunku).
             var shield = run.equipment.Get(EquipSlot.OffHand);
@@ -88,8 +89,21 @@ namespace Turris
 
             // Perki: aktywne dla wyposażenia, poniżej ostatniego poziomu.
             var perks = cfg.baseBoonPool.Where(x => x != null).Select(x => (def: x, row: PerkRow(x))).Where(x => x.row != null && PerkActive(x.row, run) && run.BoonStacks(x.def) < x.def.maxStacks).ToList();
-            for (int i = 0; i < PerkCount && perks.Count > 0; i++)
+            // Natywne perki Turris we wspólnej puli (neutralne klasowo, tylko gdy build może je wykorzystać, od swojego piętra).
+            var nt = NativePerkCatalog.Tuning(cfg);
+            var natives = NativePerkCatalog.Boons(cfg).Where(d => run.BoonStacks(d) < d.maxStacks && run.floorsCleared + 1 >= NativePerkCatalog.MinFloor(d.id, nt)
+                                                             && NativePerkCatalog.Usable(d.id, run)).ToList();
+            for (int i = 0; i < PerkCount && perks.Count + natives.Count > 0; i++)
             {
+                float huTotal = perks.Sum(x => x.row.Weight * Affinity(x.row.ClassId)), natTotal = natives.Sum(d => NativePerkCatalog.Weight(d.id, nt));
+                if (natives.Count > 0 && (float)rng.NextDouble() * (huTotal + natTotal) < natTotal)
+                {
+                    var d = Pick(natives, x => NativePerkCatalog.Weight(x.id, nt), rng);
+                    natives.Remove(d);
+                    offers.Add(new FloorOffer { kind = FloorOffer.Kind.Perk, perk = d, price = NativePerkCatalog.Price(d.id, nt, run, b) });
+                    continue;
+                }
+                if (perks.Count == 0) break;
                 var p = Pick(perks, x => x.row.Weight * Affinity(x.row.ClassId), rng);
                 perks.Remove(p);
                 offers.Add(new FloorOffer { kind = FloorOffer.Kind.Perk, perk = p.def, price = PerkPrice(p.row, run.BoonStacks(p.def), run, b) });
@@ -136,6 +150,7 @@ namespace Turris
                     break;
                 case FloorOffer.Kind.Perk:
                     if (run.BoonStacks(o.perk) >= o.perk.maxStacks) return false;
+                    if (NativePerkCatalog.IsNative(o.perk) && !NativePerkCatalog.Usable(o.perk.id, run)) return false; // kwalifikacja ponownie przy zakupie
                     run.AddBoon(o.perk);
                     break;
             }

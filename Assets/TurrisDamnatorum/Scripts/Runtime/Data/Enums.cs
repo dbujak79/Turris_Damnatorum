@@ -53,6 +53,15 @@ namespace Turris
         CooldownReduction,// % skrócenia odnowień umiejętności
         LifeLeech,        // % zadanych obrażeń bezpośrednich wraca jako życie
         ExecuteDamage,    // % premii do obrażeń przeciw celom poniżej 30% życia
+        // Affiksy specjalizacyjne (2026-11-01) – dopisywane na końcu, wartości starszych nie zmieniają się:
+        AddedWeaponFire,      // dodany ogień = % bazowych obrażeń broni danego ataku (B), osobny składnik
+        AddedWeaponFrost,
+        AddedWeaponLightning,
+        AddedWeaponEarth,
+        CastSpeed,            // % szybszego przygotowania ręcznie rzucanego czaru (czas / (1 + X/100))
+        MinionDamage,         // % obrażeń nowo przyzwanych sług (migawka przy przyzwaniu)
+        HeavyPoiseDamage,     // % obrażeń postawy ciosów ciężką bronią wręcz
+        ShieldBlockCost,      // % mniejszego kosztu aktywnego bloku tarczą (osobno od BlockCostReduction, limit 50%)
     }
 
     /// <summary>Cztery cechy postaci (wartości liczbowe zgodne ze <see cref="StatType"/>; 1 i 2 wycofane).</summary>

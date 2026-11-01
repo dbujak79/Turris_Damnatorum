@@ -150,6 +150,23 @@ namespace Turris
             Warning = warning;
         }
 
+        /// <summary>Natywny unikat podniesiony pierwszy raz – trafia do katalogu (może zostać wskazany jako poszukiwany).</summary>
+        public void DiscoverUnique(string id)
+        {
+            if (string.IsNullOrEmpty(id) || Profile.discoveredUniques.Contains(id)) return;
+            Profile.discoveredUniques.Add(id);
+            Save();
+        }
+
+        /// <summary>Wskazuje odkryty unikat jako poszukiwany (puste – brak). Nieodkrytego nie da się wskazać.</summary>
+        public bool SetSoughtUnique(string id)
+        {
+            if (!string.IsNullOrEmpty(id) && !Profile.discoveredUniques.Contains(id)) return false;
+            Profile.soughtUnique = id ?? "";
+            Save();
+            return true;
+        }
+
         public void Save()
         {
             if (!allowSave) return;

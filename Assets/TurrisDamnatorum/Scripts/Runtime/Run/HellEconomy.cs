@@ -26,7 +26,12 @@ namespace Turris
         [Serializable] class UpgradeCatalog { public UpgradeRow[] upgrades; }
 
         [Serializable] public class ItemRow { public string id, file, name, desc, ClassId, KindName; public int Kind, Rarity, MinWave = 1, Power; public string[] Modifiers = new string[0], Tags = new string[0]; public float BasePrice = 40, Weight = 1, Load, PowerValue; public bool InShop = true; }
-        [Serializable] public class AffixRow { public string id, name, Group; public int Kind, Tier = 1, MinWave = 1; public float Weight = 1; public string[] Categories = new string[0], RequiredTags = new string[0], Ranges = new string[0]; }
+        /// <summary>
+        /// Rekord affiksu. <c>Filter</c> (nakładka Turris) – wąski warunek kwalifikacji przedmiotu (<see cref="PassesFilter"/>),
+        /// niezależny od <c>RequiredTags</c> (te działają jak dawniej: którykolwiek). <c>Decimals</c> ≥ 0 – precyzja wylosowanej
+        /// wartości (jednostki HU); −1 – dawna reguła zaokrąglania.
+        /// </summary>
+        [Serializable] public class AffixRow { public string id, name, Group, Filter = ""; public int Kind, Tier = 1, MinWave = 1, Decimals = -1; public float Weight = 1; public string[] Categories = new string[0], RequiredTags = new string[0], Ranges = new string[0]; }
         [Serializable] public class UpgradeRow { public string id, name, desc, ClassId, Conversion; public int Scope, MaxLevel = 5, RequiredSlot; public float BasePrice = 20, PriceGrowth = 1.5f, Weight = 1; public string[] Modifiers = new string[0], RequiredTags = new string[0], RequiresAny = new string[0], OnHitEffects = new string[0]; }
 
         static ItemRow[] items; static AffixRow[] affixes; static UpgradeRow[] upgrades;
@@ -81,6 +86,64 @@ namespace Turris
                 default: return null;
             }
         }
+
+        /// <summary>
+        /// Statystyka affiksu: jak <see cref="Map(string, string, float)"/>, ale płaskie obrażenia żywiołu to rzeczywisty dodany
+        /// składnik żywiołu broni (5% bazy broni za punkt HU), a nie premia fizyczna, oraz statystyki affiksów specjalizacyjnych.
+        /// Tylko losowe affiksy – przedmioty bazowe i perki HU zostają przy <see cref="Map(string, string, float)"/>.
+        /// </summary>
+        /// <summary>
+        /// Procent bazy broni za punkt affiksu „dodany żywioł” (punkt HU). 3,5 zamiast dawnych 5: pomiar na 34 demonach (docs/AUDYT_BUILDCRAFT.md)
+        /// dawał drodze żywiołowej ×1,8 wobec fizycznej przy pełnej inwestycji. Działa przy losowaniu: przedmioty z zapisu trwającego podejścia zachowują wylosowane wartości.
+        /// </summary>
+        public const float AddedElementScale = 3.5f;
+
+        public static StatModifier? MapAffix(string stat, string op, float v)
+        {
+            bool pct = op.StartsWith("Percent");
+            StatModifier F(StatType t, float x) => new StatModifier(t, x);
+            switch (stat)
+            {
+                case "FireDamage": if (!pct) return F(StatType.AddedWeaponFire, v * AddedElementScale); break;
+                case "WaterDamage": if (!pct) return F(StatType.AddedWeaponFrost, v * AddedElementScale); break;
+                case "AirDamage": if (!pct) return F(StatType.AddedWeaponLightning, v * AddedElementScale); break;
+                case "EarthDamage": if (!pct) return F(StatType.AddedWeaponEarth, v * AddedElementScale); break;
+                case "CastSpeed": return F(StatType.CastSpeed, v * 100f);
+                case "MinionDamage": return F(StatType.MinionDamage, v * 100f);
+                case "HeavyPoiseDamage": return F(StatType.HeavyPoiseDamage, v * 100f);
+                case "ShieldBlockCost": return F(StatType.ShieldBlockCost, v * 100f);
+            }
+            return Map(stat, op, v);
+        }
+
+        /// <summary>Statystyka affiksu ma odpowiednik (statystykę albo efekt pasywny).</summary>
+        public static bool AffixSupported(string stat) => MapAffix(stat, "Flat", 1f).HasValue || MapEffect(stat, 1f).HasValue;
+
+        /// <summary>Wersja znaczenia affiksów egzemplarza: 0 – stary zapis (dodane żywioły jako premia fizyczna), 2 – pakiet 2026-11-01.</summary>
+        public const int AffixVersion = 2;
+
+        /// <summary>
+        /// Wąski filtr kwalifikacji przedmiotu (opisuje przedmiot, nie klasę gracza): przebicie – broń, grymuar, amulet; postawa –
+        /// ciężka broń wręcz; sługi – hełm lub grymuar przywołań; blok – tarcza; rzucanie – broń-fokus albo grymuar.
+        /// </summary>
+        public static bool PassesFilter(string filter, ItemDefinition d)
+        {
+            if (string.IsNullOrEmpty(filter)) return true;
+            if (d == null) return false;
+            switch (filter)
+            {
+                case "penetration": return d.IsWeapon || d.kind == ItemKind.Amulet || WeaponFamilies.IsGrimoire(d);
+                case "heavy_melee": return WeaponFamilies.IsHeavyMelee(d);
+                case "minion": return d.kind == ItemKind.Head || WeaponFamilies.GrantsSummon(d);
+                case "shield": return d.IsShield;
+                case "caster": return WeaponFamilies.IsFocusWeapon(d) || WeaponFamilies.IsGrimoire(d);
+                default: return false; // nieznany filtr nie dopuszcza – błąd danych nie rozdaje premii wszędzie
+            }
+        }
+
+        /// <summary>Affiks może wypaść na tym przedmiocie (kategoria, dawne tagi „którykolwiek”, filtr Turris).</summary>
+        public static bool Qualifies(AffixRow a, ItemDefinition d, string cat, HashSet<string> tags)
+            => a.Categories.Contains(cat) && (a.RequiredTags.Length == 0 || a.RequiredTags.Any(tags.Contains)) && PassesFilter(a.Filter, d);
 
         public static StatModifier? Map(string entry)
         {
@@ -231,7 +294,10 @@ namespace Turris
 
         /// <summary>Unikat HU: przedmiot z rzadkością 4 w items.json albo unikatowa broń (id z „.unique.”, katalog broni).</summary>
         public static bool IsUnique(ItemDefinition d) =>
-            d != null && (ItemRowOf(d)?.Rarity == 4 || (d.huSourceId != null && d.huSourceId.Contains(".unique.")));
+            d != null && (d.IsNativeUnique || ItemRowOf(d)?.Rarity == 4 || (d.huSourceId != null && d.huSourceId.Contains(".unique.")));
+
+        /// <summary>Unikat z katalogu Hell Unleashed (nie natywny Turris).</summary>
+        public static bool IsHuUnique(ItemDefinition d) => d != null && !d.IsNativeUnique && IsUnique(d);
 
         /// <summary>
         /// Losuje affixy (HU <c>LootTable</c>): przedrostki, potem przyrostki; grupa raz na przedmiot, waga grupy = najwyższa waga
@@ -240,7 +306,8 @@ namespace Turris
         /// </summary>
         public static void RollAffixes(ItemInstance item, int wave, System.Random rng)
         {
-            item.affixes.Clear(); item.affixEffects.Clear(); item.affixNames.Clear();
+            item.affixes.Clear(); item.affixEffects.Clear(); item.affixNames.Clear(); item.affixIds.Clear();
+            item.affixVersion = AffixVersion;
             int per = AffixesPerKind(item.rarity);
             if (per == 0) return;
             string cat = Category(item.definition);
@@ -249,9 +316,8 @@ namespace Turris
             for (int kind = 0; kind < 2; kind++)
                 for (int n = 0; n < per; n++)
                 {
-                    var pool = Affixes.Where(a => a.Kind == kind && !usedGroups.Contains(a.Group) && a.MinWave <= wave && a.Categories.Contains(cat)
-                                                  && (a.RequiredTags.Length == 0 || a.RequiredTags.Any(tags.Contains))
-                                                  && a.Ranges.All(r => Supported(r.Split('|')[0]))).ToList();
+                    var pool = Affixes.Where(a => a.Kind == kind && !usedGroups.Contains(a.Group) && a.MinWave <= wave && Qualifies(a, item.definition, cat, tags)
+                                                  && a.Ranges.All(r => AffixSupported(r.Split('|')[0]))).ToList();
                     if (pool.Count == 0) break;
                     var groups = pool.GroupBy(a => a.Group).ToList();
                     var g = Pick(groups, x => x.Max(a => a.Weight), rng);
@@ -264,12 +330,14 @@ namespace Turris
                         var p = range.Split('|');
                         float min = Num(p[2]), max = Num(p[3]);
                         float v = min + (max - min) * (float)q;
-                        v = Mathf.Abs(max) >= 2f && !p[1].StartsWith("Percent") ? Mathf.Round(v) : Mathf.Round(v * 1000f) / 1000f;
-                        var m = Map(p[0], p[1], v);
+                        if (tier.Decimals >= 0) { float k = Mathf.Pow(10f, tier.Decimals); v = Mathf.Round(v * k) / k; } // precyzja zadeklarowana w nakładce
+                        else v = Mathf.Abs(max) >= 2f && !p[1].StartsWith("Percent") ? Mathf.Round(v) : Mathf.Round(v * 1000f) / 1000f;
+                        var m = MapAffix(p[0], p[1], v);
                         if (m.HasValue) item.affixes.Add(m.Value);
                         else if (MapEffect(p[0], v) is PassiveEffect fx) item.affixEffects.Add(fx);
                     }
                     item.affixNames.Add(tier.name);
+                    item.affixIds.Add(tier.id);
                 }
         }
 
@@ -296,7 +364,9 @@ namespace Turris
         public static int Value(ItemInstance it)
         {
             var row = ItemRowOf(it.definition);
-            float basePrice = row != null ? row.BasePrice : WeaponBasePrice(it.definition);
+            var card = UniqueRegistry.CardOf(it.definition);
+            // Natywny unikat: cena karty × 3,6 (jak legendarny – moc zamiast affixów).
+            float basePrice = card != null ? card.basePrice * 3.6f : row != null ? row.BasePrice : WeaponBasePrice(it.definition);
             float level = it.definition.IsWeapon ? 1f + 0.5f * it.level : 1f; // HU: broń × (1 + 0,5 · (poziom − 1))
             return Mathf.RoundToInt(basePrice * RarityPrice(it.rarity) * (1f + 0.25f * it.huQuality) * level * PriceScale);
         }
@@ -306,6 +376,7 @@ namespace Turris
         /// <summary>Cena bazowa broni z katalogu HU (25 dla broni spoza katalogu).</summary>
         public static float WeaponBasePrice(ItemDefinition d)
         {
+            if (d != null && d.IsNativeUnique && d.familyBase != null) return WeaponBasePrice(d.familyBase) * 1.5f; // unikat: droższe poziomy
             var row = d != null && !string.IsNullOrEmpty(d.huSourceId) ? HellWeaponCatalog.Find(d.huSourceId) : null;
             return row != null && row.BasePrice > 0f ? row.BasePrice : 25f;
         }

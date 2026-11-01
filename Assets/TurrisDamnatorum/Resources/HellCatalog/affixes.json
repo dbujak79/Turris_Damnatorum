@@ -2826,6 +2826,492 @@
    "Ranges": [
     "WaterResistance|Flat|0.17|0.24"
    ]
+  },
+  {
+   "id": "affix.turris.air_pen.t1",
+   "name": "Przenikający burzą",
+   "Kind": 0,
+   "Group": "air_pen",
+   "Tier": 1,
+   "MinWave": 3,
+   "Weight": 0.15,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "AirPenetration|Flat|0.04|0.05"
+   ],
+   "Filter": "penetration",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.air_pen.t2",
+   "name": "Przenikający burzą II",
+   "Kind": 0,
+   "Group": "air_pen",
+   "Tier": 2,
+   "MinWave": 10,
+   "Weight": 0.15,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "AirPenetration|Flat|0.06|0.08"
+   ],
+   "Filter": "penetration",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.air_pen.t3",
+   "name": "Przenikający burzą III",
+   "Kind": 0,
+   "Group": "air_pen",
+   "Tier": 3,
+   "MinWave": 18,
+   "Weight": 0.15,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "AirPenetration|Flat|0.09|0.1"
+   ],
+   "Filter": "penetration",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.cast_speed.t1",
+   "name": "Inkantacji",
+   "Kind": 1,
+   "Group": "cast_speed",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "CastSpeed|PercentAdditive|0.05|0.07"
+   ],
+   "Filter": "caster",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.cast_speed.t2",
+   "name": "Inkantacji II",
+   "Kind": 1,
+   "Group": "cast_speed",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "CastSpeed|PercentAdditive|0.08|0.1"
+   ],
+   "Filter": "caster",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.cast_speed.t3",
+   "name": "Inkantacji III",
+   "Kind": 1,
+   "Group": "cast_speed",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.7,
+   "Categories": [
+    "Weapon",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "CastSpeed|PercentAdditive|0.11|0.12"
+   ],
+   "Filter": "caster",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.earth_pen.t1",
+   "name": "Przenikający skałę",
+   "Kind": 0,
+   "Group": "earth_pen",
+   "Tier": 1,
+   "MinWave": 3,
+   "Weight": 0.15,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "EarthPenetration|Flat|0.04|0.05"
+   ],
+   "Filter": "penetration",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.earth_pen.t2",
+   "name": "Przenikający skałę II",
+   "Kind": 0,
+   "Group": "earth_pen",
+   "Tier": 2,
+   "MinWave": 10,
+   "Weight": 0.15,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "EarthPenetration|Flat|0.06|0.08"
+   ],
+   "Filter": "penetration",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.earth_pen.t3",
+   "name": "Przenikający skałę III",
+   "Kind": 0,
+   "Group": "earth_pen",
+   "Tier": 3,
+   "MinWave": 18,
+   "Weight": 0.15,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "EarthPenetration|Flat|0.09|0.1"
+   ],
+   "Filter": "penetration",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.fire_pen.t1",
+   "name": "Przenikający żarem",
+   "Kind": 0,
+   "Group": "fire_pen",
+   "Tier": 1,
+   "MinWave": 3,
+   "Weight": 0.15,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "FirePenetration|Flat|0.04|0.05"
+   ],
+   "Filter": "penetration",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.fire_pen.t2",
+   "name": "Przenikający żarem II",
+   "Kind": 0,
+   "Group": "fire_pen",
+   "Tier": 2,
+   "MinWave": 10,
+   "Weight": 0.15,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "FirePenetration|Flat|0.06|0.08"
+   ],
+   "Filter": "penetration",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.fire_pen.t3",
+   "name": "Przenikający żarem III",
+   "Kind": 0,
+   "Group": "fire_pen",
+   "Tier": 3,
+   "MinWave": 18,
+   "Weight": 0.15,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "FirePenetration|Flat|0.09|0.1"
+   ],
+   "Filter": "penetration",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.minion_damage.t1",
+   "name": "Władczy",
+   "Kind": 0,
+   "Group": "minion_damage",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.5,
+   "Categories": [
+    "Head",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MinionDamage|PercentAdditive|0.15|0.19"
+   ],
+   "Filter": "minion",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.minion_damage.t2",
+   "name": "Władczy II",
+   "Kind": 0,
+   "Group": "minion_damage",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.5,
+   "Categories": [
+    "Head",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MinionDamage|PercentAdditive|0.2|0.24"
+   ],
+   "Filter": "minion",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.minion_damage.t3",
+   "name": "Władczy III",
+   "Kind": 0,
+   "Group": "minion_damage",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.5,
+   "Categories": [
+    "Head",
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "MinionDamage|PercentAdditive|0.25|0.3"
+   ],
+   "Filter": "minion",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.poise_damage.t1",
+   "name": "Kruszący",
+   "Kind": 0,
+   "Group": "poise_damage",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.5,
+   "Categories": [
+    "Weapon"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "HeavyPoiseDamage|PercentAdditive|0.1|0.14"
+   ],
+   "Filter": "heavy_melee",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.poise_damage.t2",
+   "name": "Kruszący II",
+   "Kind": 0,
+   "Group": "poise_damage",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.5,
+   "Categories": [
+    "Weapon"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "HeavyPoiseDamage|PercentAdditive|0.15|0.19"
+   ],
+   "Filter": "heavy_melee",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.poise_damage.t3",
+   "name": "Kruszący III",
+   "Kind": 0,
+   "Group": "poise_damage",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.5,
+   "Categories": [
+    "Weapon"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "HeavyPoiseDamage|PercentAdditive|0.2|0.25"
+   ],
+   "Filter": "heavy_melee",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.shield_block_cost.t1",
+   "name": "Muru tarcz",
+   "Kind": 1,
+   "Group": "shield_block_cost",
+   "Tier": 1,
+   "MinWave": 1,
+   "Weight": 0.6,
+   "Categories": [
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "ShieldBlockCost|PercentAdditive|0.1|0.12"
+   ],
+   "Filter": "shield",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.shield_block_cost.t2",
+   "name": "Muru tarcz II",
+   "Kind": 1,
+   "Group": "shield_block_cost",
+   "Tier": 2,
+   "MinWave": 8,
+   "Weight": 0.6,
+   "Categories": [
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "ShieldBlockCost|PercentAdditive|0.13|0.16"
+   ],
+   "Filter": "shield",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.shield_block_cost.t3",
+   "name": "Muru tarcz III",
+   "Kind": 1,
+   "Group": "shield_block_cost",
+   "Tier": 3,
+   "MinWave": 16,
+   "Weight": 0.6,
+   "Categories": [
+    "Offhand"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "ShieldBlockCost|PercentAdditive|0.17|0.2"
+   ],
+   "Filter": "shield",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.water_pen.t1",
+   "name": "Przenikający szronem",
+   "Kind": 0,
+   "Group": "water_pen",
+   "Tier": 1,
+   "MinWave": 3,
+   "Weight": 0.15,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "WaterPenetration|Flat|0.04|0.05"
+   ],
+   "Filter": "penetration",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.water_pen.t2",
+   "name": "Przenikający szronem II",
+   "Kind": 0,
+   "Group": "water_pen",
+   "Tier": 2,
+   "MinWave": 10,
+   "Weight": 0.15,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "WaterPenetration|Flat|0.06|0.08"
+   ],
+   "Filter": "penetration",
+   "Decimals": 3,
+   "source": "turris"
+  },
+  {
+   "id": "affix.turris.water_pen.t3",
+   "name": "Przenikający szronem III",
+   "Kind": 0,
+   "Group": "water_pen",
+   "Tier": 3,
+   "MinWave": 18,
+   "Weight": 0.15,
+   "Categories": [
+    "Weapon",
+    "Offhand",
+    "Amulet"
+   ],
+   "RequiredTags": [],
+   "Ranges": [
+    "WaterPenetration|Flat|0.09|0.1"
+   ],
+   "Filter": "penetration",
+   "Decimals": 3,
+   "source": "turris"
   }
  ]
 }

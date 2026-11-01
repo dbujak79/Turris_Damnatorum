@@ -250,6 +250,7 @@ namespace Turris.Tests.Bots
             }
             if (target == null || target.IsDead || !alive.Contains(target) || (nearest != null && FlatDist(nearest) + 2f < FlatDist(target)))
                 target = nearest;
+            PreferBreachTarget(); // Wykorzystaj wyłom: dobić odsłoniętego, zanim okno wygaśnie
             // Arena pusta, a piętro trwa: uśpieni wrogowie (np. gargulec-posąg budzi się dopiero z bliska) – podejść do najbliższego.
             if (target == null)
             {
@@ -955,6 +956,7 @@ namespace Turris.Tests.Bots
         {
             float reach = Mathf.Max(def.attack.reach, def.attack.radius, 2.5f);
             bool tester = P.persona == BotPersona.Tester;
+            if (!tester && PackWantsOtherKind(def)) return false; // Różnorodna sfora: najpierw brakujący rodzaj
             switch (def.kind)
             {
                 case SpellKind.Cone:
@@ -1080,6 +1082,7 @@ namespace Turris.Tests.Bots
         {
             if (e.CanBeRiposted) return ActionType.LightAttack;
             if (P.persona == BotPersona.Tester) return attackCounter % 4 == 3 ? ActionType.HeavyAttack : ActionType.LightAttack;
+            if (Pc.HasBreach(e) && Pc.Stamina.Fraction > 0.35f) return ActionType.HeavyAttack; // premia wyłomu raz – na największy cios
             Vector3 f = e.transform.forward; f.y = 0;
             bool behind = Vector3.Angle(f, DirTo(transform.position)) > 110f;
             if ((e.CurrentState == EnemyBrain.State.Staggered || behind) && Pc.Stamina.Fraction > 0.5f) return ActionType.HeavyAttack;

@@ -46,13 +46,15 @@ namespace Turris
         /// Rzut bohatera (wołany w fazie aktywnej akcji): narastanie, premie przy rzucie, słup albo zwykłe odpalenie.
         /// Koszt i ładunek pobrał już PlayerCombat.
         /// </summary>
-        public static void CastByHand(PlayerCombat pc, SpellRuntime spell, Vector3 aim, Vector3 target, float power)
+        public static void CastByHand(PlayerCombat pc, SpellRuntime spell, Vector3 aim, Vector3 target, float power, Vector3? origin = null)
         {
             var shape = spell.instance.seals.Shape;
             float range = shape.Parameters.GetF(HuParams.Range, 8f);
             power *= Crescendo(pc, spell.instance, shape);
-            var cast = new HuCast(pc, spell, pc.transform.position, aim, target, power);
+            var cast = new HuCast(pc, spell, origin ?? pc.transform.position, aim, target, power);
             OnCastBoons(cast);
+            // Moc unikatu może przejąć wykonanie (nova jako mina, kolce pod ziemią…) – koszt i ładunek już pobrane.
+            if (pc.UniquesOverrideHuCast(ref cast, aim, range)) return;
             if (cast.P.On("totem_seconds")) PlantTotem(cast, range);
             else Fire(cast, aim, range);
         }
@@ -271,7 +273,7 @@ namespace Turris
                 case "warcry": cast.caster.HuWarcry(cast); break;
                 case "overload": cast.caster.HuOverload(cast); break;
                 case "aura": break; // włączanie i gaszenie aury obsługuje PlayerCombat (przełącznik, nie rzut)
-                case "heal": cast.caster.Health.Restore(cast.caster.Health.Max * cast.P.GetF("heal") * cast.power); break;
+                case "heal": if (!cast.copy && !cast.triggered) cast.caster.NotifyManualHeal(); cast.caster.Health.Restore(cast.caster.Health.Max * cast.P.GetF("heal") * cast.power); break;
                 case "undying": cast.caster.HuUndying(cast); break;
                 case "summon": Summon(cast); break;
                 case "fall": Fall(cast); break;
@@ -349,9 +351,13 @@ namespace Turris
             h.knockback = 0f; h.poiseDamage *= 0.1f; h.explosionRadius = 0f;
             // Strefa fizyczna (strzały, ciernie, sidła): ciemny ślad na ziemi zamiast jasnej tarczy.
             Color zc = cast.shape.Element == HuElement.Physical && !cast.P.On("ice") ? new Color(0.32f, 0.26f, 0.2f) : cast.color;
-            DamageZone.Spawn(HuWorld.Ground(point), radius, seconds, tick, h, Faction.Player, cast.caster, zc);
+            // Gwałtowna manifestacja: budżet tyknięcia z bazowego share × tick (wyżej), potem kompresja czasu – profil z chwili rzutu.
+            float scale = cast.zoneTimeScale;
+            cast.caster.CountManifestation(seconds, scale);
+            var zone = DamageZone.Spawn(HuWorld.Ground(point), radius, seconds, tick, h, Faction.Player, cast.caster, zc, scale);
+            if (cast.zoneQualified) zone.MeasuredBy = cast.caster;
             HuWorld.LiveZones++;
-            HuWorld.After(seconds, () => HuWorld.LiveZones = Mathf.Max(0, HuWorld.LiveZones - 1));
+            HuWorld.After(seconds * scale, () => HuWorld.LiveZones = Mathf.Max(0, HuWorld.LiveZones - 1));
         }
 
         /// <summary>Strzały spadające na strefę – sam wygląd; obrażenia daje komponent Zone.</summary>
@@ -432,6 +438,8 @@ namespace Turris
                 return;
             }
             var struck = new HashSet<EnemyBrain>();
+            var nodes = new HashSet<object>();
+            int nodesLeft = cast.copy ? 0 : pc.UniquesChainNodes(cast);
             Vector3 from = hand; float share = 1f, delay = 0f;
             for (int link = 0; link <= chains && current != null; link++)
             {
@@ -449,6 +457,19 @@ namespace Turris
                 struck.Add(target);
                 from = to; share *= 1f - falloff; delay += 0.07f;
                 current = HuWorld.Nearest(target.transform.position, jump, e => !struck.Contains(e));
+                // Różdżka pustych węzłów: brak wroga w zasięgu skoku – skok przez własny pocisk (węzeł, nie cel), zużywa ogniwo.
+                if (current == null && nodesLeft > 0 && link < chains)
+                {
+                    var node = pc.UniquesChainNode(target.transform.position, jump, nodes);
+                    if (node.HasValue)
+                    {
+                        nodesLeft--; link++;
+                        Vector3 nodeAt = node.Value, src2 = to; float d2 = delay;
+                        HuWorld.After(d2, () => LightningBolt.Strike(src2, nodeAt, cast.color));
+                        from = nodeAt; delay += 0.07f;
+                        current = HuWorld.Nearest(nodeAt, jump, e => !struck.Contains(e));
+                    }
+                }
             }
             Sfx.Play(SoundId.LightningZap, pc.AimPoint, 1f, 1.2f);
         }

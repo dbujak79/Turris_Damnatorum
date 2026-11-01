@@ -12,6 +12,9 @@ namespace Turris
     /// Atak formy bierze migawkę trafienia z przyzwania (jedno źródło skalowania). Życie, obrona i otrzymywane ciosy – gracza;
     /// w formie bez czarów, bloku i parowania. Model bohatera chowa się pod formą i wraca po końcu (bez leczenia).
     /// </summary>
+    /// <summary>Mocny atak formy Wcielenia (dane dla mocy unikatu).</summary>
+    public sealed class IncarnationStrike { public ServantKind formKind; public HitData hit; public EnemyBrain target; }
+
     public sealed class IncarnationFeature : ClassFeatureController, ICharacterAnimSource
     {
         float active, attackReady, swing = -1f;
@@ -89,6 +92,13 @@ namespace Turris
             if (kind == ServantKind.Golem && heavy) { h.knockdown = 1f; h.knockback = 1.5f; }
             var target = pc.FeatureTarget(kind == ServantKind.Imp ? 14f : 3f);
             if (target != null) { Vector3 d = target.transform.position - pc.transform.position; d.y = 0; if (d.sqrMagnitude > 0.01f) pc.transform.rotation = Quaternion.LookRotation(d); }
+            // Maska trzeciego głodu: mocny atak formy może przejąć zdolność drugiego, zużytego sługi.
+            if (heavy && pc.UniquesFeatureEvent("incarnation.heavy", new IncarnationStrike { formKind = kind, hit = h, target = target }))
+            {
+                attackReady = pc.Clock + 0.9f * 1.8f;
+                swing = 0f; heavySwing = true; FormAttacks++;
+                return true;
+            }
             Servant.Deliver(pc, kind, h, pc.transform, target, kind == ServantKind.Hound ? 1.6f : kind == ServantKind.Golem ? 1.9f : 7f, color, heavy ? 1.6f : 1.2f);
             attackReady = pc.Clock + (kind == ServantKind.Hound ? 0.35f : kind == ServantKind.Imp ? 0.45f : 0.9f) * (heavy ? 1.8f : 1f);
             swing = 0f; heavySwing = heavy;
@@ -172,6 +182,7 @@ namespace Turris
             foreach (var s in picked) s.Dismiss();
             picked.Clear();
             var ch = Servant.SpawnChimera(pc, all, at, color);
+            if (ch != null) pc.UniquesFeatureEvent("chimera.spawned", ch); // Serce szóstego żebra: prawdziwe zdrowie
             Telemetry.Add("chimera: scalenia");
             Telemetry.Add("chimera: składniki", all.Count);
             Used(T.chimeraCooldown, "CHIMERA: " + Describe(all.Select(p => p.kind)).ToUpper());
@@ -218,7 +229,8 @@ namespace Turris
             if (Active) { Fail("już działa", "Arkana oręża już trwają"); return; }
             var main = Run.equipment.Get(EquipSlot.MainHand);
             var fam = main != null ? WeaponFamilies.Of(main.definition) : BuildTag.None;
-            if ((fam & (BuildTag.Blade | BuildTag.HeavyWeapon)) == 0 || (fam & BuildTag.Ranged) != 0) { Fail("brak broni wręcz", "Arkana oręża: potrzebna broń do walki wręcz"); return; }
+            bool fists = main == null && Run.equipment.Get(EquipSlot.OffHand) == null && pc.UniquesFeatureEvent("arcana.fists"); // Bandaże runicznego zapaśnika
+            if (!fists && ((fam & (BuildTag.Blade | BuildTag.HeavyWeapon)) == 0 || (fam & BuildTag.Ranged) != 0)) { Fail("brak broni wręcz", "Arkana oręża: potrzebna broń do walki wręcz"); return; }
             Run.weaponArcanaActive = true;
             active = T.arcanaSeconds;
             pc.FeatureRefresh();

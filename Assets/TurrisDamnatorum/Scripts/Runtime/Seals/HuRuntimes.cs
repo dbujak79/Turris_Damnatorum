@@ -276,11 +276,22 @@ namespace Turris
     }
 
     /// <summary>Mina: czeka na ziemi; uzbraja się, wybucha, gdy podejdzie demon, albo po czasie. Jest kotwicą.</summary>
-    public sealed class HuMine : IHuRuntime, IHuAnchor
+    public sealed class HuMine : IHuRuntime, IHuAnchor, IUniqueMine
     {
-        readonly HuCast cast; readonly Vector3 at; readonly float armAt, endAt, trigger;
+        readonly HuCast cast; Vector3 at; readonly float armAt, endAt, trigger;
         readonly GameObject ring; readonly HellParticles core;
         float t; bool done;
+        public PlayerCombat Owner => cast.caster;
+        public bool Armed => t >= armAt;
+        public float Remaining => endAt - t;
+        public HuCast Cast => cast;
+        /// <summary>Fala przypływu przenosi minę (uzbrojenie, termin i budżet bez zmian).</summary>
+        public void MoveTo(Vector3 p)
+        {
+            at = HuWorld.Ground(p);
+            if (ring != null) ring.transform.position = at;
+            if (core != null) core.transform.position = at + Vector3.up * 0.25f;
+        }
         public HuMine(HuCast cast, Vector3 at)
         {
             this.cast = cast; this.at = HuWorld.Ground(at);
@@ -292,6 +303,7 @@ namespace Turris
                 HellFx.Burst(this.at, cast.family, 0.8f);
             }
             HuWorld.RegisterAnchor(this);
+            UniqueMines.Register(this);
         }
         public Vector3 AnchorPosition => at;
         public bool AnchorLive => !done;
@@ -301,7 +313,7 @@ namespace Turris
             t += dt;
             bool armed = t >= armAt;
             if (ring != null) { var d = ring.GetComponent<FxDecal>(); if (d != null) d.Progress = armed ? 0.5f + 0.5f * Mathf.Sin(t * 9f) : 0.15f; }
-            if (t >= endAt || (armed && HuWorld.Nearest(at, trigger) != null)) { Trigger(); return false; }
+            if (t >= endAt || (armed && !UniqueMines.Held(this) && HuWorld.Nearest(at, trigger) != null)) { Trigger(); return false; }
             return true;
         }
         public void Trigger()

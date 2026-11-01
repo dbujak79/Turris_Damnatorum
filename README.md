@@ -266,6 +266,7 @@ Sloty ustawia się na ekranie przygotowania (klasowe + odblokowane) i między pi
 - **Techniki:** Kontra (zatrzymuje cios i oddaje), Cięcie z wyskoku, Egzekucja (+100% w osłabionych), Okrzyk wojenny (+25% obrażeń), Rozdarcie ran (całe krwawienie od razu ×1,5).
 - **Poziomy umiejętności dodają cechy** od +2 i +4 (np. Kula ognia +4 zostawia płonącą ziemię, Łańcuch +4 skacze do 6 celów, Młynek +4 kończy się mocnym cięciem). Opis pokazuje cechy odblokowane (✓) i następne.
 - **Sklep dusz** między każdym piętrem: ulepszenie umiejętności, losowa nowa umiejętność na to podejście, przerzucenie nagród (raz na piętro). Ceny rosną o 15% za każde piętro.
+- **Perki specjalizacyjne** (natywne, 1 poziom, we wspólnej puli perków sklepu piętra, tylko gdy build je wykorzysta): Pojedynkowicz (+0,15 tempa ataku jednoręczną bronią wręcz przy pustej drugiej ręce), Wykorzystaj wyłom (×1,25 następnej ręcznej akcji przez 3 s po przełamaniu postawy), Różnorodna sfora (+10% obrażeń sług za każdy rodzaj ponad pierwszy), Gwałtowna manifestacja (strefy ręcznych czarów trwają i tykają 2× szybciej, ta sama liczba tyknięć). Szczegóły: `docs/RAPORT_PERKI_SPECJALIZACYJNE.md`.
 
 ## Żywioły i efekty
 
@@ -286,6 +287,14 @@ Reakcje (raz na trafienie, tyknięcia i obrażenia reakcji ich nie wywołują):
 - **Roztrzaskanie** – błyskawica w zamrożony cel: lód pęka, wybuch mrozu (80% obrażeń trafienia) rani innych wrogów w promieniu 3 m.
 
 **Bronie i przedmioty zestawów:** Płonący miecz, Mroźny topór, Młot burzy (część obrażeń to żywioł, ciężki cios nakłada efekt), Ząbkowany miecz (każde cięcie krwawi), Buława (+50% w zamrożonych, rozbija lód), kostury ognia/lodu/burzy (+25% obrażeń żywiołu); Pierścień rozżarzenia (dłuższe podpalenie), Pierścień szronu w żyłach (zamrożenie po 2 warstwach), Amulet przewodnika (przewodzenie przeskakuje), Rękawice rzeźnika (+1 warstwa, ×3 w ruchu), Buty burzy (po uniku cios poraża), Szata popiołu (płonąc zadajesz +25%), Amulet salamandry (nie płoniesz), Hełm z futrem i Uziemiona kolczuga (odporności). Bohater ma **odporności na żywioły** (limit 75%) i premie do obrażeń żywiołów – widoczne w statystykach ekwipunku.
+
+**Losowe affiksy przedmiotów** (pełna lista: [docs/AFFIKSY_PRZEDMIOTOW.md](docs/AFFIKSY_PRZEDMIOTOW.md), skrót: [docs/AFFIKSY_SKROT.md](docs/AFFIKSY_SKROT.md)):
+- **dodany ogień, mróz, błyskawice i ziemia** dodają prawdziwy składnik żywiołu do ciosów bronią, strzałów i technik. Składnik ma własną premię żywiołu, odporność i przebicie, nie nakłada efektów i nie działa na czary ani sługi. Przedmioty ze starszych zapisów zachowują swoją premię fizyczną;
+- **przebicie żywiołu** (broń, grymuar, amulet) obniża odporność celu na ten żywioł o punkty procentowe, najwyżej do zera;
+- **Kruszący** (ciężka broń wręcz) zwiększa obrażenia postawy ciosów tą bronią;
+- **Muru tarcz** (tarcza) obniża koszt aktywnego bloku, najwyżej o 50%;
+- **Inkantacji** (fokus, grymuar) skraca przygotowanie ręcznie rzucanych czarów;
+- **Władczy** (hełm, grymuar przywołań) zwiększa obrażenia sług przyzwanych po założeniu przedmiotu.
 
 **Noże bliźniacze** (ostrze w każdej dłoni, seria 4 bardzo szybkich cięć, krwawienie, parowanie bez bloku) i **Łuk refleksyjny** (atak szybki i mocny to strzały; z namierzeniem strzały lekko się naprowadzają). Przy strzale postać naciąga cięciwę (żywa cięciwa sięga dłoni, strzała leży na cięciwie) i puszcza ją w chwili wystrzału – mocny strzał naciąga się dłużej. Łotrzyk nosi własny strój: ćwiekowaną skórznię z pasami na noże, karwasze i pelerynę. Za strzałami i rzuconą bronią widać smugę.
 
@@ -496,7 +505,7 @@ Assets/TurrisDamnatorum/
               HitSystem (IHitReceiver, HitTracker – jedno trafienie na zamach), Projectile, efekty wizualne
     Player/   PlayerInputReader (Input System w kodzie), PlayerCombat, PlayerController, CameraRig, PlayerVisuals
     Enemies/  EnemyBrain – jedno AI sterowane danymi (bez podklas), fazy bossa, telegrafy, okno riposty
-    Run/      RunState (stan podejścia), RewardGenerator (nagrody ważone buildem, nie klasą)
+    Run/      RunState (stan podejścia), RewardGenerator (nagrody ważone buildem, nie klasą), NativePerks (perki specjalizacyjne)
     Meta/     ProfileData + ProfileSerializer (JSON z wersją formatu i migracją), MetaService, RunFactory
     Core/     GameRoot (przepływ gry), WorldBuilder (postacie), ArenaBuilder (areny w 3 stylach), DefaultContent
     Animation/ CharacterVisual, HumanoidRig + RigLook (proceduralny humanoid), PoseLibrary + ProceduralHumanoidAnimator (pozy, IK, chód),

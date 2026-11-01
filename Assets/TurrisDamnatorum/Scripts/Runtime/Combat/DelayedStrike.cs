@@ -63,7 +63,7 @@ namespace Turris
             if (afterZone.HasValue)
             {
                 var z = afterZone.Value;
-                DamageZone.Spawn(transform.position, z.radius, z.duration, z.interval, z.hit, faction, owner, color);
+                DamageZone.Spawn(transform.position, z.radius, z.duration, z.interval, z.hit, faction, owner, color, z.timeScale > 0f ? z.timeScale : 1f).MeasuredBy = z.measuredBy;
             }
             Destroy(gameObject);
         }

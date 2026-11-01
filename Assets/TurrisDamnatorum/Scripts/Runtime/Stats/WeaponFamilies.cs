@@ -132,6 +132,8 @@ namespace Turris
         {
             if (def == null) return BuildTag.None;
             if (cache.TryGetValue(def, out var t)) return t;
+            // Natywny unikat Turris dziedziczy rodzaj broni po przedmiocie bazowym (bez fałszowania huSourceId).
+            if (def.familyBase != null && def.familyBase != def) { t = Of(def.familyBase); cache[def] = t; return t; }
             if (!LegacyWeapons.TryGetValue(def.id, out t))
             {
                 var row = HuRow(def);
@@ -144,6 +146,24 @@ namespace Turris
             cache[def] = t;
             return t;
         }
+
+        /// <summary>Ciężka broń wręcz (rodzina HeavyWeapon, bez łuków i fokusów) – kwalifikacja affiksu postawy.</summary>
+        public static bool IsHeavyMelee(ItemDefinition def)
+        {
+            if (def == null || !def.IsWeapon) return false;
+            var t = Of(def);
+            return (t & BuildTag.HeavyWeapon) != 0 && (t & (BuildTag.Ranged | BuildTag.Focus)) == 0;
+        }
+
+        /// <summary>Broń będąca fokusem czarów (różdżka, kostur) – nie miecz żywiołu.</summary>
+        public static bool IsFocusWeapon(ItemDefinition def) => def != null && def.IsWeapon && (Of(def) & BuildTag.Focus) != 0;
+
+        /// <summary>Grymuar: przedmiot drugiej ręki (nie tarcza) dający czar.</summary>
+        public static bool IsGrimoire(ItemDefinition def) =>
+            def != null && def.kind == ItemKind.OffHand && def.grantedSkill != null && def.grantedSkill.IsSpell;
+
+        /// <summary>Grymuar przywołań – rozpoznawany po rodzaju przyznanej umiejętności, nie po nazwie.</summary>
+        public static bool GrantsSummon(ItemDefinition def) => IsGrimoire(def) && def.grantedSkill.kind == SpellKind.Summon;
 
         static HellWeaponCatalog.Row HuRow(ItemDefinition def) =>
             !string.IsNullOrEmpty(def.huSourceId) ? HellWeaponCatalog.Find(def.huSourceId) : HellWeaponCatalog.ForTarget(def.id);

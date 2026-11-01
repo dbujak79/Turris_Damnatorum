@@ -13,10 +13,51 @@ namespace Turris.Tests.Bots
         {
             var b = BuildCalculator.Compute(Root.Run, Root.config);
             var s = b.stats;
-            float dps = b.WeaponDamage(b.weapon.light) * b.attackSpeed;
-            return dps + 0.25f * s[StatType.MaxHealth] + 0.4f * (s[StatType.PhysicalDefense] + s[StatType.MagicDefense])
-                   + 0.3f * s[StatType.SpellPower] + 0.2f * s[StatType.MaxStamina] + EffectScore(b);
+            float dps = (b.WeaponDamage(b.weapon.light) + AddedElementDamage(b)) * b.attackSpeed;
+            return dps + MinionScore(b) + 0.25f * s[StatType.MaxHealth] + 0.4f * (s[StatType.PhysicalDefense] + s[StatType.MagicDefense])
+                   + 0.3f * s[StatType.SpellPower] + 0.2f * s[StatType.MaxStamina] + EffectScore(b) + UniqueScore(Root.Run, dps) + NativePerkGearScore(Root.Run);
         }
+
+        /// <summary>Dodane żywioły lekkiego ciosu z premią danego żywiołu (obok obrażeń fizycznych broni).</summary>
+        protected static float AddedElementDamage(BuildSnapshot b)
+        {
+            float bas = b.WeaponBase(b.weapon.light), sum = 0f;
+            foreach (var e in new[] { Element.Fire, Element.Frost, Element.Lightning, Element.Earth })
+                sum += AffixMath.AddedElement(bas, b.stats[Names.AddedWeaponStat(e).Value]) * (1f + b.stats[Names.ElementDamageStat(e)] / 100f);
+            return sum;
+        }
+
+        /// <summary>Obrażenia sług mają wartość tylko z przywołaniem w slotach (punkt za procent, jak moc czarów).</summary>
+        protected static float MinionScore(BuildSnapshot b) =>
+            b.skills.Any(s => s != null && s.Def.kind == SpellKind.Summon) ? 0.3f * b.stats[StatType.MinionDamage] : 0f;
+
+        /// <summary>
+        /// Natywne unikaty: wartość ma tylko moc, która w tym wariancie działa (cecha właściciela, skill w slocie) – uśpiony unikat
+        /// liczy się wyłącznie statystykami, więc statystycznie lepszy zwykły przedmiot wygrywa i uśpiony trafia do sprzedaży.
+        /// </summary>
+        protected static float UniqueScore(RunState run, float dps)
+        {
+            float v = 0f;
+            foreach (var it in run.equipment.Items)
+            {
+                var card = UniqueRegistry.CardOf(it.definition);
+                if (card == null || !UniqueRegistry.WouldBeActive(card, run)) continue;
+                v += MeasuredPowerGain.TryGetValue(card.code, out var gain) ? dps * (gain - 1f) : UniquePowerValue;
+            }
+            return v;
+        }
+
+        /// <summary>Wartość działającej mocy bez pomiaru (w punktach oceny buildu – ok. kilku procent typowego buildu, nie automatyczna wygrana).</summary>
+        public const float UniquePowerValue = 25f;
+
+        /// <summary>
+        /// Zmierzony zysk obrażeń z mocy (UniqueMeasurePlayTests, średnia grupy i twardego celu, 2026-11-01): wycena = DPS × (zysk − 1),
+        /// więc moc szkodząca w prostej grze obniża ocenę. Pozostałe moce mają stałą wartość, dopóki nie zostaną zmierzone.
+        /// </summary>
+        static readonly System.Collections.Generic.Dictionary<string, float> MeasuredPowerGain = new System.Collections.Generic.Dictionary<string, float>
+        {
+            ["B02"] = 1.30f, ["R03"] = 1.07f, ["R05"] = 1.05f, ["B05"] = 1.05f, ["S03"] = 1.13f, ["P02"] = 0.92f, ["F04"] = 1.00f, ["T01"] = 0.87f,
+        };
 
         /// <summary>
         /// Wartość efektów pasywnych z przedmiotów HU (uchylenie, blok bierny, moce unikatów, dusze, życie i mana za zabójstwo, przebicie, obszar) –
@@ -89,13 +130,14 @@ namespace Turris.Tests.Bots
             var slot = item.definition.DefaultSlot;
             if (item.definition.kind == ItemKind.Ring && run.equipment.Get(EquipSlot.Ring1) != null) slot = EquipSlot.Ring2;
             var old = run.equipment.Get(slot);
-            if (old == null) return run.equipment.CanEquip(item, slot, out _);
-            if (item.definition.IsShield && !old.definition.IsShield) return false;
+            // Pusty slot: zwykle zysk – chyba że przedmiot uśpi natywny perk (tarcza a Pojedynkowicz), wtedy uczciwe porównanie.
+            if (old == null && LoadoutAnalysis.NativePerksLosingEffect(run, item.definition).Count == 0) return run.equipment.CanEquip(item, slot, out _);
+            if (old != null && item.definition.IsShield && !old.definition.IsShield) return false;
             float before = GearScore();
             run.inventory.Add(item);
             bool ok = run.EquipFromInventory(item, slot);
             float after = ok ? GearScore() : before;
-            if (ok) run.EquipFromInventory(old, slot);
+            if (ok) { if (old != null) run.EquipFromInventory(old, slot); else run.UnequipToInventory(slot); }
             run.inventory.Remove(item);
             return after > before * 1.01f;
         }

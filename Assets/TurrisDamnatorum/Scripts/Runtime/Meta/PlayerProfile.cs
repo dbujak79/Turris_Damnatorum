@@ -48,6 +48,9 @@ namespace Turris
         public List<KeyValue> classFeatures = new List<KeyValue>();
         /// <summary>Ostatni drugi zestaw Arsenału (indeks; −1 = domyślny).</summary>
         public int lastArsenalIndex = -1;
+        /// <summary>Natywne unikaty Turris już podniesione (katalog), i jeden wskazany jako poszukiwany (preferencja łupu).</summary>
+        public List<string> discoveredUniques = new List<string>();
+        public string soughtUnique = "";
 
         public string FeatureFor(string classId)
         {

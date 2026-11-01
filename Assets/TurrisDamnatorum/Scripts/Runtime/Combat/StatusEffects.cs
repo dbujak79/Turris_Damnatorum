@@ -78,7 +78,77 @@ namespace Turris
         /// <summary>Pęknięcie pancerza obniża odporność fizyczną celu (HU: −4% za warstwę, wróg) zamiast mnożyć obrażenia (bohater).</summary>
         public bool SunderAsResistance;
         /// <summary>Obniżenie odporności fizycznej z pęknięcia pancerza (gdy <see cref="SunderAsResistance"/>).</summary>
-        public float SunderResistReduction(BalanceConfig b) => SunderAsResistance ? SunderStacks * b.sunderPerStack : 0f;
+        public float SunderResistReduction(BalanceConfig b) => SunderAsResistance && SunderMagicPerStack <= 0f ? SunderStacks * b.sunderPerStack : 0f;
+        /// <summary>Zbroja runożercy: pęknięcie obniża odporność na żywioły (dodatek do mnożnika żywiołu) zamiast fizycznej.</summary>
+        public float SunderMagicPerStack;
+        public float SunderElementCut => SunderMagicPerStack > 0f ? SunderStacks * SunderMagicPerStack : 0f;
+
+        // ------------------------------------------------------------------ Moce unikatów: transfer i rozbiór ran
+
+        /// <summary>Odroczony budżet podpalenia (Szata odroczonego pogorzeliska).</summary>
+        public float DeferredBurn { get; private set; }
+        float deferredUntil;
+        public float TakeDeferredBurn() { float d = DeferredBurn; DeferredBurn = 0f; return d; }
+        /// <summary>Przeniesiony odroczony budżet (marionetka): bez nowego wybuchu, z pozostałym terminem.</summary>
+        public void AddDeferredBurn(float budget, float seconds) { if (budget <= 0f || BurnImmune) return; DeferredBurn += budget; deferredUntil = Mathf.Max(deferredUntil, clock + seconds); }
+
+        /// <summary>Zabiera część pozostałego krwawienia (budżet i średni pozostały czas) – atomowo, bez klonu.</summary>
+        public float TakeBleed(float share, out float avgRemaining)
+        {
+            share = Mathf.Clamp01(share);
+            float taken = 0f, w = 0f; avgRemaining = 0f;
+            for (int i = 0; i < bleeds.Count; i++)
+            {
+                var st = bleeds[i];
+                float part = st.dps * st.remaining * share;
+                taken += part; avgRemaining += st.remaining * part; w += part;
+                st.dps *= 1f - share;
+                bleeds[i] = st;
+            }
+            if (share >= 0.999f) bleeds.Clear();
+            avgRemaining = w > 0f ? avgRemaining / w : 0f;
+            return taken;
+        }
+
+        /// <summary>Dokłada przeniesioną ranę (budżet na podany czas) – jak zwykła warstwa, z limitem warstw.</summary>
+        public void AddBleed(float budget, float seconds, BalanceConfig b)
+        {
+            if (budget <= 0f || seconds <= 0.05f || BleedMultiplier <= 0f) return;
+            var st = new Stack { dps = budget / seconds, remaining = seconds, movingMult = b.bleedMovingMultiplier };
+            if (bleeds.Count < Mathf.Max(1, b.bleedMaxStacks)) { bleeds.Add(st); return; }
+            int weakest = 0;
+            for (int i = 1; i < bleeds.Count; i++) if (bleeds[i].dps < bleeds[weakest].dps) weakest = i;
+            if (st.dps >= bleeds[weakest].dps) bleeds[weakest] = st;
+        }
+
+        /// <summary>Zabiera wszystkie rodziny podpalenia (klucz, dps, pozostały czas) – marionetka niesie je dalej.</summary>
+        public List<(int key, float dps, float remaining)> TakeBurns()
+        {
+            var list = new List<(int, float, float)>();
+            if (burnTime > 0f) list.Add((baseBurnFamily, burnDps, burnTime));
+            foreach (var f in extraBurns) list.Add((f.key, f.dps, f.remaining));
+            burnTime = 0f; burnDps = 0f; extraBurns.Clear(); baseBurnFamily = 0;
+            return list;
+        }
+
+        /// <summary>Przeniesiona rodzina podpalenia (bez odnowienia do pełna – pozostały czas).</summary>
+        public void AddBurnFamily(int key, float dps, float remaining, int families)
+        {
+            if (BurnImmune || dps <= 0f || remaining <= 0.05f) return;
+            ApplyBurn(dps, remaining, key, Mathf.Max(1, families));
+        }
+
+        /// <summary>Zdejmuje warstwy pęknięcia nadane przez pole (Amulet rany pod stopami).</summary>
+        /// <summary>Utrzymuje co najmniej tyle warstw pęknięcia przez podany czas; zwraca dodane warstwy.</summary>
+        public int EnsureSunder(int stacks, float seconds, float magicPerStack)
+        {
+            int have = SunderStacks, added = Mathf.Max(0, stacks - have);
+            if (added > 0) sunder = stacks;
+            if (stacks > 0) { sunderTime = Mathf.Max(sunderTime, seconds); SunderMagicPerStack = magicPerStack; }
+            return added;
+        }
+
+        public void ReduceSunder(int stacks) { sunder = Mathf.Max(0, SunderStacks - stacks); if (sunder == 0) sunderTime = 0f; }
         /// <summary>Obrażenia ostatniego wybuchu żaru do zadania w obszarze (gdy <see cref="AreaReactions"/>).</summary>
         public float LastEmberBurstDamage { get; private set; }
         /// <summary>Ostatnie trafienie wywołało parę – właściciel stawia chmurę (jak w HU tylko po stronie wrogów, od ciosów bohatera).</summary>
@@ -285,6 +355,14 @@ namespace Turris
                     if (source <= 0) return false;
                     float duration = b.burnDuration + mods.burnDurationBonus;
                     float dps = source * b.burnShare / Mathf.Max(0.1f, b.burnDuration); // dłuższe = więcej łącznie
+                    if (mods.deferBurn)
+                    {
+                        // Budżet podpalenia czeka na ściśnięcie (bez tyknięć); ponowne odświeżenie tej samej mocy nie rośnie ponad limit.
+                        float cap = dps * Mathf.Max(duration, mods.deferCapSeconds);
+                        DeferredBurn = Mathf.Min(Mathf.Max(DeferredBurn, cap), DeferredBurn + dps * duration);
+                        deferredUntil = clock + Mathf.Max(duration, mods.deferCapSeconds);
+                        return false;
+                    }
                     ApplyBurn(dps, duration, mods.burnFamily, mods.burnFamilies);
                     return false;
                 }
@@ -319,6 +397,7 @@ namespace Turris
                 case StatusKind.Sunder:
                     sunder = Mathf.Min(SunderStacks + 1, Mathf.Max(1, b.sunderMaxStacks));
                     sunderTime = b.sunderDuration;
+                    SunderMagicPerStack = mods.sunderMagicPerStack; // ostatnie źródło decyduje o rodzaju pęknięcia (bez naliczania obu)
                     return false;
                 case StatusKind.Soaked:
                     soakedTime = Mathf.Max(soakedTime, b.soakedDuration);
@@ -399,13 +478,25 @@ namespace Turris
         }
 
         /// <summary>Upływ czasu. Zwraca obrażenia do zadania w tej klatce (wypłacane co statusTickInterval).</summary>
+        /// <summary>Topór kroczącej rzezi: tempo rozliczania ran (≥0 – zamiast ruchu ofiary; suma rany bez zmian). −1 – zwykłe zasady.</summary>
+        public float BleedRate = -1f;
+
         public float Tick(float dt, bool moving, BalanceConfig b)
         {
             if (dt <= 0) return 0f;
             clock += dt; webTime = Mathf.Max(0, webTime - dt);
+            if (DeferredBurn > 0f && clock > deferredUntil) DeferredBurn = 0f;
             for (int i = bleeds.Count - 1; i >= 0; i--)
             {
                 var st = bleeds[i];
+                if (BleedRate >= 0f)
+                {
+                    float use = Mathf.Min(dt * BleedRate, st.remaining);
+                    pending += st.dps * use;
+                    st.remaining -= use;
+                    if (st.remaining <= 1e-4f) bleeds.RemoveAt(i); else bleeds[i] = st;
+                    continue;
+                }
                 float step = Mathf.Min(dt, st.remaining);
                 pending += st.dps * step * (moving ? (st.movingMult > 0 ? st.movingMult : b.bleedMovingMultiplier) : 1f);
                 st.remaining -= dt;

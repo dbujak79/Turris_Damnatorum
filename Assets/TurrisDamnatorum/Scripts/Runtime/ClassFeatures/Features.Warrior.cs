@@ -109,6 +109,15 @@ namespace Turris
         protected override void OnPress()
         {
             if (Grace < 1f) { Fail("brak Łaski", "Rozgrzeszenie: brak Łaski – lecz się przy pełnym życiu"); return; }
+            // Unikat może przejąć wydanie Łaski (Relikwiarz: ładunki ciosów zamiast fali) – ten sam budżet, raz.
+            float spent = Grace * T.graceToDamage;
+            if (pc.UniquesFeatureEvent("absolution.release", ref spent))
+            {
+                Telemetry.Add("Łaska: wydana", Grace);
+                Grace = 0f;
+                Used(T.graceCooldown, "ROZGRZESZENIE – ŁASKA W BRONI");
+                return;
+            }
             float dmg = Grace * T.graceToDamage;
             var h = pc.FeatureHit("Fala osądu", 0f, dmg, Element.Fire, pc.transform.position);
             h.knockback = 1.2f; h.poiseDamage = 30f; h.visualElement = HellFxElement.Fire;
@@ -140,83 +149,128 @@ namespace Turris
     /// </summary>
     public sealed class JudgementFeature : ClassFeatureController
     {
-        float active;
-        EnemyBrain target;
-        JudgementEffect effect;
-        readonly List<AuraEffect> moved = new List<AuraEffect>();
-        public EnemyBrain Target => active > 0f ? target : null;
-        public JudgementEffect Effect => effect;
+        /// <summary>Jedno powiązanie: aury przeniesione na jeden cel z własnym czasem (Mitra rozdwojonej litanii – kilka naraz).</summary>
+        sealed class Binding
+        {
+            public EnemyBrain target;
+            public JudgementEffect effect;
+            public readonly List<AuraEffect> auras = new List<AuraEffect>();
+            public float remaining;
+        }
+
+        readonly List<Binding> bindings = new List<Binding>();
+        float splitWindow;
+        public EnemyBrain Target => bindings.Count > 0 ? bindings[0].target : null;
+        public JudgementEffect Effect => bindings.Count > 0 ? bindings[0].effect : null;
+        /// <summary>Wszystkie cele z odwróconą aurą (Mitra: różne cele dla różnych aur).</summary>
+        public IEnumerable<EnemyBrain> Targets { get { foreach (var b in bindings) yield return b.target; } }
+        public int BoundAuras { get { int n = 0; foreach (var b in bindings) n += b.auras.Count; return n; } }
+        /// <summary>Cel, na który przeniesiono daną aurę (null – aura przy paladynie).</summary>
+        public EnemyBrain TargetOf(AuraEffect a) { foreach (var b in bindings) if (b.auras.Contains(a)) return b.target; return null; }
         protected override void OnBind() { color = new Color(1f, 0.7f, 0.35f); }
+
+        List<AuraEffect> Unbound() => pc.Auras.FindAll(a => a != null && a.Skill != null && TargetOf(a) == null);
+        protected override bool AwaitingSecondPress => splitWindow > 0f && bindings.Count > 0 && Unbound().Count > 0;
 
         protected override void OnPress()
         {
-            if (active > 0f) { Fail("już działa", "Sąd przysięgi już trwa"); return; }
-            var auras = pc.Auras.FindAll(a => a != null && a.Skill != null);
-            if (auras.Count == 0) { Fail("brak aury", "Sąd przysięgi: włącz aurę"); return; }
-            var e = pc.FeatureTarget(T.judgementRange);
-            if (e == null) { Fail("brak celu", "Sąd przysięgi: brak celu w zasięgu"); return; }
-            target = e;
-            effect = new JudgementEffect { owner = pc, remaining = T.judgementSeconds };
-            foreach (var a in auras)
+            float window = 0f;
+            bool split = pc.UniquesFeatureEvent("judgement.split", ref window);
+            bool more = split && splitWindow > 0f && bindings.Count > 0;
+            if (bindings.Count > 0 && !more) { Fail("już działa", "Sąd przysięgi już trwa"); return; }
+            var auras = Unbound();
+            if (auras.Count == 0) { Fail("brak aury", bindings.Count > 0 ? "Sąd przysięgi: wszystkie aury już rozdzielone" : "Sąd przysięgi: włącz aurę"); return; }
+            var e = more ? NextTarget() : pc.FeatureTarget(T.judgementRange);
+            if (e == null) { Fail("brak celu", more ? "Mitra: brak innego celu w zasięgu" : "Sąd przysięgi: brak celu w zasięgu"); return; }
+            // Mitra: jedna aura na cel; bez mitry – wszystkie aury na jeden cel (jak dotąd).
+            var take = split ? new List<AuraEffect> { auras[0] } : auras;
+            var b = new Binding { target = e, remaining = T.judgementSeconds, effect = new JudgementEffect { owner = pc, remaining = T.judgementSeconds } };
+            foreach (var a in take)
             {
                 string id = a.Skill.id;
-                effect.auraIds.Add(id);
+                b.effect.auraIds.Add(id);
                 switch (id)
                 {
-                    case "hu_aura_defiance": effect.armourCut = Mathf.Min(T.judgementDefianceArmour, e.Def.physicalResist + 0.25f); break;
-                    case "hu_aura_purity": effect.resistCut = T.judgementPurityResist; break;
-                    case "hu_aura_zeal": effect.speedMult = T.judgementZealSlow; break;
-                    case "hu_aura_might": effect.damageMult = T.judgementMightWeaken; break;
+                    case "hu_aura_defiance": b.effect.armourCut = Mathf.Min(T.judgementDefianceArmour, e.Def.physicalResist + 0.25f); break;
+                    case "hu_aura_purity": b.effect.resistCut = T.judgementPurityResist; break;
+                    case "hu_aura_zeal": b.effect.speedMult = T.judgementZealSlow; break;
+                    case "hu_aura_might": b.effect.damageMult = T.judgementMightWeaken; break;
                     case "hu_aura_renewal":
                     {
                         float regen = 0f;
                         foreach (var m in a.HuModifiers()) if (m.stat == StatType.HealthRegen && m.mode == ModifierMode.Flat) regen += m.value;
-                        effect.renewalDps = Mathf.Max(1f, regen) * T.judgementRenewalPerRegen;
+                        b.effect.renewalDps = Mathf.Max(1f, regen) * T.judgementRenewalPerRegen;
                         break;
                     }
                 }
                 // Środek aury na celu (Święty ogień pali wokół niego; pierścień aury pokazuje, gdzie działa).
-                moved.Add(a);
+                b.auras.Add(a);
                 a.transform.SetParent(e.transform, false);
                 a.transform.localPosition = Vector3.zero;
             }
-            e.Judgement = effect;
-            active = T.judgementSeconds;
+            e.Judgement = b.effect;
+            bindings.Add(b);
             pc.AuraStrengthChanged();
-            Telemetry.Add("Sąd: odwrócone aury", auras.Count);
-            Used(T.judgementCooldown, "SĄD PRZYSIĘGI");
+            Telemetry.Add("Sąd: odwrócone aury", take.Count);
+            if (!more) Used(T.judgementCooldown, split ? "SĄD PRZYSIĘGI – ROZDZIEL AURY" : "SĄD PRZYSIĘGI");
+            else { Telemetry.uses++; CombatEvents.RaiseMessage("Mitra: druga aura na nowy cel", color); }
+            splitWindow = split && Unbound().Count > 0 ? window : 0f;
             FxLibrary.Lightning(pc.AimPoint + Vector3.up, e.AimPoint, new Color(1f, 0.8f, 0.4f));
             HellFx.Shockwave(e.transform.position, HellFxElement.Fire, new Color(1f, 0.75f, 0.35f), 2.5f, false);
         }
 
+        /// <summary>Kolejny cel Mitry: namierzony albo najbliższy przed paladynem, który nie ma jeszcze żadnej aury.</summary>
+        EnemyBrain NextTarget()
+        {
+            var e = pc.FeatureTarget(T.judgementRange);
+            if (e != null && TargetBinding(e) == null) return e;
+            EnemyBrain best = null; float bd = float.MaxValue;
+            foreach (var x in EnemyBrain.All)
+            {
+                if (x == null || x.IsDead || TargetBinding(x) != null) continue;
+                float d = HuWorld.Flat(x.transform.position, pc.transform.position);
+                if (d <= T.judgementRange && d < bd) { bd = d; best = x; }
+            }
+            return best;
+        }
+
+        Binding TargetBinding(EnemyBrain e) { foreach (var b in bindings) if (b.target == e) return b; return null; }
+
         public override void Tick(float dt)
         {
             base.Tick(dt);
-            if (active <= 0f) return;
-            active -= dt;
+            if (splitWindow > 0f) splitWindow -= dt;
+            if (bindings.Count == 0) return;
             Telemetry.Add("Sąd: czas na celu", dt);
-            if (active <= 0f || target == null || target.IsDead) Return();
+            for (int i = bindings.Count - 1; i >= 0; i--)
+            {
+                var b = bindings[i];
+                b.remaining -= dt;
+                if (b.remaining <= 0f || b.target == null || b.target.IsDead) Return(b);
+            }
         }
 
-        void Return()
+        /// <summary>Powrót aur jednego powiązania (pozostałe działają dalej).</summary>
+        void Return(Binding b)
         {
-            active = 0f;
-            if (target != null && target.Judgement == effect) target.Judgement = null;
-            foreach (var a in moved)
+            if (b.target != null && b.target.Judgement == b.effect) b.target.Judgement = null;
+            foreach (var a in b.auras)
             {
                 if (a == null || pc == null) continue;
                 a.transform.SetParent(pc.transform, false);
                 a.transform.localPosition = Vector3.zero;
             }
-            moved.Clear();
-            target = null; effect = null;
+            bindings.Remove(b);
             if (pc != null && !pc.IsDead) pc.AuraStrengthChanged();
         }
 
-        public override bool SuppressesAura(AuraEffect aura) => active > 0f && moved.Contains(aura);
-        public override void FloorStart() { base.FloorStart(); Return(); }
-        public override void Death() { Return(); }
-        public override ClassFeatureHud Hud => active > 0f ? Timed(ClassFeatureState.Target, $"sąd: {target?.DisplayName} {active:0.0} s", active, T.judgementSeconds)
+        void ReturnAll() { for (int i = bindings.Count - 1; i >= 0; i--) Return(bindings[i]); splitWindow = 0f; }
+
+        public override bool SuppressesAura(AuraEffect aura) => TargetOf(aura) != null;
+        public override void FloorStart() { base.FloorStart(); ReturnAll(); }
+        public override void Death() { ReturnAll(); }
+        public override ClassFeatureHud Hud => bindings.Count > 0
+            ? Timed(ClassFeatureState.Target, bindings.Count > 1 ? $"sąd: {bindings.Count} cele" : $"sąd: {bindings[0].target?.DisplayName} {bindings[0].remaining:0.0} s", bindings[0].remaining, T.judgementSeconds)
             : pc.Auras.Exists(a => a != null) ? ReadyOrCooldown() : new ClassFeatureHud { state = ClassFeatureState.Blocked, label = "włącz aurę", color = color * 0.6f };
     }
 
@@ -301,6 +355,16 @@ namespace Turris
             float left = pc.RageTime;
             int n = Mathf.Min(T.furyMaxTokens, Mathf.FloorToInt(left / Mathf.Max(0.1f, T.furySecondsPerToken) + 1e-4f));
             if (n <= 0) { Fail("za mało szału", $"Spalenie furii: zostało za mało szału (min. {T.furySecondsPerToken:0.#} s)"); return; }
+            // Unikat może zamienić żetony (Różaniec gniewnych duchów: widma zamiast opłat skilli).
+            float tokens = n;
+            if (pc.UniquesFeatureEvent("fury.tokens", ref tokens))
+            {
+                pc.EndRage();
+                Telemetry.Add("furia: oddane sekundy szału", left);
+                Used(0f, $"SPALENIE FURII: {n} × widmo");
+                HellFx.Shockwave(pc.transform.position, HellFxElement.Fire, new Color(1f, 0.3f, 0.1f), 1.8f, false);
+                return;
+            }
             pc.EndRage();
             Tokens = Mathf.Min(T.furyMaxTokens, Tokens + n);
             life = T.furyTokenLife;
@@ -351,19 +415,19 @@ namespace Turris
         protected override void OnPress()
         {
             if (Active) { Fail("już działa", "Niezgodna para już trwa"); return; }
-            if (pc.Build == null || pc.Build.offWeapon == null) { Fail("brak drugiej broni", "Niezgodna para: potrzebne dwie bronie jednoręczne"); return; }
+            if (pc.Build == null || (pc.Build.offWeapon == null && pc.Build.offWand == null)) { Fail("brak drugiej broni", "Niezgodna para: potrzebne dwie bronie jednoręczne"); return; }
             active = T.pairSeconds;
             Used(T.pairCooldown, "NIEZGODNA PARA");
             HellFx.Ambient(pc.transform, Vector3.up, HellFxElement.Physical, 0.45f, T.pairSeconds);
         }
 
-        bool Ready => Active && pc.Build != null && pc.Build.offWeapon != null;
+        bool Ready => Active && pc.Build != null && !pc.OffhandAway && (pc.Build.offWeapon != null || pc.Build.offWand != null);
         public override bool AllowsOffhandAlternation => !Ready;
 
         public override float AttackTimeScale(ActionType type, AttackDefinition atk)
         {
             if (!Ready || type != ActionType.LightAttack || atk == null) return 1f;
-            var off = pc.Build.offWeapon.definition.weapon.light;
+            var off = (pc.Build.offWeapon ?? pc.Build.offWand).definition.weapon.light;
             float main = atk.windup + atk.active + atk.recovery, second = off.windup + off.active + off.recovery;
             return main > 0.01f ? (main + second) * 0.5f / main : 1f;
         }
@@ -373,6 +437,14 @@ namespace Turris
             if (!Ready || pc.Actions.Current != ActionType.LightAttack) return false;
             var b = pc.Build;
             var main = pc.PacketHit(b.mainHand, atk, T.pairMainShare, false, target);
+            if (b.offWeapon == null)
+            {
+                // Różdżka w lewej (Rękawice podwójnego sekretu): splot to cięcie i krótki wystrzał opłacany maną.
+                HitQuery.Apply(pc, target, main, true);
+                if (!target.IsDead) pc.UniquesFeatureEvent("pair.wand", target);
+                Telemetry.Add("para: sploty z różdżką");
+                return true;
+            }
             var off = pc.PacketHit(b.offWeapon, b.offWeapon.definition.weapon.light, T.pairOffShare, true, target);
             off.featureEffect = true; // drugi pakiet: bez powtórnych kradzieży życia i ogólnych mocy wyposażenia
             off.originId = main.originId;
@@ -386,7 +458,7 @@ namespace Turris
         public override void FloorStart() { base.FloorStart(); active = 0f; }
         public override void Death() { active = 0f; }
         public override ClassFeatureHud Hud => Active ? Timed(ClassFeatureState.Active, $"para {active:0.0} s", active, T.pairSeconds)
-            : pc.Build != null && pc.Build.offWeapon == null ? new ClassFeatureHud { state = ClassFeatureState.Blocked, label = "brak drugiej broni", color = color * 0.6f } : ReadyOrCooldown();
+            : pc.Build != null && pc.Build.offWeapon == null && pc.Build.offWand == null ? new ClassFeatureHud { state = ClassFeatureState.Blocked, label = "brak drugiej broni", color = color * 0.6f } : ReadyOrCooldown();
     }
 
     // ====================================================================== Rębajło B – Taniec bez przerwy
@@ -396,13 +468,16 @@ namespace Turris
     /// pochodzenie; hitbox idzie z postacią, więc ruch może sprawić pudło. Drugi unik nie restartuje cięcia. Drgnięcie, przełamanie,
     /// zamrożenie i śmierć kasują przeniesiony cios.
     /// </summary>
+    /// <summary>Przeniesiony cios Tańca (dane dla mocy unikatu).</summary>
+    public sealed class DanceCarry { public AttackDefinition attack; public bool offhand; public int origin; }
+
     public sealed class UnbrokenDanceFeature : ClassFeatureController
     {
         float active;
         AttackDefinition carried;
         bool carriedOffhand;
         int carriedOrigin;
-        float elapsed, windup, activeTime;
+        float elapsed, windup, activeTime, carriedScale = 1f;
         bool swung;
         readonly HitTracker carriedTracker = new HitTracker();
         public bool Active => active > 0f;
@@ -430,6 +505,9 @@ namespace Turris
             swung = elapsed >= windup;
             carriedTracker.CopyFrom(pc.AttackTracker);
             Telemetry.Add("taniec: przeniesione ciosy");
+            // Buty niedokończonego kroku: część cięcia zostaje w miejscu startu (bieżący cios słabszy o tę część).
+            carriedScale = 1f;
+            pc.UniquesFeatureEvent("dance.carried", ref carriedScale, new DanceCarry { attack = atk, offhand = carriedOffhand, origin = carriedOrigin });
         }
 
         public override void Tick(float dt)
@@ -442,7 +520,7 @@ namespace Turris
             if (elapsed >= windup && elapsed <= windup + activeTime)
             {
                 int before = carriedTracker.Count;
-                pc.SweepCarried(carried, carriedTracker, carriedOffhand, carriedOrigin);
+                pc.SweepCarried(carried, carriedTracker, carriedOffhand, carriedOrigin, carriedScale);
                 if (carriedTracker.Count > before) Telemetry.Add("taniec: trafienia w uniku", carriedTracker.Count - before);
             }
             if (elapsed > windup + activeTime) { if (carriedTracker.Count == 0) Telemetry.Add("taniec: pudła"); carried = null; }

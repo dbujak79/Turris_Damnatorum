@@ -245,6 +245,8 @@ namespace Turris
         public BalanceConfig balance = new BalanceConfig();
         [Tooltip("Parametry 30 cech klasowych (hipotezy startowe do strojenia).")]
         public ClassFeatureTuning classFeatures = new ClassFeatureTuning();
+        [Tooltip("Natywne perki specjalizacyjne Turris (Pojedynkowicz, Wyłom, Sfora, Manifestacja): parametry, ceny, wagi i progi.")]
+        public NativePerkTuning nativePerks = new NativePerkTuning();
         public List<ClassDefinition> classes = new List<ClassDefinition>();
         public List<DifficultyDefinition> difficulties = new List<DifficultyDefinition>();
         public TowerDefinition tower;

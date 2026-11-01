@@ -21,6 +21,8 @@ namespace Turris
         public override string ToString()
         {
             string sign = value >= 0 ? "+" : "";
+            string line = mode == ModifierMode.Flat ? Names.StatLine(stat, value) : null;
+            if (line != null) return line;
             return mode == ModifierMode.Percent
                 ? $"{sign}{value:0.#}% {Names.Stat(stat)}"
                 : $"{sign}{value:0.##} {Names.Stat(stat)}";

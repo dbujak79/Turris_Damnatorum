@@ -43,8 +43,20 @@ namespace Turris
         public float knockdown;        // powalenie trafionego wroga (s; bossy odporne, potem odporność na ogłuszenie)
         public float knockdownChance;  // szansa powalenia (0 – zawsze); losowana osobno dla każdego trafionego
         public bool isProjectile;      // trafienie pociskiem (Sokole oko)
-        /// <summary>Przebicie odporności (perki HU): część żywiołu i fizyczna – w ułamku, odporność celu nie spada poniżej 0.</summary>
-        public float penetration, physicalPenetration;
+        /// <summary>Przebicie odporności fizycznej (perki HU, affiksy) – ułamek, odporność celu nie spada poniżej 0.</summary>
+        public float physicalPenetration;
+        /// <summary>
+        /// Przebicie odporności każdego żywiołu osobno (ułamek: 0,1 = 10 p.p.; odporność 50% → 40%). Działa wyłącznie na składnik
+        /// swojego żywiołu i nie tworzy podatności poniżej zera; istniejąca podatność zostaje bez zmian.
+        /// </summary>
+        public float penFire, penFrost, penLightning, penEarth;
+        /// <summary>
+        /// Kanoniczny podział części magicznej na wszystkie żywioły naraz (affiksy dodanych żywiołów, zaklęcie, konwersje).
+        /// Nieaktywny – obowiązuje dawny zapis <see cref="element"/>/<see cref="element2"/>. Aktywny – jedyne źródło udziałów,
+        /// a <see cref="element"/>/<see cref="element2"/> są tylko opisem (dominujący i drugi żywioł: barwa, dźwięk, warunki „niesie ogień”).
+        /// Wartość (struktura) – kopia trafienia ma własny podział.
+        /// </summary>
+        public MagicSplit split;
 
         // ---- Pochodzenie (cechy klasowe, rozdz. 7.2): dziedziczone przez kopie, odpryski, przebicia i strefy (kopiowanie struktury).
         /// <summary>Id ręcznej akcji gracza (atak, rzut, strzał), z której pochodzi trafienie; 0 = brak (wróg, reakcja z zewnątrz).</summary>
@@ -54,6 +66,12 @@ namespace Turris
         /// <summary>Efekt potomny cechy klasowej (fala Łaski, Żar, pęknięcie, płyta, wyładowanie…): bez kradzieży życia,
         /// bez leczenia za zabójstwo i bez wytwarzania zasobów cech.</summary>
         public bool featureEffect;
+        /// <summary>Trafienie wtórne mocy unikatu (fala, ślad, wyrok, iskry…): bez kradzieży życia, bez zasobów cech i bez ponownych haków mocy.</summary>
+        public bool uniqueEffect;
+        /// <summary>Atak sługi (attacker = pan) – nie jest ręczną akcją gracza (Wykorzystaj wyłom).</summary>
+        public bool servantHit;
+        /// <summary>Kopia albo rzut z wyzwalacza (echo, wachlarz, kaskada, przekaźnik, słup) – nie nowa ręczna akcja.</summary>
+        public bool copyHit;
         /// <summary>Strzała odpowiedzi: pocisk niesie ładunek (dobór żywiołu przy kontakcie).</summary>
         public bool answerCharge;
         /// <summary>Strzała zaklęcia: id ładunku czaru (0 = brak); wyzwala się raz, na pierwszym trafieniu.</summary>
@@ -68,31 +86,140 @@ namespace Turris
 
         public float Total => physical + magic;
 
-        /// <summary>Udział żywiołu w części magicznej (0–1).</summary>
+        /// <summary>Udział żywiołu w części magicznej (0–1); <see cref="Element.None"/> – magia bez żywiołu.</summary>
         public float ShareOf(Element e)
         {
+            if (split.active) { float sum = split.Sum; return sum > 1e-6f ? split.Get(e) / sum : 0f; }
             float s2 = element2 != Element.None && element2 != element ? Mathf.Clamp01(element2Share) : 0f;
             return (element == e ? 1f - s2 : 0f) + (element2 == e && element2 != element ? s2 : 0f);
         }
 
-        /// <summary>Trafienie niesie ten żywioł (główny albo drugi).</summary>
+        /// <summary>Obrażenia danego składnika części magicznej.</summary>
+        public float MagicOf(Element e) => magic * ShareOf(e);
+
+        /// <summary>Trafienie niesie ten żywioł (dowolny składnik).</summary>
         public bool Has(Element e) => e != Element.None && ShareOf(e) > 0f;
+
+        /// <summary>Część magiczna ma jakikolwiek składnik żywiołu (nie tylko magię bez żywiołu).</summary>
+        public bool Elemental => magic > 0f && (split.active ? split.ElementalSum > 1e-6f
+            : element != Element.None || (element2 != Element.None && element2Share > 0f));
+
+        /// <summary>Przebicie odporności dla danego żywiołu (ułamek).</summary>
+        public float PenetrationOf(Element e) => e == Element.Fire ? penFire : e == Element.Frost ? penFrost
+            : e == Element.Lightning ? penLightning : e == Element.Earth ? penEarth : 0f;
 
         /// <summary>Mnożnik części magicznej ważony udziałami żywiołów (odporność, premia do żywiołu).</summary>
         public float Weighted(System.Func<Element, float> perElement)
         {
+            if (split.active)
+            {
+                float sum = split.Sum;
+                if (sum <= 1e-6f) return perElement(Element.None);
+                float w = 0f;
+                for (int i = 0; i < MagicSplit.Count; i++) { var e = MagicSplit.ElementAt(i); float s = split.Get(e); if (s > 0f) w += s * perElement(e); }
+                return w / sum;
+            }
             float s2 = element2 != Element.None && element2 != element ? Mathf.Clamp01(element2Share) : 0f;
             return (1f - s2) * perElement(element) + s2 * perElement(element2);
         }
 
-        /// <summary>Mnoży część magiczną osobno dla każdego żywiołu i przelicza udział drugiego.</summary>
+        /// <summary>Mnoży część magiczną osobno dla każdego żywiołu i przelicza udziały (każdy składnik dostaje swój mnożnik raz).</summary>
         public void ScaleMagicByElement(System.Func<Element, float> perElement)
         {
+            if (split.active)
+            {
+                float before = split.Sum;
+                if (before <= 1e-6f) { magic *= perElement(Element.None); return; }
+                for (int i = 0; i < MagicSplit.Count; i++) { var e = MagicSplit.ElementAt(i); float s = split.Get(e); if (s > 0f) split.Set(e, s * perElement(e)); }
+                float after = split.Sum;
+                magic *= after / before;
+                split.Normalize();
+                SyncLegacy();
+                return;
+            }
             float s2 = element2 != Element.None && element2 != element ? Mathf.Clamp01(element2Share) : 0f;
             float m1 = perElement(element), m2 = s2 > 0f ? perElement(element2) : 0f;
-            float w = (1f - s2) * m1 + s2 * m2;
-            magic *= w;
-            if (s2 > 0f) element2Share = w > 1e-6f ? s2 * m2 / w : 0f;
+            float w2 = (1f - s2) * m1 + s2 * m2;
+            magic *= w2;
+            if (s2 > 0f) element2Share = w2 > 1e-6f ? s2 * m2 / w2 : 0f;
+        }
+
+        /// <summary>Przepisuje dawny zapis (żywioł główny + drugi) do podziału kanonicznego; bez zmiany sumy.</summary>
+        public void Materialize()
+        {
+            if (split.active) return;
+            var s = new MagicSplit { active = true };
+            if (magic > 0f) for (int i = 0; i < MagicSplit.Count; i++) { var e = MagicSplit.ElementAt(i); s.Set(e, ShareOf(e)); }
+            split = s;
+            split.Normalize();
+        }
+
+        /// <summary>
+        /// Dodaje składnik magiczny danego żywiołu (dodany żywioł broni, zaklęcie). Gdy dawny zapis wystarcza (puste lub ten sam
+        /// żywioł), zostaje dawny – bez zmian dla starych ścieżek; w przeciwnym razie trafienie przechodzi na podział kanoniczny.
+        /// </summary>
+        public void AddMagic(Element e, float amount)
+        {
+            if (amount <= 0f) return;
+            if (!split.active)
+            {
+                if (magic <= 1e-6f) { magic = amount; element = e; element2 = Element.None; element2Share = 0f; return; }
+                if (element == e && (element2 == Element.None || element2 == element || element2Share <= 0f)) { magic += amount; return; }
+                Materialize();
+            }
+            float total = magic + amount, sum = split.Sum;
+            for (int i = 0; i < MagicSplit.Count; i++)
+            {
+                var x = MagicSplit.ElementAt(i);
+                float a = sum > 1e-6f ? magic * split.Get(x) / sum : 0f;
+                if (x == e) a += amount;
+                split.Set(x, total > 1e-6f ? a / total : 0f);
+            }
+            magic = total;
+            SyncLegacy();
+        }
+
+        /// <summary>Konwersja żywiołu (część <paramref name="fraction"/>): suma bez zmian, bez kopii źródła.</summary>
+        public void ConvertElement(Element from, Element to, float fraction = 1f)
+        {
+            fraction = Mathf.Clamp01(fraction);
+            if (from == to || fraction <= 0f) return;
+            if (!split.active && fraction >= 1f)
+            {
+                if (element == from) element = to;
+                if (element2 == from) element2 = to;
+                return;
+            }
+            Materialize();
+            float moved = split.Get(from) * fraction;
+            split.Set(from, split.Get(from) - moved);
+            split.Set(to, split.Get(to) + moved);
+            SyncLegacy();
+        }
+
+        /// <summary>Cała część magiczna staje się jednym żywiołem (moce unikatów nadpisujące żywioł).</summary>
+        public void SetSingleElement(Element e)
+        {
+            split = default;
+            element = e; element2 = Element.None; element2Share = 0f;
+        }
+
+        /// <summary>Opis dawnych pól z podziału: dominujący żywioł i drugi (udział drugiego w całej części magicznej).</summary>
+        void SyncLegacy()
+        {
+            if (!split.active) return;
+            Element best = Element.None, next = Element.None; float b = 0f, n = 0f;
+            for (int i = 0; i < MagicSplit.Count; i++)
+            {
+                var e = MagicSplit.ElementAt(i);
+                if (e == Element.None) continue;
+                float s = split.Get(e);
+                if (s > b) { next = best; n = b; best = e; b = s; }
+                else if (s > n) { next = e; n = s; }
+            }
+            element = best; element2 = next;
+            float sum = split.Sum;
+            element2Share = next != Element.None && sum > 1e-6f ? n / sum : 0f;
         }
 
         public static HitData FromAttack(AttackDefinition a, float damage, Vector3 source, object attacker)
@@ -123,6 +250,43 @@ namespace Turris
         }
     }
 
+    /// <summary>
+    /// Udziały części magicznej trafienia: magia bez żywiołu i cztery żywioły naraz (bez alokacji – struktura wartościowa).
+    /// </summary>
+    public struct MagicSplit
+    {
+        public const int Count = 5;
+        public bool active;
+        public float none, fire, frost, lightning, earth;
+
+        public static Element ElementAt(int i) => i == 0 ? Element.None : i == 1 ? Element.Fire : i == 2 ? Element.Frost : i == 3 ? Element.Lightning : Element.Earth;
+
+        public float Get(Element e) => e == Element.Fire ? fire : e == Element.Frost ? frost : e == Element.Lightning ? lightning : e == Element.Earth ? earth : none;
+
+        public void Set(Element e, float v)
+        {
+            v = Mathf.Max(0f, v);
+            switch (e)
+            {
+                case Element.Fire: fire = v; break;
+                case Element.Frost: frost = v; break;
+                case Element.Lightning: lightning = v; break;
+                case Element.Earth: earth = v; break;
+                default: none = v; break;
+            }
+        }
+
+        public float Sum => none + fire + frost + lightning + earth;
+        public float ElementalSum => fire + frost + lightning + earth;
+
+        public void Normalize()
+        {
+            float s = Sum;
+            if (s <= 1e-6f) return;
+            none /= s; fire /= s; frost /= s; lightning /= s; earth /= s;
+        }
+    }
+
     /// <summary>Modyfikatory efektów pochodzące z wyposażenia atakującego (przenoszone w trafieniu).</summary>
     public struct StatusModifiers
     {
@@ -137,6 +301,11 @@ namespace Turris
         public int burnFamily;
         /// <summary>Wielki pożar: najwyżej tyle niezależnych rodzin na celu (0 – cecha nieaktywna).</summary>
         public int burnFamilies;
+        /// <summary>Szata odroczonego pogorzeliska: podpalenie nie tyka, tylko gromadzi budżet (limit w sekundach palenia, termin).</summary>
+        public bool deferBurn;
+        public float deferCapSeconds;
+        /// <summary>Zbroja runożercy: pęknięcie pancerza obniża odporności żywiołów (ułamek za warstwę) zamiast fizycznej.</summary>
+        public float sunderMagicPerStack;
 
         public static StatusModifiers None => new StatusModifiers { bleedDamageMult = 1f, conductionMult = 1f };
     }
@@ -231,6 +400,21 @@ namespace Turris
             r.healthDamage = armored;
             r.poiseDamage = hit.poiseDamage;
             return r;
+        }
+
+        /// <summary>
+        /// Słabości i odporności celu na żywioły, osobno dla każdego składnika części magicznej: mnożnik żywiołu celu + osłabienie
+        /// (<paramref name="cut"/>), potem przebicie tego żywiołu (odporność nie spada poniżej 0, podatność bez zmian). Magia bez
+        /// żywiołu – bez zmian. Zwraca mnożnik ważony (do napisu „SŁABOŚĆ”).
+        /// </summary>
+        public static float ApplyElementResistances(ref HitData hit, System.Func<Element, float> baseMultiplier, float cut)
+        {
+            if (!hit.Elemental) return 1f;
+            var h = hit;
+            float Mult(Element e) => e == Element.None ? 1f : AffixMath.ResistMultiplier(baseMultiplier(e) + cut, h.PenetrationOf(e));
+            float m = hit.Weighted(Mult);
+            hit.ScaleMagicByElement(Mult);
+            return m;
         }
 
         public static bool IsInFront(in DefenseState def, Vector3 source, float totalAngle)

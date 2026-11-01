@@ -41,6 +41,8 @@ namespace Turris
 
         public GuardData guard;             // null = brak możliwości bloku
         public bool guardIsShield;
+        /// <summary>Suma affiksów tańszego bloku tarczą (%, po jakości) – UI pokazuje limit nowej części.</summary>
+        public float shieldBlockAffix;
         public ParryData parry;             // null = brak możliwości parowania
 
         public DodgeParams dodge;
@@ -64,6 +66,8 @@ namespace Turris
         public SpellRuntime signature;
         /// <summary>Druga broń w lewej ręce (walka dwiema brońmi) – null, gdy brak.</summary>
         public ItemInstance offWeapon;
+        /// <summary>Różdżka w drugiej ręce (wyjątek Rękawic podwójnego sekretu) – nie jest drugim ostrzem.</summary>
+        public ItemInstance offWand;
         /// <summary>Klinga zaklęć: moc czarów działa też na ciosy bronią (1 = brak).</summary>
         public float spellbladeFactor = 1f;
 
@@ -76,6 +80,25 @@ namespace Turris
         public float MaxHealth => stats[StatType.MaxHealth];
         public float MaxStamina => stats[StatType.MaxStamina];
         public float MaxMana => stats[StatType.MaxMana];
+
+        /// <summary>Koszt aktywnego bloku (wytrzymałość) dla obciążenia gardy – ta sama reguła co <see cref="DamageResolver"/>.</summary>
+        public float BlockCost(float guardLoad) => guard == null ? 0f : guardLoad * guard.stabilityMultiplier;
+
+        /// <summary>
+        /// Baza B ataku bronią do dodanych żywiołów: obrażenia bez premii fizycznej (skalowanie, poziom, wymagania – tak).
+        /// </summary>
+        public float WeaponBase(AttackDefinition atk, bool offhand = false)
+        {
+            float d = offhand ? OffWeaponDamage(atk) : WeaponDamage(atk);
+            return d / Mathf.Max(0.01f, 1f + stats[StatType.PhysicalDamage] / 100f);
+        }
+
+        /// <summary>Dodany składnik żywiołu do ataku bronią (bez premii żywiołu – ta działa w trafieniu).</summary>
+        public float AddedElement(AttackDefinition atk, Element e, bool offhand = false)
+        {
+            var s = Names.AddedWeaponStat(e);
+            return s.HasValue ? AffixMath.AddedElement(WeaponBase(atk, offhand), stats[s.Value]) : 0f;
+        }
 
         /// <summary>Obrażenia ataku bronią: baza × skalowanie atrybutów × premie × poziom × wymagania.</summary>
         public float WeaponDamage(AttackDefinition atk)
@@ -153,6 +176,19 @@ namespace Turris
                 };
             }
 
+            // Affiksy tarczy (Bastionu): osobna, nowa część redukcji – raz na koszt z dotychczasowych reguł, limit 50%, tylko gdy
+            // gardę daje założona tarcza (blok bronią po zdjęciu tarczy jej nie dostaje). Nie dotyka BlockCostReduction.
+            snap.shieldBlockAffix = snap.stats[StatType.ShieldBlockCost];
+            if (snap.guard != null && snap.guardIsShield && snap.shieldBlockAffix > 0f)
+            {
+                var g = snap.guard;
+                snap.guard = new GuardData
+                {
+                    physicalReduction = g.physicalReduction, magicReduction = g.magicReduction, blockAngle = g.blockAngle,
+                    staminaRegenMultiplier = g.staminaRegenMultiplier, stabilityMultiplier = g.stabilityMultiplier * AffixMath.ShieldBlockFactor(snap.shieldBlockAffix),
+                };
+            }
+
             if (snap.parry != null && snap.stats[StatType.ParryWindow] != 0f)
             {
                 var p = new ParryData
@@ -178,7 +214,8 @@ namespace Turris
             snap.attackSpeed = (1f + Mathf.Min(b.maxAttackSpeedBonus, dexOver * b.attackSpeedPerDexterity) + snap.stats[StatType.AttackSpeed] / 100f)
                                * (snap.weaponEffectiveness < 1f ? b.unmetRequirementAttackSpeed : 1f);
             // Druga broń jednoręczna w lewej ręce: ciosy na zmianę; cecha Dwie klingi – szybciej.
-            if (off != null && off.definition.IsWeapon) snap.offWeapon = off;
+            if (off != null && off.definition.IsWeapon && off.definition.IsOneHandedMelee) snap.offWeapon = off;
+            else if (off != null && off.definition.IsWeapon) snap.offWand = off;
             var cls = run.startingClass;
             if (cls != null && cls.trait == ClassTrait.TwinBlades && snap.offWeapon != null) snap.attackSpeed *= 1.2f;
             snap.twoHandedMelee = (WeaponFamilies.Of(snap.mainHand.definition) & BuildTag.TwoHanded) != 0;
@@ -201,8 +238,10 @@ namespace Turris
             // Arkana oręża (Mag bitewny A, tylko w oknie cechy): broń wręcz jest fokusem, jej główny atrybut zastępuje
             // Inteligencję w wymaganiu i skalowaniu czarów; moc fokusu broni znormalizowana (×1) – bez drugiego mnożnika DPS broni.
             StatSheet arcanaStats = null;
-            if (run.weaponArcanaActive && run.HasFeature("class_feature.battlemage.weapon_arcana") && main != null
-                && (WeaponFamilies.Of(main.definition) & (BuildTag.Blade | BuildTag.HeavyWeapon)) != 0 && (WeaponFamilies.Of(main.definition) & BuildTag.Ranged) == 0)
+            bool fistArcana = run.weaponArcanaActive && run.HasFeature("class_feature.battlemage.weapon_arcana") && run.equipment.Get(EquipSlot.MainHand) == null
+                && run.equipment.Get(EquipSlot.OffHand) == null && run.equipment.Get(EquipSlot.Hands)?.definition.id == "item.unique.turris.battlemage.runic_wrestler";
+            if (fistArcana || (run.weaponArcanaActive && run.HasFeature("class_feature.battlemage.weapon_arcana") && main != null
+                && (WeaponFamilies.Of(main.definition) & (BuildTag.Blade | BuildTag.HeavyWeapon)) != 0 && (WeaponFamilies.Of(main.definition) & BuildTag.Ranged) == 0))
             {
                 var attr = snap.weapon.dexterityScaling > snap.weapon.strengthScaling ? AttributeType.Dexterity : AttributeType.Strength;
                 snap.arcanaAttribute = attr;

@@ -255,6 +255,8 @@ namespace Turris.Tests.Bots
         /// <summary>Gust maga: moc czarów, własny żywioł, mechanika pocisków różdżki i odnowienia; potem życie i obrona; mana.</summary>
         protected override float PerkScore(BoonDefinition b)
         {
+            float native = NativePerkScore(b);
+            if (native >= 0f) return native;
             if (!PerkMechanics.Active(b, Root.Run)) return 0f; // uśpiony przy tym wyposażeniu – nic nie da
             float s = 1f;
             if (b.modifiers.Any(m => m.stat == StatType.SpellPower || m.stat == StatType.GlobalDamage || m.stat == WandElementStat
@@ -276,8 +278,8 @@ namespace Turris.Tests.Bots
             var s = b.stats;
             float elem = 1f + (WandElement != Element.None ? s[WandElementStat] / 100f : 0f);
             float dps = b.WeaponDamage(b.weapon.light) * b.attackSpeed * elem * (1f + s[StatType.SpellPower] / 100f);
-            return dps + 0.3f * s[StatType.MaxHealth] + 0.4f * (s[StatType.PhysicalDefense] + s[StatType.MagicDefense])
-                   + 0.15f * s[StatType.MaxMana] + 2f * s[StatType.ManaRegen] + 0.1f * s[StatType.MaxStamina] + EffectScore(b);
+            return dps + MinionScore(b) + 0.3f * s[StatType.MaxHealth] + 0.4f * (s[StatType.PhysicalDefense] + s[StatType.MagicDefense])
+                   + 0.15f * s[StatType.MaxMana] + 2f * s[StatType.ManaRegen] + 0.1f * s[StatType.MaxStamina] + EffectScore(b) + UniqueScore(Root.Run, dps) + NativePerkGearScore(Root.Run);
         }
     }
 }

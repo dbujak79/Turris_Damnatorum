@@ -1,6 +1,7 @@
 """Kopiuje ekonomię bohatera z Hell Unleashed (etap 6): przedmioty, affixy i perki do Resources/HellCatalog.
 
-Wyjście: items.json (71 zbroi, biżuterii i unikatów), affixes.json (131 affixów w 46 grupach), upgrades.json (46 perków).
+Wyjście: items.json (71 zbroi, biżuterii i unikatów), affixes.json (131 affixów HU w 46 grupach + nakładka Turris
+z tools/data/affixes_turris.json – patrz turris_affix_overlay.py), upgrades.json (46 perków).
 Nazwy po polsku z tabel napisów HU. Źródło tylko do odczytu; pozostałych plików katalogu nie dotyka.
 Uruchomienie: python tools/art/import_hu_economy.py
 """
@@ -10,6 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from import_hu_catalog import ROOT, SOURCE, OUT, read_resource, sha, strings_table  # noqa: E402
+import turris_affix_overlay  # noqa: E402
 
 KINDS = {0: 'Head', 1: 'Body', 2: 'Hands', 3: 'Feet', 4: 'Amulet', 5: 'Ring'}
 
@@ -34,6 +36,8 @@ def main():
     for r in items:
         r['KindName'] = KINDS.get(r['Kind'], '?')
     affixes = rows('Affixes', names, {'Kind': 0, 'Group': '', 'Tier': 1, 'MinWave': 1, 'Weight': 1.0, 'Categories': [], 'RequiredTags': [], 'Ranges': []})
+    # Nakładka Turris (nowe affiksy, nazwy, nadpisania) – ponowny import jej nie usuwa; walidacja przed zapisem.
+    affixes = turris_affix_overlay.merge(affixes, turris_affix_overlay.load_overlay())
     upgrades = rows('Upgrades', names, {'Scope': 0, 'AttackTags': [], 'Modifiers': [], 'ModifierLevelTotals': [], 'Conversion': '', 'OnHitEffects': [],
                                         'RequiresAny': [], 'MaxLevel': 5, 'BasePrice': 20.0, 'PriceGrowth': 1.5, 'Weight': 1.0, 'ClassId': '',
                                         'RequiredSlot': 0, 'RequiredTags': [], 'ForbiddenTags': []})

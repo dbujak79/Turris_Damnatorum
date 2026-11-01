@@ -40,6 +40,34 @@ namespace Turris
         public Vector3 AnchorPosition => transform.position;
         public bool AnchorLive => active && this != null;
 
+        // ------------------------------------------------------------------ Moce unikatów
+        public static readonly List<HuShot> Live = new List<HuShot>();
+        /// <summary>Pocisk skończył lot: (pocisk, miejsce, czy kogoś trafił).</summary>
+        public static event System.Action<HuShot, Vector3, bool> Ended;
+        public HuCast SourceCast => cast;
+        public HitData ShotHit => hit;
+        public Vector3 Velocity => velocity;
+        public bool HasStruck => struck.Count > 0;
+        public bool IsActive => active;
+        /// <summary>Dodatkowy budżet końcowego wybuchu (Miech pożeracza stosów) – wypłacany raz przy uderzeniu.</summary>
+        public float ImpactBonus { get; set; }
+        public void Redirect(Vector3 dir, float speedMult)
+        {
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 1e-6f || motion.Orbits) return;
+            speed *= speedMult;
+            velocity = dir.normalized * speed;
+            motion.homingTurn = 0f;
+        }
+        public void ConvertShare(Element e, float share)
+        {
+            float moved = hit.Total * Mathf.Clamp01(share);
+            float p = Mathf.Min(hit.physical, moved); hit.physical -= p;
+            hit.magic += p; hit.element = e;
+        }
+        /// <summary>Zdejmuje pocisk bez trafienia i bez wybuchu (zderzenie, węzeł) – budżet rozlicza moc.</summary>
+        public void Kill() => Expire(false);
+
         public static HuShot Spawn(HuCast cast, Vector3 pos, Vector3 dir, HitData hit, float speed, float radius, float lifetime,
             int pierce, int ricochet, int splits, float contactShare, bool impactOnHit, bool repeatImpact, Motion motion, Look look)
         {
@@ -52,6 +80,7 @@ namespace Turris
             s.contactShare = contactShare; s.impactOnHit = impactOnHit; s.repeatImpact = repeatImpact; s.motion = motion;
             dir.y = 0; s.velocity = (dir.sqrMagnitude > 1e-6f ? dir.normalized : Vector3.forward) * s.speed;
             s.active = true;
+            Live.Add(s);
             if (motion.Orbits) go.transform.position = s.OrbitPoint();
             s.BuildLook(look);
             HuWorld.RegisterAnchor(s);
@@ -263,12 +292,21 @@ namespace Turris
             if (impacted && !repeatImpact) return;
             impacted = true;
             cast.Impact(point);
+            if (ImpactBonus > 0f && cast.caster != null)
+            {
+                // Pożarte pola: jeden dodatkowy budżet w tym samym wybuchu (raz).
+                var h = cast.Hit(0f); h.magic = ImpactBonus; h.physical = 0f; h.element = Element.Fire; h.uniqueEffect = true; h.featureEffect = true;
+                HuWorld.Explode(cast.caster, point, Mathf.Max(1.5f, cast.Area("explosion_radius", 2f)), h, cast.color);
+                ImpactBonus = 0f;
+            }
         }
 
         void Expire(bool explode)
         {
             if (!active) return;
             active = false;
+            Live.Remove(this);
+            Ended?.Invoke(this, transform.position, struck.Count > 0);
             if (explode) Detonate(transform.position);
             if (fx != null) { FxLibrary.DetachProjectileVisual(fx); fx = null; }
             Destroy(gameObject);
@@ -279,6 +317,7 @@ namespace Turris
 
         void OnDestroy()
         {
+            Live.Remove(this);
             active = false;
             if (fx != null) FxLibrary.DetachProjectileVisual(fx);
         }
