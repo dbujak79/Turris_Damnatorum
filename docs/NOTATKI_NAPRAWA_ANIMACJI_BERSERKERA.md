@@ -95,6 +95,11 @@ Kolejne uwagi użytkownika i odpowiedzi:
 
 Wynik zaakceptowany przez użytkownika („jest ok”).
 
+6. *„W biegu topór ucieka na dół i w bok”* – w biegu działało dawne „niesienie” (`CarryHand/CarryAim`): broń przy prawym
+   boku, skośnie w dół i do tyłu, bez naturalnego nadgarstka i bez chwytu z gardy. Teraz bieg używa tego samego chwytu oburącz
+   przed sobą (przesunięcie broni, rozstaw, obrót ostrza, łokcie w dół), tylko wyżej i dalej w przód (`CarryHand` (0,28; 1,02; 0,38),
+   `CarryAim` (0,95; 0,04; 0,30)), bo tułów w biegu się pochyla. Podgląd `TestResults/berserker-anim-review/podglad_bieg.html`.
+
 ## 4. Pułapki (warto pamiętać)
 
 1. **Humanoid trzyma długości kości w `.meta`** (`humanDescription.skeleton`). Po podmianie FBX z innymi proporcjami postać

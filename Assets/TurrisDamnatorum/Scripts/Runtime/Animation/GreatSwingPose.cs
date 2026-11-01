@@ -91,8 +91,10 @@ namespace Turris
         public static Vector3 GuardBlade = new Vector3(0f, -0.9f, 0.4f);
         /// <summary>Wysunięcie barków (obrót obojczyków wokół pionu, °) w postawie – więcej zasięgu dla dłoni przed tułowiem.</summary>
         public const float GuardShoulderForward = 6f;
-        /// <summary>Bieg: broń niesiona przy prawym boku, skośnie, ostrzem w dół i do tyłu (zamiast sterczeć w bok jak miecz).</summary>
-        public static Vector3 CarryHand = new Vector3(0.32f, 1.0f, 0.12f), CarryAim = new Vector3(0.38f, -0.3f, -0.87f);
+        /// <summary>Bieg: topór oburącz przed sobą jak w gardzie (uwaga użytkownika 2026-10-31, wzorzec z Elden Ring) – trochę wyżej
+        /// i dalej w przód, bo tułów w biegu pochyla się; głowica po prawej, lekko w przód. Dawniej broń niesiona przy prawym boku
+        /// skośnie w dół i do tyłu („ucieka na dół i w bok”).</summary>
+        public static Vector3 CarryHand = new Vector3(0.28f, 1.02f, 0.38f), CarryAim = new Vector3(0.95f, 0.04f, 0.30f);
         public const float GuardDrop = 0.04f, GuardSmooth = 0.12f;
         /// <summary>Wyprostowanie pleców i uniesienie głowy w spoczynku (°, ujemne – do tyłu / w górę): klip garbi się i patrzy w ziemię.</summary>
         /// Dawne −16° wyginało postać do tyłu; −4° tylko łagodzi pochylenie klipu (zostaje ~3–4° w przód). Głowa lekko uniesiona.
@@ -398,14 +400,14 @@ namespace Turris
             if (head != null && guardW > 0.002f) head.rotation = Quaternion.AngleAxis(GuardHeadLift * guardW * Mathf.Clamp01(still), right) * head.rotation;
             if (guardW > 0.002f && armR != null && foreR != null && handR != null)
             {
-                float sf = GuardShoulderForward * guardW * (1f - carry);
+                float sf = GuardShoulderForward * guardW;
                 if (clavL != null) clavL.rotation = Quaternion.AngleAxis(sf, up) * clavL.rotation;      // lewy bark w przód
                 if (clavR != null) clavR.rotation = Quaternion.AngleAxis(-sf * 0.6f, up) * clavR.rotation; // prawy lekko w przód
                 Vector3 local = Vector3.Lerp(GuardHand, CarryHand, carry);
                 Vector3 dir = Vector3.Slerp(GuardAim.normalized, CarryAim.normalized, carry);
                 Vector3 target = Vector3.Lerp(handR.position, character.TransformPoint(local), guardW);
-                // łokieć w dół i lekko do tyłu (ręka opuszczona wzdłuż boku), w biegu – w bok jak dawniej
-                Vector3 pole = Vector3.Slerp(right - up, character.TransformDirection(new Vector3(0.35f, -0.75f, -0.55f)), 1f - carry);
+                // łokieć w dół i lekko do tyłu (ręka opuszczona wzdłuż boku) – także w biegu
+                Vector3 pole = character.TransformDirection(new Vector3(0.35f, -0.75f, -0.55f));
                 HellEquipmentPose.Solve(armR, foreR, handR, target, pole, 1f);
                 if (Weapon != null)
                 {
@@ -413,8 +415,8 @@ namespace Turris
                     handR.rotation = Quaternion.FromToRotation(axis, Vector3.Slerp(axis, character.TransformDirection(dir), guardW)) * handR.rotation;
                     // Ostrze w dół (oś ostrza w gnieździe: −X): dawniej obrotem dłoni wokół trzonka – nadgarstek skręcał się o ~120°
                     // i siatka dłoni zapadała się w płaski kształt („dłonie źle zaciśnięte”). Teraz dłoń bierze ułożenie najbliższe
-                    // naturalnemu, a wokół trzonka obraca się broń (GuardSpin, stosuje CharacterVisual). W biegu – ułożenie z niesienia.
-                    float bw = guardW * (1f - carry);
+                    // naturalnemu, a wokół trzonka obraca się broń (GuardSpin, stosuje CharacterVisual). W biegu – ten sam chwyt.
+                    float bw = guardW;
                     GuardGrip = bw;
                     GuardSpin = 0f;
                     if (bw > 0.002f)
